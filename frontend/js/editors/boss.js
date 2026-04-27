@@ -7,6 +7,13 @@
   window.Editors = window.Editors || {};
 
   const DAMAGE_VALUES = [10, 20, 30];
+  const ANSWER_TYPES = [
+    { value: "numeric", label: "Numeric" },
+    { value: "set_match", label: "Equation roots / set" },
+    { value: "text_exact", label: "Text (exact)" },
+    { value: "text_fuzzy", label: "Text (fuzzy)" },
+    { value: "semantic", label: "Free-form (AI only)" }
+  ];
 
   function parseTags(raw) {
     const stripped = String(raw || "")
@@ -59,13 +66,33 @@
 
   function normalizeQuestion(question) {
     const dmg = DAMAGE_VALUES.includes(Number(question?.dmg)) ? Number(question.dmg) : 10;
+    
+    // Structured answer_spec
+    const spec = question?.answer_spec || {
+      type: "text_fuzzy",
+      expected: "",
+      canonical_display: "",
+      allow_ai_fallback: true,
+      rubric: {
+        correct: "To'g'ri javob!",
+        partial: "Qisman to'g'ri.",
+        incorrect: "Notog'ri javob."
+      }
+    };
+    
+    // Backward compat: if old ans exists and spec is empty, try to migrate
+    if (!spec.canonical_display && question?.ans && question.ans.length) {
+      spec.canonical_display = question.ans[0];
+      spec.expected = question.ans[0];
+    }
 
     return {
       q: question?.q || "",
       tags: question?.tags || `[Bloom: L2 | PISA: L2 | Damage: -${dmg} HP]`,
-      ans: Array.isArray(question?.ans) && question.ans.length ? question.ans : [""],
+      ans: Array.isArray(question?.ans) && question.ans.length ? question.ans : [spec.canonical_display || ""],
       hint: question?.hint || "",
       dmg,
+      answer_spec: spec
     };
   }
 
@@ -87,17 +114,77 @@
     ).join("");
   }
 
-  function renderAnswers(question) {
-    return question.ans
-      .map(
-        (answer, answerIndex) => `
-          <div class="option-row" data-answer-index="${answerIndex}">
-            <input class="js-answer" type="text" value="${escapeHtml(answer)}" placeholder="Accepted answer ${answerIndex + 1}" />
-            <button class="icon-btn js-remove-answer" type="button" title="Remove answer">×</button>
+  function renderAnswerSpecForm(question, index) {
+    const spec = question.answer_spec;
+    const typeOptions = ANSWER_TYPES.map(
+      t => `<option value="${t.value}" ${t.value === spec.type ? "selected" : ""}>${t.label}</option>`
+    ).join("");
+
+    let typeSpecificFields = "";
+    if (spec.type === "numeric") {
+      typeSpecificFields = `
+        <label class="field">
+          <span>Expected Number</span>
+          <input type="number" step="any" class="js-spec-field" data-key="expected" value="${escapeHtml(spec.expected)}" />
+        </label>
+        <label class="field">
+          <span>Tolerance (±)</span>
+          <input type="number" step="any" class="js-spec-field" data-key="tolerance" value="${escapeHtml(spec.tolerance || 0)}" />
+        </label>
+      `;
+    } else if (spec.type === "set_match") {
+      typeSpecificFields = `
+        <label class="field full-span">
+          <span>Expected Set (comma-separated, e.g. "9, -9")</span>
+          <input type="text" class="js-spec-field" data-key="expected" value="${escapeHtml(Array.isArray(spec.expected) ? spec.expected.join(", ") : spec.expected)}" />
+        </label>
+      `;
+    }
+
+    return `
+      <div class="editor-grid">
+        <label class="field">
+          <span>Canonical Display Answer</span>
+          <input type="text" class="js-spec-field" data-key="canonical_display" value="${escapeHtml(spec.canonical_display)}" placeholder="Model answer shown to students" />
+        </label>
+        <label class="field">
+          <span>Answer Type</span>
+          <select class="js-spec-type">
+            ${typeOptions}
+          </select>
+        </label>
+
+        ${typeSpecificFields}
+
+        <label class="field full-span">
+          <input type="checkbox" class="js-spec-ai" ${spec.allow_ai_fallback ? "checked" : ""} />
+          <span>Allow AI Fallback for messy/semantic answers</span>
+        </label>
+
+        <details class="full-span">
+          <summary>Grading Rubric (AI usage)</summary>
+          <div class="editor-grid" style="margin-top: 10px;">
+            <label class="field full-span">
+              <span>Correct</span>
+              <textarea class="js-rubric-field" data-key="correct" rows="2">${escapeHtml(spec.rubric.correct)}</textarea>
+            </label>
+            <label class="field full-span">
+              <span>Partial</span>
+              <textarea class="js-rubric-field" data-key="partial" rows="2">${escapeHtml(spec.rubric.partial)}</textarea>
+            </label>
+            <label class="field full-span">
+              <span>Incorrect</span>
+              <textarea class="js-rubric-field" data-key="incorrect" rows="2">${escapeHtml(spec.rubric.incorrect)}</textarea>
+            </label>
           </div>
-        `
-      )
-      .join("");
+        </details>
+
+        <div class="full-span preview-pane js-preview-pane" id="preview-${index}">
+          <p class="eyebrow">Accepted Examples (AI/Deterministic)</p>
+          <div class="preview-content js-preview-content">Loading preview...</div>
+        </div>
+      </div>
+    `;
   }
 
   function render(container, data, onChange) {
@@ -160,14 +247,11 @@
                         <div class="editor-card nested-card">
                           <div class="editor-header compact-header">
                             <div>
-                              <p class="eyebrow">Accepted answers</p>
-                              <h3>${question.ans.length} answer${question.ans.length === 1 ? "" : "s"}</h3>
+                              <p class="eyebrow">Answer Grading</p>
+                              <h3>Hybrid (Deterministic + AI)</h3>
                             </div>
-                            <button class="btn btn-ghost js-add-answer" type="button">Add answer</button>
                           </div>
-                          <div class="editor-list">
-                            ${renderAnswers(question)}
-                          </div>
+                          ${renderAnswerSpecForm(question, index)}
                         </div>
                       </section>
                     `
@@ -183,7 +267,7 @@
         </div>
       `;
 
-      // Mount RichField editors for `q` (boss question text) and `hint`.
+      // Mount RichField editors
       if (window.RichField) {
         container.querySelectorAll(".js-rich-host").forEach((host) => {
           const index = Number(host.dataset.index);
@@ -204,44 +288,79 @@
           host.appendChild(mini);
         });
       }
+      
+      // Update previews
+      state.forEach((_, i) => updatePreview(i));
+    }
+
+    async function updatePreview(index) {
+      const q = state[index];
+      const previewEl = container.querySelector(`#preview-${index} .js-preview-content`);
+      if (!previewEl) return;
+      
+      try {
+        const resp = await fetch("/api/ai/answer-spec/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answer_spec: q.answer_spec })
+        });
+        if (!resp.ok) throw new Error("Preview failed");
+        const data = await resp.json();
+        previewEl.innerHTML = (data.examples || []).map(ex => `<code class="preview-tag">${escapeHtml(ex)}</code>`).join(" ");
+      } catch (err) {
+        previewEl.innerText = "Error loading preview.";
+      }
     }
 
     function syncAndEmit() {
       state.forEach((question) => {
-        if (!Array.isArray(question.ans) || !question.ans.length) question.ans = [""];
+        // Shadow populate old ans array for backward compat
+        question.ans = [question.answer_spec.canonical_display || ""];
       });
       emit(state, onChange);
     }
 
     container.oninput = (event) => {
-      const field = event.target.closest(".js-field");
-      const answer = event.target.closest(".js-answer");
+      const target = event.target;
+      const index = Number(target.closest("[data-index]")?.dataset.index);
+      if (!Number.isFinite(index)) return;
 
-      if (field) {
-        const index = Number(field.closest("[data-index]")?.dataset.index);
-        state[index][field.dataset.key] = field.value;
+      if (target.classList.contains("js-field")) {
+        state[index][target.dataset.key] = target.value;
         syncAndEmit();
-        return;
-      }
-
-      if (answer) {
-        const questionIndex = Number(answer.closest("[data-index]")?.dataset.index);
-        const answerIndex = Number(answer.closest("[data-answer-index]")?.dataset.answerIndex);
-        state[questionIndex].ans[answerIndex] = answer.value;
+      } else if (target.classList.contains("js-spec-field")) {
+        const key = target.dataset.key;
+        let val = target.value;
+        if (key === "expected" && state[index].answer_spec.type === "set_match") {
+          val = val.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        state[index].answer_spec[key] = val;
+        syncAndEmit();
+        updatePreview(index);
+      } else if (target.classList.contains("js-rubric-field")) {
+        state[index].answer_spec.rubric[target.dataset.key] = target.value;
         syncAndEmit();
       }
     };
 
     container.onchange = (event) => {
-      const dmgSelect = event.target.closest(".js-dmg");
-      if (!dmgSelect) return;
+      const target = event.target;
+      const index = Number(target.closest("[data-index]")?.dataset.index);
+      if (!Number.isFinite(index)) return;
 
-      const index = Number(dmgSelect.closest("[data-index]")?.dataset.index);
-      state[index].dmg = Number(dmgSelect.value);
-      state[index].tags = updateDamageInTags(state[index].tags, state[index].dmg);
-
-      syncAndEmit();
-      repaint();
+      if (target.classList.contains("js-dmg")) {
+        state[index].dmg = Number(target.value);
+        state[index].tags = updateDamageInTags(state[index].tags, state[index].dmg);
+        syncAndEmit();
+        repaint();
+      } else if (target.classList.contains("js-spec-type")) {
+        state[index].answer_spec.type = target.value;
+        syncAndEmit();
+        repaint();
+      } else if (target.classList.contains("js-spec-ai")) {
+        state[index].answer_spec.allow_ai_fallback = target.checked;
+        syncAndEmit();
+      }
     };
 
     container.onclick = (event) => {
@@ -259,27 +378,6 @@
         repaint();
         return;
       }
-
-      if (event.target.closest(".js-add-answer")) {
-        const index = Number(event.target.closest("[data-index]")?.dataset.index);
-        state[index].ans.push("");
-        syncAndEmit();
-        repaint();
-        return;
-      }
-
-      if (event.target.closest(".js-remove-answer")) {
-        const questionIndex = Number(event.target.closest("[data-index]")?.dataset.index);
-        const answerIndex = Number(event.target.closest("[data-answer-index]")?.dataset.answerIndex);
-        state[questionIndex].ans.splice(answerIndex, 1);
-
-        if (!state[questionIndex].ans.length) {
-          state[questionIndex].ans.push("");
-        }
-
-        syncAndEmit();
-        repaint();
-      }
     };
 
     repaint();
@@ -287,7 +385,7 @@
       window.EditorUtils.bindPasteNormalizer(container);
       window.EditorUtils.bindStrictPasteNormalizer(
         container,
-        'input[data-key="tags"], input.js-answer'
+        'input[data-key="tags"], .js-spec-field'
       );
     }
   }

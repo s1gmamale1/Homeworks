@@ -49,6 +49,10 @@ class ReflectionRequest(BaseModel):
     grade: int = 8
 
 
+class PreviewAnswerSpecRequest(BaseModel):
+    answer_spec: dict[str, Any]
+
+
 class TutorRequest(BaseModel):
     phase: str = "general"
     question: str
@@ -107,6 +111,39 @@ async def decide_review_queue(req: ReviewDecideRequest, id: int = PathParam(...)
     if not success:
         raise HTTPException(404, detail="Review item not found or already resolved")
     return {"status": "ok"}
+
+@router.post("/ai/answer-spec/preview")
+async def preview_answer_spec(req: PreviewAnswerSpecRequest):
+    spec = req.answer_spec
+    ans_type = spec.get("type", "text_fuzzy")
+    expected = spec.get("expected")
+    
+    examples = []
+    if ans_type == "numeric":
+        try:
+            val = float(expected)
+            tol = float(spec.get("tolerance", 0))
+            examples.append(str(val))
+            if tol > 0:
+                examples.append(str(val + tol))
+                examples.append(str(val - tol))
+        except (ValueError, TypeError):
+            examples.append(str(expected))
+    elif ans_type == "set_match":
+        if isinstance(expected, list):
+            # Show the set
+            examples.append(", ".join(map(str, expected)))
+            if len(expected) > 1:
+                # Show one of them
+                examples.append(str(expected[0]))
+        else:
+            examples.append(str(expected))
+    else:
+        # text variants and semantic
+        examples.append(str(spec.get("canonical_display", expected)))
+        
+    return {"examples": examples}
+
 
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
