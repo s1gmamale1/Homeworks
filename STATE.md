@@ -307,3 +307,4 @@ Date: 2026-04-27
 
 ## Wave D — Hybrid Grading
 - **D1 (Schema):** Added structured ‘answer_spec’ alongside legacy ans[]/accepted_answers[]. Created migration helper scripts/migrate_answer_spec.py (idempotent, requires --db-path; --backup-first recommended). Schema doc: docs/ANSWER_SPEC.md. CONTRACTS.md §1 updated.
+- **D2 (Deterministic Checker):** Added server/services/answer_checker.py handling numeric, set_match, text_exact, text_fuzzy, and semantic answers. Wrote tests/test_answer_checker.py and updated requirements.txt with sympy and rapidfuzz.
