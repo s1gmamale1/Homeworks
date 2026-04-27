@@ -255,12 +255,7 @@
         "type": "text_fuzzy",
         "expected": "obsolete",
         "canonical_display": "obsolete",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "obsolete"
@@ -359,12 +354,7 @@
         "type": "text_fuzzy",
         "expected": "would feel",
         "canonical_display": "would feel",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "would feel"
@@ -384,12 +374,7 @@
         "type": "text_fuzzy",
         "expected": "advanced",
         "canonical_display": "advanced",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "advanced",
@@ -411,12 +396,7 @@
         "type": "text_fuzzy",
         "expected": "consequently",
         "canonical_display": "consequently",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "consequently",
@@ -434,18 +414,10 @@
       "hint": "Check the sequence of tenses in conditionals.",
       "dmg": 30,
       "answer_spec": {
-        "type": "set_match",
-        "expected": [
-          "If I had had money yesterday, I would buy it now",
-          "If I had money yesterday, I would have bought it"
-        ],
+        "type": "text_fuzzy",
+        "expected": "If I had had money yesterday, I would buy it now",
         "canonical_display": "If I had had money yesterday, I would buy it now",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches set_match expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "If I had had money yesterday, I would buy it now",
@@ -466,12 +438,7 @@
         "type": "text_fuzzy",
         "expected": "modern",
         "canonical_display": "modern",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "modern",

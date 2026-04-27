@@ -97,12 +97,7 @@
         "type": "text_fuzzy",
         "expected": "mitoxondriya",
         "canonical_display": "mitoxondriya",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "mitoxondriya",
@@ -122,12 +117,7 @@
         "type": "text_fuzzy",
         "expected": "xloroplast",
         "canonical_display": "xloroplast",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "xloroplast",

@@ -100,12 +100,7 @@
         "type": "text_fuzzy",
         "expected": "qaytarilish",
         "canonical_display": "qaytarilish",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "qaytarilish"
@@ -194,12 +189,7 @@
         "type": "text_fuzzy",
         "expected": "CuCl2",
         "canonical_display": "CuCl2",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Excellent! Correctly answers the kimyo question.",
-          "partial": "Close, but missing key kimyo concepts.",
-          "incorrect": "Wrong."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "CuCl2",

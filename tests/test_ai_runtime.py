@@ -193,6 +193,59 @@ def test_check_answer_ai_fallback_low_confidence(mock_generate, client):
     q_resp2 = client.get("/api/review-queue")
     assert len([x for x in q_resp2.json() if x["question_id"] == "boss-1"]) == 0
 
+
+def test_review_queue_decide_404(client):
+    """Resolving a non-existent or already-resolved review item must return 404."""
+    resp = client.post(
+        "/api/review-queue/999999/decide",
+        json={"correct": True, "score": 1.0, "feedback": "ok"},
+    )
+    assert resp.status_code == 404
+
+
+@patch("server.services.gemini.generate_json")
+def test_check_answer_no_ai_fallback(mock_generate, client):
+    """allow_ai_fallback=False on an unsure deterministic verdict must short-circuit."""
+    payload = {
+        "question_id": "test-no-ai",
+        "question": "Free-form answer",
+        "student_answer": "something",
+        "answer_spec": {"type": "semantic"},
+        "allow_ai_fallback": False,
+        "subject": "history",
+        "grade": 8,
+    }
+    resp = client.post("/api/ai/check-answer", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["source"] == "deterministic"
+    assert data["correct"] is False
+    mock_generate.assert_not_called()
+
+
+@patch("server.services.gemini.generate_json")
+def test_cache_key_namespaced_by_spec(mock_generate, client):
+    """Same question_id + same student_answer but different answer_spec MUST NOT collide."""
+    mock_generate.side_effect = [
+        {"correct": True, "score": 1.0, "feedback": "ok-A", "matched_expected": "A", "confidence": 0.95},
+        {"correct": False, "score": 0.0, "feedback": "no-B", "matched_expected": None, "confidence": 0.95},
+    ]
+    base = {
+        "question_id": "shared-q1",
+        "question": "Capital?",
+        "student_answer": "Toshkent",
+        "subject": "history",
+        "grade": 8,
+    }
+    a = client.post("/api/ai/check-answer", json={**base, "answer_spec": {"type": "semantic", "expected": "A"}})
+    b = client.post("/api/ai/check-answer", json={**base, "answer_spec": {"type": "semantic", "expected": "B"}})
+    assert a.status_code == 200 and b.status_code == 200
+    # Both went through AI (no cache collision).
+    assert a.json()["correct"] is True
+    assert b.json()["correct"] is False
+    assert mock_generate.call_count == 2
+
+
 # ---------------------------------------------------------------------------
 # AI-requiring tests
 # ---------------------------------------------------------------------------

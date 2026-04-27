@@ -254,12 +254,7 @@
         "type": "text_fuzzy",
         "expected": "qo'sh spiral",
         "canonical_display": "qo'sh spiral",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "qo'sh spiral"
@@ -347,12 +342,7 @@
         "type": "text_exact",
         "expected": "20",
         "canonical_display": "20",
-        "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Excellent! Correctly answers the biology question.",
-          "partial": "Close, but missing key biology concepts.",
-          "incorrect": "Wrong."
-        }
+        "allow_ai_fallback": false
       },
       "accepted_answers": [
         "20",
@@ -372,12 +362,7 @@
         "type": "text_fuzzy",
         "expected": "dezoksiriboza",
         "canonical_display": "dezoksiriboza",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "dezoksiriboza",
@@ -397,12 +382,7 @@
         "type": "text_exact",
         "expected": "3",
         "canonical_display": "3",
-        "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Matches text_exact expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": false
       },
       "accepted_answers": [
         "3",
@@ -423,12 +403,7 @@
         "type": "text_fuzzy",
         "expected": "rnk",
         "canonical_display": "rnk",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "rnk",
@@ -448,12 +423,7 @@
         "type": "text_fuzzy",
         "expected": "genetika",
         "canonical_display": "genetika",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "genetika"

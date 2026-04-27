@@ -86,13 +86,27 @@ async def check_answer(
             "feedback": "Notog'ri javob.",
             "source": "deterministic"
         }
-        
-    cache_key_raw = f"{question_id}|{_normalize(student_answer)}"
+
+    # Cache key includes the answer_spec/expected fingerprint so the same question_id
+    # reused across homeworks (e.g. "q1") can't collide on different correct answers.
+    spec_fingerprint = json.dumps(
+        {"spec": answer_spec, "expected": expected_answers},
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    cache_key_raw = f"{question_id}|{_normalize(student_answer)}|{spec_fingerprint}"
     cache_key = hashlib.sha256(cache_key_raw.encode("utf-8")).hexdigest()
-    
+
     cached = await db.get_answer_cache(cache_key)
     if cached:
         return cached
+
+    # Log every AI fallback call for rate-limit / abuse triage.
+    print(
+        f"[ai-fallback] question_id={question_id!r} subject={subject} grade={grade} "
+        f"tier={tier} det_verdict={verdict} cache_miss=True",
+        flush=True,
+    )
 
     prompt = _load_runtime_prompt("answer-checker")
     payload = {

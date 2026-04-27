@@ -99,12 +99,7 @@
         "type": "text_fuzzy",
         "expected": "for",
         "canonical_display": "for",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "for"
@@ -122,12 +117,7 @@
         "type": "text_fuzzy",
         "expected": "written",
         "canonical_display": "written",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "written"
@@ -224,12 +214,7 @@
         "type": "text_exact",
         "expected": "B",
         "canonical_display": "B",
-        "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Excellent! Correctly answers the english question.",
-          "partial": "Close, but missing key english concepts.",
-          "incorrect": "Wrong."
-        }
+        "allow_ai_fallback": false
       },
       "accepted_answers": [
         "B",
@@ -249,12 +234,7 @@
         "type": "text_fuzzy",
         "expected": "has not called",
         "canonical_display": "has not called",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "has not called",

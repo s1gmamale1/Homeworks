@@ -117,12 +117,7 @@
         "type": "text_fuzzy",
         "expected": "1370 yil Balxda",
         "canonical_display": "1370 yil Balxda",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Excellent! Correctly answers the history question.",
-          "partial": "Close, but missing key history concepts.",
-          "incorrect": "Wrong."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "1370 yil Balxda",
@@ -142,12 +137,7 @@
         "type": "text_fuzzy",
         "expected": "harbiylar va ruhoniylarga",
         "canonical_display": "harbiylar va ruhoniylarga",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "harbiylar va ruhoniylarga",

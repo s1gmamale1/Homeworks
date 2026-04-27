@@ -118,11 +118,6 @@
         "expected": 7,
         "canonical_display": "7",
         "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Excellent! Correctly answers the physics question.",
-          "partial": "Close, but missing key physics concepts.",
-          "incorrect": "Wrong."
-        },
         "tolerance": 0
       },
       "accepted_answers": [
@@ -142,11 +137,6 @@
         "expected": 5,
         "canonical_display": "5",
         "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Matches numeric expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        },
         "tolerance": 0
       },
       "accepted_answers": [

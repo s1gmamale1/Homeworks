@@ -117,6 +117,25 @@ The single source of truth for a homework's content. Stored as JSON in SQLite `h
 }
 ```
 
+### Answer specification (added in Wave D — D1 schema, D2 checker, D3 router)
+
+Every question shape (`memory_sprint[]`, `gb_adaptive_quiz[]`, `boss_questions[]`, `real_life.q1..q6`) MAY include an `answer_spec` object alongside the legacy `ans`/`accepted_answers[]` fields. When present, the deterministic grader (D2) uses `answer_spec` first; the legacy field is preserved for backward compatibility through one release cycle.
+
+```json
+{
+  "answer_spec": {
+    "type": "numeric | set_match | text_exact | text_fuzzy | semantic",
+    "expected": "<type-dependent>",
+    "tolerance": 0,
+    "canonical_display": "string",
+    "allow_ai_fallback": true,
+    "rubric": { "correct": "...", "partial": "...", "incorrect": "..." }
+  }
+}
+```
+
+Full type spec, edge cases, examples per type: see `docs/ANSWER_SPEC.md`. Migration script: `scripts/migrate_answer_spec.py` (idempotent, requires `--db-path` + recommended `--backup-first`).
+
 **Rules:**
 - All strings Uzbek (`Siz` formal), unless subject is English (then English content)
 - Empty arrays `[]` for phases not in the pipeline (never omit keys — use `[]` or `null`)

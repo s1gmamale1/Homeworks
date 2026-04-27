@@ -262,12 +262,7 @@
         "type": "text_fuzzy",
         "expected": "miqdoriy",
         "canonical_display": "miqdoriy",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "miqdoriy"
@@ -355,12 +350,7 @@
         "type": "text_fuzzy",
         "expected": "4 marta kamayadi",
         "canonical_display": "4 marta kamayadi",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "4 marta kamayadi",
@@ -381,12 +371,7 @@
         "type": "text_fuzzy",
         "expected": "teng",
         "canonical_display": "teng",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "teng",
@@ -407,11 +392,6 @@
         "expected": 9.8,
         "canonical_display": "9.8",
         "allow_ai_fallback": false,
-        "rubric": {
-          "correct": "Matches numeric expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        },
         "tolerance": 0
       },
       "accepted_answers": [
@@ -430,12 +410,7 @@
         "type": "text_fuzzy",
         "expected": "inersiya",
         "canonical_display": "inersiya",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "inersiya"
@@ -454,12 +429,7 @@
         "type": "text_fuzzy",
         "expected": "nyuton",
         "canonical_display": "nyuton",
-        "allow_ai_fallback": true,
-        "rubric": {
-          "correct": "Matches text_fuzzy expected value.",
-          "partial": "Partially correct.",
-          "incorrect": "Incorrect."
-        }
+        "allow_ai_fallback": true
       },
       "accepted_answers": [
         "nyuton",

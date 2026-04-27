@@ -506,7 +506,7 @@ async def set_status(id: str, status: str) -> None:
         await db.close()
 
 async def get_answer_cache(key: str) -> Optional[dict]:
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "SELECT response_json FROM answer_cache WHERE key = ?", (key,)
@@ -519,7 +519,7 @@ async def get_answer_cache(key: str) -> Optional[dict]:
         await db.close()
 
 async def set_answer_cache(key: str, response: dict) -> None:
-    db = await _connect()
+    db = await connect()
     try:
         await db.execute(
             "INSERT OR REPLACE INTO answer_cache (key, response_json, created_at) VALUES (?, ?, ?)",
@@ -530,7 +530,7 @@ async def set_answer_cache(key: str, response: dict) -> None:
         await db.close()
 
 async def add_to_review_queue(question_id: str, student_answer: str, answer_spec: dict, ai_response: dict) -> None:
-    db = await _connect()
+    db = await connect()
     try:
         await db.execute(
             "INSERT INTO review_queue (question_id, student_answer, answer_spec_json, ai_response_json, status, created_at) "
@@ -542,7 +542,7 @@ async def add_to_review_queue(question_id: str, student_answer: str, answer_spec
         await db.close()
 
 async def get_review_queue() -> list[dict]:
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "SELECT * FROM review_queue WHERE status = 'pending' ORDER BY created_at ASC"
@@ -559,7 +559,7 @@ async def get_review_queue() -> list[dict]:
         await db.close()
 
 async def resolve_review_item(id: int, decision: dict) -> bool:
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "UPDATE review_queue SET status = 'resolved' WHERE id = ? AND status = 'pending'",
