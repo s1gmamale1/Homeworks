@@ -3,6 +3,7 @@
 __pycache__/
 *.pyc
 *.pyo
+CLAUDE.md
 
 # Database (large + contains user data)
 nets.db
