@@ -204,6 +204,65 @@ def test_review_queue_decide_404(client):
 
 
 @patch("server.services.gemini.generate_json")
+def test_review_queue_decision_persists(mock_generate, client):
+    """The teacher's decision must be stored on the row, not silently discarded.
+
+    Regression guard for the round-3 reviewer finding: resolve_review_item used
+    to only flip status='resolved'; {correct, score, feedback} were dropped.
+    """
+    import asyncio
+    import json
+    from server import db
+
+    mock_generate.return_value = {
+        "correct": False,
+        "score": 0.0,
+        "feedback": "I am not sure.",
+        "matched_expected": None,
+        "confidence": 0.7,
+    }
+    # Drive an answer into the review queue (boss phase, low-confidence AI).
+    queue_resp = client.post(
+        "/api/ai/check-answer",
+        json={
+            "question_id": "boss-decide-persist",
+            "question": "Why?",
+            "student_answer": "Dunno",
+            "answer_spec": {"type": "semantic"},
+            "subject": "physics",
+            "grade": 11,
+        },
+    )
+    assert queue_resp.status_code == 200
+    assert queue_resp.json().get("needs_review") is True
+
+    queue = client.get("/api/review-queue").json()
+    item = next(x for x in queue if x["question_id"] == "boss-decide-persist")
+
+    decision = {"correct": True, "score": 0.85, "feedback": "Acceptable answer; format off."}
+    res = client.post(f"/api/review-queue/{item['id']}/decide", json=decision)
+    assert res.status_code == 200
+
+    # Read the row directly so we verify what's on disk, not what the API returns.
+    async def fetch_row():
+        conn = await db.connect()
+        try:
+            cur = await conn.execute(
+                "SELECT status, decision_json, resolved_at FROM review_queue WHERE id = ?",
+                (item["id"],),
+            )
+            return await cur.fetchone()
+        finally:
+            await conn.close()
+
+    row = asyncio.run(fetch_row())
+    assert row["status"] == "resolved"
+    assert row["resolved_at"] is not None and row["resolved_at"] != ""
+    stored = json.loads(row["decision_json"])
+    assert stored == decision  # full payload survived round-trip
+
+
+@patch("server.services.gemini.generate_json")
 def test_check_answer_no_ai_fallback(mock_generate, client):
     """allow_ai_fallback=False on an unsure deterministic verdict must short-circuit."""
     payload = {
