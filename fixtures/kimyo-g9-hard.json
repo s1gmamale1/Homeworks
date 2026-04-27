@@ -15,19 +15,49 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Oksidlanish va Qaytarilish" },
-            { "type": "p", "text": "Atomlar o'rtasida elektron o'tishi bilan boradigan reaksiyalarga oksidlanish-qaytarilish reaksiyalari (OQR) deyiladi." },
-            { "type": "ul", "items": ["Oksidlanish — elektron berish (daraja ortadi).", "Qaytarilish — elektron olish (daraja kamayadi).", "Oksidlovchi — elektron oluvchi.", "Qaytaruvchi — elektron beruvchi."] }
+            {
+              "type": "h2",
+              "text": "Oksidlanish va Qaytarilish"
+            },
+            {
+              "type": "p",
+              "text": "Atomlar o'rtasida elektron o'tishi bilan boradigan reaksiyalarga oksidlanish-qaytarilish reaksiyalari (OQR) deyiladi."
+            },
+            {
+              "type": "ul",
+              "items": [
+                "Oksidlanish — elektron berish (daraja ortadi).",
+                "Qaytarilish — elektron olish (daraja kamayadi).",
+                "Oksidlovchi — elektron oluvchi.",
+                "Qaytaruvchi — elektron beruvchi."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "Oksidlanish", "def": "Elektron yo'qotish jarayoni.", "cluster": "QOIDA" },
-    { "term": "Qaytarilish", "def": "Elektron qabul qilish jarayoni.", "cluster": "QOIDA" },
-    { "term": "Oksidlovchi", "def": "O'ziga elektron oluvchi modda.", "cluster": "TAHLIL" },
-    { "term": "Qaytaruvchi", "def": "O'zidan elektron beruvchi modda.", "cluster": "TAHLIL" }
+    {
+      "term": "Oksidlanish",
+      "def": "Elektron yo'qotish jarayoni.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Qaytarilish",
+      "def": "Elektron qabul qilish jarayoni.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Oksidlovchi",
+      "def": "O'ziga elektron oluvchi modda.",
+      "cluster": "TAHLIL"
+    },
+    {
+      "term": "Qaytaruvchi",
+      "def": "O'zidan elektron beruvchi modda.",
+      "cluster": "TAHLIL"
+    }
   ],
   "memory_sprint": [
     {
@@ -36,7 +66,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Elektron berilganda manfiy zaryad ketadi, natijada musbat zaryad (oksidlanish darajasi) ortadi. Bu oksidlanish deyiladi.",
-      "options": ["Oksidlanish", "Qaytarilish", "Neytrallanish", "Gidroliz"],
+      "options": [
+        "Oksidlanish",
+        "Qaytarilish",
+        "Neytrallanish",
+        "Gidroliz"
+      ],
       "correct": 0
     },
     {
@@ -45,7 +80,10 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L1]",
       "explain": "To'g'ri. Qaytaruvchi o'zidan elektron berib, boshqasini qaytaradi (o'zi esa oksidlanadi).",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 0
     }
   ],
@@ -54,26 +92,90 @@
       "q": "Cu²⁺ + 2e⁻ → Cu⁰. Bu qanday jarayon?",
       "tags": "[Bloom: L2 | PISA: L2]",
       "tier": "MEDIUM",
-      "ans": ["qaytarilish"],
-      "capture": false
+      "ans": [
+        "qaytarilish"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "qaytarilish",
+        "canonical_display": "qaytarilish",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Matches text_fuzzy expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        }
+      },
+      "accepted_answers": [
+        "qaytarilish"
+      ]
     }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["Oksidlanish darajasi ortadi", "Oksidlanish"],
-    ["Oksidlanish darajasi kamayadi", "Qaytarilish"],
-    ["Elektron beradi", "Qaytaruvchi"],
-    ["Elektron oladi", "Oksidlovchi"]
+    [
+      "Oksidlanish darajasi ortadi",
+      "Oksidlanish"
+    ],
+    [
+      "Oksidlanish darajasi kamayadi",
+      "Qaytarilish"
+    ],
+    [
+      "Elektron beradi",
+      "Qaytaruvchi"
+    ],
+    [
+      "Elektron oladi",
+      "Oksidlovchi"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Zanglash muammosi",
     "story": "Yozda hovlidagi temir darvoza zanglay boshladi. Temir havoda kislorod ishtirokida Fe₂O₃ hosil qilib yemiriladi. Bu jarayon OQR hisoblanadi.",
-    "q1": { "prompt": "Fe⁰ zanglash jarayonida elektron beradimi yoki oladimi?", "ans": "beradi", "fb": "To'g'ri, temir oksidlanib elektron beradi." },
-    "q2": { "prompt": "Kislorod (O₂) ning zanglashdagi roli qanday: oksidlovchimi yoki qaytaruvchimi?", "fields": [{"id": "role", "label": "Rol", "ans": "oksidlovchi"}], "fb": "Juda yaxshi! Kislorod elektronlarni olib, o'zi qaytariladi." },
-    "q3": { "prompt": "Temirning zanglash jarayonini sekinlashtirish uchun odatda nima qilinadi?", "ans": "bo'yaladi", "fb": "To'g'ri, bo'yoq temirni kisloroddan himoya qiladi." },
-    "q4": { "prompt": "Bo'yalmagan temir va zanglagan temirning farqi nimada?", "fields": [{"id": "q4_f", "label": "Farqi", "ans": "Oksidlanish darajasida"}], "fb": "Ajoyib. Sof temir darajasi 0, zanglaganda +3 bo'ladi." },
-    "q5": { "prompt": "Agar kislorod bo'lmasa, temir zanglaydimi?", "open": true, "fb": "Sizning fikringiz to'g'ri tahlil qilindi." },
-    "q6": { "prompt": "Zanglash reaksiyasini yozganda e⁻ qaysi tomonda yoziladi (oksidlanish tenglamasida)?", "ans": "o'ng", "fb": "To'g'ri, chunki elektron yo'qotiladi." },
+    "q1": {
+      "prompt": "Fe⁰ zanglash jarayonida elektron beradimi yoki oladimi?",
+      "ans": "beradi",
+      "fb": "To'g'ri, temir oksidlanib elektron beradi."
+    },
+    "q2": {
+      "prompt": "Kislorod (O₂) ning zanglashdagi roli qanday: oksidlovchimi yoki qaytaruvchimi?",
+      "fields": [
+        {
+          "id": "role",
+          "label": "Rol",
+          "ans": "oksidlovchi"
+        }
+      ],
+      "fb": "Juda yaxshi! Kislorod elektronlarni olib, o'zi qaytariladi."
+    },
+    "q3": {
+      "prompt": "Temirning zanglash jarayonini sekinlashtirish uchun odatda nima qilinadi?",
+      "ans": "bo'yaladi",
+      "fb": "To'g'ri, bo'yoq temirni kisloroddan himoya qiladi."
+    },
+    "q4": {
+      "prompt": "Bo'yalmagan temir va zanglagan temirning farqi nimada?",
+      "fields": [
+        {
+          "id": "q4_f",
+          "label": "Farqi",
+          "ans": "Oksidlanish darajasida"
+        }
+      ],
+      "fb": "Ajoyib. Sof temir darajasi 0, zanglaganda +3 bo'ladi."
+    },
+    "q5": {
+      "prompt": "Agar kislorod bo'lmasa, temir zanglaydimi?",
+      "open": true,
+      "fb": "Sizning fikringiz to'g'ri tahlil qilindi."
+    },
+    "q6": {
+      "prompt": "Zanglash reaksiyasini yozganda e⁻ qaysi tomonda yoziladi (oksidlanish tenglamasida)?",
+      "ans": "o'ng",
+      "fb": "To'g'ri, chunki elektron yo'qotiladi."
+    },
     "endTitle": "Korroziya sir-asrorlari",
     "endSub": "Temirning nima uchun zanglashini bilib oldingiz."
   },
@@ -81,9 +183,29 @@
     {
       "q": "Zn + CuCl₂ → ZnCl₂ + Cu reaksiyasida oksidlovchini aniqlang.",
       "tags": "[Bloom: L3 | PISA: L3 | Damage: -20 HP]",
-      "ans": ["CuCl2", "mis xlorid", "Cu2+"],
+      "ans": [
+        "CuCl2",
+        "mis xlorid",
+        "Cu2+"
+      ],
       "hint": "Qaysi modda (yoki ion) elektron olmoqda? Misning oksidlanish darajasi +2 dan 0 ga o'zgardi.",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "CuCl2",
+        "canonical_display": "CuCl2",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Excellent! Correctly answers the kimyo question.",
+          "partial": "Close, but missing key kimyo concepts.",
+          "incorrect": "Wrong."
+        }
+      },
+      "accepted_answers": [
+        "CuCl2",
+        "mis xlorid",
+        "Cu2+"
+      ]
     }
   ],
   "reflection": {

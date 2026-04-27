@@ -16,18 +16,43 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Amir Temur davlatiga asos solinishi" },
-            { "type": "p", "text": "1370-yilda Balxda bo'lib o'tgan qurultoyda Amir Temur Movarounnahrning yagona hukmdori deb e'lon qilindi." },
-            { "type": "ul", "items": ["Poytaxt: Samarqand.", "Dastlabki yillarda u Movarounnahrni birlashtirishga e'tibor qaratdi.", "Keyinchalik Xorazm va Dashti Qipchoqqa yurish qildi."] }
+            {
+              "type": "h2",
+              "text": "Amir Temur davlatiga asos solinishi"
+            },
+            {
+              "type": "p",
+              "text": "1370-yilda Balxda bo'lib o'tgan qurultoyda Amir Temur Movarounnahrning yagona hukmdori deb e'lon qilindi."
+            },
+            {
+              "type": "ul",
+              "items": [
+                "Poytaxt: Samarqand.",
+                "Dastlabki yillarda u Movarounnahrni birlashtirishga e'tibor qaratdi.",
+                "Keyinchalik Xorazm va Dashti Qipchoqqa yurish qildi."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "1370-yil", "def": "Amir Temur hokimiyat tepasiga kelgan yil.", "cluster": "QOIDA" },
-    { "term": "Samarqand", "def": "Amir Temur davlatining poytaxti.", "cluster": "QOIDA" },
-    { "term": "Qurultoy", "def": "Zodagonlar, harbiylar va beksizlar kengashi.", "cluster": "METOD" }
+    {
+      "term": "1370-yil",
+      "def": "Amir Temur hokimiyat tepasiga kelgan yil.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Samarqand",
+      "def": "Amir Temur davlatining poytaxti.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Qurultoy",
+      "def": "Zodagonlar, harbiylar va beksizlar kengashi.",
+      "cluster": "METOD"
+    }
   ],
   "memory_sprint": [
     {
@@ -36,7 +61,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Amir Temur Movarounnahrni birlashtirgach, poytaxt sifatida Samarqandni tanlagan.",
-      "options": ["Buxoro", "Samarqand", "Shahrisabz", "Toshkent"],
+      "options": [
+        "Buxoro",
+        "Samarqand",
+        "Shahrisabz",
+        "Toshkent"
+      ],
       "correct": 1
     },
     {
@@ -45,33 +75,84 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Noto'g'ri. U 1370-yilda Balxda bo'lib o'tgan qurultoyda hukmdor etib saylangan.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 1
     }
   ],
   "gb_adaptive_quiz": [],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["1370", "Hokimiyatga kelish"],
-    ["Samarqand", "Poytaxt"],
-    ["Balx", "Qurultoy"],
-    ["Movarounnahr", "Asosiy hudud"]
+    [
+      "1370",
+      "Hokimiyatga kelish"
+    ],
+    [
+      "Samarqand",
+      "Poytaxt"
+    ],
+    [
+      "Balx",
+      "Qurultoy"
+    ],
+    [
+      "Movarounnahr",
+      "Asosiy hudud"
+    ]
   ],
   "real_life": null,
   "boss_questions": [
     {
       "q": "Amir Temur qaysi yilda qaysi shaharda Movarounnahr hukmdori etib saylandi?",
       "tags": "[Bloom: L2 | PISA: L2 | Damage: -10 HP]",
-      "ans": ["1370 yil Balxda", "1370 Balx"],
+      "ans": [
+        "1370 yil Balxda",
+        "1370 Balx"
+      ],
       "hint": "Sanasi 1370. Shahar B bilan boshlanadi.",
-      "dmg": 10
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "1370 yil Balxda",
+        "canonical_display": "1370 yil Balxda",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Excellent! Correctly answers the history question.",
+          "partial": "Close, but missing key history concepts.",
+          "incorrect": "Wrong."
+        }
+      },
+      "accepted_answers": [
+        "1370 yil Balxda",
+        "1370 Balx"
+      ]
     },
     {
       "q": "Amir Temur davlat boshqaruvida asosan kimlarga tayangan?",
       "tags": "[Bloom: L3 | PISA: L3 | Damage: -20 HP]",
-      "ans": ["harbiylar va ruhoniylarga", "beklar va din peshvolari"],
+      "ans": [
+        "harbiylar va ruhoniylarga",
+        "beklar va din peshvolari"
+      ],
       "hint": "Qo'shin boshliqlari hamda ulamolar muhim rol o'ynagan.",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "harbiylar va ruhoniylarga",
+        "canonical_display": "harbiylar va ruhoniylarga",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Matches text_fuzzy expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        }
+      },
+      "accepted_answers": [
+        "harbiylar va ruhoniylarga",
+        "beklar va din peshvolari"
+      ]
     }
   ],
   "reflection": {

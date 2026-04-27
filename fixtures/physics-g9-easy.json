@@ -16,20 +16,52 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Harakat nima?" },
-            { "type": "p", "text": "Mexanik harakat — vaqt o'tishi bilan jismning boshqa jismlarga nisbatan fazodagi vaziyatining o'zgarishidir." },
-            { "type": "quote", "text": "Sanoq sistemasi = Sanoq jismi + Koordinatalar sistemasi + Soat" },
-            { "type": "ul", "items": ["Trayektoriya — jism harakatlanayotgan chiziq.", "Yo'l — trayektoriyaning uzunligi (skalyar).", "Ko'chish — boshlang'ich va oxirgi nuqtalarni tutashtiruvchi vektor."] }
+            {
+              "type": "h2",
+              "text": "Harakat nima?"
+            },
+            {
+              "type": "p",
+              "text": "Mexanik harakat — vaqt o'tishi bilan jismning boshqa jismlarga nisbatan fazodagi vaziyatining o'zgarishidir."
+            },
+            {
+              "type": "quote",
+              "text": "Sanoq sistemasi = Sanoq jismi + Koordinatalar sistemasi + Soat"
+            },
+            {
+              "type": "ul",
+              "items": [
+                "Trayektoriya — jism harakatlanayotgan chiziq.",
+                "Yo'l — trayektoriyaning uzunligi (skalyar).",
+                "Ko'chish — boshlang'ich va oxirgi nuqtalarni tutashtiruvchi vektor."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "Mexanik harakat", "def": "Jismning fazodagi holati o'zgarishi.", "cluster": "QOIDA" },
-    { "term": "Trayektoriya", "def": "Jism qoldirgan iz (chiziq).", "cluster": "QOIDA" },
-    { "term": "Yo'l", "def": "Trayektoriya uzunligi (S).", "cluster": "METOD" },
-    { "term": "Ko'chish", "def": "Boshlang'ich va oxirgi nuqtani tutashtiruvchi kesma.", "cluster": "TAHLIL" }
+    {
+      "term": "Mexanik harakat",
+      "def": "Jismning fazodagi holati o'zgarishi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Trayektoriya",
+      "def": "Jism qoldirgan iz (chiziq).",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Yo'l",
+      "def": "Trayektoriya uzunligi (S).",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Ko'chish",
+      "def": "Boshlang'ich va oxirgi nuqtani tutashtiruvchi kesma.",
+      "cluster": "TAHLIL"
+    }
   ],
   "memory_sprint": [
     {
@@ -38,7 +70,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Ko'chishning yo'nalishi va uzunligi bor, shuning uchun u vektordir.",
-      "options": ["Yo'l", "Vaqt", "Ko'chish", "Massa"],
+      "options": [
+        "Yo'l",
+        "Vaqt",
+        "Ko'chish",
+        "Massa"
+      ],
       "correct": 2
     },
     {
@@ -47,7 +84,10 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L1]",
       "explain": "To'g'ri. Agar harakat to'g'ri chiziqli bo'lsa teng, egri chiziqli bo'lsa yo'l katta bo'ladi.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 0
     },
     {
@@ -56,7 +96,11 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L2]",
       "explain": "Ha, chunki boshlang'ich va oxirgi nuqta ustma-ust tushadi.",
-      "options": ["Ha", "Yo'q", "Ma'lum emas"],
+      "options": [
+        "Ha",
+        "Yo'q",
+        "Ma'lum emas"
+      ],
       "correct": 0
     }
   ],
@@ -65,23 +109,69 @@
       "q": "Avtomobil 3 km sharqqa va 4 km shimolga yurdi. Uning bosib o'tgan yo'lini (km) toping.",
       "tags": "[Bloom: L2 | PISA: L1]",
       "tier": "EASY",
-      "ans": ["7"],
-      "capture": false
+      "ans": [
+        "7"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 7,
+        "canonical_display": "7",
+        "allow_ai_fallback": false,
+        "rubric": {
+          "correct": "Excellent! Correctly answers the physics question.",
+          "partial": "Close, but missing key physics concepts.",
+          "incorrect": "Wrong."
+        },
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "7"
+      ]
     },
     {
       "q": "Avtomobil 3 km sharqqa va 4 km shimolga yurdi. Uning ko'chish modulini (km) toping.",
       "tags": "[Bloom: L3 | PISA: L2]",
       "tier": "MEDIUM",
-      "ans": ["5"],
-      "capture": false
+      "ans": [
+        "5"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 5,
+        "canonical_display": "5",
+        "allow_ai_fallback": false,
+        "rubric": {
+          "correct": "Matches numeric expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        },
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "5"
+      ]
     }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["Vektor kattalik", "Ko'chish"],
-    ["Skalyar kattalik", "Yo'l"],
-    ["Asbob", "Soat"],
-    ["Sanoq sistemasi", "Sanoq jismi + Soat"]
+    [
+      "Vektor kattalik",
+      "Ko'chish"
+    ],
+    [
+      "Skalyar kattalik",
+      "Yo'l"
+    ],
+    [
+      "Asbob",
+      "Soat"
+    ],
+    [
+      "Sanoq sistemasi",
+      "Sanoq jismi + Soat"
+    ]
   ],
   "real_life": null,
   "boss_questions": [],

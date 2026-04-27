@@ -16,18 +16,44 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Hujayra qismlari" },
-            { "type": "p", "text": "O'simlik va hayvon hujayralari membranaga, sitoplazmaga va yadroga ega." },
-            { "type": "ul", "items": ["Yadro — irsiy ma'lumot saqlanadi.", "Mitoxondriya — hujayra 'energetik stansiyasi'.", "Xloroplast — faqat o'simliklarda, fotosintez uchun.", "Vakuola — hujayra shirasi bilan to'lgan qopchiq."] }
+            {
+              "type": "h2",
+              "text": "Hujayra qismlari"
+            },
+            {
+              "type": "p",
+              "text": "O'simlik va hayvon hujayralari membranaga, sitoplazmaga va yadroga ega."
+            },
+            {
+              "type": "ul",
+              "items": [
+                "Yadro — irsiy ma'lumot saqlanadi.",
+                "Mitoxondriya — hujayra 'energetik stansiyasi'.",
+                "Xloroplast — faqat o'simliklarda, fotosintez uchun.",
+                "Vakuola — hujayra shirasi bilan to'lgan qopchiq."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "Yadro", "def": "Irsiy ma'lumot saqlanadigan joy.", "cluster": "QOIDA" },
-    { "term": "Mitoxondriya", "def": "Energiya ishlab chiqaruvchi organoid.", "cluster": "TAHLIL" },
-    { "term": "Xloroplast", "def": "O'simliklarda fotosintezni amalga oshiradi.", "cluster": "QOIDA" }
+    {
+      "term": "Yadro",
+      "def": "Irsiy ma'lumot saqlanadigan joy.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Mitoxondriya",
+      "def": "Energiya ishlab chiqaruvchi organoid.",
+      "cluster": "TAHLIL"
+    },
+    {
+      "term": "Xloroplast",
+      "def": "O'simliklarda fotosintezni amalga oshiradi.",
+      "cluster": "QOIDA"
+    }
   ],
   "memory_sprint": [
     {
@@ -36,7 +62,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Xloroplastlar o'simliklarda yorug'likdan energiya olish (fotosintez) uchun xizmat qiladi.",
-      "options": ["Yadro", "Mitoxondriya", "Xloroplast", "Sitoplazma"],
+      "options": [
+        "Yadro",
+        "Mitoxondriya",
+        "Xloroplast",
+        "Sitoplazma"
+      ],
       "correct": 2
     },
     {
@@ -45,7 +76,10 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "To'g'ri. Viruslardan tashqari barcha organizmlar hujayraviy tuzilishga ega.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 0
     }
   ],
@@ -54,23 +88,71 @@
       "q": "Hujayraning qaysi qismi uning energiya stansiyasi deyiladi?",
       "tags": "[Bloom: L1 | PISA: L1]",
       "tier": "EASY",
-      "ans": ["mitoxondriya", "mitoxondriyalar"],
-      "capture": false
+      "ans": [
+        "mitoxondriya",
+        "mitoxondriyalar"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "mitoxondriya",
+        "canonical_display": "mitoxondriya",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Matches text_fuzzy expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        }
+      },
+      "accepted_answers": [
+        "mitoxondriya",
+        "mitoxondriyalar"
+      ]
     },
     {
       "q": "O'simlik hujayrasiga yashil rang beruvchi plastida qanday nomlanadi?",
       "tags": "[Bloom: L1 | PISA: L1]",
       "tier": "MEDIUM",
-      "ans": ["xloroplast", "xloroplastlar"],
-      "capture": false
+      "ans": [
+        "xloroplast",
+        "xloroplastlar"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "xloroplast",
+        "canonical_display": "xloroplast",
+        "allow_ai_fallback": true,
+        "rubric": {
+          "correct": "Matches text_fuzzy expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        }
+      },
+      "accepted_answers": [
+        "xloroplast",
+        "xloroplastlar"
+      ]
     }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["Energiya", "Mitoxondriya"],
-    ["Irsiyat", "Yadro"],
-    ["Fotosintez", "Xloroplast"],
-    ["Hujayra shirasi", "Vakuola"]
+    [
+      "Energiya",
+      "Mitoxondriya"
+    ],
+    [
+      "Irsiyat",
+      "Yadro"
+    ],
+    [
+      "Fotosintez",
+      "Xloroplast"
+    ],
+    [
+      "Hujayra shirasi",
+      "Vakuola"
+    ]
   ],
   "real_life": null,
   "boss_questions": [],

@@ -15,20 +15,50 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Uchburchak yuzasi" },
-            { "type": "p", "text": "Uchburchakning yuzini topish uchun bir necha xil formulalar mavjud. Asosiy formula:" },
-            { "type": "quote", "text": "S = 1/2 · a · h" },
-            { "type": "p", "text": "Bu yerda a - uchburchakning asosi, h - shu asosga tushirilgan balandlik." },
-            { "type": "ul", "items": ["To'g'ri burchakli uchburchakda: S = 1/2 · a · b (katetlar ko'paytmasi yarmi)", "Geron formulasi: asosan uchta tomoni ma'lum bo'lsa ishlatiladi."] }
+            {
+              "type": "h2",
+              "text": "Uchburchak yuzasi"
+            },
+            {
+              "type": "p",
+              "text": "Uchburchakning yuzini topish uchun bir necha xil formulalar mavjud. Asosiy formula:"
+            },
+            {
+              "type": "quote",
+              "text": "S = 1/2 · a · h"
+            },
+            {
+              "type": "p",
+              "text": "Bu yerda a - uchburchakning asosi, h - shu asosga tushirilgan balandlik."
+            },
+            {
+              "type": "ul",
+              "items": [
+                "To'g'ri burchakli uchburchakda: S = 1/2 · a · b (katetlar ko'paytmasi yarmi)",
+                "Geron formulasi: asosan uchta tomoni ma'lum bo'lsa ishlatiladi."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "S = 1/2 · a · h", "def": "Asosiy yuza formulasi.", "cluster": "QOIDA" },
-    { "term": "Balandlik (h)", "def": "Uchdan qarama-qarshi tomonga tushirilgan perpendikulyar.", "cluster": "METOD" },
-    { "term": "Geron formulasi", "def": "Uchta tomon orqali yuza topish usuli.", "cluster": "TAHLIL" }
+    {
+      "term": "S = 1/2 · a · h",
+      "def": "Asosiy yuza formulasi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Balandlik (h)",
+      "def": "Uchdan qarama-qarshi tomonga tushirilgan perpendikulyar.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Geron formulasi",
+      "def": "Uchta tomon orqali yuza topish usuli.",
+      "cluster": "TAHLIL"
+    }
   ],
   "memory_sprint": [
     {
@@ -37,7 +67,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "To'g'ri burchakli uchburchakning yuzi uning katetlari ko'paytmasining yarmiga teng.",
-      "options": ["S = a·b", "S = a+b", "S = 1/2 · a·b", "S = a·h"],
+      "options": [
+        "S = a·b",
+        "S = a+b",
+        "S = 1/2 · a·b",
+        "S = a·h"
+      ],
       "correct": 2
     },
     {
@@ -46,7 +81,11 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L1]",
       "explain": "Ha, istalgan tomonni asos deb olish mumkin, faqat balandlik o'sha tomonga tushirilgan bo'lishi kerak.",
-      "options": ["Ha", "Yo'q", "Ma'lum emas"],
+      "options": [
+        "Ha",
+        "Yo'q",
+        "Ma'lum emas"
+      ],
       "correct": 0
     }
   ],
@@ -55,26 +94,91 @@
       "q": "Asosi 8 sm va balandligi 5 sm bo'lgan uchburchak yuzini toping (kv.sm).",
       "tags": "[Bloom: L2 | PISA: L2]",
       "tier": "EASY",
-      "ans": ["20"],
-      "capture": false
+      "ans": [
+        "20"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 20,
+        "canonical_display": "20",
+        "allow_ai_fallback": false,
+        "rubric": {
+          "correct": "Matches numeric expected value.",
+          "partial": "Partially correct.",
+          "incorrect": "Incorrect."
+        },
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "20"
+      ]
     }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["Asosiy formula", "1/2 a·h"],
-    ["To'g'ri burchakli", "1/2 a·b"],
-    ["h", "Balandlik"],
-    ["a", "Asos"]
+    [
+      "Asosiy formula",
+      "1/2 a·h"
+    ],
+    [
+      "To'g'ri burchakli",
+      "1/2 a·b"
+    ],
+    [
+      "h",
+      "Balandlik"
+    ],
+    [
+      "a",
+      "Asos"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Gumbaz qoplamasi",
     "story": "Quruvchilar binoning uchburchak shaklidagi tomini tunuka bilan qoplashmoqda. Tomning asosi 10 metr, balandligi esa 4 metr. Ular qancha tunuka ketishini hisoblashlari kerak.",
-    "q1": { "prompt": "Uchburchak shaklidagi tomning yuzasini topish formulasini qanday yozasiz?", "ans": "S=0.5*a*h", "fb": "To'g'ri." },
-    "q2": { "prompt": "Qadriyatlarni qo'yib, yuzani hisoblang.", "fields": [{"id": "S", "label": "S (m²)", "ans": "20"}], "fb": "S = 0.5 * 10 * 4 = 20 kv.m." },
-    "q3": { "prompt": "Agar 1 kv.m tunuka 50 ming so'm tursa, jami xarajat qancha bo'ladi?", "ans": "1000000", "fb": "20 * 50,000 = 1,000,000 so'm." },
-    "q4": { "prompt": "Agar balandlik 2 marta ortsa, tom yuzasi necha marta ortadi?", "fields": [{"id": "ortish", "label": "Marta", "ans": "2"}], "fb": "To'g'ri, yuzasi balandlikka to'g'ri proporsional." },
-    "q5": { "prompt": "Amaliyotda tunuka qirqish uchun yuzaga qo'shimcha yana nimani hisobga olish kerak?", "open": true, "fb": "Ajoyib fikr! Chiqindilar va ulashish qismlari ham e'tiborga olinishi kerak." },
-    "q6": { "prompt": "Formulada 1/2 ko'paytuvchisi nima uchun kerak? U qaysi shakldan kelib chiqqan?", "ans": "to'rtburchak", "fb": "To'g'ri, uchburchak - to'rtburchakning yarmiga teng." },
+    "q1": {
+      "prompt": "Uchburchak shaklidagi tomning yuzasini topish formulasini qanday yozasiz?",
+      "ans": "S=0.5*a*h",
+      "fb": "To'g'ri."
+    },
+    "q2": {
+      "prompt": "Qadriyatlarni qo'yib, yuzani hisoblang.",
+      "fields": [
+        {
+          "id": "S",
+          "label": "S (m²)",
+          "ans": "20"
+        }
+      ],
+      "fb": "S = 0.5 * 10 * 4 = 20 kv.m."
+    },
+    "q3": {
+      "prompt": "Agar 1 kv.m tunuka 50 ming so'm tursa, jami xarajat qancha bo'ladi?",
+      "ans": "1000000",
+      "fb": "20 * 50,000 = 1,000,000 so'm."
+    },
+    "q4": {
+      "prompt": "Agar balandlik 2 marta ortsa, tom yuzasi necha marta ortadi?",
+      "fields": [
+        {
+          "id": "ortish",
+          "label": "Marta",
+          "ans": "2"
+        }
+      ],
+      "fb": "To'g'ri, yuzasi balandlikka to'g'ri proporsional."
+    },
+    "q5": {
+      "prompt": "Amaliyotda tunuka qirqish uchun yuzaga qo'shimcha yana nimani hisobga olish kerak?",
+      "open": true,
+      "fb": "Ajoyib fikr! Chiqindilar va ulashish qismlari ham e'tiborga olinishi kerak."
+    },
+    "q6": {
+      "prompt": "Formulada 1/2 ko'paytuvchisi nima uchun kerak? U qaysi shakldan kelib chiqqan?",
+      "ans": "to'rtburchak",
+      "fb": "To'g'ri, uchburchak - to'rtburchakning yarmiga teng."
+    },
     "endTitle": "Tom yopildi!",
     "endSub": "Geometriya tufayli xarajatlarni aniq hisoblab chiqdingiz."
   },
@@ -82,9 +186,26 @@
     {
       "q": "Geron formulasi yordamida tomonlari 3, 4 va 5 sm bo'lgan uchburchak yuzini toping.",
       "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]",
-      "ans": ["6"],
+      "ans": [
+        "6"
+      ],
       "hint": "Bu to'g'ri burchakli uchburchak. S = 1/2 * 3 * 4 deb hisoblasa ham bo'ladi.",
-      "dmg": 30
+      "dmg": 30,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 6,
+        "canonical_display": "6",
+        "allow_ai_fallback": false,
+        "rubric": {
+          "correct": "Excellent! Correctly answers the geometriya question.",
+          "partial": "Close, but missing key geometriya concepts.",
+          "incorrect": "Wrong."
+        },
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "6"
+      ]
     }
   ],
   "reflection": {

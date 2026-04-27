@@ -302,3 +302,8 @@ Date: 2026-04-27
 - Returns {items, total, limit, offset}. Bare list available with ?legacy=true (deprecated).
 - Dashboard paginates at 50 per page with debounced 300ms search and facet-driven dropdowns.
 - Tests: tests/test_homework_list.py covers default shape, q search, subject/grade filters, pagination offset.
+
+---
+
+## Wave D — Hybrid Grading
+- **D1 (Schema):** Added structured ‘answer_spec’ alongside legacy ans[]/accepted_answers[]. Created migration helper scripts/migrate_answer_spec.py (idempotent, requires --db-path; --backup-first recommended). Schema doc: docs/ANSWER_SPEC.md. CONTRACTS.md §1 updated.
