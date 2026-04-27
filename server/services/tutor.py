@@ -5,12 +5,16 @@ Stateless tutor endpoints called during student homework playback.
 Each function loads its prompt from server/prompts/runtime/{name}.md,
 sends to Gemini with request-specific context, returns typed result.
 """
+import hashlib
+import re
 from typing import Optional, Any
 from pathlib import Path
 import json
 
 from ..config import PROMPTS_DIR
 from . import gemini
+from . import answer_checker
+from .. import db
 
 RUNTIME_PROMPTS = PROMPTS_DIR / "runtime"
 
@@ -22,24 +26,74 @@ def _load_runtime_prompt(name: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _normalize(text: str) -> str:
+    if not text:
+        return ""
+    return re.sub(r'\s+', '', str(text).lower())
+
+
 async def check_answer(
-    question: str,
-    student_answer: str,
-    expected_answers: list[str],
-    subject: str,
-    grade: int,
+    question_id: str = "",
+    question: str = "",
+    student_answer: str = "",
+    expected_answers: list[str] = None,
+    answer_spec: Optional[dict] = None,
+    allow_ai_fallback: bool = True,
+    subject: str = "math-algebra",
+    grade: int = 8,
     tier: str = "MEDIUM",
     context: Optional[str] = None,
 ) -> dict:
     """
     Evaluate a student's typed answer semantically.
-    Returns: {
-        "correct": bool,
-        "score": float (0.0–1.0),
-        "feedback": str (Uzbek, formal Siz, encouraging),
-        "matched_expected": Optional[str] (closest expected answer if any)
-    }
     """
+    if expected_answers is None:
+        expected_answers = []
+        
+    if answer_spec is None:
+        # Fallback for old requests
+        spec_expected = expected_answers[0] if expected_answers else ""
+        answer_spec = {
+            "type": "text_fuzzy",
+            "expected": spec_expected,
+            "canonical_display": spec_expected
+        }
+        
+    # Step 1: Deterministic check
+    det_result = answer_checker.check(answer_spec, student_answer)
+    verdict = det_result.get("verdict")
+    
+    if verdict in ("correct", "incorrect"):
+        is_correct = verdict == "correct"
+        score = 1.0 if is_correct else 0.0
+        feedback = "To'g'ri javob!" if is_correct else "Notog'ri javob."
+        res = {
+            "correct": is_correct,
+            "score": score,
+            "feedback": feedback,
+            "source": "deterministic"
+        }
+        if det_result.get("format_tip"):
+            res["format_tip"] = det_result["format_tip"]
+        return res
+
+    # Step 2: AI Fallback check
+    if not allow_ai_fallback:
+        # If unsure and no AI fallback, just mark incorrect to be safe
+        return {
+            "correct": False,
+            "score": 0.0,
+            "feedback": "Notog'ri javob.",
+            "source": "deterministic"
+        }
+        
+    cache_key_raw = f"{question_id}|{_normalize(student_answer)}"
+    cache_key = hashlib.sha256(cache_key_raw.encode("utf-8")).hexdigest()
+    
+    cached = await db.get_answer_cache(cache_key)
+    if cached:
+        return cached
+
     prompt = _load_runtime_prompt("answer-checker")
     payload = {
         "question": question,
@@ -55,12 +109,42 @@ async def check_answer(
         "score": "float between 0 and 1",
         "feedback": "Uzbek string, formal Siz, 1-2 sentences",
         "matched_expected": "string or null",
+        "confidence": "float between 0 and 1"
     }
-    return await gemini.generate_json(
+    ai_response = await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
         schema_hint=schema,
         model=gemini.FAST_MODEL,
     )
+    
+    confidence = float(ai_response.get("confidence", 1.0))
+    if confidence >= 0.90:
+        ai_response["source"] = "ai"
+        await db.set_answer_cache(cache_key, ai_response)
+        return ai_response
+    else:
+        # Low confidence
+        needs_review = True
+        is_boss = question_id.startswith("boss-") or ("phase" in payload and payload.get("phase") == "boss")
+        if is_boss:
+            res = {
+                "correct": True,
+                "score": 0.7,
+                "feedback": ai_response.get("feedback", "Javobingiz tekshirilmoqda..."),
+                "source": "ai_unsure",
+                "needs_review": True
+            }
+        else:
+            res = {
+                "correct": False,
+                "score": 0.0,
+                "feedback": ai_response.get("feedback", "Javobingizni tushunmadim, qayta urinib ko'ring."),
+                "source": "ai_unsure",
+                "needs_review": True
+            }
+            
+        await db.add_to_review_queue(question_id, student_answer, answer_spec, ai_response)
+        return res
 
 
 async def boss_turn(

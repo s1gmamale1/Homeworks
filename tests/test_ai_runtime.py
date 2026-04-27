@@ -25,6 +25,7 @@ import os
 import time
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -90,6 +91,107 @@ def test_ai_status_no_creds(client):
         f"backend '{data['backend']}' not in {valid_backends}"
     )
 
+
+# ---------------------------------------------------------------------------
+# Hybrid Routing tests (No real AI required, uses mocking)
+# ---------------------------------------------------------------------------
+
+@patch("server.services.gemini.generate_json")
+def test_check_answer_deterministic(mock_generate, client):
+    """
+    Deterministic path should not call AI and return immediately.
+    """
+    payload = {
+        "question_id": "test-1",
+        "question": "2+2",
+        "student_answer": "4",
+        "answer_spec": {"type": "numeric", "expected": 4.0},
+        "subject": "math",
+        "grade": 8
+    }
+    resp = client.post("/api/ai/check-answer", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["correct"] is True
+    assert data["source"] == "deterministic"
+    mock_generate.assert_not_called()
+
+@patch("server.services.gemini.generate_json")
+def test_check_answer_ai_fallback_high_confidence(mock_generate, client):
+    """
+    AI path high confidence -> source='ai', cached
+    """
+    mock_generate.return_value = {
+        "correct": False,
+        "score": 0.0,
+        "feedback": "No, it is 5.",
+        "matched_expected": None,
+        "confidence": 0.95
+    }
+    payload = {
+        "question_id": "test-2",
+        "question": "2+3",
+        "student_answer": "4",
+        "answer_spec": {"type": "text_exact", "expected": "5"}, 
+        "subject": "math",
+        "grade": 8
+    }
+    resp = client.post("/api/ai/check-answer", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["correct"] is False
+    assert data["source"] == "ai"
+    mock_generate.assert_called_once()
+    
+    # Second call should hit cache
+    mock_generate.reset_mock()
+    resp2 = client.post("/api/ai/check-answer", json=payload)
+    assert resp2.status_code == 200
+    assert resp2.json()["source"] == "ai"
+    mock_generate.assert_not_called()
+
+@patch("server.services.gemini.generate_json")
+def test_check_answer_ai_fallback_low_confidence(mock_generate, client):
+    """
+    AI path low confidence -> source='ai_unsure', correct based on phase, needs_review=True, queued
+    """
+    mock_generate.return_value = {
+        "correct": False,
+        "score": 0.0,
+        "feedback": "I am not sure.",
+        "matched_expected": None,
+        "confidence": 0.8
+    }
+    # Test boss phase
+    payload = {
+        "question_id": "boss-1",
+        "question": "Explain quantum mechanics",
+        "student_answer": "It is hard",
+        "answer_spec": {"type": "semantic"}, 
+        "subject": "physics",
+        "grade": 11
+    }
+    resp = client.post("/api/ai/check-answer", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["correct"] is True
+    assert data["score"] == 0.7
+    assert data["source"] == "ai_unsure"
+    assert data["needs_review"] is True
+    
+    # Check review queue
+    q_resp = client.get("/api/review-queue")
+    assert q_resp.status_code == 200
+    queue = q_resp.json()
+    assert len(queue) > 0
+    item = [x for x in queue if x["question_id"] == "boss-1"][0]
+    
+    # Resolve it
+    res_resp = client.post(f"/api/review-queue/{item['id']}/decide", json={"correct": False, "score": 0.0, "feedback": "Bad"})
+    assert res_resp.status_code == 200
+    
+    q_resp2 = client.get("/api/review-queue")
+    assert len([x for x in q_resp2.json() if x["question_id"] == "boss-1"]) == 0
 
 # ---------------------------------------------------------------------------
 # AI-requiring tests

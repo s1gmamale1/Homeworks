@@ -16,13 +16,17 @@ router = APIRouter(tags=["ai-tutor"])
 # --- Request models ---
 
 class CheckAnswerRequest(BaseModel):
+    question_id: str = ""
     question: str
     student_answer: str
     expected_answers: list[str] = []
+    answer_spec: Optional[dict[str, Any]] = None
+    allow_ai_fallback: bool = True
     subject: str = "math-algebra"
     grade: int = 8
     tier: str = "MEDIUM"
     context: Optional[str] = None
+
 
 
 class BossTurnRequest(BaseModel):
@@ -84,13 +88,36 @@ async def ai_status() -> dict:
 
 # --- Endpoints ---
 
+from fastapi import APIRouter, HTTPException, Path as PathParam
+
+class ReviewDecideRequest(BaseModel):
+    correct: bool
+    score: float
+    feedback: str
+
+@router.get("/review-queue")
+async def get_review_queue():
+    from .. import db
+    return await db.get_review_queue()
+
+@router.post("/review-queue/{id}/decide")
+async def decide_review_queue(req: ReviewDecideRequest, id: int = PathParam(...)):
+    from .. import db
+    success = await db.resolve_review_item(id, req.model_dump())
+    if not success:
+        raise HTTPException(404, detail="Review item not found or already resolved")
+    return {"status": "ok"}
+
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
     try:
         return await tutor.check_answer(
+            question_id=req.question_id,
             question=req.question,
             student_answer=req.student_answer,
             expected_answers=req.expected_answers,
+            answer_spec=req.answer_spec,
+            allow_ai_fallback=req.allow_ai_fallback,
             subject=req.subject,
             grade=req.grade,
             tier=req.tier,

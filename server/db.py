@@ -55,6 +55,22 @@ CREATE TABLE IF NOT EXISTS homework_versions (
     FOREIGN KEY (homework_id) REFERENCES homeworks(id)
 );
 
+CREATE TABLE IF NOT EXISTS answer_cache (
+    key TEXT PRIMARY KEY,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS review_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id TEXT NOT NULL,
+    student_answer TEXT NOT NULL,
+    answer_spec_json TEXT NOT NULL,
+    ai_response_json TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_versions_hw_saved
     ON homework_versions(homework_id, saved_at DESC);
 """
@@ -488,3 +504,69 @@ async def set_status(id: str, status: str) -> None:
         await db.commit()
     finally:
         await db.close()
+
+async def get_answer_cache(key: str) -> Optional[dict]:
+    db = await _connect()
+    try:
+        cursor = await db.execute(
+            "SELECT response_json FROM answer_cache WHERE key = ?", (key,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            return json.loads(row["response_json"])
+        return None
+    finally:
+        await db.close()
+
+async def set_answer_cache(key: str, response: dict) -> None:
+    db = await _connect()
+    try:
+        await db.execute(
+            "INSERT OR REPLACE INTO answer_cache (key, response_json, created_at) VALUES (?, ?, ?)",
+            (key, json.dumps(response, ensure_ascii=False), _now())
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+async def add_to_review_queue(question_id: str, student_answer: str, answer_spec: dict, ai_response: dict) -> None:
+    db = await _connect()
+    try:
+        await db.execute(
+            "INSERT INTO review_queue (question_id, student_answer, answer_spec_json, ai_response_json, status, created_at) "
+            "VALUES (?, ?, ?, ?, 'pending', ?)",
+            (question_id, student_answer, json.dumps(answer_spec, ensure_ascii=False), json.dumps(ai_response, ensure_ascii=False), _now())
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+async def get_review_queue() -> list[dict]:
+    db = await _connect()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM review_queue WHERE status = 'pending' ORDER BY created_at ASC"
+        )
+        rows = await cursor.fetchall()
+        res = []
+        for r in rows:
+            d = dict(r)
+            d["answer_spec"] = json.loads(d.pop("answer_spec_json"))
+            d["ai_response"] = json.loads(d.pop("ai_response_json"))
+            res.append(d)
+        return res
+    finally:
+        await db.close()
+
+async def resolve_review_item(id: int, decision: dict) -> bool:
+    db = await _connect()
+    try:
+        cursor = await db.execute(
+            "UPDATE review_queue SET status = 'resolved' WHERE id = ? AND status = 'pending'",
+            (id,)
+        )
+        await db.commit()
+        return cursor.rowcount > 0
+    finally:
+        await db.close()
+
