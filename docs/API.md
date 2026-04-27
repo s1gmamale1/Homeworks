@@ -274,8 +274,22 @@ All AI endpoints accept and return JSON. On failure: `500` with `{ "error": "...
 
 ### GET /api/ai/status
 
-**200** `{ "backend": "vertex|gemini_api|kimi|none", "model_fast": "...", "model_pro": "..." }`.
-When `backend == "vertex"`: also includes `project`, `location`, `credentials_path`.
+**200**:
+```json
+{
+  "backend": "kimi|vertex|gemini|none",
+  "model_fast": "gemini-2.5-flash",
+  "model_pro": "gemini-2.5-pro",
+  "active_provider": "kimi",
+  "preference_list": ["kimi", "vertex", "gemini"],
+  "available_providers": ["kimi"]
+}
+```
+- `active_provider` — name of the provider currently selected (first available in `preference_list`).
+- `preference_list` — ordered list read from `AI_BACKEND_PREFERENCE` env (default `kimi,vertex,gemini`).
+- `available_providers` — all registered providers whose credentials are present.
+- `backend` is a legacy alias for `active_provider` — kept for backward compat.
+When `active_provider == "vertex"`: also includes `project`, `location`, `credentials_path`.
 
 ---
 

@@ -13,6 +13,8 @@ nets.db-shm
 
 # Secrets
 .env
+.env.*
+!.env.example
 .passwd
 claw_api_service.json
 *service_account*.json

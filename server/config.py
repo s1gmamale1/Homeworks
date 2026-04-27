@@ -19,9 +19,14 @@ VERTEX_CREDENTIALS_PATH: str = os.getenv("VERTEX_CREDENTIALS_PATH", "")
 VERTEX_PROJECT: str = os.getenv("VERTEX_PROJECT", "")
 VERTEX_LOCATION: str = os.getenv("VERTEX_LOCATION", "us-central1")
 
-# Kimi (Moonshot) — last-resort fallback
+# Kimi (Moonshot) — primary AI backend (Wave F0)
 KIMI_API_KEY: str = os.getenv("KIMI_API_KEY", "")
 KIMI_BASE_URL: str = os.getenv("KIMI_BASE_URL", "https://api.moonshot.ai/v1")
+KIMI_MODEL_FAST: str = os.getenv("KIMI_MODEL_FAST", "moonshot-v1-32k")
+KIMI_MODEL_PRO: str = os.getenv("KIMI_MODEL_PRO", "moonshot-v1-128k")
+
+# AI backend selection — comma-separated provider preference list
+AI_BACKEND_PREFERENCE: str = os.getenv("AI_BACKEND_PREFERENCE", "kimi,vertex,gemini")
 
 PORT: int = int(os.getenv("PORT", "8000"))
 DEBUG: bool = os.getenv("DEBUG", "true").lower() in ("1", "true", "yes", "on")

@@ -310,3 +310,37 @@ Date: 2026-04-27
 - **D2 (Deterministic Checker):** Added server/services/answer_checker.py handling numeric, set_match, text_exact, text_fuzzy, and semantic answers. Wrote tests/test_answer_checker.py and updated requirements.txt with sympy and rapidfuzz.
 - **D3 (Grading Router):** Implemented deterministic-first routing in `/api/ai/check-answer` with AI fallback. Added SQLite-backed caching (`answer_cache` table) and a teacher review queue (`review_queue` table) for low-confidence AI verdicts. Updated `test_ai_runtime.py` with mocked tests for hybrid routing paths.
 - **D4 (Builder UI Rebuild):** Replaced free-text accepted answer boxes with structured answer_spec form in boss.js and adaptive-quiz.js. Added /api/ai/answer-spec/preview endpoint for live teacher feedback on grading rules. Backward-compat: legacy ans[] auto-migrates to answer_spec on first save.
+
+---
+
+## Wave F0 — AI Provider Abstraction + Kimi-first (2026-04-28)
+
+Refactored `server/services/gemini.py` from a hardcoded Vertex→Gemini→Kimi fallback chain into a clean provider registry.
+
+**New files:**
+- `server/services/ai_providers/__init__.py` — registry (`register`, `get_provider`, `select_provider`, `available_providers`)
+- `server/services/ai_providers/base.py` — `AIProvider` ABC
+- `server/services/ai_providers/kimi.py` — Kimi/Moonshot provider (primary)
+- `server/services/ai_providers/vertex.py` — Vertex AI provider
+- `server/services/ai_providers/gemini_api.py` — Public Gemini API provider
+- `tests/test_ai_providers.py` — 7 passing tests
+
+**Modified:**
+- `server/services/gemini.py` — slimmed to shim; delegates to registry; `generate_json` signature unchanged
+- `server/config.py` — added `AI_BACKEND_PREFERENCE`, `KIMI_MODEL_FAST`, `KIMI_MODEL_PRO`
+- `server/routes/ai.py::ai_status` — now surfaces `active_provider`, `preference_list`, `available_providers`
+- `.env.example` — updated with Kimi-first preference + new model env vars
+- `docs/API.md` — updated `/api/ai/status` schema
+
+**Behavior change:** Default provider order is now `kimi → vertex → gemini` (was `vertex → gemini → kimi`). Set `AI_BACKEND_PREFERENCE` env to override.
+
+**Mac mini propagation (one-time SSH op):**
+```bash
+ssh aisigma@192.168.1.26
+cd /Users/aisigma/nets-builder
+# Append to .env: KIMI_API_KEY=<key> and AI_BACKEND_PREFERENCE=kimi,vertex,gemini
+launchctl bootout gui/501 ~/Library/LaunchAgents/com.aisigma.netsbuilder.plist
+launchctl bootstrap gui/501 ~/Library/LaunchAgents/com.aisigma.netsbuilder.plist
+curl -sS http://127.0.0.1:8000/api/ai/status | jq
+# expected: active_provider == "kimi"
+```

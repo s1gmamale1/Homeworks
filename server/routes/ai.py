@@ -81,12 +81,20 @@ def _handle_exc(e: Exception):
 @router.get("/ai/status")
 async def ai_status() -> dict:
     """Report which AI backend is active plus project/location/model for debugging."""
+    pref_list = gemini._preference_list()
+    active = gemini._active_backend()
+
     info: dict[str, Any] = {
-        "backend": gemini.ACTIVE_BACKEND,
+        # Legacy fields — kept for backward compat
+        "backend": active,
         "model_fast": gemini.FAST_MODEL,
         "model_pro": gemini.PRO_MODEL,
+        # Wave F0 additions
+        "active_provider": active,
+        "preference_list": pref_list,
+        "available_providers": gemini.available_providers(),
     }
-    if gemini.ACTIVE_BACKEND == "vertex":
+    if active == "vertex":
         try:
             info["project"] = gemini._resolve_vertex_project(gemini.VERTEX_CREDENTIALS_PATH)
         except Exception:
