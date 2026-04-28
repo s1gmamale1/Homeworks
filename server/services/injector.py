@@ -647,33 +647,17 @@ def inject(
                     "options": ["OK"],
                     "correct": 0,
                 }]
-            elif key == "gb_adaptive_quiz":
-                # Must match template shape (already adapted by this point in the loop).
-                data = [
-                    {"id": "AF", "tier": "easy",   "bloom": "L2", "pisa": "L2",
-                     "prompt": "Bu bosqich hali to'ldirilmagan.", "answer": "ok", "acceptable": ["ok"], "work": "Builder'dan savollarni qo'shing.", "capture": False, "ans_all": ["ok"]},
-                    {"id": "MF", "tier": "medium", "bloom": "L3", "pisa": "L3",
-                     "prompt": "Bu bosqich hali to'ldirilmagan.", "answer": "ok", "acceptable": ["ok"], "work": "Builder'dan savollarni qo'shing.", "capture": False, "ans_all": ["ok"]},
-                    {"id": "HF", "tier": "hard",   "bloom": "L4", "pisa": "L4",
-                     "prompt": "Bu bosqich hali to'ldirilmagan.", "answer": "ok", "acceptable": ["ok"], "work": "Builder'dan savollarni qo'shing.", "capture": False, "ans_all": ["ok"]},
-                ]
-            elif key == "gb_why_chain":
-                # Template shape with 3-level chain.
-                data = [{
-                    "id": "CF",
-                    "bloom": "L3", "pisa": "L3",
-                    "chain": [
-                        {"level": 1, "probe": "Bu bosqich hali to'ldirilmagan.", "expect": "—"},
-                        {"level": 2, "probe": "Builder'dan savol qo'shing.",     "expect": "—"},
-                        {"level": 3, "probe": "Keyingi qadam?",                   "expect": "—"},
-                    ],
-                    "invariant": "—",
-                }]
-            elif key == "gb_memory_match":
-                data = [
-                    {"a": "—", "b": "—", "confirmQ": "— ↔ ?", "correct": "—"},
-                    {"a": "—", "b": "—", "confirmQ": "— ↔ ?", "correct": "—"},
-                ]
+            # Game-break placeholders intentionally absent: gb_adaptive_quiz,
+            # gb_why_chain, gb_memory_match, gb_puzzle_lock, gb_mystery_box keep
+            # their empty arrays when the author didn't fill them in. The runtime
+            # registry (gbActiveGameOrder in perfect_homework.html) walks only the
+            # games whose array has content and skips empty ones — including
+            # skipping Stage 5 entirely when all five games are empty.
+            #
+            # Rule: never re-introduce placeholder fallbacks for game-break keys.
+            # Showing fake "Bu bosqich hali to'ldirilmagan" content to a real
+            # student is worse than silently skipping the game. This rule applies
+            # to every new game added in the future too.
             elif key == "boss_questions":
                 # Template shape.
                 data = [{

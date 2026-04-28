@@ -5346,49 +5346,118 @@
             mb: { boxes:[], opened:[], idx:-1, phase:'select', labels:[], pickedLabel:'', idCorrect:null, ansCorrect:null, complete:false, busy:false }
         };
 
+        // ── Registry-driven game-break order ─────────────────────────────
+        // Every Phase-3 game is OPTIONAL: it appears only when its content
+        // array has items. The runtime walks gbActiveGameOrder() in order,
+        // skipping any empty slot. If all five are empty, Stage 5 is skipped
+        // entirely from startStage5. This rule applies to every future game
+        // added below — never inject placeholder content for empty games.
+        function gbActiveGameOrder() {
+            const list = [];
+            if (Array.isArray(GB_ADAPTIVE_QUIZ) && GB_ADAPTIVE_QUIZ.length > 0)
+                list.push({ id: 'aq', sub: 0, init: gbInitAQ, panel: 'gb-panel-aq', label: 'Adaptive Quiz', setupBtn: gbSetButtonForAQ });
+            if (Array.isArray(GB_WHY_CHAIN) && GB_WHY_CHAIN.length > 0)
+                list.push({ id: 'wc', sub: 1, init: gbInitWC, panel: 'gb-panel-wc', label: 'Sentence Fill', setupBtn: gbSetButtonForWC });
+            if (Array.isArray(GB_MEMORY_MATCH) && GB_MEMORY_MATCH.length > 0)
+                list.push({ id: 'mm', sub: 2, init: gbInitMM, panel: 'gb-panel-mm', label: 'Tile Match', setupBtn: null });
+            if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0)
+                list.push({ id: 'pl', sub: 3, init: gbInitPL, panel: 'gb-panel-pl', label: 'Puzzle Lock', setupBtn: null });
+            if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0)
+                list.push({ id: 'mb', sub: 4, init: gbInitMB, panel: 'gb-panel-mb', label: 'Mystery Box', setupBtn: null });
+            return list;
+        }
+
+        function gbActiveGameLabels() {
+            return gbActiveGameOrder().map(g => g.label);
+        }
+
+        function gbIsLastGame(currentSub) {
+            const order = gbActiveGameOrder();
+            const idx = order.findIndex(g => g.sub === currentSub);
+            return idx >= 0 && idx === order.length - 1;
+        }
+
+        function gbAdvanceFromGame(currentSub, currentPanelId) {
+            const order = gbActiveGameOrder();
+            const idx = order.findIndex(g => g.sub === currentSub);
+            if (idx < 0 || idx >= order.length - 1) {
+                // No more games in the registry — exit Stage 5.
+                gbState.subGame = 5;
+                gbExitToStage6();
+                return;
+            }
+            const next = order[idx + 1];
+            gbState.subGame = next.sub;
+            gbUpdateProgress(idx + 1);
+            gbTransition(currentPanelId, next.panel, () => {
+                next.init();
+                if (next.setupBtn) {
+                    next.setupBtn();
+                } else {
+                    btn.classList.remove('pulse','state-pill','state-line');
+                    btn.classList.add('state-line');
+                    if (btnText) btnText.style.opacity = '0';
+                }
+            });
+        }
+
         function startStage5() {
             if (state.isAnimating) return;
+            const order = gbActiveGameOrder();
+            if (order.length === 0) {
+                // No games authored anywhere — skip Stage 5 entirely.
+                gbExitToStage6();
+                return;
+            }
             state.isAnimating = true;
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
             document.querySelectorAll('.screen.active').forEach(s => s.classList.remove('active'));
             setStage(5);
-            gbState.subGame = 0;
-            const aqPanel = document.getElementById('gb-panel-aq');
-            if (aqPanel) aqPanel.classList.add('active');
-            gbInitAQ();
+            const first = order[0];
+            gbState.subGame = first.sub;
+            const firstPanel = document.getElementById(first.panel);
+            if (firstPanel) {
+                // Strip slide-in classes baked into MM/PL/MB HTML — otherwise
+                // .enter-right keeps the panel translated 100% off-screen even
+                // with .active applied. AQ has no enter-right so this is a
+                // no-op when AQ is the first game.
+                firstPanel.classList.remove('enter-right', 'exit-left');
+                firstPanel.classList.add('active');
+            }
+            first.init();
             const s5 = document.getElementById('screen-5');
             if (s5) s5.classList.add('active');
             gbUpdateProgress(0);
-            gbSetButtonForAQ();
+            if (first.setupBtn) {
+                first.setupBtn();
+            }
+            // Else: init function (MM/PL/MB) already set the button to inert.
             setTimeout(() => { state.isAnimating = false; }, 500);
         }
 
         function gbUpdateProgress(idx) {
-            const hasPL = Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0;
-            const hasMB = Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0;
-            // Always-on: AQ, WC, MM. Optional tail: PL, MB.
-            const tail = [];
-            if (hasPL) tail.push('Puzzle Lock');
-            if (hasMB) tail.push('Mystery Box');
-            const names = ['Adaptive Quiz','Sentence Fill','Tile Match', ...tail];
-            const total = names.length;
-            const labels = names.map((n, i) => (i + 1) + '/' + total + ' ' + n);
-            const label = document.getElementById('gb-plabel');
-            if (label) label.textContent = labels[idx] || '';
-            // Toggle dots 4 & 5 based on which optional games are present.
-            const dot4 = document.getElementById('gb-pd-4');
-            const dot5 = document.getElementById('gb-pd-5');
-            if (dot4) dot4.style.display = (total >= 4) ? '' : 'none';
-            if (dot5) dot5.style.display = (total >= 5) ? '' : 'none';
+            const labels = gbActiveGameLabels();
+            const total = labels.length;
+            const labelEl = document.getElementById('gb-plabel');
+            if (labelEl) {
+                labelEl.textContent = labels[idx]
+                    ? ((idx + 1) + '/' + total + ' ' + labels[idx])
+                    : '';
+            }
             for (let i = 1; i <= 5; i++) {
                 const d = document.getElementById('gb-pd-' + i);
                 if (!d) continue;
-                d.className = 'gb-pdot';
-                if (i > total) continue;
-                if (i - 1 < idx) d.classList.add('done');
-                else if (i - 1 === idx) d.classList.add('active');
+                if (i > total) {
+                    d.style.display = 'none';
+                    d.className = 'gb-pdot';
+                } else {
+                    d.style.display = '';
+                    d.className = 'gb-pdot';
+                    if (i - 1 < idx) d.classList.add('done');
+                    else if (i - 1 === idx) d.classList.add('active');
+                }
             }
         }
 
@@ -5417,56 +5486,16 @@
             if (state.isAnimating) return;
             if (gbState.subGame === 5) { gbExitToStage6(); return; }
             if (gbState.subGame === 4) {
-                if (gbState.mb && gbState.mb.complete) { gbExitToStage6(); return; }
+                if (gbState.mb && gbState.mb.complete) { gbAdvanceFromGame(4, 'gb-panel-mb'); return; }
                 gbMBAction(); return;
             }
             if (gbState.subGame === 3) {
-                if (gbState.pl && gbState.pl.complete) {
-                    // Puzzle Lock finished — advance to Mystery Box if items, else exit.
-                    if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0) {
-                        gbState.subGame = 4;
-                        gbInitMB();
-                        const idx = 3 + ((Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0) ? 1 : 0);
-                        gbUpdateProgress(idx);
-                        gbTransition('gb-panel-pl', 'gb-panel-mb', () => {
-                            btn.classList.remove('pulse','state-pill','state-line');
-                            btn.classList.add('state-line');
-                            if (btnText) btnText.style.opacity = '0';
-                        });
-                        return;
-                    }
-                    gbExitToStage6(); return;
-                }
+                if (gbState.pl && gbState.pl.complete) { gbAdvanceFromGame(3, 'gb-panel-pl'); return; }
                 if (gbState.pl && gbState.pl.selected) { gbPLAction(); return; }
                 return; // PL waiting for tile click
             }
             if (gbState.subGame === 2) {
-                if (gbState.mm && gbState.mm.complete) {
-                    // Tile Match finished — advance to Puzzle Lock if items, then Mystery Box, else exit.
-                    if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0) {
-                        gbState.subGame = 3;
-                        gbInitPL();
-                        gbUpdateProgress(3);
-                        gbTransition('gb-panel-mm', 'gb-panel-pl', () => {
-                            btn.classList.remove('pulse','state-pill','state-line');
-                            btn.classList.add('state-line');
-                            if (btnText) btnText.style.opacity = '0';
-                        });
-                        return;
-                    }
-                    if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0) {
-                        gbState.subGame = 4;
-                        gbInitMB();
-                        gbUpdateProgress(3);
-                        gbTransition('gb-panel-mm', 'gb-panel-mb', () => {
-                            btn.classList.remove('pulse','state-pill','state-line');
-                            btn.classList.add('state-line');
-                            if (btnText) btnText.style.opacity = '0';
-                        });
-                        return;
-                    }
-                    gbExitToStage6(); return; // unreachable — gbMMWin would've set subGame=5
-                }
+                if (gbState.mm && gbState.mm.complete) { gbAdvanceFromGame(2, 'gb-panel-mm'); return; }
                 gbMMAction(); return;
             }
             if (gbState.subGame === 1) {
@@ -5538,7 +5567,11 @@
             const aq = gbState.aq;
             if (aq.shown >= 5) { gbAQFinish(); return; }
             const item = gbAQPickItem();
-            aq.currentItem = item; aq.captureOk = false; aq.answered = false;
+            aq.currentItem = item;
+            // Notebook Capture is per-item. When item.capture is false, pre-satisfy
+            // the gate and hide the camera UI so the student isn't forced through it.
+            aq.captureOk = !item.capture;
+            aq.answered = false;
             const counter = document.getElementById('gb-aq-counter');
             if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / 5';
             const tierEl = document.getElementById('gb-aq-tier');
@@ -5551,9 +5584,9 @@
             const inp = document.getElementById('gb-aq-input');
             if (inp) { inp.value = ''; inp.disabled = false; inp.style.borderColor = ''; }
             const capBtn = document.getElementById('gb-aq-capture-btn');
-            if (capBtn) capBtn.classList.remove('confirmed');
+            if (capBtn) { capBtn.classList.remove('confirmed'); capBtn.style.display = item.capture ? '' : 'none'; }
             const capStatus = document.getElementById('gb-aq-capture-status');
-            if (capStatus) { capStatus.textContent = 'Yechimingizni yuklang (\uD83D\uDCF7)'; capStatus.className = 'gb-aq-capture-status'; capStatus.style.color = ''; }
+            if (capStatus) { capStatus.style.display = item.capture ? '' : 'none'; capStatus.textContent = 'Yechimingizni yuklang (\uD83D\uDCF7)'; capStatus.className = 'gb-aq-capture-status'; capStatus.style.color = ''; }
             const fb = document.getElementById('gb-aq-feedback');
             if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
             gbSetButtonForAQ();
@@ -5630,42 +5663,8 @@
         }
 
         function gbAQFinish() {
-            state.isAnimating = true;
-            gbState.subGame = 1;
-            gbUpdateProgress(1);
-
-            const aqPanel = document.getElementById('gb-panel-aq');
-            if (aqPanel) {
-                aqPanel.style.transition = 'transform 360ms cubic-bezier(0.4,0,0.2,1), opacity 360ms ease, filter 360ms ease';
-                aqPanel.style.transform = 'translateX(-100%)';
-                aqPanel.style.filter = 'blur(12px)';
-                aqPanel.style.opacity = '0';
-            }
-
-            setTimeout(() => {
-                document.querySelectorAll('.gb-game-panel').forEach(panel => {
-                    panel.classList.remove('active', 'enter-right', 'exit-left');
-                    panel.style.transition = '';
-                    panel.style.transform = '';
-                    panel.style.filter = '';
-                    panel.style.opacity = '';
-                });
-
-                const wcPanel = document.getElementById('gb-panel-wc');
-                if (wcPanel) {
-                    wcPanel.classList.add('active');
-                    wcPanel.style.transition = 'none';
-                    wcPanel.style.transform = 'translateX(0)';
-                    wcPanel.style.filter = 'blur(0)';
-                    wcPanel.style.opacity = '1';
-                    void wcPanel.offsetHeight;
-                    wcPanel.style.transition = '';
-                }
-
-                gbInitWC();
-                gbSetButtonForWC();
-                state.isAnimating = false;
-            }, 380);
+            // Registry-driven: skip empty games, exit Stage 5 if AQ was the only one.
+            gbAdvanceFromGame(0, 'gb-panel-aq');
         }
 
         function gbInitWC() {
@@ -5838,7 +5837,11 @@
             if (inv) inv.classList.add('show');
             const ta = document.getElementById('gb-wc-textarea');
             if (ta) ta.style.display = 'none';
-            gbSetButtonNext(gbState.wc.chainIdx < GB_WHY_CHAIN.length - 1 ? 'Keyingi zanjir' : "Keyingi o'yin");
+            gbSetButtonNext(
+                gbState.wc.chainIdx < GB_WHY_CHAIN.length - 1
+                    ? 'Keyingi zanjir'
+                    : (gbIsLastGame(1) ? 'Keyingi bosqich' : "Keyingi o'yin")
+            );
         }
 
         function gbWCNextChain() {
@@ -5850,14 +5853,8 @@
         }
 
         function gbWCFinish() {
-            gbState.subGame = 2;
-            gbUpdateProgress(2);
-            gbInitMM();
-            gbTransition('gb-panel-wc', 'gb-panel-mm', () => {
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
-            });
+            // Registry-driven: walk to next active game, or exit Stage 5.
+            gbAdvanceFromGame(1, 'gb-panel-wc');
         }
 
         // Tile Match — left/right column matching.
@@ -5987,16 +5984,8 @@
                     correct: true, score: 1,
                 });
             }
-            if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0) {
-                // Stay at subGame=2; user clicks "Keyingi o'yin" → handler transitions to PL.
-                gbSetButtonNext("Keyingi o'yin");
-            } else if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0) {
-                // No PL but MB exists — handler will transition straight to MB.
-                gbSetButtonNext("Keyingi o'yin");
-            } else {
-                gbState.subGame = 5;
-                gbSetButtonNext('Keyingi bosqich');
-            }
+            // Registry decides next game on click; we just label the button.
+            gbSetButtonNext(gbIsLastGame(2) ? 'Keyingi bosqich' : "Keyingi o'yin");
         }
 
         function gbInitPL() {
@@ -6180,13 +6169,8 @@
                     correct: true, score: 1,
                 });
             }
-            if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0) {
-                // Stay at subGame=3; handler transitions to MB on next click.
-                gbSetButtonNext("Keyingi o'yin");
-            } else {
-                gbState.subGame = 5;
-                gbSetButtonNext('Keyingi bosqich');
-            }
+            // Registry decides next game on click; we just label the button.
+            gbSetButtonNext(gbIsLastGame(3) ? 'Keyingi bosqich' : "Keyingi o'yin");
         }
 
         // ── Mystery Box (sub-game 5) — interleaved category recognition ───
@@ -6416,8 +6400,8 @@
                     score: mb.boxes.length ? (correctCount / mb.boxes.length) : 0,
                 });
             }
-            gbState.subGame = 5;
-            gbSetButtonNext('Keyingi bosqich');
+            // Registry decides exit on click; just label the button.
+            gbSetButtonNext(gbIsLastGame(4) ? 'Keyingi bosqich' : "Keyingi o'yin");
         }
 
         function gbSetButtonForMB(text) {
