@@ -345,8 +345,14 @@ async def reflection_feedback(
 _ANSWER_LEAK_KEYS: tuple[str, ...] = (
     "expected",
     "ans",
+    "answer",
+    "a",
+    "acceptable",
     "accepted_answers",
+    "acceptableAnswers",
+    "canonical_display",
     "correct",
+    "matched_expected",
 )
 
 
@@ -363,14 +369,18 @@ def _redact_question_for_tutor(question: dict, phase: str) -> dict:
         # Preview is the only phase where the answer is allowed in context.
         return dict(question)
 
-    # Shallow copy + scrub answer_spec separately so we don't mutate the caller.
-    redacted = {k: v for k, v in question.items() if k not in _ANSWER_LEAK_KEYS}
-    spec = redacted.get("answer_spec")
-    if isinstance(spec, dict):
-        redacted["answer_spec"] = {
-            k: v for k, v in spec.items() if k not in _ANSWER_LEAK_KEYS
-        }
-    return redacted
+    def scrub(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {
+                k: scrub(v)
+                for k, v in value.items()
+                if k not in _ANSWER_LEAK_KEYS
+            }
+        if isinstance(value, list):
+            return [scrub(item) for item in value]
+        return value
+
+    return scrub(question)
 
 
 def _format_attempts_for_prompt(attempts: list[dict]) -> str:
@@ -404,6 +414,7 @@ def _build_tutor_chat_prompt(
     subject: str,
     grade: int,
     question_text: str,
+    question_context: Optional[dict],
     preview_context: Optional[str],
     student_profile: Optional[str],
     persona_traits: Optional[list[str]],
@@ -420,6 +431,11 @@ def _build_tutor_chat_prompt(
     parts.append(f"GRADE: {grade}")
     if question_text:
         parts.append(f"QUESTION_TEXT:\n{question_text}")
+    if question_context:
+        parts.append(
+            "QUESTION_CONTEXT:\n"
+            + json.dumps(question_context, ensure_ascii=False, indent=2)
+        )
     if preview_context:
         parts.append(f"PREVIEW_CONTEXT:\n{preview_context}")
     if student_profile:
@@ -502,6 +518,7 @@ async def tutor_chat(
     # Pull the full question dict from the homework's content_json when one was
     # named. Strip answer-bearing keys for non-preview phases.
     question_text = ""
+    question_context: Optional[dict] = None
     preview_context = hw_meta.get("preview_context")
     if question_id and isinstance(hw_meta.get("question"), dict):
         redacted = _redact_question_for_tutor(hw_meta["question"], phase)
@@ -512,6 +529,7 @@ async def tutor_chat(
             or redacted.get("question")
             or ""
         )
+        question_context = redacted
 
     full_prompt = _build_tutor_chat_prompt(
         system_prompt=system_prompt,
@@ -519,6 +537,7 @@ async def tutor_chat(
         subject=str(hw_meta.get("subject", "")),
         grade=int(hw_meta.get("grade", 0) or 0),
         question_text=question_text,
+        question_context=question_context,
         preview_context=preview_context,
         student_profile=hw_meta.get("student_profile"),
         persona_traits=hw_meta.get("persona_traits"),

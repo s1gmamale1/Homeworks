@@ -312,6 +312,121 @@ def test_practice_no_answer_leak(mock_generate, client):
     assert "MAGIC_TOKEN_42" in resp.json()["response"]
 
 
+@patch("server.services.gemini.generate")
+def test_practice_no_answer_alias_leak_from_answer_spec(mock_generate, client):
+    """Some editor/importer shapes store the answer in `canonical_display`,
+    `answer`, or `matched_expected`, not only `expected`. Practice prompts
+    must strip those aliases too."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, *args, **kwargs):
+        captured["prompt"] = prompt
+        return "I can guide the method."
+
+    mock_generate.side_effect = _fake_generate
+
+    content = {
+        "boss_questions": [
+            {
+                "question_id": "qb-alias",
+                "q": "Solve the equation.",
+                "answer_spec": {
+                    "type": "text_fuzzy",
+                    "expected": "LEAK_TOKEN_EXPECTED",
+                    "canonical_display": "LEAK_TOKEN_CANONICAL",
+                    "answer": "LEAK_TOKEN_ANSWER",
+                    "matched_expected": "LEAK_TOKEN_MATCHED",
+                },
+                "answer": "LEAK_TOKEN_TOPLEVEL",
+                "a": "LEAK_TOKEN_A",
+                "accepted_answers": ["LEAK_TOKEN_ACCEPTED"],
+            }
+        ],
+    }
+    hw_id = _create_then_set_content(client, content)
+
+    resp = client.post(
+        "/api/ai/tutor/chat",
+        json={
+            "session_id": "sess-alias-leak",
+            "hw_id": hw_id,
+            "phase": "practice",
+            "question_id": "qb-alias",
+            "message": "Help me solve it.",
+        },
+    )
+    assert resp.status_code == 200, resp.text
+
+    prompt = captured.get("prompt", "")
+    assert prompt
+    for token in (
+        "LEAK_TOKEN_EXPECTED",
+        "LEAK_TOKEN_CANONICAL",
+        "LEAK_TOKEN_ANSWER",
+        "LEAK_TOKEN_MATCHED",
+        "LEAK_TOKEN_TOPLEVEL",
+        "LEAK_TOKEN_A",
+        "LEAK_TOKEN_ACCEPTED",
+    ):
+        assert token not in prompt, f"{token} leaked into prompt:\n{prompt[:1000]}"
+
+
+@patch("server.services.gemini.generate")
+def test_practice_no_nested_answer_leak(mock_generate, client):
+    """Redaction should be recursive: answers can appear in nested lists/dicts
+    such as options[], fields[], or rubrics from imported content."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, *args, **kwargs):
+        captured["prompt"] = prompt
+        return "Look at the structure first."
+
+    mock_generate.side_effect = _fake_generate
+
+    content = {
+        "gb_adaptive_quiz": [
+            {
+                "id": "aq-nested",
+                "prompt": "Pick the correct option.",
+                "options": [
+                    {"label": "A", "text": "Wrong"},
+                    {"label": "B", "text": "Visible option B", "correct": True},
+                ],
+                "fields": [
+                    {"label": "Step", "acceptable": ["LEAK_TOKEN_FIELD"]},
+                ],
+                "rubric": {"answer": "LEAK_TOKEN_RUBRIC"},
+            }
+        ],
+    }
+    hw_id = _create_then_set_content(client, content)
+
+    resp = client.post(
+        "/api/ai/tutor/chat",
+        json={
+            "session_id": "sess-nested-leak",
+            "hw_id": hw_id,
+            "phase": "practice",
+            "question_id": "aq-nested",
+            "message": "Which option is right?",
+        },
+    )
+    assert resp.status_code == 200, resp.text
+
+    prompt = captured.get("prompt", "")
+    assert prompt
+    assert "QUESTION_CONTEXT:" in prompt
+    assert "Pick the correct option." in prompt
+    assert "Wrong" in prompt
+    assert "Visible option B" in prompt
+    assert "Step" in prompt
+    for token in ("LEAK_TOKEN_FIELD", "LEAK_TOKEN_RUBRIC"):
+        assert token not in prompt, f"{token} leaked into prompt:\n{prompt[:1000]}"
+    assert '"correct"' not in prompt
+    assert '"acceptable"' not in prompt
+    assert '"answer"' not in prompt
+
+
 # ---------------------------------------------------------------------------
 # 3. practice chat: tutor's response is passed through
 # ---------------------------------------------------------------------------

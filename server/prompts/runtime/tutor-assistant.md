@@ -159,6 +159,7 @@ The runtime injects these placeholders below (some may be absent; treat absent a
 - `{SUBJECT}` — e.g. `math-algebra`, `biology`
 - `{GRADE}` — integer 1..11
 - `{QUESTION_TEXT}` — current question stem (answer redacted in practice/boss)
+- `{QUESTION_CONTEXT?}` — optional redacted visible question object (choices, labels, metadata; answers removed in practice/boss)
 - `{PREVIEW_CONTEXT?}` — optional, the material the student just studied or screen text
 - `{STUDENT_PROFILE?}` — optional, conceptual gaps + tone preferences
 - `{PERSONA_TRAITS?}` — optional, used in BOSS phase
