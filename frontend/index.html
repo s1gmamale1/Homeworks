@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NETS Builder · Dashboard</title>
   <link rel="stylesheet" href="/css/app.css" />
+  <script src="/js/katex-render.js?v=1"></script>
 </head>
 <body data-page="dashboard">
   <div class="app-shell">
@@ -16,6 +17,11 @@
           <h1>Homework Library</h1>
         </div>
       </div>
+
+      <nav class="topbar-nav" aria-label="Site navigation">
+        <a class="btn btn-ghost is-active" href="/index.html" aria-current="page">Dashboard</a>
+        <a class="btn btn-ghost" href="/library.html">Library</a>
+      </nav>
 
       <div class="topbar-actions">
         <div class="health-pill" id="health-pill" title="Backend and Gemini status">
@@ -33,7 +39,7 @@
       <section class="hero-card glass-card">
         <div>
           <p class="eyebrow">Working demo</p>
-          <h2>Build, edit, preview, and export interactive NETS homework.</h2>
+          <h2>Build, edit, preview, and share interactive NETS homework.</h2>
           <p class="muted-text">
             Create a homework record, open the builder, then fill phase editors manually or through AI generation when Wave 3 lands.
           </p>
@@ -127,6 +133,7 @@
         </div>
 
         <div class="homework-grid" id="homework-grid" aria-live="polite"></div>
+        <div id="pagination-bar" class="pagination-bar" hidden></div>
       </section>
     </main>
   </div>
@@ -203,7 +210,7 @@
 
   <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/dashboard.js"></script>
+  <script src="/js/api.js?v=2"></script>
+  <script src="/js/dashboard.js?v=2"></script>
 </body>
 </html>

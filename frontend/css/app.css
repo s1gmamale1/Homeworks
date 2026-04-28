@@ -213,6 +213,17 @@ code {
     gap: 12px;
 }
 
+.topbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topbar-nav .is-active {
+    color: var(--accent);
+    font-weight: 600;
+}
+
 .builder-topbar {
     display: flex;
     align-items: center;

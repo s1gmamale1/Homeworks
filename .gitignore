@@ -13,6 +13,9 @@ nets.db-shm
 
 # Secrets
 .env
+.env.*
+!.env.example
+.passwd
 claw_api_service.json
 *service_account*.json
 *.pem
@@ -32,6 +35,9 @@ Thumbs.db
 .idea/
 *.swp
 
+# Claude Code local state (worktrees, agents, plans)
+.claude/
+
 # Build / cache
 .pytest_cache/
 .mypy_cache/
@@ -40,3 +46,9 @@ node_modules/
 
 # Generated / runtime
 data/
+
+# Test artifacts
+tests/last_run_report.json
+
+# Scratch / reference snippets
+ref_*.txt

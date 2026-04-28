@@ -1,0 +1,42 @@
+{
+  "check_answer": {
+    "question": "2 + 2 nechaga teng?",
+    "student_answer": "4",
+    "expected_answers": ["4", "to'rt"],
+    "subject": "math-algebra",
+    "grade": 8,
+    "tier": "EASY",
+    "context": "Hisob-kitob mavzusi"
+  },
+  "boss_turn": {
+    "boss_question": "x² - 5x + 6 = 0 tenglamaning ildizlarini toping.",
+    "student_answer": "2 va 3",
+    "expected_answers": ["2 va 3", "x=2, x=3", "2,3"],
+    "damage_value": 20,
+    "hp_remaining": 150,
+    "attempt_number": 1,
+    "subject": "math-algebra",
+    "grade": 8
+  },
+  "reflection": {
+    "homework_title": "Kvadrat tenglamalar",
+    "homework_summary": "8 ta savol, 6 tasi to'g'ri, 12 daqiqa",
+    "student_reflection": "Darslar qiyin edi, lekin yaxshi o'rgandim deb o'ylayman.",
+    "performance": {
+      "correct": 6,
+      "total": 8,
+      "time_minutes": 12,
+      "weak_phase": "boss"
+    },
+    "subject": "math-algebra",
+    "grade": 8
+  },
+  "tutor": {
+    "phase": "flashcards",
+    "question": "Kvadrat tenglama nima?",
+    "student_input": "Tushunmadim, yordam bering",
+    "subject": "math-algebra",
+    "grade": 8,
+    "context": "Biz kvadrat tenglamalar mavzusini o'rganmoqdamiz."
+  }
+}

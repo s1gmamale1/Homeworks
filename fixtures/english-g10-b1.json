@@ -16,19 +16,47 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Present Perfect Tense" },
-            { "type": "p", "text": "We use Present Perfect for actions that happened at an unstated time in the past or actions that started in the past and continue to the present." },
-            { "type": "quote", "text": "Structure: Subject + have/has + Past Participle (V3)" },
-            { "type": "ul", "items": ["I have visited London.", "She has lived here since 2010.", "They have not finished yet."] }
+            {
+              "type": "h2",
+              "text": "Present Perfect Tense"
+            },
+            {
+              "type": "p",
+              "text": "We use Present Perfect for actions that happened at an unstated time in the past or actions that started in the past and continue to the present."
+            },
+            {
+              "type": "quote",
+              "text": "Structure: Subject + have/has + Past Participle (V3)"
+            },
+            {
+              "type": "ul",
+              "items": [
+                "I have visited London.",
+                "She has lived here since 2010.",
+                "They have not finished yet."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "I have seen", "def": "Men ko'rganman (vaqti noma'lum)", "cluster": "QOIDA" },
-    { "term": "Since", "def": "...dan beri (boshlanish nuqtasi)", "cluster": "METOD" },
-    { "term": "For", "def": "...davomida (davomiylik)", "cluster": "METOD" }
+    {
+      "term": "I have seen",
+      "def": "Men ko'rganman (vaqti noma'lum)",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Since",
+      "def": "...dan beri (boshlanish nuqtasi)",
+      "cluster": "METOD"
+    },
+    {
+      "term": "For",
+      "def": "...davomida (davomiylik)",
+      "cluster": "METOD"
+    }
   ],
   "memory_sprint": [
     {
@@ -37,7 +65,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "For 'She', we use 'has' + V3.",
-      "options": ["have been", "has been", "is being", "was"],
+      "options": [
+        "have been",
+        "has been",
+        "is being",
+        "was"
+      ],
       "correct": 1
     },
     {
@@ -46,7 +79,10 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L1]",
       "explain": "False. We use 'for' for periods of time. 'Since' is used for a starting point (e.g. 2015).",
-      "options": ["True", "False"],
+      "options": [
+        "True",
+        "False"
+      ],
       "correct": 1
     }
   ],
@@ -55,39 +91,112 @@
       "q": "Type the missing word: I have lived here ____ 10 years.",
       "tags": "[Bloom: L2 | PISA: L1]",
       "tier": "EASY",
-      "ans": ["for"],
-      "capture": false
+      "ans": [
+        "for"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "for",
+        "canonical_display": "for",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "for"
+      ]
     },
     {
       "q": "Write the Past Participle (V3) of the verb 'write'.",
       "tags": "[Bloom: L1 | PISA: L1]",
       "tier": "MEDIUM",
-      "ans": ["written"],
-      "capture": false
+      "ans": [
+        "written"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "written",
+        "canonical_display": "written",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "written"
+      ]
     }
   ],
   "gb_why_chain": [
     {
       "q": "Why do we use Present Perfect when the exact time is not important?",
       "inv": "result is important",
-      "reprompts": ["Think about the result now.", "Are we focusing on WHEN it happened or WHAT the result is?"]
+      "reprompts": [
+        "Think about the result now.",
+        "Are we focusing on WHEN it happened or WHAT the result is?"
+      ]
     }
   ],
   "gb_memory_match": [
-    ["Have you ever?", "Siz hech...?"],
-    ["Since 2020", "2020 yildan beri"],
-    ["For 3 months", "3 oy davomida"],
-    ["Has gone", "Ketgan (hali qaytmagan)"]
+    [
+      "Have you ever?",
+      "Siz hech...?"
+    ],
+    [
+      "Since 2020",
+      "2020 yildan beri"
+    ],
+    [
+      "For 3 months",
+      "3 oy davomida"
+    ],
+    [
+      "Has gone",
+      "Ketgan (hali qaytmagan)"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Tourist Guide",
     "story": "You are a tourist guide in Samarkand. A group of English-speaking tourists just arrived. You need to tell them about the places you have prepared for them.",
-    "q1": { "prompt": "Translate: Men 2018-yildan beri bu yerda ishlayman. (Use Present Perfect)", "ans": "I have worked here since 2018", "fb": "Great! 'I have worked' or 'I have been working' are correct." },
-    "q2": { "prompt": "Fill the gaps: We ___ (visit) the Registan square today.", "fields": [{"id": "v1", "label": "We", "ans": "have visited"}], "fb": "Correct. 'We have visited'." },
-    "q3": { "prompt": "Ask the tourists: Siz hech osh yeganmisiz? (Have...)", "ans": "Have you ever eaten plov", "fb": "Excellent question using 'Have you ever'." },
-    "q4": { "prompt": "A tourist says they didn't try somsa yet. Say: Biz hali somsa yeganimiz yo'q. (We...)", "fields": [{"id": "s1", "label": "We", "ans": "have not eaten somsa yet"}], "fb": "Perfect use of 'yet' with negative Present Perfect." },
-    "q5": { "prompt": "Write one more place in Samarkand you have visited using Present Perfect.", "open": true, "fb": "Good job applying the grammar to a real-life situation." },
-    "q6": { "prompt": "What is the past participle of 'see'?", "ans": "seen", "fb": "Correct, see -> saw -> seen." },
+    "q1": {
+      "prompt": "Translate: Men 2018-yildan beri bu yerda ishlayman. (Use Present Perfect)",
+      "ans": "I have worked here since 2018",
+      "fb": "Great! 'I have worked' or 'I have been working' are correct."
+    },
+    "q2": {
+      "prompt": "Fill the gaps: We ___ (visit) the Registan square today.",
+      "fields": [
+        {
+          "id": "v1",
+          "label": "We",
+          "ans": "have visited"
+        }
+      ],
+      "fb": "Correct. 'We have visited'."
+    },
+    "q3": {
+      "prompt": "Ask the tourists: Siz hech osh yeganmisiz? (Have...)",
+      "ans": "Have you ever eaten plov",
+      "fb": "Excellent question using 'Have you ever'."
+    },
+    "q4": {
+      "prompt": "A tourist says they didn't try somsa yet. Say: Biz hali somsa yeganimiz yo'q. (We...)",
+      "fields": [
+        {
+          "id": "s1",
+          "label": "We",
+          "ans": "have not eaten somsa yet"
+        }
+      ],
+      "fb": "Perfect use of 'yet' with negative Present Perfect."
+    },
+    "q5": {
+      "prompt": "Write one more place in Samarkand you have visited using Present Perfect.",
+      "open": true,
+      "fb": "Good job applying the grammar to a real-life situation."
+    },
+    "q6": {
+      "prompt": "What is the past participle of 'see'?",
+      "ans": "seen",
+      "fb": "Correct, see -> saw -> seen."
+    },
     "endTitle": "Tour successful!",
     "endSub": "You guided the tourists perfectly using the Present Perfect tense."
   },
@@ -95,16 +204,42 @@
     {
       "q": "Which sentence is correct? A) I have finished my homework yesterday. B) I finished my homework yesterday.",
       "tags": "[Bloom: L4 | PISA: L3 | Damage: -10 HP]",
-      "ans": ["B", "I finished my homework yesterday"],
+      "ans": [
+        "B",
+        "I finished my homework yesterday"
+      ],
       "hint": "Remember: if there is a specific past time (yesterday), we use Past Simple, not Present Perfect.",
-      "dmg": 10
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_exact",
+        "expected": "B",
+        "canonical_display": "B",
+        "allow_ai_fallback": false
+      },
+      "accepted_answers": [
+        "B",
+        "I finished my homework yesterday"
+      ]
     },
     {
       "q": "Write the correct form: My brother ____ (not / call) me yet.",
       "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
-      "ans": ["has not called", "hasn't called"],
+      "ans": [
+        "has not called",
+        "hasn't called"
+      ],
       "hint": "Use 'has' for third person singular, plus 'not', plus V3.",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "has not called",
+        "canonical_display": "has not called",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "has not called",
+        "hasn't called"
+      ]
     }
   ],
   "reflection": {

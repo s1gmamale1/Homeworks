@@ -1,0 +1,145 @@
+"""
+Wave F0 — tests for the AI provider registry.
+
+pytest tests/test_ai_providers.py -v
+"""
+from __future__ import annotations
+
+import json
+import os
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+
+# ── 1. Registry ──────────────────────────────────────────────────────────────
+
+def test_registry_get_known():
+    from server.services.ai_providers import get_provider
+    from server.services.ai_providers.kimi import KimiProvider
+
+    provider = get_provider("kimi")
+    assert isinstance(provider, KimiProvider)
+
+
+def test_registry_get_unknown():
+    from server.services.ai_providers import get_provider
+
+    with pytest.raises(ValueError, match="Unknown AI provider"):
+        get_provider("bogus")
+
+
+# ── 2. Explicit preference — Kimi selected when key is present ───────────────
+
+def test_explicit_preference_kimi(monkeypatch):
+    monkeypatch.setenv("AI_BACKEND_PREFERENCE", "kimi,vertex")
+    monkeypatch.setenv("KIMI_API_KEY", "test-key")
+    # Unset vertex so it's definitely unavailable
+    monkeypatch.delenv("VERTEX_CREDENTIALS_PATH", raising=False)
+
+    from server.services.ai_providers import select_provider
+    from server.services.ai_providers.kimi import KimiProvider
+
+    provider = select_provider(["kimi", "vertex"])
+    assert provider is not None
+    assert isinstance(provider, KimiProvider)
+
+
+# ── 3. Fallback chain — Vertex returned when Kimi key is absent ──────────────
+
+def test_fallback_to_vertex(monkeypatch, tmp_path):
+    monkeypatch.delenv("KIMI_API_KEY", raising=False)
+    # Create a fake creds file so Vertex reports available
+    fake_creds = tmp_path / "creds.json"
+    fake_creds.write_text(json.dumps({"project_id": "test-proj"}))
+    monkeypatch.setenv("VERTEX_CREDENTIALS_PATH", str(fake_creds))
+
+    from server.services.ai_providers import select_provider
+    from server.services.ai_providers.vertex import VertexProvider
+
+    provider = select_provider(["kimi", "vertex"])
+    assert provider is not None
+    assert isinstance(provider, VertexProvider)
+
+
+# ── 4. Status endpoint fields ─────────────────────────────────────────────────
+
+def test_status_endpoint_fields(client):
+    resp = client.get("/api/ai/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "active_provider" in data
+    assert "preference_list" in data
+    assert "available_providers" in data
+    assert isinstance(data["preference_list"], list)
+    assert isinstance(data["available_providers"], list)
+
+
+# ── 5. Malformed preference env — graceful fallback ───────────────────────────
+
+def test_malformed_preference_env(monkeypatch):
+    monkeypatch.setenv("AI_BACKEND_PREFERENCE", "!@#$%")
+
+    from server.services import gemini
+
+    pref = gemini._preference_list()
+    # Should fall back to the default order without crashing
+    assert pref == ["kimi", "vertex", "gemini_api"]
+
+
+def test_provider_name_with_underscore_parses(monkeypatch):
+    """gemini_api (and any future provider with underscores) must parse."""
+    monkeypatch.setenv("AI_BACKEND_PREFERENCE", "gemini_api,kimi")
+
+    from server.services import gemini
+
+    assert gemini._preference_list() == ["gemini_api", "kimi"]
+
+
+@pytest.mark.asyncio
+async def test_no_backend_raises(monkeypatch):
+    """generate() must raise RuntimeError when no provider is available."""
+    monkeypatch.delenv("KIMI_API_KEY", raising=False)
+    monkeypatch.delenv("VERTEX_CREDENTIALS_PATH", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    from server.services import gemini
+
+    with pytest.raises(RuntimeError, match="No AI backend available"):
+        await gemini.generate("hello")
+
+
+# ── 6. Envelope shape from KimiProvider ──────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_kimi_envelope_shape(monkeypatch):
+    monkeypatch.setenv("KIMI_API_KEY", "fake-key")
+
+    from server.services.ai_providers.kimi import KimiProvider
+
+    fake_response_body = {
+        "choices": [
+            {"message": {"content": '{"answer": 42}'}}
+        ]
+    }
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = fake_response_body
+    mock_response.raise_for_status = MagicMock()
+
+    mock_client = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    provider = KimiProvider()
+    provider._client = mock_client
+
+    result = await provider.generate_json('{"answer": 42}', "moonshot-v1-32k")
+
+    assert "text" in result
+    assert "raw" in result
+    assert "provider" in result
+    assert "model" in result
+    assert result["provider"] == "kimi"
+    assert result["model"] == "moonshot-v1-32k"
+    assert isinstance(result["raw"], dict)
+    assert isinstance(result["text"], str)

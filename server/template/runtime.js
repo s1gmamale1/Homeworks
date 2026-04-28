@@ -30,6 +30,28 @@
             });
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
+                // Wave F2: surface session-cap (429) so the widget can lock input.
+                if (res.status === 429) {
+                    return { _cap: true, _error: true, message: err.detail?.error || 'Session limit reached.' };
+                }
+                return { _error: true, message: err.detail?.error || res.statusText };
+            }
+            return await res.json();
+        } catch (e) {
+            return { _error: true, message: String(e) };
+        }
+    }
+
+    async function _get(path, query) {
+        if (!isBackendHosted) {
+            return { _offline: true, turns: [] };
+        }
+        try {
+            const qs = new URLSearchParams(query || {}).toString();
+            const url = API_BASE + path + (qs ? ('?' + qs) : '');
+            const res = await fetch(url, { method: 'GET' });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
                 return { _error: true, message: err.detail?.error || res.statusText };
             }
             return await res.json();
@@ -73,7 +95,7 @@
      * @returns {Promise<{correct, damage_dealt, boss_response, hint, score}>}
      */
     async function bossTurn(opts) {
-        return _post('/boss-turn', {
+        const body = {
             boss_question: opts.bossQuestion,
             student_answer: opts.studentAnswer,
             expected_answers: opts.expectedAnswers || [],
@@ -82,7 +104,12 @@
             attempt_number: opts.attemptNumber || 1,
             subject: ctx.subject || 'math-algebra',
             grade: ctx.grade || 8,
-        });
+        };
+        // Wave F3: forward persona_traits when present (from boss_plan response).
+        if (opts.persona_traits && opts.persona_traits.length) {
+            body.persona_traits = opts.persona_traits;
+        }
+        return _post('/boss-turn', body);
     }
 
     /**
@@ -126,12 +153,65 @@
     // Convenience: check if AI is available right now
     function isAvailable() { return isBackendHosted; }
 
+    // ─── Wave F2 — live tutor widget endpoints ───────────────────
+    /**
+     * Send one tutor chat turn.
+     * @param {Object} opts
+     * @param {string} opts.session_id  - client-side UUID, persisted in localStorage
+     * @param {string} opts.hw_id
+     * @param {string} opts.phase       - 'preview' | 'practice' | 'boss'
+     * @param {string} [opts.question_id]
+     * @param {string} opts.message
+     * @returns {Promise<{response: string, message_id: number} | {_error|_cap|_offline: true, message?: string}>}
+     */
+    async function tutorChat(opts) {
+        const body = {
+            session_id: opts.session_id,
+            hw_id: opts.hw_id,
+            phase: opts.phase,
+            message: opts.message,
+        };
+        if (opts.question_id) body.question_id = opts.question_id;
+        return _post('/tutor/chat', body);
+    }
+
+    /**
+     * Fetch saved chat history for a session (last 50 turns, chronological).
+     * @param {Object} opts
+     * @param {string} opts.session_id
+     * @param {string} opts.hw_id
+     * @returns {Promise<{turns: Array<{phase, question_id?, role, content, created_at}>}>}
+     */
+    async function tutorHistory(opts) {
+        return _get('/tutor/history', {
+            session_id: opts.session_id,
+            hw_id: opts.hw_id,
+        });
+    }
+
+    /**
+     * Build a personalized boss-question plan. Used by F3 (exposed now).
+     * @param {Object} opts
+     * @param {string} opts.session_id
+     * @param {string} opts.hw_id
+     * @returns {Promise<{ordered: Array<{question_id, framing_text}>, persona_traits: string[]}>}
+     */
+    async function bossPlan(opts) {
+        return _post('/tutor/boss-plan', {
+            session_id: opts.session_id,
+            hw_id: opts.hw_id,
+        });
+    }
+
     // Expose
     window.NETS_AI = {
         checkAnswer,
         bossTurn,
         reflectionFeedback,
         tutor,
+        tutorChat,
+        tutorHistory,
+        bossPlan,
         isAvailable,
         _ctx: ctx,
     };

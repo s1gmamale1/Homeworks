@@ -1,6 +1,6 @@
 // frontend/js/editors/games/adaptive-quiz.js
 // Adaptive Quiz editor — card-styled like flashcards.
-// Data: { q, tags, tier, ans[], capture, hint?, media? }
+// Data: { q, tags, tier, ans[], answer_spec, capture, hint?, media? }
 
 (function () {
   "use strict";
@@ -8,6 +8,13 @@
   window.GameBreakEditors = window.GameBreakEditors || {};
 
   const TIERS = ["EASY", "MEDIUM", "HARD"];
+  const ANSWER_TYPES = [
+    { value: "numeric", label: "Numeric" },
+    { value: "set_match", label: "Equation roots / set" },
+    { value: "text_exact", label: "Text (exact)" },
+    { value: "text_fuzzy", label: "Text (fuzzy)" },
+    { value: "semantic", label: "Free-form (AI only)" }
+  ];
 
   const TIER_COLORS = {
     EASY:   { bg: "rgba(52, 199, 89, 0.14)",  fg: "#1f7a3b" },
@@ -43,36 +50,50 @@
     return null;
   }
 
+  function normalizeItem(item) {
+    const spec = item?.answer_spec || {
+      type: "text_fuzzy",
+      expected: "",
+      canonical_display: "",
+      allow_ai_fallback: true,
+      rubric: {
+        correct: "To'g'ri javob!",
+        partial: "Qisman to'g'ri.",
+        incorrect: "Notog'ri javob."
+      }
+    };
+    
+    // Backward compat
+    if (!spec.canonical_display && item?.ans && item.ans.length) {
+      spec.canonical_display = item.ans[0];
+      spec.expected = item.ans[0];
+    }
+
+    return {
+      q: item?.q || "",
+      tags: item?.tags || "[Bloom: L1 | PISA: L1]",
+      tier: TIERS.includes(item?.tier) ? item.tier : "EASY",
+      ans: Array.isArray(item?.ans) && item.ans.length ? item.ans : [spec.canonical_display || ""],
+      answer_spec: spec,
+      capture: Boolean(item?.capture),
+      hint: item?.hint || "",
+      media: normalizeMedia(item?.media),
+    };
+  }
+
   function normalize(items) {
-    return Array.isArray(items)
-      ? items.map((item) => ({
-          q: item?.q || "",
-          tags: item?.tags || "[Bloom: L1 | PISA: L1]",
-          tier: TIERS.includes(item?.tier) ? item.tier : "EASY",
-          ans: Array.isArray(item?.ans) && item.ans.length ? item.ans : [""],
-          capture: Boolean(item?.capture),
-          hint: item?.hint || "",
-          media: normalizeMedia(item?.media),
-        }))
-      : [];
+    return Array.isArray(items) ? items.map(normalizeItem) : [];
   }
 
   function makeItem() {
-    return {
-      q: "",
-      tags: "[Bloom: L1 | PISA: L1]",
-      tier: "EASY",
-      ans: [""],
-      capture: false,
-      hint: "",
-      media: null,
-    };
+    return normalizeItem({});
   }
 
   function emit(state, onChange) {
     state.forEach((item) => {
-      if (!Array.isArray(item.ans) || !item.ans.length) item.ans = [""];
       if (!TIERS.includes(item.tier)) item.tier = "EASY";
+      // Sync old ans array
+      item.ans = [item.answer_spec.canonical_display || ""];
     });
     onChange(clone(state));
   }
@@ -83,17 +104,77 @@
     ).join("");
   }
 
-  function renderAnswers(item) {
-    return item.ans
-      .map(
-        (ans, ansIndex) => `
-          <div class="option-row" data-ans-index="${ansIndex}">
-            <input class="js-answer" type="text" value="${escapeHtml(ans)}" placeholder="Accepted answer ${ansIndex + 1}" />
-            <button class="icon-btn js-remove-answer" type="button" title="Remove answer">×</button>
+  function renderAnswerSpecForm(item, index) {
+    const spec = item.answer_spec;
+    const typeOptions = ANSWER_TYPES.map(
+      t => `<option value="${t.value}" ${t.value === spec.type ? "selected" : ""}>${t.label}</option>`
+    ).join("");
+
+    let typeSpecificFields = "";
+    if (spec.type === "numeric") {
+      typeSpecificFields = `
+        <label class="field">
+          <span>Expected Number</span>
+          <input type="number" step="any" class="js-spec-field" data-key="expected" value="${escapeHtml(spec.expected)}" />
+        </label>
+        <label class="field">
+          <span>Tolerance (±)</span>
+          <input type="number" step="any" class="js-spec-field" data-key="tolerance" value="${escapeHtml(spec.tolerance || 0)}" />
+        </label>
+      `;
+    } else if (spec.type === "set_match") {
+      typeSpecificFields = `
+        <label class="field full-span">
+          <span>Expected Set (comma-separated, e.g. "9, -9")</span>
+          <input type="text" class="js-spec-field" data-key="expected" value="${escapeHtml(Array.isArray(spec.expected) ? spec.expected.join(", ") : spec.expected)}" />
+        </label>
+      `;
+    }
+
+    return `
+      <div class="editor-grid">
+        <label class="field">
+          <span>Canonical Display Answer</span>
+          <input type="text" class="js-spec-field" data-key="canonical_display" value="${escapeHtml(spec.canonical_display)}" placeholder="Model answer" />
+        </label>
+        <label class="field">
+          <span>Answer Type</span>
+          <select class="js-spec-type">
+            ${typeOptions}
+          </select>
+        </label>
+
+        ${typeSpecificFields}
+
+        <label class="field full-span">
+          <input type="checkbox" class="js-spec-ai" ${spec.allow_ai_fallback ? "checked" : ""} />
+          <span>Allow AI Fallback</span>
+        </label>
+
+        <details class="full-span">
+          <summary>Grading Rubric</summary>
+          <div class="editor-grid" style="margin-top: 10px;">
+            <label class="field full-span">
+              <span>Correct</span>
+              <textarea class="js-rubric-field" data-key="correct" rows="2">${escapeHtml(spec.rubric.correct)}</textarea>
+            </label>
+            <label class="field full-span">
+              <span>Partial</span>
+              <textarea class="js-rubric-field" data-key="partial" rows="2">${escapeHtml(spec.rubric.partial)}</textarea>
+            </label>
+            <label class="field full-span">
+              <span>Incorrect</span>
+              <textarea class="js-rubric-field" data-key="incorrect" rows="2">${escapeHtml(spec.rubric.incorrect)}</textarea>
+            </label>
           </div>
-        `,
-      )
-      .join("");
+        </details>
+
+        <div class="full-span preview-pane js-preview-pane" id="preview-${index}">
+          <p class="eyebrow">Accepted Examples</p>
+          <div class="preview-content js-preview-content">Loading preview...</div>
+        </div>
+      </div>
+    `;
   }
 
   function renderMediaPreview(media) {
@@ -123,9 +204,6 @@
               </div>
               <button class="btn btn-primary js-add-item" type="button">Add question</button>
             </div>
-            <p class="muted-text">
-              Student types an answer. Correctness checks against <strong>ans[]</strong>. If nothing matches, the AI tutor evaluates semantically. Tier drives difficulty (EASY → HARD). Capture requires a notebook/photo.
-            </p>
           </section>
 
           ${
@@ -153,7 +231,7 @@
                           <div class="fc-media-head">
                             <span class="fc-face-label">Media (optional)</span>
                             <div class="fc-media-tools">
-                              <button class="btn btn-ghost js-card-img" type="button">🖼 Image</button>
+                              <button class="btn btn-ghost js-card-img" type="button">✓ Image</button>
                               <button class="btn btn-ghost js-card-svg" type="button">◆ SVG</button>
                               ${item.media ? `<button class="btn btn-ghost js-card-clear-media" type="button">Clear</button>` : ""}
                             </div>
@@ -168,14 +246,10 @@
                           <div class="js-rich-host" data-key="q" data-index="${index}"></div>
                         </div>
 
-                        <div class="fc-divider"><span>↓ accepted answers below ↓</span></div>
+                        <div class="fc-divider"><span>↓ answer grading below ↓</span></div>
 
                         <div class="fc-face">
-                          <div class="fc-face-label">Accepted answers (any match = correct)</div>
-                          <div class="editor-list">
-                            ${renderAnswers(item)}
-                          </div>
-                          <button class="btn btn-ghost js-add-answer" type="button" style="align-self:flex-start;margin-top:8px;">+ Add accepted answer</button>
+                          ${renderAnswerSpecForm(item, index)}
                         </div>
 
                         <div class="fc-meta-row">
@@ -197,8 +271,8 @@
                             <input class="js-field" data-key="tags" type="text" value="${escapeHtml(item.tags)}" placeholder="[Bloom: L1 | PISA: L1]" />
                           </div>
                           <div class="field full-span">
-                            <span>🧠 Hint (optional — shown if student struggles)</span>
-                            <textarea class="js-field" data-key="hint" rows="2" placeholder="A gentle nudge toward the method...">${escapeHtml(item.hint)}</textarea>
+                            <span>🧠 Hint (optional)</span>
+                            <textarea class="js-field" data-key="hint" rows="2" placeholder="A gentle nudge...">${escapeHtml(item.hint)}</textarea>
                           </div>
                         </div>
                       </section>
@@ -208,14 +282,12 @@
               : `<div class="empty-state glass-card inline-empty">
                   <div class="empty-orb" aria-hidden="true">🎯</div>
                   <h3>No adaptive questions</h3>
-                  <p>Add typed-answer questions with multiple accepted forms.</p>
                   <button class="btn btn-primary js-add-item" type="button">Add first question</button>
                 </div>`
           }
         </div>
       `;
 
-      // Mount RichField editor for the Question on each card.
       if (window.RichField && window.RichField.create) {
         container.querySelectorAll(".js-rich-host").forEach((host) => {
           const index = Number(host.dataset.index);
@@ -235,117 +307,107 @@
           host.appendChild(mini);
         });
       }
+      state.forEach((_, i) => updatePreview(i));
+    }
+
+    async function updatePreview(index) {
+      const q = state[index];
+      const previewEl = container.querySelector(`#preview-${index} .js-preview-content`);
+      if (!previewEl) return;
+      try {
+        const resp = await fetch("/api/ai/answer-spec/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answer_spec: q.answer_spec })
+        });
+        if (!resp.ok) throw new Error("Preview failed");
+        const data = await resp.json();
+        previewEl.innerHTML = (data.examples || []).map(ex => `<code class="preview-tag">${escapeHtml(ex)}</code>`).join(" ");
+      } catch (err) {
+        previewEl.innerText = "Error loading preview.";
+      }
     }
 
     container.oninput = (event) => {
       const target = event.target;
+      const wrap = target.closest("[data-index]");
+      if (!wrap) return;
+      const index = Number(wrap.dataset.index);
+      if (!Number.isFinite(index)) return;
 
-      // Meta fields (tier, tags, hint)
-      const field = target.closest && target.closest(".js-field");
-      if (field) {
-        const wrap = field.closest("[data-index]");
-        if (!wrap) return;
-        const index = Number(wrap.dataset.index);
-        const key = field.dataset.key;
-        if (!Number.isFinite(index) || !key) return;
-        state[index][key] = field.value;
+      if (target.classList.contains("js-field")) {
+        state[index][target.dataset.key] = target.value;
         emit(state, onChange);
-        return;
-      }
-
-      // Accepted answers
-      const answer = target.closest && target.closest(".js-answer");
-      if (answer) {
-        const itemIndex = Number(answer.closest("[data-index]")?.dataset.index);
-        const ansIndex = Number(answer.closest("[data-ans-index]")?.dataset.ansIndex);
-        if (!Number.isFinite(itemIndex) || !Number.isFinite(ansIndex)) return;
-        state[itemIndex].ans[ansIndex] = answer.value;
+      } else if (target.classList.contains("js-spec-field")) {
+        const key = target.dataset.key;
+        let val = target.value;
+        if (key === "expected" && state[index].answer_spec.type === "set_match") {
+          val = val.split(",").map(s => s.trim()).filter(Boolean);
+        }
+        state[index].answer_spec[key] = val;
+        emit(state, onChange);
+        updatePreview(index);
+      } else if (target.classList.contains("js-rubric-field")) {
+        state[index].answer_spec.rubric[target.dataset.key] = target.value;
         emit(state, onChange);
       }
     };
 
     container.onchange = (event) => {
-      const capture = event.target.closest && event.target.closest(".js-capture");
-      if (capture) {
-        const index = Number(capture.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
-        state[index].capture = capture.value === "true";
+      const target = event.target;
+      const index = Number(target.closest("[data-index]")?.dataset.index);
+      if (!Number.isFinite(index)) return;
+
+      if (target.classList.contains("js-capture")) {
+        state[index].capture = target.value === "true";
         emit(state, onChange);
-        return;
-      }
-      // Tier change: repaint to refresh colors
-      const field = event.target.closest && event.target.closest(".js-field");
-      if (field && field.dataset.key === "tier") {
+      } else if (target.dataset.key === "tier") {
+        state[index].tier = target.value;
+        emit(state, onChange);
         repaint();
+      } else if (target.classList.contains("js-spec-type")) {
+        state[index].answer_spec.type = target.value;
+        emit(state, onChange);
+        repaint();
+      } else if (target.classList.contains("js-spec-ai")) {
+        state[index].answer_spec.allow_ai_fallback = target.checked;
+        emit(state, onChange);
       }
     };
 
     container.onclick = (event) => {
       const target = event.target;
-
       if (target.closest(".js-add-item")) {
         state.push(makeItem());
         emit(state, onChange);
         repaint();
-        return;
-      }
-      if (target.closest(".js-remove-item")) {
+      } else if (target.closest(".js-remove-item")) {
         const index = Number(target.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
         state.splice(index, 1);
         emit(state, onChange);
         repaint();
-        return;
-      }
-      if (target.closest(".js-add-answer")) {
+      } else if (target.closest(".js-card-img")) {
         const index = Number(target.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
-        state[index].ans.push("");
-        emit(state, onChange);
-        repaint();
-        return;
-      }
-      if (target.closest(".js-remove-answer")) {
-        const itemIndex = Number(target.closest("[data-index]")?.dataset.index);
-        const ansIndex = Number(target.closest("[data-ans-index]")?.dataset.ansIndex);
-        if (!Number.isFinite(itemIndex) || !Number.isFinite(ansIndex)) return;
-        state[itemIndex].ans.splice(ansIndex, 1);
-        if (!state[itemIndex].ans.length) state[itemIndex].ans.push("");
-        emit(state, onChange);
-        repaint();
-        return;
-      }
-
-      // Media: image upload
-      if (target.closest(".js-card-img")) {
+        if (window.RichField?.openImageModal) {
+          window.RichField.openImageModal((src, alt) => {
+            if (!src) return;
+            state[index].media = { type: "image", src, alt: alt || "" };
+            emit(state, onChange);
+            repaint();
+          });
+        }
+      } else if (target.closest(".js-card-svg")) {
         const index = Number(target.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
-        if (!window.RichField || !window.RichField.openImageModal) return;
-        window.RichField.openImageModal((src, alt) => {
-          if (!src) return;
-          state[index].media = { type: "image", src, alt: alt || "" };
-          emit(state, onChange);
-          repaint();
-        });
-        return;
-      }
-      // Media: SVG insert
-      if (target.closest(".js-card-svg")) {
+        if (window.RichField?.openSvgModal) {
+          window.RichField.openSvgModal((svgHtml) => {
+            if (!svgHtml) return;
+            state[index].media = { type: "svg", html: svgHtml };
+            emit(state, onChange);
+            repaint();
+          });
+        }
+      } else if (target.closest(".js-card-clear-media")) {
         const index = Number(target.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
-        if (!window.RichField || !window.RichField.openSvgModal) return;
-        window.RichField.openSvgModal((svgHtml) => {
-          if (!svgHtml) return;
-          state[index].media = { type: "svg", html: svgHtml };
-          emit(state, onChange);
-          repaint();
-        });
-        return;
-      }
-      // Media: clear
-      if (target.closest(".js-card-clear-media")) {
-        const index = Number(target.closest("[data-index]")?.dataset.index);
-        if (!Number.isFinite(index)) return;
         state[index].media = null;
         emit(state, onChange);
         repaint();
@@ -353,13 +415,6 @@
     };
 
     repaint();
-    if (window.EditorUtils) {
-      window.EditorUtils.bindPasteNormalizer(container);
-      window.EditorUtils.bindStrictPasteNormalizer(
-        container,
-        'input[data-key="tags"], input.js-answer',
-      );
-    }
   }
 
   window.GameBreakEditors.adaptiveQuiz = { render };

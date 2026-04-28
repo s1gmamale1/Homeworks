@@ -18,8 +18,31 @@ class HomeworkUpdate(BaseModel):
     content_json: Optional[Dict[str, Any]] = None
 
 @router.get("")
-async def list_homeworks(include_deleted: bool = Query(False)):
-    return await db.list_homeworks(include_deleted=include_deleted)
+async def list_homeworks(
+    q: Optional[str] = Query(None),
+    subject: Optional[str] = Query(None),
+    grade: Optional[int] = Query(None),
+    mode: Optional[str] = Query(None),
+    limit: int = Query(50),
+    offset: int = Query(0),
+    legacy: bool = Query(False),
+    include_deleted: bool = Query(False),
+):
+    # Clamp limit to 200 max — silently friendly.
+    limit = min(limit, 200)
+    result = await db.search_homeworks(
+        q=q,
+        subject=subject,
+        grade=grade,
+        mode=mode,
+        include_deleted=include_deleted,
+        limit=limit,
+        offset=offset,
+    )
+    if legacy:
+        # TODO(post-frontend-cutover): remove legacy=true branch
+        return result["items"]
+    return result
 
 @router.post("")
 async def create_homework(hw: HomeworkCreate):

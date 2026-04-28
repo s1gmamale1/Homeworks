@@ -6,8 +6,9 @@ import os
 
 from server.routes.meta import router as meta_router
 from server.routes.homework import router as hw_router
-from server.routes.export import router as export_router
+from server.routes.homework_page import router as homework_page_router
 from server.routes.ai import router as ai_router
+from server.routes.library import router as library_router
 from server import db
 from server.config import BASE_DIR
 
@@ -38,8 +39,9 @@ app.add_middleware(
 
 app.include_router(meta_router, prefix="/api")
 app.include_router(hw_router, prefix="/api")
-app.include_router(export_router, prefix="/api")
+app.include_router(homework_page_router)
 app.include_router(ai_router, prefix="/api")
+app.include_router(library_router, prefix="/api")
 
 # Runtime static mount — serves /static/runtime/runtime.js from server/template/
 # MUST come before the `/` catch-all mount below (FastAPI evaluates mounts in order).

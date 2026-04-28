@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NETS Builder · Library</title>
+  <link rel="stylesheet" href="/css/app.css" />
+  <link rel="stylesheet" href="/css/library.css" />
+  <script src="/js/katex-render.js?v=1"></script>
+</head>
+<body data-page="library">
+  <div class="app-shell">
+    <header class="topbar glass-card">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">N</div>
+        <div>
+          <p class="eyebrow">NETS Homework Builder</p>
+          <h1>Browse Library</h1>
+        </div>
+      </div>
+
+      <nav class="topbar-nav" aria-label="Site navigation">
+        <a class="btn btn-ghost" href="/index.html">Dashboard</a>
+        <a class="btn btn-ghost is-active" href="/library.html" aria-current="page">Library</a>
+      </nav>
+    </header>
+
+    <main class="dashboard-layout">
+      <!-- Filters toolbar -->
+      <section class="toolbar glass-card lib-toolbar" aria-label="Library filters">
+        <label class="search-box lib-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="lib-search" type="search" placeholder="Search by title or chapter..." autocomplete="off" />
+        </label>
+
+        <div class="filter-row">
+          <label>
+            <span>Subject</span>
+            <select id="lib-subject">
+              <option value="">All subjects</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Grade</span>
+            <select id="lib-grade">
+              <option value="">All grades</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Mode</span>
+            <select id="lib-mode">
+              <option value="">All modes</option>
+            </select>
+          </label>
+
+          <button class="btn btn-ghost" id="lib-clear-btn" type="button">Clear</button>
+        </div>
+      </section>
+
+      <!-- Results section -->
+      <section class="library-section" aria-labelledby="lib-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Results</p>
+            <h2 id="lib-heading">Homeworks <span class="tab-count" id="lib-count"></span></h2>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state glass-card" id="lib-loading">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Loading library...</p>
+        </div>
+
+        <!-- Error -->
+        <div class="error-state glass-card hidden" id="lib-error">
+          <div class="empty-orb" aria-hidden="true">⚠</div>
+          <h3>Could not reach the server</h3>
+          <p id="lib-error-msg">Check your connection and try again.</p>
+          <button class="btn btn-primary" id="lib-retry-btn" type="button">Retry</button>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state glass-card hidden" id="lib-empty">
+          <div class="empty-orb" aria-hidden="true">📚</div>
+          <h3>No homeworks found</h3>
+          <p>Try adjusting your filters or search query.</p>
+        </div>
+
+        <!-- Card grid -->
+        <div class="homework-grid lib-grid" id="lib-grid" aria-live="polite"></div>
+
+        <!-- Pagination -->
+        <div class="lib-pagination hidden" id="lib-pagination">
+          <button class="btn btn-ghost" id="lib-prev-btn" type="button" disabled>Previous</button>
+          <span id="lib-page-label" class="muted-text"></span>
+          <button class="btn btn-ghost" id="lib-next-btn" type="button">Next</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/library.js"></script>
+</body>
+</html>

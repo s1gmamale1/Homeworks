@@ -9,39 +9,277 @@
     "Technology is a useful servant but a dangerous master."
   ],
   "panels": [
-    { "id": 1, "title": "PANEL 1 - VOCABULARY", "pages": [{"blocks": [{"type": "h2", "text": "Advanced Technology Terms"}, {"type": "ul", "items": ["Artificial Intelligence (AI)", "Breakthrough", "Cutting-edge", "Obsolete"]}]}] },
-    { "id": 2, "title": "PANEL 2 - GRAMMAR", "pages": [{"blocks": [{"type": "h2", "text": "Mixed Conditionals"}, {"type": "p", "text": "Used to express an unreal past condition and its probable result in the present."}]}] },
-    { "id": 3, "title": "PANEL 3", "pages": [{"blocks": [{"type": "quote", "text": "If we had adopted renewable energy earlier, our air would be cleaner today."}]}] },
-    { "id": 4, "title": "PANEL 4", "pages": [{"blocks": [{"type": "h2", "text": "Structure"}, {"type": "p", "text": "If + Past Perfect, Subject + would + verb (infinitive)."}]}] },
-    { "id": 5, "title": "PANEL 5", "pages": [{"blocks": [{"type": "h2", "text": "Writing Skills"}, {"type": "p", "text": "How to write a balanced argumentative essay."}]}] },
-    { "id": 6, "title": "PANEL 6", "pages": [{"blocks": [{"type": "ul", "items": ["Introduction with a thesis statement", "Body paragraphs with supporting evidence", "Counter-arguments", "Conclusion"]}]}] },
-    { "id": 7, "title": "PANEL 7", "pages": [{"blocks": [{"type": "h2", "text": "Linking Words"}, {"type": "p", "text": "Furthermore, Nevertheless, On the other hand, Consequently."}]}] }
+    {
+      "id": 1,
+      "title": "PANEL 1 - VOCABULARY",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Advanced Technology Terms"
+            },
+            {
+              "type": "ul",
+              "items": [
+                "Artificial Intelligence (AI)",
+                "Breakthrough",
+                "Cutting-edge",
+                "Obsolete"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "PANEL 2 - GRAMMAR",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Mixed Conditionals"
+            },
+            {
+              "type": "p",
+              "text": "Used to express an unreal past condition and its probable result in the present."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "PANEL 3",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "quote",
+              "text": "If we had adopted renewable energy earlier, our air would be cleaner today."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "PANEL 4",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Structure"
+            },
+            {
+              "type": "p",
+              "text": "If + Past Perfect, Subject + would + verb (infinitive)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "PANEL 5",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Writing Skills"
+            },
+            {
+              "type": "p",
+              "text": "How to write a balanced argumentative essay."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "PANEL 6",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "ul",
+              "items": [
+                "Introduction with a thesis statement",
+                "Body paragraphs with supporting evidence",
+                "Counter-arguments",
+                "Conclusion"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "PANEL 7",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Linking Words"
+            },
+            {
+              "type": "p",
+              "text": "Furthermore, Nevertheless, On the other hand, Consequently."
+            }
+          ]
+        }
+      ]
+    }
   ],
   "flashcards": [
-    { "term": "Breakthrough", "def": "Katta kashfiyot (muhim yutuq).", "cluster": "QOIDA" },
-    { "term": "Obsolete", "def": "Eskirgan, iste'moldan chiqqan.", "cluster": "QOIDA" },
-    { "term": "Cutting-edge", "def": "Eng zamonaviy, ilg'or.", "cluster": "QOIDA" },
-    { "term": "Mixed Conditional", "def": "Aralash shart ergash gaplar.", "cluster": "METOD" },
-    { "term": "Consequently", "def": "Natijada.", "cluster": "TAHLIL" },
-    { "term": "Artificial Intelligence", "def": "Sun'iy intellekt.", "cluster": "QOIDA" },
-    { "term": "Nevertheless", "def": "Shunga qaramasdan.", "cluster": "TAHLIL" }
+    {
+      "term": "Breakthrough",
+      "def": "Katta kashfiyot (muhim yutuq).",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Obsolete",
+      "def": "Eskirgan, iste'moldan chiqqan.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Cutting-edge",
+      "def": "Eng zamonaviy, ilg'or.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Mixed Conditional",
+      "def": "Aralash shart ergash gaplar.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Consequently",
+      "def": "Natijada.",
+      "cluster": "TAHLIL"
+    },
+    {
+      "term": "Artificial Intelligence",
+      "def": "Sun'iy intellekt.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Nevertheless",
+      "def": "Shunga qaramasdan.",
+      "cluster": "TAHLIL"
+    }
   ],
   "memory_sprint": [
-    { "type": "KO", "prompt": "Which word means 'no longer in use'?", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "Obsolete means out of date or no longer used.", "options": ["Cutting-edge", "Obsolete", "Breakthrough", "Innovative"], "correct": 1 },
-    { "type": "TF", "prompt": "Mixed conditionals can combine a past condition with a present result.", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "True. E.g., If I had studied harder (past), I would be at university now (present).", "options": ["True", "False"], "correct": 0 },
-    { "type": "YNNG", "prompt": "Is 'furthermore' used to introduce a contrasting idea?", "subtitle": "", "tags": "[Bloom: L2 | PISA: L1]", "explain": "No, 'furthermore' is used to add more information, not contrast.", "options": ["Yes", "No", "Not given"], "correct": 1 },
-    { "type": "KO", "prompt": "Complete: If I had known you were coming, I _____ a cake.", "subtitle": "", "tags": "[Bloom: L2 | PISA: L2]", "explain": "This is a Third Conditional (past condition, past result): would have baked.", "options": ["would bake", "will bake", "would have baked", "baked"], "correct": 2 },
-    { "type": "TF", "prompt": "'Cutting-edge' refers to something very old.", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "False, it refers to the newest and most advanced technology.", "options": ["True", "False"], "correct": 1 }
+    {
+      "type": "KO",
+      "prompt": "Which word means 'no longer in use'?",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "Obsolete means out of date or no longer used.",
+      "options": [
+        "Cutting-edge",
+        "Obsolete",
+        "Breakthrough",
+        "Innovative"
+      ],
+      "correct": 1
+    },
+    {
+      "type": "TF",
+      "prompt": "Mixed conditionals can combine a past condition with a present result.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "True. E.g., If I had studied harder (past), I would be at university now (present).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": 0
+    },
+    {
+      "type": "YNNG",
+      "prompt": "Is 'furthermore' used to introduce a contrasting idea?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "explain": "No, 'furthermore' is used to add more information, not contrast.",
+      "options": [
+        "Yes",
+        "No",
+        "Not given"
+      ],
+      "correct": 1
+    },
+    {
+      "type": "KO",
+      "prompt": "Complete: If I had known you were coming, I _____ a cake.",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L2]",
+      "explain": "This is a Third Conditional (past condition, past result): would have baked.",
+      "options": [
+        "would bake",
+        "will bake",
+        "would have baked",
+        "baked"
+      ],
+      "correct": 2
+    },
+    {
+      "type": "TF",
+      "prompt": "'Cutting-edge' refers to something very old.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "False, it refers to the newest and most advanced technology.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correct": 1
+    }
   ],
   "gb_adaptive_quiz": [
-    { "q": "Type the missing word: Technology has made some jobs completely ________ (outdated).", "tags": "[Bloom: L2 | PISA: L1]", "tier": "EASY", "ans": ["obsolete"], "capture": false }
+    {
+      "q": "Type the missing word: Technology has made some jobs completely ________ (outdated).",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "tier": "EASY",
+      "ans": [
+        "obsolete"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "obsolete",
+        "canonical_display": "obsolete",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "obsolete"
+      ]
+    }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["Breakthrough", "Important discovery"],
-    ["Obsolete", "Out of date"],
-    ["Furthermore", "In addition"],
-    ["Nevertheless", "However"]
+    [
+      "Breakthrough",
+      "Important discovery"
+    ],
+    [
+      "Obsolete",
+      "Out of date"
+    ],
+    [
+      "Furthermore",
+      "In addition"
+    ],
+    [
+      "Nevertheless",
+      "However"
+    ]
   ],
   "reading": {
     "text": "The rapid advancement of artificial intelligence (AI) has sparked widespread debate across the globe. While some argue that cutting-edge algorithms will solve humanity's greatest challenges, others fear the consequences. If developers had established stricter ethical guidelines a decade ago, we might not be facing the current privacy concerns today. Nevertheless, it is undeniable that AI represents a major breakthrough in computer science. Many traditional roles are becoming obsolete; consequently, the workforce must adapt to this new paradigm. On the other hand, entirely new industries are emerging.",
@@ -49,28 +287,165 @@
       {
         "q": "What is the main topic of the text?",
         "tags": "[Bloom: L2 | PISA: L2]",
-        "ans": ["The impact and debate surrounding artificial intelligence"]
+        "ans": [
+          "The impact and debate surrounding artificial intelligence"
+        ]
       }
     ]
   },
   "real_life": {
     "badge": "VAZIFA · Tech Blogger",
     "story": "You are a technology blogger reviewing a newly released smartphone.",
-    "q1": { "prompt": "How do you say 'Bu telefon eng zamonaviy texnologiyalarga ega' in English?", "ans": "This phone has cutting-edge technology", "fb": "Excellent vocabulary use." },
-    "q2": { "prompt": "Fill in: The old model is now ________.", "fields": [{"id": "word", "label": "Word", "ans": "obsolete"}], "fb": "Correct." },
-    "q3": { "prompt": "Translate: Agar ular batareyani yaxshilashganida, men uni sotib olgan bo'lardim.", "ans": "If they had improved the battery, I would have bought it", "fb": "Perfect third conditional." },
-    "q4": { "prompt": "Link these ideas: The camera is great. _____, the battery life is poor.", "fields": [{"id": "link", "label": "Linker", "ans": "Nevertheless"}], "fb": "Good job." },
-    "q5": { "prompt": "Write a short sentence summarizing your review.", "open": true, "fb": "Well expressed." },
-    "q6": { "prompt": "What does 'breakthrough' mean?", "ans": "a major discovery", "fb": "Correct." },
+    "q1": {
+      "prompt": "How do you say 'Bu telefon eng zamonaviy texnologiyalarga ega' in English?",
+      "ans": "This phone has cutting-edge technology",
+      "fb": "Excellent vocabulary use."
+    },
+    "q2": {
+      "prompt": "Fill in: The old model is now ________.",
+      "fields": [
+        {
+          "id": "word",
+          "label": "Word",
+          "ans": "obsolete"
+        }
+      ],
+      "fb": "Correct."
+    },
+    "q3": {
+      "prompt": "Translate: Agar ular batareyani yaxshilashganida, men uni sotib olgan bo'lardim.",
+      "ans": "If they had improved the battery, I would have bought it",
+      "fb": "Perfect third conditional."
+    },
+    "q4": {
+      "prompt": "Link these ideas: The camera is great. _____, the battery life is poor.",
+      "fields": [
+        {
+          "id": "link",
+          "label": "Linker",
+          "ans": "Nevertheless"
+        }
+      ],
+      "fb": "Good job."
+    },
+    "q5": {
+      "prompt": "Write a short sentence summarizing your review.",
+      "open": true,
+      "fb": "Well expressed."
+    },
+    "q6": {
+      "prompt": "What does 'breakthrough' mean?",
+      "ans": "a major discovery",
+      "fb": "Correct."
+    },
     "endTitle": "Review Published!",
     "endSub": "Your followers loved the article."
   },
   "boss_questions": [
-    { "q": "Complete the mixed conditional: If she had taken the medication yesterday, she _____ (feel) better today.", "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]", "ans": ["would feel"], "hint": "Past condition (had taken) + present result (would + verb).", "dmg": 30 },
-    { "q": "Which word is a synonym for 'cutting-edge'?", "tags": "[Bloom: L1 | PISA: L2 | Damage: -10 HP]", "ans": ["advanced", "innovative", "modern"], "hint": "Think of words that mean new and highly developed.", "dmg": 10 },
-    { "q": "What linking word can replace 'as a result'?", "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]", "ans": ["consequently", "therefore", "thus"], "hint": "It starts with 'c'.", "dmg": 20 },
-    { "q": "Correct the error: If I had money now, I would have bought it yesterday.", "tags": "[Bloom: L4 | PISA: L4 | Damage: -30 HP]", "ans": ["If I had had money yesterday, I would buy it now", "If I had money yesterday, I would have bought it"], "hint": "Check the sequence of tenses in conditionals.", "dmg": 30 },
-    { "q": "Provide the opposite of 'obsolete'.", "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]", "ans": ["modern", "current", "new"], "hint": "Something that is NOT out of date.", "dmg": 10 }
+    {
+      "q": "Complete the mixed conditional: If she had taken the medication yesterday, she _____ (feel) better today.",
+      "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]",
+      "ans": [
+        "would feel"
+      ],
+      "hint": "Past condition (had taken) + present result (would + verb).",
+      "dmg": 30,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "would feel",
+        "canonical_display": "would feel",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "would feel"
+      ]
+    },
+    {
+      "q": "Which word is a synonym for 'cutting-edge'?",
+      "tags": "[Bloom: L1 | PISA: L2 | Damage: -10 HP]",
+      "ans": [
+        "advanced",
+        "innovative",
+        "modern"
+      ],
+      "hint": "Think of words that mean new and highly developed.",
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "advanced",
+        "canonical_display": "advanced",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "advanced",
+        "innovative",
+        "modern"
+      ]
+    },
+    {
+      "q": "What linking word can replace 'as a result'?",
+      "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]",
+      "ans": [
+        "consequently",
+        "therefore",
+        "thus"
+      ],
+      "hint": "It starts with 'c'.",
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "consequently",
+        "canonical_display": "consequently",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "consequently",
+        "therefore",
+        "thus"
+      ]
+    },
+    {
+      "q": "Correct the error: If I had money now, I would have bought it yesterday.",
+      "tags": "[Bloom: L4 | PISA: L4 | Damage: -30 HP]",
+      "ans": [
+        "If I had had money yesterday, I would buy it now",
+        "If I had money yesterday, I would have bought it"
+      ],
+      "hint": "Check the sequence of tenses in conditionals.",
+      "dmg": 30,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "If I had had money yesterday, I would buy it now",
+        "canonical_display": "If I had had money yesterday, I would buy it now",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "If I had had money yesterday, I would buy it now",
+        "If I had money yesterday, I would have bought it"
+      ]
+    },
+    {
+      "q": "Provide the opposite of 'obsolete'.",
+      "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]",
+      "ans": [
+        "modern",
+        "current",
+        "new"
+      ],
+      "hint": "Something that is NOT out of date.",
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "modern",
+        "canonical_display": "modern",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "modern",
+        "current",
+        "new"
+      ]
+    }
   ],
   "reflection": {
     "summary": "We discussed advanced technology vocabulary and the structure of mixed conditionals.",

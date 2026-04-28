@@ -207,8 +207,35 @@
       return request("/api/health");
     },
 
+    /**
+     * Paginated + filtered homework list.
+     * @param {Object} params
+     * @param {string} [params.q]       - Free-text search (title/subject/family LIKE)
+     * @param {string} [params.subject] - Exact subject filter
+     * @param {number} [params.grade]   - Exact grade filter
+     * @param {string} [params.mode]    - Exact mode filter (easy|hard)
+     * @param {number} [params.limit]   - Page size (default 50, max 200)
+     * @param {number} [params.offset]  - Pagination offset (default 0)
+     * @returns {Promise<{items: Array, total: number, limit: number, offset: number}>}
+     */
+    getHomeworks(params = {}) {
+      const qs = new URLSearchParams();
+      if (params.q)       qs.set("q", params.q);
+      if (params.subject) qs.set("subject", params.subject);
+      if (params.grade != null) qs.set("grade", String(params.grade));
+      if (params.mode)    qs.set("mode", params.mode);
+      if (params.limit != null)  qs.set("limit", String(params.limit));
+      if (params.offset != null) qs.set("offset", String(params.offset));
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/api/homeworks${suffix}`);
+    },
+
+    /**
+     * Legacy shim — returns bare array for backward-compat callers.
+     * @returns {Promise<Array>}
+     */
     listHomeworks() {
-      return request("/api/homeworks");
+      return this.getHomeworks().then((r) => r.items);
     },
 
     createHomework({ title, subject, grade, mode }) {
@@ -318,10 +345,6 @@
 
     getPreviewUrl(id) {
       return buildUrl(`/api/homeworks/${encodeId(id)}/preview`);
-    },
-
-    getExportUrl(id) {
-      return buildUrl(`/api/homeworks/${encodeId(id)}/export`);
     },
 
     createSession({ homework_id, student_name }) {

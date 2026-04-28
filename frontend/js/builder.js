@@ -186,7 +186,6 @@
       togglePreviewBtn: $("toggle-preview-btn"),
       loadTemplateBtn: $("load-template-btn"),
       testTutorBtn: $("test-tutor-btn"),
-      exportLink: $("export-link"),
       builderContent: $("builder-content"),
       activePhaseKicker: $("active-phase-kicker"),
       activePhaseTitle: $("active-phase-title"),
@@ -410,7 +409,6 @@
     els.sidebarTitle.textContent = homework.title || "Untitled homework";
     els.builderTitle.textContent = homework.title || "Untitled homework";
     els.builderSubtitle.textContent = `${subject} · ${homework.grade}-sinf · ${titleCase(homework.mode)}`;
-    els.exportLink.href = API.getExportUrl(homework.id);
 
     els.sidebarMeta.innerHTML = `
       <span class="status-pill" data-status="${escapeHtml(status)}">

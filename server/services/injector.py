@@ -104,8 +104,13 @@ def _rl_adapt_to_template(rl: dict) -> dict:
 
     def make_fields_q(key: str, bloom: str, pisa: str) -> dict:
         q = rl.get(key) or {}
-        capture = bool(q.get("capture"))
+        # If author provided no fields[] but did provide ans, fall through to a
+        # single-input text question — otherwise the player gets a phantom
+        # multi-input box that only accepts "—".
         fields_in = q.get("fields") or []
+        if not fields_in and (q.get("ans") or q.get("prompt")):
+            return make_text_q(key, bloom, pisa)
+        capture = bool(q.get("capture"))
         fields_out = []
         for f in fields_in:
             if not isinstance(f, dict):
@@ -138,14 +143,23 @@ def _rl_adapt_to_template(rl: dict) -> dict:
             "accepted": "open-ended",
         }
 
-    questions = [
-        make_text_q("q1",   "L3", "P2"),
-        make_fields_q("q2", "L2", "P2"),
-        make_text_q("q3",   "L4", "P3"),
-        make_text_q("q4",   "L4", "P3"),
-        make_open_q("q5",   "L5", "P4") if (rl.get("q5") or {}).get("open") else make_text_q("q5", "L3", "P2"),
-        make_text_q("q6",   "L3", "P2"),
-    ]
+    # Only emit a question slot if the author actually provided content for it.
+    # Phantom empty questions (acceptableAnswers: ["—"], no prompt) make the
+    # runtime un-completable.
+    def _has(key: str) -> bool:
+        q = rl.get(key) or {}
+        return bool((q.get("prompt") or "").strip()) or bool(q.get("ans")) or bool(q.get("fields"))
+
+    questions = []
+    if _has("q1"): questions.append(make_text_q("q1", "L3", "P2"))
+    if _has("q2"): questions.append(make_fields_q("q2", "L2", "P2"))
+    if _has("q3"): questions.append(make_text_q("q3", "L4", "P3"))
+    if _has("q4"): questions.append(make_text_q("q4", "L4", "P3"))
+    if _has("q5"):
+        questions.append(make_open_q("q5", "L5", "P4")
+                         if (rl.get("q5") or {}).get("open")
+                         else make_text_q("q5", "L3", "P2"))
+    if _has("q6"): questions.append(make_text_q("q6", "L3", "P2"))
 
     out["title"] = title
     out["story"] = story
@@ -211,16 +225,16 @@ def _strip_text_tags_keep_media(s) -> str:
 def inject(
     content_json: dict,
     meta_override: dict | None = None,
-    runtime_context: dict | None = None,
+    *,
+    runtime_context: dict,
 ) -> str:
     """Inject content_json into the Perfect Homework HTML template.
 
     content_json: full schema per CONTRACTS §1
     meta_override: optional {title, subject_display, section, cefr_level} to force
                    specific values. If None, uses content_json['meta'].
-    runtime_context: optional dict — if provided, inject the AI tutor runtime hook
-                     (window.NETS_CTX + runtime.js) before </body>. Used for live
-                     preview; omit for standalone export.
+    runtime_context: required keyword-only dict — AI tutor runtime hook context
+                     (window.NETS_CTX + runtime.js). Always injected before </body>.
 
     Returns: rendered HTML string.
     """
@@ -335,16 +349,67 @@ def inject(
                     "capture": bool(item.get("capture", False)),
                     "ans_all": acceptable,
                 })
-            # Ensure at least one item of each tier so gbAQPickItem doesn't return undefined.
+            # Ensure each tier has at least one DISTINCT item so the picker never
+            # returns undefined and the student never sees the same question twice
+            # in different tiers. If the source data collapses everything into one
+            # tier (common when an importer hardcodes "tier": "MEDIUM"), redistribute
+            # real items across easy/medium/hard by Bloom level — fall back to index
+            # buckets when Bloom is missing.
             if adapted:
                 tiers_present = {x["tier"] for x in adapted}
-                for tier in ("easy", "medium", "hard"):
-                    if tier not in tiers_present:
-                        # Clone the first item into the missing tier so picker has something.
-                        fallback = dict(adapted[0])
-                        fallback["tier"] = tier
-                        fallback["id"] = f"{tier[0].upper()}F"
-                        adapted.append(fallback)
+                missing = [t for t in ("easy", "medium", "hard") if t not in tiers_present]
+                if missing and len(adapted) >= 2:
+                    def _bloom_to_tier(b: str) -> str:
+                        # L1-L2 → easy, L3 → medium, L4+ → hard. Default medium.
+                        m = re.search(r"L(\d)", str(b or ""))
+                        if not m:
+                            return "medium"
+                        n = int(m.group(1))
+                        return "easy" if n <= 2 else ("hard" if n >= 4 else "medium")
+
+                    have_bloom = any(re.search(r"L\d", str(x.get("bloom") or "")) for x in adapted)
+                    if have_bloom:
+                        # Bloom-driven redistribution
+                        for x in adapted:
+                            x["tier"] = _bloom_to_tier(x.get("bloom"))
+                    else:
+                        # Index buckets: first third → easy, middle → medium, last third → hard
+                        n = len(adapted)
+                        for i, x in enumerate(adapted):
+                            if   i < n / 3:        x["tier"] = "easy"
+                            elif i < 2 * n / 3:    x["tier"] = "medium"
+                            else:                  x["tier"] = "hard"
+
+                    # If a tier is still empty, fill it with the item whose Bloom
+                    # is *closest to* that tier's target band — never with the most
+                    # advanced item demoted to easy or vice-versa.
+                    def _bloom_n(x):
+                        m = re.search(r"L(\d)", str(x.get("bloom") or ""))
+                        return int(m.group(1)) if m else 3
+                    target = {"easy": 1, "medium": 3, "hard": 5}
+                    by_tier = {"easy": [], "medium": [], "hard": []}
+                    for x in adapted:
+                        by_tier.setdefault(x["tier"], []).append(x)
+                    for t in ("easy", "medium", "hard"):
+                        if by_tier[t]:
+                            continue
+                        # Find a donor tier with > 1 item; among its items pick the
+                        # one whose Bloom level is closest to target[t].
+                        donors = [k for k in ("easy", "medium", "hard") if k != t and len(by_tier[k]) >= 2]
+                        if not donors:
+                            continue
+                        # Choose donor whose pool has an item closest to target[t]
+                        best = None  # (donor_key, item_index, distance)
+                        for d in donors:
+                            for i, item in enumerate(by_tier[d]):
+                                dist = abs(_bloom_n(item) - target[t])
+                                if best is None or dist < best[2]:
+                                    best = (d, i, dist)
+                        if best:
+                            d, i, _ = best
+                            moved = by_tier[d].pop(i)
+                            moved["tier"] = t
+                            by_tier[t].append(moved)
             data = adapted
 
         # Shape adapter: Sentence Fill editor emits {q, inv, reprompts[]} but the
@@ -605,14 +670,25 @@ def inject(
         if primary:
             html = html[: primary.start()] + rl_json + "\n// BOSS" + html[primary.end():]
         else:
-            # Fallback: find object literal followed by const/var/let/function/comment
+            # Fallback: match the const statement up to its TERMINATING ';'.
+            # Earlier this used `}\s*(?=\s*(const|var|let|function|//))` but
+            # that regex backtracked through every `}` inside the literal
+            # until it found one followed by a const/function declaration.
+            # When the template kept `const stage6State = {...}` immediately
+            # after RL_SCENARIO, that worked; when subsequent edits added a
+            # bare `;` between them or a function followed RL directly, the
+            # regex over-matched and ate `stage6State` plus the `rl*`
+            # helpers, producing a white screen after Tile Match.
+            # The non-greedy `.*?};` reliably stops at RL_SCENARIO's
+            # terminating semicolon — no nested `};` exists in the literal
+            # body (object members end with `}` + comma, not semicolon).
             fallback = re.search(
-                r"const RL_SCENARIO\s*=\s*\{.*?\}\s*(?=\s*(const|var|let|function|//))",
+                r"const RL_SCENARIO\s*=\s*\{.*?\};",
                 html,
                 flags=re.DOTALL,
             )
             if fallback:
-                html = html[: fallback.start()] + rl_json + "\n\n" + html[fallback.end():]
+                html = html[: fallback.start()] + rl_json + html[fallback.end():]
 
     # 5. Replace OBJECT constants — reading / consolidation / reflection.
     # Authors edit these via dedicated editors; builder routes them straight into
@@ -668,15 +744,13 @@ def inject(
         if re.search(pattern, html, flags=re.DOTALL):
             html = re.sub(pattern, lambda _, r=replacement: r, html, count=1, flags=re.DOTALL)
 
-    # Optional runtime hook (only when served live, not exported standalone)
-    if runtime_context:
-        ctx_json = json.dumps(runtime_context, ensure_ascii=False)
-        runtime_snippet = (
-            f'<script>window.NETS_CTX = {ctx_json};</script>\n'
-            f'<script src="/static/runtime/runtime.js"></script>\n'
-        )
-        # Inject before closing </body>
-        html = html.replace('</body>', runtime_snippet + '</body>', 1)
+    # Always inject the AI tutor runtime hook before </body>.
+    ctx_json = json.dumps(runtime_context, ensure_ascii=False)
+    runtime_snippet = (
+        f'<script>window.NETS_CTX = {ctx_json};</script>\n'
+        f'<script src="/static/runtime/runtime.js"></script>\n'
+    )
+    html = html.replace('</body>', runtime_snippet + '</body>', 1)
 
     return html
 

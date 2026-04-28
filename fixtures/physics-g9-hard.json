@@ -16,8 +16,14 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Birinchi qonun" },
-            { "type": "p", "text": "Jismga boshqa jismlar ta'sir etmasa, u o'zining tinch holatini yoki to'g'ri chiziqli tekis harakatini saqlaydi." }
+            {
+              "type": "h2",
+              "text": "Birinchi qonun"
+            },
+            {
+              "type": "p",
+              "text": "Jismga boshqa jismlar ta'sir etmasa, u o'zining tinch holatini yoki to'g'ri chiziqli tekis harakatini saqlaydi."
+            }
           ]
         }
       ]
@@ -28,9 +34,18 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Ikkinchi qonun" },
-            { "type": "p", "text": "Jismning olgan tezlanishi unga ta'sir etuvchi kuchga to'g'ri, massasiga teskari proporsional." },
-            { "type": "quote", "text": "F = m · a" }
+            {
+              "type": "h2",
+              "text": "Ikkinchi qonun"
+            },
+            {
+              "type": "p",
+              "text": "Jismning olgan tezlanishi unga ta'sir etuvchi kuchga to'g'ri, massasiga teskari proporsional."
+            },
+            {
+              "type": "quote",
+              "text": "F = m · a"
+            }
           ]
         }
       ]
@@ -41,9 +56,18 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Uchinchi qonun" },
-            { "type": "p", "text": "Jismlarning o'zaro ta'sir kuchlari miqdor jihatdan teng, yo'nalish jihatdan qarama-qarshidir." },
-            { "type": "quote", "text": "F₁ = -F₂" }
+            {
+              "type": "h2",
+              "text": "Uchinchi qonun"
+            },
+            {
+              "type": "p",
+              "text": "Jismlarning o'zaro ta'sir kuchlari miqdor jihatdan teng, yo'nalish jihatdan qarama-qarshidir."
+            },
+            {
+              "type": "quote",
+              "text": "F₁ = -F₂"
+            }
           ]
         }
       ]
@@ -54,8 +78,14 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Massa nima?" },
-            { "type": "p", "text": "Massa — jismning inersiyasi va gravitatsion xossalarini belgilovchi skalyar kattalik." }
+            {
+              "type": "h2",
+              "text": "Massa nima?"
+            },
+            {
+              "type": "p",
+              "text": "Massa — jismning inersiyasi va gravitatsion xossalarini belgilovchi skalyar kattalik."
+            }
           ]
         }
       ]
@@ -66,8 +96,14 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Kuch va uning turlari" },
-            { "type": "p", "text": "Kuch — vektor kattalik. Uning yo'nalishi va miqdori mavjud. Tabiatda tortishish, ishqalanish va elastiklik kuchlari keng tarqalgan." }
+            {
+              "type": "h2",
+              "text": "Kuch va uning turlari"
+            },
+            {
+              "type": "p",
+              "text": "Kuch — vektor kattalik. Uning yo'nalishi va miqdori mavjud. Tabiatda tortishish, ishqalanish va elastiklik kuchlari keng tarqalgan."
+            }
           ]
         }
       ]
@@ -78,8 +114,14 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Avtomobil harakati" },
-            { "type": "p", "text": "Avtomobil tormoz berganda yo'lovchilarning oldinga egilishi birinchi qonun (inersiya) natijasidir." }
+            {
+              "type": "h2",
+              "text": "Avtomobil harakati"
+            },
+            {
+              "type": "p",
+              "text": "Avtomobil tormoz berganda yo'lovchilarning oldinga egilishi birinchi qonun (inersiya) natijasidir."
+            }
           ]
         }
       ]
@@ -90,21 +132,55 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Vakuumdagi holat" },
-            { "type": "p", "text": "Kosmosda raketa dvigateli gazni orqaga otib, uchinchi qonun asosida oldinga harakatlanadi." }
+            {
+              "type": "h2",
+              "text": "Vakuumdagi holat"
+            },
+            {
+              "type": "p",
+              "text": "Kosmosda raketa dvigateli gazni orqaga otib, uchinchi qonun asosida oldinga harakatlanadi."
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "Inersiya", "def": "Jismning o'z tezligini saqlash xossasi.", "cluster": "QOIDA" },
-    { "term": "Nyutonning 1-qonuni", "def": "Inersiya qonuni.", "cluster": "QOIDA" },
-    { "term": "Nyutonning 2-qonuni", "def": "F = m · a", "cluster": "METOD" },
-    { "term": "Nyutonning 3-qonuni", "def": "Ta'sir aksta'sirga teng.", "cluster": "QOIDA" },
-    { "term": "Massa", "def": "Inersiya o'lchovi.", "cluster": "QOIDA" },
-    { "term": "Kuch", "def": "Ta'sir o'lchovi (Vektor).", "cluster": "QOIDA" },
-    { "term": "1 Nyuton (1 N)", "def": "1 kg massali jismga 1 m/s² tezlanish beruvchi kuch.", "cluster": "METOD" }
+    {
+      "term": "Inersiya",
+      "def": "Jismning o'z tezligini saqlash xossasi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Nyutonning 1-qonuni",
+      "def": "Inersiya qonuni.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Nyutonning 2-qonuni",
+      "def": "F = m · a",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Nyutonning 3-qonuni",
+      "def": "Ta'sir aksta'sirga teng.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Massa",
+      "def": "Inersiya o'lchovi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Kuch",
+      "def": "Ta'sir o'lchovi (Vektor).",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "1 Nyuton (1 N)",
+      "def": "1 kg massali jismga 1 m/s² tezlanish beruvchi kuch.",
+      "cluster": "METOD"
+    }
   ],
   "memory_sprint": [
     {
@@ -113,7 +189,12 @@
       "subtitle": "",
       "tags": "[Bloom: L3 | PISA: L2]",
       "explain": "a = F / m = 10 / 2 = 5 m/s²",
-      "options": ["5 m/s²", "20 m/s²", "12 m/s²", "8 m/s²"],
+      "options": [
+        "5 m/s²",
+        "20 m/s²",
+        "12 m/s²",
+        "8 m/s²"
+      ],
       "correct": 0
     },
     {
@@ -122,7 +203,10 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Noto'g'ri. Ular doimo miqdor jihatdan teng va yo'nalish jihatdan qarama-qarshidir.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 1
     },
     {
@@ -131,7 +215,11 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L2]",
       "explain": "Yo'q, uchinchi qonunga ko'ra gazni orqaga otishi hisobiga oldinga tezlanish oladi.",
-      "options": ["Ha", "Yo'q", "Ma'lum emas"],
+      "options": [
+        "Ha",
+        "Yo'q",
+        "Ma'lum emas"
+      ],
       "correct": 1
     },
     {
@@ -140,7 +228,12 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L2]",
       "explain": "Massa inersiya o'lchovi, shuning uchun massasi katta jismning inersiyasi ham katta bo'ladi.",
-      "options": ["Kattaroq", "Kichikroq", "O'zgarmas", "Nolga teng"],
+      "options": [
+        "Kattaroq",
+        "Kichikroq",
+        "O'zgarmas",
+        "Nolga teng"
+      ],
       "correct": 0
     },
     {
@@ -149,7 +242,10 @@
       "subtitle": "",
       "tags": "[Bloom: L2 | PISA: L2]",
       "explain": "Noto'g'ri. U to'g'ri chiziqli tekis harakatlanishi ham mumkin.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 1
     }
   ],
@@ -158,26 +254,85 @@
       "q": "Massa inersiyaning qanday o'lchovidir?",
       "tags": "[Bloom: L1 | PISA: L1]",
       "tier": "EASY",
-      "ans": ["miqdoriy"],
-      "capture": false
+      "ans": [
+        "miqdoriy"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "miqdoriy",
+        "canonical_display": "miqdoriy",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "miqdoriy"
+      ]
     }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["F = ma", "Ikkinchi qonun"],
-    ["F1 = -F2", "Uchinchi qonun"],
-    ["Inersiya", "Birinchi qonun"],
-    ["Massa", "kg"]
+    [
+      "F = ma",
+      "Ikkinchi qonun"
+    ],
+    [
+      "F1 = -F2",
+      "Uchinchi qonun"
+    ],
+    [
+      "Inersiya",
+      "Birinchi qonun"
+    ],
+    [
+      "Massa",
+      "kg"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Kosmik kema",
     "story": "Kosmik kema orbitada harakatlanmoqda. Uning dvigateli ma'lum bir kuch bilan ishlaydi va tezlanish beradi.",
-    "q1": { "prompt": "Agar dvigatel o'chirilsa kema nima qiladi?", "ans": "harakatni davom ettiradi", "fb": "To'g'ri, inersiya tufayli." },
-    "q2": { "prompt": "Agar kemaning massasi 1000 kg, tezlanishi 2 m/s² bo'lsa, dvigatel kuchi (N) qancha?", "fields": [{"id": "F", "label": "F=", "ans": "2000"}], "fb": "Ajoyib. F = 1000 * 2 = 2000 N." },
-    "q3": { "prompt": "Kema dvigateli gazni orqaga qaysi qonun asosida itaradi?", "ans": "uchinchi", "fb": "To'g'ri." },
-    "q4": { "prompt": "Uchinchi qonunga ko'ra, gazning kemaga ta'siri qanday?", "fields": [{"id": "ta'sir", "label": "ta'sir", "ans": "teng"}], "fb": "To'g'ri." },
-    "q5": { "prompt": "Massa qanday kattalik?", "open": true, "fb": "Skalyar va inersiya o'lchovi." },
-    "q6": { "prompt": "Nyutonning ikkinchi qonuni formulasini yozing.", "ans": "F=ma", "fb": "To'g'ri." },
+    "q1": {
+      "prompt": "Agar dvigatel o'chirilsa kema nima qiladi?",
+      "ans": "harakatni davom ettiradi",
+      "fb": "To'g'ri, inersiya tufayli."
+    },
+    "q2": {
+      "prompt": "Agar kemaning massasi 1000 kg, tezlanishi 2 m/s² bo'lsa, dvigatel kuchi (N) qancha?",
+      "fields": [
+        {
+          "id": "F",
+          "label": "F=",
+          "ans": "2000"
+        }
+      ],
+      "fb": "Ajoyib. F = 1000 * 2 = 2000 N."
+    },
+    "q3": {
+      "prompt": "Kema dvigateli gazni orqaga qaysi qonun asosida itaradi?",
+      "ans": "uchinchi",
+      "fb": "To'g'ri."
+    },
+    "q4": {
+      "prompt": "Uchinchi qonunga ko'ra, gazning kemaga ta'siri qanday?",
+      "fields": [
+        {
+          "id": "ta'sir",
+          "label": "ta'sir",
+          "ans": "teng"
+        }
+      ],
+      "fb": "To'g'ri."
+    },
+    "q5": {
+      "prompt": "Massa qanday kattalik?",
+      "open": true,
+      "fb": "Skalyar va inersiya o'lchovi."
+    },
+    "q6": {
+      "prompt": "Nyutonning ikkinchi qonuni formulasini yozing.",
+      "ans": "F=ma",
+      "fb": "To'g'ri."
+    },
     "endTitle": "Vazifa bajarildi",
     "endSub": "Koinot fizikasini tushundingiz."
   },
@@ -185,37 +340,101 @@
     {
       "q": "Nyutonning 2-qonuniga ko'ra, jism massasi 2 marta ortib, kuch 2 marta kamaysa tezlanish qanday o'zgaradi?",
       "tags": "[Bloom: L3 | PISA: L3 | Damage: -10 HP]",
-      "ans": ["4 marta kamayadi", "to'rt marta kamayadi"],
+      "ans": [
+        "4 marta kamayadi",
+        "to'rt marta kamayadi"
+      ],
       "hint": "a = F/m formulaga qo'ying.",
-      "dmg": 10
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "4 marta kamayadi",
+        "canonical_display": "4 marta kamayadi",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "4 marta kamayadi",
+        "to'rt marta kamayadi"
+      ]
     },
     {
       "q": "Avtomobil devorga urilganda, devor avtomobilga qanday kuch bilan ta'sir qiladi?",
       "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]",
-      "ans": ["teng", "bir xil", "avtomobil devorga qanday urilsa shunday"],
+      "ans": [
+        "teng",
+        "bir xil",
+        "avtomobil devorga qanday urilsa shunday"
+      ],
       "hint": "Nyutonning 3-qonunini eslang.",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "teng",
+        "canonical_display": "teng",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "teng",
+        "bir xil",
+        "avtomobil devorga qanday urilsa shunday"
+      ]
     },
     {
       "q": "1 kg massali jism 9.8 m/s² tezlanish bilan erkin tushmoqda. Unga ta'sir qilayotgan og'irlik kuchini (N) toping.",
       "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]",
-      "ans": ["9.8"],
+      "ans": [
+        "9.8"
+      ],
       "hint": "F = m * g formula bo'yicha hisoblang.",
-      "dmg": 30
+      "dmg": 30,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 9.8,
+        "canonical_display": "9.8",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "9.8"
+      ]
     },
     {
       "q": "Jismning harakatini o'zgartirishiga qarshilik xossasi nima deb ataladi?",
       "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]",
-      "ans": ["inersiya"],
+      "ans": [
+        "inersiya"
+      ],
       "hint": "Bu Nyutonning 1-qonuni asosidir.",
-      "dmg": 10
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "inersiya",
+        "canonical_display": "inersiya",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "inersiya"
+      ]
     },
     {
       "q": "Dinamometriyaning asosiy o'lchov birligi nima?",
       "tags": "[Bloom: L1 | PISA: L1 | Damage: -20 HP]",
-      "ans": ["nyuton", "N"],
+      "ans": [
+        "nyuton",
+        "N"
+      ],
       "hint": "Kuchni qanday birlikda o'lchaymiz?",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "nyuton",
+        "canonical_display": "nyuton",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "nyuton",
+        "N"
+      ]
     }
   ],
   "reflection": {

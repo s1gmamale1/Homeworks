@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -55,8 +56,43 @@ CREATE TABLE IF NOT EXISTS homework_versions (
     FOREIGN KEY (homework_id) REFERENCES homeworks(id)
 );
 
+CREATE TABLE IF NOT EXISTS answer_cache (
+    key TEXT PRIMARY KEY,
+    response_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS review_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id TEXT NOT NULL,
+    student_answer TEXT NOT NULL,
+    answer_spec_json TEXT NOT NULL,
+    ai_response_json TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    decision_json TEXT NULL,
+    resolved_at TEXT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_versions_hw_saved
     ON homework_versions(homework_id, saved_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_review_pending
+    ON review_queue(question_id, student_answer) WHERE status='pending';
+
+CREATE TABLE IF NOT EXISTS tutor_conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    hw_id TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    question_id TEXT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_tutor_session
+    ON tutor_conversations(session_id, hw_id, created_at);
 """
 
 
@@ -84,24 +120,24 @@ def _today_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d")
 
 
-async def _apply_pragmas(db: aiosqlite.Connection) -> None:
+async def apply_pragmas(db: aiosqlite.Connection) -> None:
     for stmt in _DURABILITY_PRAGMAS:
         await db.execute(stmt)
 
 
-async def _connect() -> aiosqlite.Connection:
+async def connect() -> aiosqlite.Connection:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     db = await aiosqlite.connect(DB_PATH)
     db.row_factory = aiosqlite.Row
-    await _apply_pragmas(db)
+    await apply_pragmas(db)
     return db
 
 
 async def init_db() -> None:
-    db = await _connect()
+    db = await connect()
     try:
-        # Pragmas already applied via _connect; reassert for clarity on fresh DBs.
-        await _apply_pragmas(db)
+        # Pragmas already applied via connect; reassert for clarity on fresh DBs.
+        await apply_pragmas(db)
         await db.executescript(_SCHEMA)
         # Migrate existing DBs that predate the `deleted_at` column.
         try:
@@ -109,6 +145,16 @@ async def init_db() -> None:
         except Exception:
             # Column already exists — safe to ignore.
             pass
+        # Migrate existing DBs that predate Wave-D review_queue decision columns.
+        for migration in (
+            "ALTER TABLE review_queue ADD COLUMN decision_json TEXT NULL",
+            "ALTER TABLE review_queue ADD COLUMN resolved_at TEXT NULL",
+        ):
+            try:
+                await db.execute(migration)
+            except Exception:
+                # Column already exists — safe to ignore.
+                pass
         await db.commit()
     finally:
         await db.close()
@@ -117,7 +163,7 @@ async def init_db() -> None:
 async def checkpoint() -> None:
     """Force a full WAL checkpoint. Call on graceful shutdown or periodically."""
     async with aiosqlite.connect(DB_PATH) as db:
-        await _apply_pragmas(db)
+        await apply_pragmas(db)
         await db.execute("PRAGMA wal_checkpoint(FULL)")
         await db.commit()
 
@@ -130,7 +176,7 @@ def _row_to_homework(row: aiosqlite.Row) -> dict:
 
 
 async def list_homeworks(include_deleted: bool = False) -> list[dict]:
-    db = await _connect()
+    db = await connect()
     try:
         if include_deleted:
             sql = (
@@ -152,9 +198,71 @@ async def list_homeworks(include_deleted: bool = False) -> list[dict]:
         await db.close()
 
 
+async def search_homeworks(
+    q: Optional[str] = None,
+    subject: Optional[str] = None,
+    grade: Optional[int] = None,
+    mode: Optional[str] = None,
+    include_deleted: bool = False,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict:
+    """Paginated + filtered homework list. Returns {items, total, limit, offset}."""
+    conditions = []
+    params: list = []
+
+    if not include_deleted:
+        conditions.append("deleted_at IS NULL")
+
+    if q:
+        like = f"%{q}%"
+        conditions.append(
+            "(title LIKE ? OR subject LIKE ? OR family LIKE ?)"
+        )
+        params.extend([like, like, like])
+
+    if subject:
+        conditions.append("subject = ?")
+        params.append(subject)
+
+    if grade is not None:
+        conditions.append("grade = ?")
+        params.append(grade)
+
+    if mode:
+        conditions.append("mode = ?")
+        params.append(mode)
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    cols = (
+        "id, title, subject, grade, mode, family, language, status, "
+        "created_at, updated_at, deleted_at"
+    )
+    count_sql = f"SELECT COUNT(*) FROM homeworks {where}"
+    list_sql = (
+        f"SELECT {cols} FROM homeworks {where} "
+        f"ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    )
+
+    db = await connect()
+    try:
+        count_cursor = await db.execute(count_sql, params)
+        count_row = await count_cursor.fetchone()
+        total = count_row[0] if count_row else 0
+
+        list_cursor = await db.execute(list_sql, params + [limit, offset])
+        rows = await list_cursor.fetchall()
+        items = [dict(r) for r in rows]
+    finally:
+        await db.close()
+
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
+
+
 async def list_trashed_homeworks() -> list[dict]:
     """Only soft-deleted rows — for the Trash view."""
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "SELECT id, title, subject, grade, mode, family, language, status, "
@@ -169,7 +277,7 @@ async def list_trashed_homeworks() -> list[dict]:
 
 async def get_homework(id: str) -> Optional[dict]:
     """Returns the record even if soft-deleted — needed for restore + preview."""
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute("SELECT * FROM homeworks WHERE id = ?", (id,))
         row = await cursor.fetchone()
@@ -199,7 +307,7 @@ async def create_homework(data: dict) -> dict:
     content = data.get("content_json") or {}
     content_str = json.dumps(content, ensure_ascii=False)
 
-    db = await _connect()
+    db = await connect()
     try:
         new_id = await _next_id(db)
         await db.execute(
@@ -294,7 +402,7 @@ async def update_homework(id: str, updates: dict) -> Optional[dict]:
     values.append(now_iso)
     values.append(id)
 
-    db = await _connect()
+    db = await connect()
     try:
         # Snapshot BEFORE the update when content is changing. This preserves the
         # prior state so even if the write is later corrupted we can roll back.
@@ -328,7 +436,7 @@ async def update_homework(id: str, updates: dict) -> Optional[dict]:
 
 async def delete_homework(id: str) -> bool:
     """Soft delete — sets deleted_at timestamp. Still returns True on success."""
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "UPDATE homeworks SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL",
@@ -342,7 +450,7 @@ async def delete_homework(id: str) -> bool:
 
 async def hard_delete_homework(id: str) -> bool:
     """Permanent deletion. Only callable from an admin route."""
-    db = await _connect()
+    db = await connect()
     try:
         # Clean up version history first to avoid orphaned rows.
         await db.execute(
@@ -357,7 +465,7 @@ async def hard_delete_homework(id: str) -> bool:
 
 async def restore_homework(id: str) -> bool:
     """Un-soft-delete — clears deleted_at."""
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "UPDATE homeworks SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL",
@@ -370,7 +478,7 @@ async def restore_homework(id: str) -> bool:
 
 
 async def list_versions(homework_id: str) -> list[dict]:
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "SELECT id, homework_id, title, saved_at, length(content_json) AS size_bytes "
@@ -384,7 +492,7 @@ async def list_versions(homework_id: str) -> list[dict]:
 
 
 async def get_version(version_id: int) -> Optional[dict]:
-    db = await _connect()
+    db = await connect()
     try:
         cursor = await db.execute(
             "SELECT id, homework_id, content_json, title, saved_at "
@@ -417,7 +525,7 @@ async def restore_version(version_id: int) -> Optional[dict]:
 
 
 async def set_status(id: str, status: str) -> None:
-    db = await _connect()
+    db = await connect()
     try:
         await db.execute(
             "UPDATE homeworks SET status = ?, updated_at = ? WHERE id = ?",
@@ -426,3 +534,231 @@ async def set_status(id: str, status: str) -> None:
         await db.commit()
     finally:
         await db.close()
+
+async def get_answer_cache(key: str) -> Optional[dict]:
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT response_json FROM answer_cache WHERE key = ?", (key,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            return json.loads(row["response_json"])
+        return None
+    finally:
+        await db.close()
+
+async def set_answer_cache(key: str, response: dict) -> None:
+    db = await connect()
+    try:
+        await db.execute(
+            "INSERT OR REPLACE INTO answer_cache (key, response_json, created_at) VALUES (?, ?, ?)",
+            (key, json.dumps(response, ensure_ascii=False), _now())
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+async def add_to_review_queue(
+    question_id: str,
+    student_answer: str,
+    answer_spec: dict,
+    ai_response: dict,
+) -> bool:
+    """Insert a pending review item.  Idempotent: if a row with the same
+    ``question_id`` + ``student_answer`` already has ``status='pending'``,
+    the insert is skipped and ``False`` is returned.  Returns ``True`` when a
+    new row was actually inserted.
+    """
+    db = await connect()
+    try:
+        # Dedup check: skip insert when an identical pending row already exists.
+        cursor = await db.execute(
+            "SELECT id FROM review_queue "
+            "WHERE question_id = ? AND student_answer = ? AND status = 'pending' "
+            "LIMIT 1",
+            (question_id, student_answer),
+        )
+        existing = await cursor.fetchone()
+        if existing:
+            return False
+        await db.execute(
+            "INSERT INTO review_queue "
+            "(question_id, student_answer, answer_spec_json, ai_response_json, status, created_at) "
+            "VALUES (?, ?, ?, ?, 'pending', ?)",
+            (
+                question_id,
+                student_answer,
+                json.dumps(answer_spec, ensure_ascii=False),
+                json.dumps(ai_response, ensure_ascii=False),
+                _now(),
+            ),
+        )
+        await db.commit()
+        return True
+    finally:
+        await db.close()
+
+async def get_review_queue() -> list[dict]:
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM review_queue WHERE status = 'pending' ORDER BY created_at ASC"
+        )
+        rows = await cursor.fetchall()
+        res = []
+        for r in rows:
+            d = dict(r)
+            d["answer_spec"] = json.loads(d.pop("answer_spec_json"))
+            d["ai_response"] = json.loads(d.pop("ai_response_json"))
+            res.append(d)
+        return res
+    finally:
+        await db.close()
+
+async def resolve_review_item(id: int, decision: dict) -> bool:
+    """Persist the teacher's decision and mark the review item resolved.
+
+    `decision` is stored verbatim as JSON so the schema doesn't need to grow
+    every time we add a new field (e.g. {correct, score, feedback, override_reason}).
+    """
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "UPDATE review_queue "
+            "SET status = 'resolved', decision_json = ?, resolved_at = ? "
+            "WHERE id = ? AND status = 'pending'",
+            (json.dumps(decision, ensure_ascii=False), _now(), id),
+        )
+        await db.commit()
+        return cursor.rowcount > 0
+    finally:
+        await db.close()
+
+
+# ---------------------------------------------------------------------------
+# Wave F1 — tutor_conversations helpers
+# ---------------------------------------------------------------------------
+#
+# The `tutor_conversations` table is owned by the tutor lane. Each row is a
+# single chat turn (user|assistant|system) scoped to a (session_id, hw_id).
+# We never modify rows after insertion — chat history is append-only.
+
+
+async def add_tutor_turn(
+    session_id: str,
+    hw_id: str,
+    phase: str,
+    question_id: Optional[str],
+    role: str,
+    content: str,
+) -> int:
+    """Append a chat turn. Returns the new row id."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "INSERT INTO tutor_conversations "
+            "(session_id, hw_id, phase, question_id, role, content, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (session_id, hw_id, phase, question_id, role, content, _now()),
+        )
+        await db.commit()
+        return cursor.lastrowid or 0
+    finally:
+        await db.close()
+
+
+async def list_tutor_turns(
+    session_id: str,
+    hw_id: str,
+    limit: int = 50,
+) -> list[dict]:
+    """Chronological turns for a (session_id, hw_id), oldest first, capped at `limit`."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT id, session_id, hw_id, phase, question_id, role, content, created_at "
+            "FROM tutor_conversations "
+            "WHERE session_id = ? AND hw_id = ? "
+            "ORDER BY created_at ASC, id ASC LIMIT ?",
+            (session_id, hw_id, limit),
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
+
+
+async def count_session_messages(session_id: str, hw_id: str) -> int:
+    """Total tutor turns for one (session_id, hw_id). Used for the 60-message cap."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM tutor_conversations "
+            "WHERE session_id = ? AND hw_id = ?",
+            (session_id, hw_id),
+        )
+        row = await cursor.fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        await db.close()
+
+
+async def build_session_profile(session_id: str, hw_id: str) -> str:
+    """Concatenate the last 20 user+assistant turns into a compact profile string.
+
+    No AI summarization in v1 — just a chronological dump (oldest first), each
+    line prefixed with the role, truncated to ~1500 chars to keep the boss-plan
+    prompt context tight.
+    """
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT role, content FROM tutor_conversations "
+            "WHERE session_id = ? AND hw_id = ? AND role IN ('user', 'assistant') "
+            "ORDER BY created_at DESC, id DESC LIMIT 20",
+            (session_id, hw_id),
+        )
+        rows = await cursor.fetchall()
+    finally:
+        await db.close()
+    # Reverse so output reads chronologically.
+    rows = list(reversed(rows))
+    lines = [f"{r['role']}: {r['content']}" for r in rows]
+    profile = "\n".join(lines)
+    if len(profile) > 1500:
+        profile = profile[-1500:]
+    return profile
+
+
+async def list_recent_attempts(
+    session_id: str,
+    hw_id: str,
+    question_id: str,
+    limit: int = 3,
+) -> list[dict]:
+    """Read up to `limit` most recent attempts on a question.
+
+    The `tutor_attempts` table is owned by the grading-lane teammate. We READ
+    only — never INSERT. If the table doesn't exist yet (pre-merge with grading
+    lane), return [] silently so the tutor still works.
+    """
+    db = await connect()
+    try:
+        try:
+            cursor = await db.execute(
+                "SELECT id, session_id, hw_id, question_id, phase, student_answer, "
+                "verdict, score, source, feedback, created_at "
+                "FROM tutor_attempts "
+                "WHERE session_id = ? AND hw_id = ? AND question_id = ? "
+                "ORDER BY created_at DESC, id DESC LIMIT ?",
+                (session_id, hw_id, question_id, limit),
+            )
+            rows = await cursor.fetchall()
+            return [dict(r) for r in rows]
+        except (sqlite3.OperationalError, aiosqlite.OperationalError):
+            # Pre-merge fallback: grading lane hasn't created the table yet.
+            return []
+    finally:
+        await db.close()
+

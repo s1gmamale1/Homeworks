@@ -1446,7 +1446,68 @@
             gap: 6px;
             margin-bottom: 14px;
         }
-        /* ── MEMORY MATCH ── */
+        /* ── TILE MATCH (left ↔ right column matching) ── */
+        .gb-mm-instructions {
+            font-size: 13px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .gb-tm-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .gb-tm-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .gb-tm-tile {
+            background: rgba(99, 184, 255, 0.08);
+            border: 2px solid rgba(99, 184, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 240ms ease;
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text);
+            user-select: none;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .gb-tm-tile:hover:not(.matched):not(.locked) {
+            background: rgba(99, 184, 255, 0.16);
+            border-color: rgba(99, 184, 255, 0.55);
+            transform: translateY(-1px);
+        }
+        .gb-tm-tile.selected {
+            background: rgba(99, 184, 255, 0.22);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .gb-tm-tile.matched {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.65);
+            color: rgba(220, 252, 231, 0.92);
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .gb-tm-tile.wrong-flash {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.7);
+            animation: gbTmShake 320ms ease;
+        }
+        @keyframes gbTmShake {
+            0%,100% { transform: translateX(0); }
+            25%     { transform: translateX(-4px); }
+            75%     { transform: translateX(4px); }
+        }
+        /* ── MEMORY MATCH (legacy classes — retained for any older homeworks) ── */
         .gb-mm-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1904,6 +1965,17 @@
         }
         .boss-feedback.correct { background: rgba(53,198,111,0.12); color: #17864a; }
         .boss-feedback.wrong { background: rgba(239,107,115,0.1); color: #c3535d; }
+        /* Wave F3 — personalized framing banner above each boss question */
+        .boss-framing {
+            margin: 0 0 12px;
+            padding: 10px 14px;
+            background: var(--surface-2, rgba(255,255,255,.05));
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            font-size: 14px;
+            font-style: italic;
+            opacity: 0.9;
+        }
         @keyframes hpShake {
             0%,100% { transform: translateX(0); }
             20% { transform: translateX(-5px); } 40% { transform: translateX(5px); }
@@ -1921,6 +1993,26 @@
         .boss-v-stats, .boss-d-sub, .boss-d-tip {
             font-size: 14px; color: var(--text-muted); line-height: 1.5; max-width: 340px;
         }
+        /* Defeat-card retry button — secondary affordance so the student
+           can choose between seeing their grades (main button) or
+           re-fighting the boss (this button). */
+        .boss-d-retry {
+            margin-top: 6px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+        }
+        .boss-d-retry:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.30);
+        }
+        .boss-d-retry:active { transform: translateY(1px); }
         /* ── BABYLONIAN DIAGRAM ─────────────────────────────── */
         .babyl-diagram {
             display: flex; align-items: flex-start; gap: 6px;
@@ -2011,7 +2103,821 @@
             display: inline-block;
             vertical-align: middle;
         }
+
+        /* ── WAVE 2 · READING / CONSOLIDATION / REFLECTION SCREENS ───────
+           Replaces inline styles previously stamped on the three screen
+           divs. Visual rendering is intentionally identical to the old
+           inline-styled version — colors, spacing, sizes match. */
+        .screen-wave2-card {
+            overflow-y: auto;
+            max-height: 100%;
+        }
+        .screen-wave2-caption {
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+        /* Reading */
+        .screen-reading-passage {
+            margin-bottom: 18px;
+        }
+        .screen-reading-checkpoint {
+            margin-top: 14px;
+            padding: 12px;
+            border-left: 3px solid var(--accent);
+        }
+        .screen-reading-prompt {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .screen-reading-q-tag {
+            color: var(--accent);
+            margin-right: 8px;
+        }
+        .screen-reading-input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1.5px solid rgba(99,184,255,0.3);
+            background: rgba(255,255,255,0.92);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text);
+            outline: none;
+            margin-bottom: 8px;
+            transition: border-color 200ms;
+        }
+        .screen-reading-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .screen-reading-input:disabled { opacity: 0.65; }
+        .screen-reading-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .screen-reading-btn {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(99,184,255,0.12);
+            border: 1px solid rgba(99,184,255,0.35);
+            border-radius: 12px;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: all 200ms;
+        }
+        .screen-reading-btn:disabled { opacity: 0.45; cursor: default; }
+        .screen-reading-btn:hover:not(:disabled) { background: rgba(99,184,255,0.2); }
+        .screen-reading-feedback {
+            margin-top: 8px;
+            font-size: 13px;
+            line-height: 1.45;
+            border-radius: 10px;
+            padding: 8px 12px;
+        }
+        .screen-reading-feedback.is-correct {
+            background: rgba(53,198,111,0.12);
+            color: #17864a;
+        }
+        .screen-reading-feedback.is-wrong {
+            background: rgba(239,107,115,0.1);
+            color: #c3535d;
+        }
+        .screen-reading-feedback.is-pending {
+            background: rgba(99,184,255,0.1);
+            color: #1e4f7a;
+            font-style: italic;
+        }
+        .screen-reading-ai-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fff;
+            background: var(--accent);
+            border-radius: 6px;
+            padding: 2px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        /* Consolidation */
+        .screen-cons-mnemonic {
+            margin-bottom: 14px;
+            font-size: 1.1em;
+        }
+        .screen-cons-bullets {
+            margin-bottom: 14px;
+        }
+        .screen-cons-prompt {
+            margin-bottom: 8px;
+        }
+        .screen-cons-toggle {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(99,184,255,0.12);
+            border: 1px solid rgba(99,184,255,0.35);
+            border-radius: 12px;
+            padding: 8px 14px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 200ms;
+        }
+        .screen-cons-toggle:hover:not(:disabled) { background: rgba(99,184,255,0.2); }
+        .screen-cons-toggle:disabled { opacity: 0.45; cursor: default; }
+        .screen-cons-answer {
+            opacity: 0.85;
+            font-style: italic;
+            display: none;
+            padding: 10px 14px;
+            background: rgba(99,184,255,0.08);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            margin-top: 6px;
+        }
+        .screen-cons-answer.is-revealed {
+            display: block;
+        }
+        /* Reflection */
+        .screen-reflection-summary {
+            margin-bottom: 14px;
+        }
+        .screen-reflection-question {
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+        .screen-reflection-spaced-rep {
+            margin-bottom: 14px;
+            opacity: 0.85;
+        }
+        .screen-reflection-closing {
+            margin-top: 18px;
+            color: var(--accent);
+        }
+
+        /* ── Results / AMR Scorecard ──────────────────────────────────
+           Statistical at-a-glance layout. Single color rule across the
+           whole card, applied via .perf-good (≥75%), .perf-mid (50–74%),
+           .perf-bad (<50%). The band label still reads
+           Mastered/Proficient/Apprentice/Novice but its tint follows the
+           percentage so a student knows immediately whether the run
+           landed in the green/yellow/red zone.
+        */
+        .screen-results-card {
+            /* Override the .panel-card { height: 82vh } default — the
+               statistical layout is taller than 82vh on smaller screens
+               and we don't want anything (axis bars, AMR note, tip,
+               retry button) to render outside the white card. */
+            padding: 24px 22px;
+            height: auto;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            --perf-good: #22c55e;  --perf-good-soft: rgba(34,197,94,0.18);  --perf-good-line: rgba(34,197,94,0.55);
+            --perf-mid:  #eab308;  --perf-mid-soft:  rgba(234,179,8,0.18);  --perf-mid-line:  rgba(234,179,8,0.55);
+            --perf-bad:  #ef4444;  --perf-bad-soft:  rgba(239,68,68,0.18);  --perf-bad-line:  rgba(239,68,68,0.55);
+        }
+        .screen-results-card::-webkit-scrollbar { width: 6px; }
+        .screen-results-card::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 999px; }
+        .screen-results-caption { letter-spacing: 1.5px; }
+
+        /* Hero — donut gauge with band pill underneath */
+        .screen-results-headline { margin: 14px 0 6px; }
+        .screen-results-hero {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .results-gauge { position: relative; width: 180px; height: 180px; }
+        .results-gauge svg {
+            width: 100%; height: 100%;
+            transform: rotate(-90deg); transform-origin: center;
+        }
+        .results-gauge-track { stroke: rgba(255,255,255,0.08); }
+        .results-gauge-fill  { stroke-linecap: round; transition: stroke-dashoffset 900ms cubic-bezier(.2,.7,.2,1); }
+        .results-gauge-center {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .results-gauge-pct  { font-size: 38px; font-weight: 800; line-height: 1; }
+        .results-gauge-frac { font-size: 11px; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.3px; }
+
+        .screen-results-band {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .screen-results-band.perf-good { background: var(--perf-good-soft); color: var(--perf-good); border: 1px solid var(--perf-good-line); }
+        .screen-results-band.perf-mid  { background: var(--perf-mid-soft);  color: var(--perf-mid);  border: 1px solid var(--perf-mid-line);  }
+        .screen-results-band.perf-bad  { background: var(--perf-bad-soft);  color: var(--perf-bad);  border: 1px solid var(--perf-bad-line);  }
+
+        /* Section headers reused between Phase list and AMR axes */
+        .results-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-dim);
+            margin: 22px 0 10px;
+            font-weight: 700;
+        }
+
+        /* Per-phase progress bars */
+        .screen-results-phases { margin-bottom: 4px; }
+        .results-phase-list { display: flex; flex-direction: column; gap: 8px; }
+        .results-phase-row {
+            display: grid;
+            grid-template-columns: 130px 1fr 64px;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .results-phase-name { color: var(--text); font-weight: 600; }
+        .results-phase-name small {
+            display: block; color: var(--text-dim);
+            font-size: 10px; font-weight: 500; margin-top: 2px;
+            letter-spacing: 0.2px;
+        }
+        .results-phase-bar-track {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .results-phase-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 900ms cubic-bezier(.2,.7,.2,1);
+        }
+        .results-phase-bar-fill.perf-good { background: var(--perf-good); }
+        .results-phase-bar-fill.perf-mid  { background: var(--perf-mid);  }
+        .results-phase-bar-fill.perf-bad  { background: var(--perf-bad);  }
+        .results-phase-bar-fill.perf-neutral { background: rgba(255,255,255,0.18); }
+        .results-phase-score { text-align: right; font-weight: 700; font-size: 13px; }
+        .results-phase-score.perf-good    { color: var(--perf-good); }
+        .results-phase-score.perf-mid     { color: var(--perf-mid);  }
+        .results-phase-score.perf-bad     { color: var(--perf-bad);  }
+        .results-phase-score.perf-neutral { color: var(--text-dim);  }
+
+        /* AMR — gradient bars with a triangle marker showing where you
+           landed on the 1–4 axis. Bar segments use the same red/yellow/
+           green palette so the position alone tells the story. */
+        .screen-results-amr {
+            margin: 4px 0 4px;
+            padding: 0;
+            background: transparent;
+            border: 0;
+        }
+        .results-amr-grid { display: flex; flex-direction: column; gap: 16px; }
+        .results-axis {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            row-gap: 4px; column-gap: 10px;
+            align-items: baseline;
+        }
+        .results-axis-label { font-size: 13px; font-weight: 600; color: var(--text); }
+        .results-axis-value { font-size: 13px; font-weight: 700; color: var(--text-dim); justify-self: end; }
+        .results-axis-bar-wrap { grid-column: 1 / -1; position: relative; padding-top: 12px; }
+        .results-axis-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right,
+                var(--perf-bad)  0%,
+                var(--perf-bad)  25%,
+                var(--perf-mid)  25%,
+                var(--perf-mid)  62.5%,
+                var(--perf-good) 62.5%,
+                var(--perf-good) 100%);
+            opacity: 0.88;
+        }
+        .results-axis-bar.is-empty { opacity: 0.25; }
+        .results-axis-marker {
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 9px solid var(--text);
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.55));
+            transition: left 900ms cubic-bezier(.2,.7,.2,1);
+        }
+        .results-axis-ticks {
+            display: flex; justify-content: space-between;
+            font-size: 9px; color: var(--text-dim);
+            margin-top: 4px; padding: 0 1px;
+            letter-spacing: 0.5px;
+        }
+        .results-axis-tag { grid-column: 1 / -1; font-size: 11px; margin-top: 4px; font-weight: 600; }
+        .results-axis-tag.perf-good { color: var(--perf-good); }
+        .results-axis-tag.perf-mid  { color: var(--perf-mid);  }
+        .results-axis-tag.perf-bad  { color: var(--perf-bad);  }
+        .results-axis-tag.perf-neutral { color: var(--text-dim); font-style: italic; font-weight: 500; }
+
+        .results-amr-note {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.55;
+            margin-top: 12px;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.025);
+            border-radius: 6px;
+        }
+        .results-amr-empty {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.55;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
+
+        /* Coaching tip — color matches the band */
+        .screen-results-mastery {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin: 20px 0 4px;
+        }
+        .screen-results-mastery.perf-good { background: rgba(34,197,94,0.06); border-left: 3px solid var(--perf-good); }
+        .screen-results-mastery.perf-mid  { background: rgba(234,179,8,0.06); border-left: 3px solid var(--perf-mid);  }
+        .screen-results-mastery.perf-bad  { background: rgba(239,68,68,0.06); border-left: 3px solid var(--perf-bad);  }
+
+        .screen-results-closing {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+            margin-top: 14px;
+        }
+        .screen-results-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 14px;
+        }
+        .screen-results-retry {
+            padding: 10px 22px;
+            border-radius: 999px;
+            background: rgba(99, 184, 255, 0.10);
+            border: 1px solid rgba(99, 184, 255, 0.32);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+        }
+        .screen-results-retry:hover {
+            background: rgba(99, 184, 255, 0.18);
+            border-color: rgba(99, 184, 255, 0.55);
+        }
+        .screen-results-retry:active { transform: translateY(1px); }
+        @media (max-width: 600px) {
+            .results-gauge { width: 150px; height: 150px; }
+            .results-gauge-pct { font-size: 32px; }
+            .results-phase-row { grid-template-columns: 96px 1fr 56px; gap: 8px; font-size: 12px; }
+        }
+
+        /* ── Engagement polish (HW-008-style content) ────────────────
+           These classes are author-facing — content can opt in by
+           wrapping prompts in `.rl-hook`, `.boss-opener`, etc. The
+           styling is intentionally subtle so plain prompts (no opt-in)
+           continue to render unchanged. */
+        .rl-hook {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(99, 184, 255, 0.14);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+        .boss-opener {
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
+            border: 1px solid rgba(239, 68, 68, 0.32);
+        }
+        .boss-opener-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #fca5a5;
+            letter-spacing: 0.3px;
+        }
+        .boss-opener-drama {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .rl-briefing {
+            display: grid;
+            gap: 10px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: rgba(99, 184, 255, 0.06);
+            border: 1px solid rgba(99, 184, 255, 0.18);
+            border-radius: 12px;
+        }
+        .rl-briefing-row {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .rl-briefing-label {
+            min-width: 170px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .rl-briefing-value {
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            min-width: 200px;
+        }
+        .rl-narrative {
+            margin-bottom: 14px;
+            line-height: 1.55;
+        }
+        .rl-w5h {
+            margin-bottom: 14px;
+            background: rgba(168, 85, 247, 0.06);
+            border: 1px solid rgba(168, 85, 247, 0.22);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .rl-w5h summary {
+            cursor: pointer;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 14px;
+            list-style: none;
+            user-select: none;
+        }
+        .rl-w5h summary::-webkit-details-marker { display: none; }
+        .rl-w5h summary::before {
+            content: "▸  ";
+            color: rgba(216, 180, 254, 0.8);
+        }
+        .rl-w5h[open] summary::before { content: "▾  "; }
+        .rl-w5h-list {
+            padding: 4px 22px 12px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .rl-w5h-list li { margin-bottom: 4px; }
+        .rl-blueprint {
+            margin-bottom: 14px;
+        }
+        .rl-blueprint-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+            font-size: 14px;
+        }
+        .rl-q-heading {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(99, 184, 255, 0.15);
+        }
+        .rl-q-stem {
+            line-height: 1.55;
+        }
+        @media (max-width: 600px) {
+            .rl-briefing-label { min-width: auto; }
+        }
+
+        /* ── Wave F2: Persistent AI Tutor Widget ────────────────── */
+        #nets-ai-tutor {
+            position: fixed;
+            right: 16px;
+            bottom: calc(16px + var(--safe-bottom));
+            z-index: 9000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+        }
+        #nets-tutor-fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 122, 255, 0.42), var(--shadow-mid, 0 8px 24px rgba(0,0,0,0.08));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+        #nets-tutor-fab:hover { transform: scale(1.05); }
+        #nets-tutor-fab:active { transform: scale(0.95); }
+        #nets-tutor-fab[hidden] { display: none !important; }
+
+        #nets-tutor-panel {
+            position: absolute;
+            right: 0;
+            bottom: 70px;
+            width: 360px;
+            max-width: calc(100vw - 24px);
+            height: 500px;
+            max-height: calc(100vh - 100px);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: var(--glass-blur, blur(40px) saturate(180%));
+            -webkit-backdrop-filter: var(--glass-blur, blur(40px) saturate(180%));
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform-origin: bottom right;
+            animation: nets-tutor-pop-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        }
+        @keyframes nets-tutor-pop-in {
+            from { transform: scale(0.85) translateY(10px); opacity: 0; }
+            to   { transform: scale(1)    translateY(0);    opacity: 1; }
+        }
+        #nets-tutor-panel[hidden] { display: none !important; }
+
+        #nets-tutor-panel header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.75);
+            flex-shrink: 0;
+        }
+        #nets-tutor-phase-badge {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 999px;
+            color: #fff;
+            background: #34c759;          /* default green = preview */
+            transition: background 220ms ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 240px;
+        }
+        #nets-tutor-phase-badge[data-phase="preview"]  { background: #34c759; }
+        #nets-tutor-phase-badge[data-phase="practice"] { background: #ff9500; }
+        #nets-tutor-phase-badge[data-phase="boss"]     { background: #ff3b30; }
+        #nets-tutor-close {
+            background: transparent;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--text-muted, #86868b);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        #nets-tutor-close:hover { background: rgba(0,0,0,0.06); color: var(--text, #1d1d1f); }
+
+        #nets-tutor-messages {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nets-tutor-msg {
+            max-width: 85%;
+            padding: 9px 13px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.45;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+        .nets-tutor-msg.user {
+            align-self: flex-end;
+            background: var(--accent, #007AFF);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .nets-tutor-msg.assistant {
+            align-self: flex-start;
+            background: rgba(0,0,0,0.05);
+            color: var(--text, #1d1d1f);
+            border-bottom-left-radius: 4px;
+        }
+        .nets-tutor-msg.error {
+            align-self: flex-start;
+            background: rgba(255, 59, 48, 0.12);
+            color: #c0392b;
+            border-bottom-left-radius: 4px;
+        }
+        .nets-tutor-msg strong { font-weight: 700; }
+        .nets-tutor-msg em { font-style: italic; }
+        .nets-tutor-msg code {
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 12.5px;
+            background: rgba(0,0,0,0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+        .nets-tutor-msg.user code { background: rgba(255,255,255,0.22); }
+        .nets-tutor-msg ul, .nets-tutor-msg ol {
+            margin: 4px 0 4px 18px;
+            padding: 0;
+        }
+        .nets-tutor-msg li { margin: 2px 0; }
+        .nets-tutor-msg p { margin: 0 0 6px 0; }
+        .nets-tutor-msg p:last-child { margin-bottom: 0; }
+
+        .nets-tutor-typing {
+            align-self: flex-start;
+            display: inline-flex;
+            gap: 4px;
+            padding: 10px 14px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+        }
+        .nets-tutor-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted, #86868b);
+            animation: nets-tutor-blink 1.2s infinite ease-in-out;
+        }
+        .nets-tutor-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .nets-tutor-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes nets-tutor-blink {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+            40%           { opacity: 1;   transform: scale(1); }
+        }
+
+        #nets-tutor-input-form {
+            display: flex;
+            gap: 8px;
+            padding: 10px 12px 12px 12px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.85);
+            flex-shrink: 0;
+            align-items: flex-end;
+        }
+        #nets-tutor-input {
+            flex: 1 1 auto;
+            border: 1px solid rgba(0,0,0,0.10);
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            background: #fff;
+            color: var(--text, #1d1d1f);
+            outline: none;
+            line-height: 1.35;
+            max-height: 90px;
+            user-select: text;
+        }
+        #nets-tutor-input:focus {
+            border-color: var(--accent, #007AFF);
+            box-shadow: 0 0 0 3px var(--accent-glow, rgba(0,122,255,0.28));
+        }
+        #nets-tutor-input:disabled {
+            background: rgba(0,0,0,0.04);
+            color: var(--text-muted, #86868b);
+            cursor: not-allowed;
+        }
+        #nets-tutor-send {
+            background: var(--accent, #007AFF);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+            min-height: 36px;
+        }
+        #nets-tutor-send:hover { filter: brightness(1.05); }
+        #nets-tutor-send:disabled {
+            background: rgba(0,0,0,0.18);
+            cursor: not-allowed;
+        }
+
+        #nets-tutor-cap-warning {
+            padding: 10px 14px;
+            font-size: 12.5px;
+            color: #c0392b;
+            background: rgba(255, 59, 48, 0.08);
+            border-top: 1px solid rgba(255, 59, 48, 0.18);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 600px) {
+            #nets-ai-tutor { right: 12px; bottom: calc(12px + var(--safe-bottom)); }
+            #nets-tutor-panel {
+                position: fixed;
+                right: 8px;
+                left: 8px;
+                bottom: calc(78px + var(--safe-bottom));
+                top: 16px;
+                width: auto;
+                max-width: none;
+                height: auto;
+                max-height: none;
+            }
+        }
     </style>
+
+    <!-- KaTeX: render $...$ / $$...$$ math in any prompt that uses LaTeX. -->
+    <!--
+      KaTeX from jsDelivr — SRI-pinned to katex@0.16.11 dist/.
+      If you bump the version, regenerate hashes:
+        curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+      Browsers refuse to execute / apply the resource if the hash mismatches.
+    -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+          integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+"
+          crossorigin="anonymous">
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+            integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
+            crossorigin="anonymous"></script>
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+            integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk"
+            crossorigin="anonymous"></script>
+    <script>
+      (function () {
+        const KATEX_OPTS = {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false,
+          ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+          ignoredClasses: ['katex','katex-display']
+        };
+
+        let isRendering = false;
+        function renderNow(node) {
+          if (isRendering || !window.renderMathInElement) return;
+          isRendering = true;
+          try { window.renderMathInElement(node || document.body, KATEX_OPTS); } catch (e) {}
+          setTimeout(() => { isRendering = false; }, 50);
+        }
+
+        let scheduled = false;
+        function scheduleRender() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(() => {
+            scheduled = false;
+            renderNow(document.body);
+          });
+        }
+        window.__renderMath = scheduleRender;
+
+        function start() {
+          renderNow(document.body);
+          new MutationObserver(scheduleRender).observe(document.body, {
+            childList: true, subtree: true, characterData: true
+          });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          if (window.renderMathInElement) start();
+          else {
+            const iv = setInterval(() => {
+              if (window.renderMathInElement) { clearInterval(iv); start(); }
+            }, 50);
+          }
+        });
+      })();
+    </script>
 </head>
 <body>
     <div id="bg-canvas">
@@ -2203,7 +3109,7 @@
                     </div>
                     <!-- Sub-game 2: Why Chain -->
                     <div class="gb-game-panel enter-right" id="gb-panel-wc">
-                        <div class="gb-section-title">O'YIN 2 — WHY CHAIN</div>
+                        <div class="gb-section-title">O'YIN 2 — SENTENCE FILL</div>
                         <div class="gb-wc-chain-header" id="gb-wc-chain-header">
                             <div class="gb-wc-level-dot active" id="gb-wcd-1"></div>
                             <div class="gb-wc-level-dot" id="gb-wcd-2"></div>
@@ -2218,14 +3124,14 @@
                         </div>
                         <textarea class="gb-wc-textarea" id="gb-wc-textarea" placeholder="Javobingizni yozing..."></textarea>
                     </div>
-                    <!-- Sub-game 3: Memory Match Blitz -->
+                    <!-- Sub-game 3: Tile Match (left ↔ right column matching) -->
                     <div class="gb-game-panel enter-right" id="gb-panel-mm">
-                        <div class="gb-section-title">O'YIN 3 — MEMORY MATCH BLITZ</div>
-                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 8</div>
-                        <div class="gb-mm-grid" id="gb-mm-grid"></div>
-                        <div class="gb-mm-confirm-box" id="gb-mm-confirm-box">
-                            <div class="gb-mm-confirm-q" id="gb-mm-confirm-q"></div>
-                            <input class="gb-mm-confirm-input" id="gb-mm-confirm-input" type="text" inputmode="text" placeholder="Javob..." autocomplete="off" />
+                        <div class="gb-section-title">O'YIN 3 — TILE MATCH</div>
+                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 6</div>
+                        <div class="gb-mm-instructions" id="gb-mm-instructions">Chap ustundagi plitkani bosing, so'ng o'ng ustunda unga mos keluvchini tanlang.</div>
+                        <div class="gb-tm-board" id="gb-tm-board">
+                            <div class="gb-tm-col" id="gb-tm-left"></div>
+                            <div class="gb-tm-col" id="gb-tm-right"></div>
                         </div>
                         <div class="gb-mm-win-banner" id="gb-mm-win-banner">
                             <div class="gb-mm-win-text">Barcha juftlar topildi!</div>
@@ -2336,6 +3242,8 @@
                         </div>
                     </div>
                     <div class="boss-q-card" id="boss-q-card">
+                        <!-- Wave F3: personalized framing banner; hidden when empty -->
+                        <div class="boss-framing" id="boss-framing" style="display:none"></div>
                         <div class="boss-q-text" id="boss-q-text"></div>
                         <div class="boss-q-tags" id="boss-q-tags"></div>
                     </div>
@@ -2358,40 +3266,60 @@
                     <div class="boss-d-title">Hali emas...</div>
                     <div class="boss-d-sub" id="boss-d-sub"></div>
                     <div class="boss-d-tip" id="boss-d-tip"></div>
+                    <button type="button" class="boss-d-retry" id="boss-d-retry-btn"
+                            onclick="bossRetry()">Boss'ni qayta urinish</button>
                 </div>
             </div>
         </div>
 
         <!-- Stage Reading (between Memory Sprint and Game Breaks for Til pipeline) -->
         <div id="screen-reading" class="screen">
-            <div class="card panel-card" style="overflow-y:auto; max-height:100%;">
-                <div class="caption" id="reading-title" style="margin-bottom:14px; text-transform:uppercase; letter-spacing:1px; color: var(--accent);">O'qish</div>
-                <div class="content-area" id="reading-passage" style="margin-bottom:18px;"></div>
+            <div class="card panel-card screen-wave2-card">
+                <div class="caption screen-wave2-caption" id="reading-title">O'qish</div>
+                <div class="content-area screen-reading-passage" id="reading-passage"></div>
                 <div id="reading-checkpoints"></div>
             </div>
         </div>
 
         <!-- Stage Consolidation (between Real-Life and Boss) -->
         <div id="screen-consolidation" class="screen">
-            <div class="card panel-card" style="overflow-y:auto; max-height:100%;">
-                <div class="caption" id="cons-title" style="margin-bottom:14px; text-transform:uppercase; letter-spacing:1px; color: var(--accent);">Mustahkamlash</div>
-                <div class="content-area" id="cons-mnemonic" style="margin-bottom:14px; font-size:1.1em;"></div>
-                <ul id="cons-bullets" style="margin-bottom:14px;"></ul>
+            <div class="card panel-card screen-wave2-card">
+                <div class="caption screen-wave2-caption" id="cons-title">Mustahkamlash</div>
+                <div class="content-area screen-cons-mnemonic" id="cons-mnemonic"></div>
+                <ul id="cons-bullets" class="screen-cons-bullets"></ul>
                 <div id="cons-check-block" style="display:none;">
-                    <div class="content-area" id="cons-check-prompt" style="margin-bottom:8px;"></div>
-                    <div class="content-area" id="cons-check-answer" style="opacity:0.75; font-style:italic;"></div>
+                    <div class="content-area screen-cons-prompt" id="cons-check-prompt"></div>
+                    <button type="button" class="screen-cons-toggle" id="cons-check-toggle">Javobni ko'rsatish</button>
+                    <div class="content-area screen-cons-answer" id="cons-check-answer"></div>
                 </div>
             </div>
         </div>
 
         <!-- Stage Reflection (after Boss, before finish) -->
         <div id="screen-reflection" class="screen">
-            <div class="card panel-card" style="overflow-y:auto; max-height:100%;">
-                <div class="caption" style="margin-bottom:14px; text-transform:uppercase; letter-spacing:1px; color: var(--accent);">Xulosa</div>
-                <div class="content-area" id="ref-summary" style="margin-bottom:14px;"></div>
-                <div class="content-area" id="ref-question" style="margin-bottom:14px; font-weight:600;"></div>
-                <div class="content-area" id="ref-spaced-rep" style="margin-bottom:14px; opacity:0.85;"></div>
-                <div class="content-area" id="ref-closing" style="margin-top:18px; color: var(--accent);"></div>
+            <div class="card panel-card screen-wave2-card">
+                <div class="caption screen-wave2-caption">Xulosa</div>
+                <div class="content-area screen-reflection-summary" id="ref-summary"></div>
+                <div class="content-area screen-reflection-question" id="ref-question"></div>
+                <div class="content-area screen-reflection-spaced-rep" id="ref-spaced-rep"></div>
+                <div class="content-area screen-reflection-closing" id="ref-closing"></div>
+            </div>
+        </div>
+
+        <!-- Stage 9 — Results / AMR Scorecard -->
+        <div id="screen-results" class="screen">
+            <div class="card panel-card screen-results-card">
+                <div class="caption screen-results-caption">Yakuniy Hisobot · AMR</div>
+                <div class="screen-results-band" id="results-band"></div>
+                <div class="screen-results-headline" id="results-headline"></div>
+                <div class="screen-results-phases" id="results-phases"></div>
+                <div class="screen-results-amr" id="results-amr"></div>
+                <div class="screen-results-mastery" id="results-mastery"></div>
+                <div class="screen-results-closing" id="results-closing"></div>
+                <div class="screen-results-actions">
+                    <button type="button" class="screen-results-retry" id="results-retry-boss"
+                            onclick="bossRetry()">Boss'ni qayta urinish</button>
+                </div>
             </div>
         </div>
 
@@ -2768,14 +3696,19 @@
                 if (state.stage === 7.5) return;
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
                 const fromEdge = e.clientX <= EDGE_ZONE || e.clientX >= window.innerWidth - EDGE_ZONE;
-                // In game-break stage, only track edge drags (skip gesture) — let panels scroll freely
-                if (state.stage === 5 && !fromEdge) return;
-                // Detect vertically scrollable ancestor — if found, skip swipe handling
+                // In game-break stage AND on the Wave-2 reading/consolidation/reflection
+                // interstitial screens (stage 4.7 / 6.5 / 7.7), only track edge drags
+                // (skip gesture) — let internal content scroll/interact freely.
+                const isWave2Stage = state.stage === 4.7 || state.stage === 6.5 || state.stage === 7.7;
+                if ((state.stage === 5 || isWave2Stage) && !fromEdge) return;
+                // Detect horizontally scrollable ancestor — if found, skip swipe handling
+                // (horizontal swipe only blocked by horizontally-scrolling content; vertical
+                // scroll containers don't conflict with horizontal page-swipe gestures).
                 let scrollable = false;
                 let node = e.target;
                 while (node && node !== document.body) {
-                    const oy = window.getComputedStyle(node).overflowY;
-                    if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 2) { scrollable = true; break; }
+                    const ox = window.getComputedStyle(node).overflowX;
+                    if ((ox === 'auto' || ox === 'scroll') && node.scrollWidth > node.clientWidth + 2) { scrollable = true; break; }
                     if ((node.tagName === 'CODE' || node.tagName === 'PRE') && node.scrollWidth > node.clientWidth) { scrollable = true; break; }
                     node = node.parentNode;
                 }
@@ -2877,22 +3810,27 @@
             else if (state.stage === 6) rlHandleAction();
             else if (state.stage === 7) bossHandleAction();
             else if (state.stage === 7.5 && btn.classList.contains('state-pill')) {
-                const defeatEl = document.getElementById('boss-defeat');
-                if (defeatEl && defeatEl.style.display !== 'none') {
-                    startFinalBoss();
-                } else {
-                    // Wave 2: Reflection sits after Boss before finish (auto-skip if empty).
-                    const finishUp = () => {
-                        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                        btn.classList.remove('pulse', 'state-pill');
-                        btn.classList.add('state-line');
-                        if (btnText) btnText.style.opacity = '0';
-                    };
-                    if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
-                        showReflectionScreen(finishUp);
+                // Whether the student won or lost the boss, the main button
+                // advances to Reflection → Results. Defeat used to dead-end
+                // here by always restarting the boss — students who couldn't
+                // beat it never saw their grades. Retry is now a separate
+                // affordance inside the defeat card (boss-d-retry-btn →
+                // bossRetry()), so the student can choose between seeing
+                // their score now or trying the boss again.
+                const showResultsThenFinish = () => {
+                    if (typeof showResultsScreen === 'function') {
+                        showResultsScreen();
                     } else {
-                        finishUp();
+                        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     }
+                    btn.classList.remove('pulse', 'state-pill');
+                    btn.classList.add('state-line');
+                    if (btnText) btnText.style.opacity = '0';
+                };
+                if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
+                    showReflectionScreen(showResultsThenFinish);
+                } else {
+                    showResultsThenFinish();
                 }
             }
         }
@@ -2901,11 +3839,50 @@
         function setStage(n) {
             state.stage = n;
             updatePhaseProgress();
+            // Wave F2: notify the persistent tutor widget so its phase badge updates.
+            // Stage→phase mapping:
+            //   0, 1, 2 (panel preview)        → preview
+            //   2.5–6.5 (any practice activity) → practice
+            //   7, 7.5  (boss + boss-done)      → boss
+            //   7.7+    (reflection / done)     → preview (open Q&A)
+            try {
+                let phaseName = 'preview';
+                if (n >= 7 && n < 7.7) phaseName = 'boss';
+                else if (n > 2 && n < 7) phaseName = 'practice';
+                else phaseName = 'preview';
+                document.dispatchEvent(new CustomEvent('nets:phase-change', {
+                    detail: { phase: phaseName, stage: n, questionId: null }
+                }));
+            } catch (e) { /* widget optional */ }
         }
 
         // ── PHASE PROGRESS BAR ──────────────────────────────────
-        // Phases: 1=Preview, 2=Flashcards, 3=MemorySprint, 4=GameBreaks, 5=RealLife, 6=Boss, 7=Done
-        const phaseMap = { 0:0, 1:1, 2:1, 2.5:2, 3:2, 4:3, 4.5:3, 5:4, 6:5, 7:6, 7.5:7 };
+        // Phases (dot index): 1=Preview, 2=Flashcards, 3=MemorySprint, 4=GameBreaks,
+        // 5=RealLife, 6=Boss, 7=Done.
+        //
+        // Half-step convention: integer stages are the "main" stages of each phase;
+        // .5/.7 stages are short interstitial screens (loading, hand-off, or the
+        // Wave-2 reading/consolidation/reflection cards) that belong to the same
+        // phase as their preceding integer stage. They map to the same dot OR to
+        // the dot of the phase the user is transitioning into — pick whichever
+        // matches author intent.
+        //
+        // Wave 2 mappings:
+        //   4.7 = Reading      (between MS-end 4.5 and Game Breaks 5) → dot 4 (GameBreaks)
+        //   6.5 = Consolidation (between Real-Life 6 and Boss 7)        → dot 6 (Boss)
+        //   7.7 = Reflection    (after Boss-done 7.5 before finish)     → dot 7 (Done)
+        const phaseMap = {
+            0:0, 1:1, 2:1,
+            2.5:2, 3:2,
+            4:3, 4.5:3,
+            4.7:4,            // Wave 2: Reading — entering GameBreaks
+            5:4,
+            6:5,
+            6.5:6,            // Wave 2: Consolidation — entering Boss
+            7:6,
+            7.5:7,
+            7.7:7             // Wave 2: Reflection — Done dot
+        };
         function updatePhaseProgress() {
             const bar = document.getElementById('phase-progress');
             if (!bar) return;
@@ -2947,6 +3924,12 @@
                 const screenMs = document.getElementById('screen-ms');
                 if (screenMs) screenMs.classList.remove('active');
                 startStage5();
+                return;
+            }
+            // Wave 2 interstitials — clicking the action button advances them, so
+            // edge-swipe-skip just simulates a click on the morphing button.
+            if (s === 4.7 || s === 6.5 || s === 7.7) {
+                if (typeof btn !== 'undefined' && btn) btn.click();
                 return;
             }
             if (s === 5)   { gbExitToStage6(); return; }
@@ -3054,8 +4037,24 @@
                         // block.html is raw SVG markup; insert as-is (authored content, not user input)
                         el.innerHTML = block.html || '';
                     }
+                    else if (block.type === 'callout') {
+                        // Builder schema doesn't formally support callout, but
+                        // some imported homeworks carry it. Render as blockquote.
+                        el = document.createElement('blockquote');
+                        el.className = 'callout';
+                        el.innerText = block.text || '';
+                    }
 
-                    if (block.text && !['code','quote','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
+                    // Defensive fallback: if the block type was unrecognized,
+                    // render whatever text we have as a paragraph instead of
+                    // crashing the whole panel.
+                    if (!el) {
+                        el = document.createElement('p');
+                        el.className = 'block-unknown';
+                        el.innerText = block.text || JSON.stringify(block).slice(0, 200);
+                    }
+
+                    if (block.text && !['code','quote','callout','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
                     el.classList.add('bubbly');
                     pageEl.appendChild(el);
                     
@@ -3523,7 +4522,16 @@
             msState.isAnimating = true;
 
             const item = MS_QUESTIONS[msState.index];
-            if (selectedIndex === item.correct) msState.score++;
+            const localCorrect = selectedIndex === item.correct;
+            if (localCorrect) msState.score++;
+            // Log Memory Sprint result for end-of-session AMR scorecard.
+            // Closed multiple-choice — score-only, no AI axes.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'memory-sprint', id: 'ms-' + (msState.index + 1),
+                    correct: localCorrect, score: localCorrect ? 1 : 0,
+                });
+            }
 
             const optBtns = document.querySelectorAll('.ms-option-btn');
             optBtns.forEach((b, i) => {
@@ -3531,6 +4539,53 @@
                 if (i === item.correct) b.classList.add('correct');
                 else b.classList.add('wrong');
             });
+
+            // Fire-and-forget telemetry / backend consistency check.
+            // Local match already drove the UI above; backend result is for
+            // logging/consistency only.  We do NOT block the animation on it.
+            (function() {
+                const questionId = 'ms-' + msState.index;
+                const ctx = window.NETS_CTX || {};
+                const answerSpec = item.answer_spec || {
+                    type: 'option_index',
+                    expected: item.correct,
+                    option_count: (item.options || []).length,
+                    allow_ai_fallback: false
+                };
+                document.dispatchEvent(new CustomEvent('nets:submit', {
+                    detail: {
+                        kind: 'memory-sprint',
+                        payload: {
+                            questionId: questionId,
+                            studentAnswer: String(selectedIndex),
+                            answerSpec: answerSpec,
+                            subject: ctx.subject || 'math-algebra',
+                            grade: ctx.grade || 8,
+                            phase: 'memory_sprint'
+                        }
+                    }
+                }));
+                // Listen once for the result to detect fixture drift.
+                function onResult(ev) {
+                    const d = ev.detail || {};
+                    if (d.kind !== 'memory-sprint') return;
+                    document.removeEventListener('nets:result', onResult);
+                    const result = d.result || {};
+                    if (result.source === 'deterministic') {
+                        const backendCorrect = result.correct === true;
+                        if (backendCorrect !== localCorrect) {
+                            console.warn(
+                                '[NETS] memory_sprint consistency mismatch at index',
+                                msState.index,
+                                '— local:', localCorrect,
+                                'backend:', backendCorrect,
+                                '. Check answer_spec in fixture.'
+                            );
+                        }
+                    }
+                }
+                document.addEventListener('nets:result', onResult);
+            })();
 
             setTimeout(() => msCollapseToLoader(), 900);
         }
@@ -3769,7 +4824,7 @@
         }
 
         function gbUpdateProgress(idx) {
-            const labels = ['1/3 Adaptive Quiz','2/3 Why Chain','3/3 Memory Match'];
+            const labels = ['1/3 Adaptive Quiz','2/3 Sentence Fill','3/3 Tile Match'];
             const label = document.getElementById('gb-plabel');
             if (label) label.textContent = labels[idx] || '';
             for (let i = 1; i <= 3; i++) {
@@ -3849,23 +4904,41 @@
         function gbInitAQ() {
             const aq = gbState.aq;
             aq.shown = 0; aq.correct = 0; aq.currentTier = 'easy'; aq.captureOk = false; aq.answered = false;
+            aq.shownIds = [];
             const fb = document.getElementById('gb-aq-feedback');
             if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
             gbAQShowNext();
         }
 
         function gbAQPickItem() {
-            const candidates = GB_ADAPTIVE_QUIZ.filter(q => q.tier === gbState.aq.currentTier);
-            return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : GB_ADAPTIVE_QUIZ[0];
+            const aq = gbState.aq;
+            if (!aq.shownIds) aq.shownIds = [];
+            const tier = aq.currentTier;
+            const idOf = q => q.id || (q.prompt || '').slice(0, 40);
+            const inTier  = GB_ADAPTIVE_QUIZ.filter(q => q.tier === tier);
+            const fresh   = inTier.filter(q => !aq.shownIds.includes(idOf(q)));
+            const pool    = fresh.length ? fresh
+                          : (GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q))).length
+                              ? GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q)))
+                              : (inTier.length ? inTier : GB_ADAPTIVE_QUIZ));
+            const item = pool[Math.floor(Math.random() * pool.length)];
+            if (item) aq.shownIds.push(idOf(item));
+            return item || GB_ADAPTIVE_QUIZ[0];
         }
 
         function gbAQShowNext() {
             const aq = gbState.aq;
-            if (aq.shown >= 5) { gbAQFinish(); return; }
+            // Round count derives from the data, not a hardcoded 5. HW
+            // authors can set a 3-round mini-AQ or a 7-round long form
+            // and the runtime will respect it. Falls back to 5 if
+            // GB_ADAPTIVE_QUIZ wasn't injected (defensive only).
+            const totalRounds = (typeof GB_ADAPTIVE_QUIZ !== 'undefined' && GB_ADAPTIVE_QUIZ.length)
+                ? GB_ADAPTIVE_QUIZ.length : 5;
+            if (aq.shown >= totalRounds) { gbAQFinish(); return; }
             const item = gbAQPickItem();
             aq.currentItem = item; aq.captureOk = false; aq.answered = false;
             const counter = document.getElementById('gb-aq-counter');
-            if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / 5';
+            if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / ' + totalRounds;
             const tierEl = document.getElementById('gb-aq-tier');
             if (tierEl) { tierEl.textContent = item.tier.toUpperCase(); tierEl.className = 'gb-aq-tier ' + item.tier; }
             const qEl = document.getElementById('gb-aq-question');
@@ -3939,6 +5012,17 @@
                 if (fb) { fb.className = 'gb-aq-feedback wrong'; fb.textContent = "Noto'g'ri. To'g'ri javob: " + displayAnswer + '. ' + item.work; }
                 if (item.tier === 'hard') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'easy';
+            }
+            // Log AQ result for the end-of-session AMR scorecard.
+            // AQ items are closed-form numeric, so no AMR axes — score-only.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'adaptive-quiz',
+                    id: item.id || ('aq-' + (aq.shown + 1)),
+                    tier: item.tier,
+                    correct: isCorrect,
+                    score: isCorrect ? 1 : 0,
+                });
             }
             gbSetButtonNext('Keyingi savol');
         }
@@ -4037,15 +5121,49 @@
             setTimeout(() => b.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
         }
 
-        function gbWCEvaluate(answer, expect) {
-            const aLow = answer.toLowerCase();
-            const keywords = expect.toLowerCase().split(/[\s.,;()\[\]]+/).filter(w => w.length > 3);
-            if (!keywords.length) return answer.length > 5;
-            const hits = keywords.filter(k => aLow.includes(k));
-            return hits.length >= Math.max(1, Math.floor(keywords.length * 0.3));
+        // Sentence Fill is graded by /api/ai/check-answer with a text_fuzzy
+        // answer_spec + AI fallback. The deterministic rapidfuzz checker
+        // catches exact / minor-typo matches fast; for paraphrases and
+        // synonyms, the Kimi semantic grader takes over (~1-3s).
+        async function gbWCAIGrade(question, studentAnswer, expected) {
+            try {
+                const resp = await fetch('/api/ai/check-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_id: 'wc-' + (gbState.wc.chainIdx + 1) + '-' + (gbState.wc.levelIdx + 1),
+                        question: question || '',
+                        student_answer: studentAnswer,
+                        expected_answers: [expected],
+                        // Sentence-fill answers are short and frequently
+                        // expressed as synonyms or grammatical variants
+                        // (e.g., "ayirmasi" ↔ "ayirmasining", "kichraytirish"
+                        // ↔ "ayirish"). text_fuzzy bails below ratio 75
+                        // without escalating, so we go straight to semantic
+                        // — the deterministic checker always returns
+                        // "unsure" and the AI does the meaning-aware match.
+                        answer_spec: {
+                            type: 'semantic',
+                            expected: expected,
+                            canonical_display: expected,
+                            allow_ai_fallback: true,
+                            amr: true
+                        },
+                        allow_ai_fallback: true,
+                        subject: (window.NETS_CTX && NETS_CTX.subject) || 'geometriya-g7-11',
+                        grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
+                        tier: 'EASY',
+                        phase: 'sentence-fill'
+                    })
+                });
+                if (!resp.ok) return { correct: false, error: 'http ' + resp.status };
+                return await resp.json();
+            } catch (e) {
+                return { correct: false, error: String(e) };
+            }
         }
 
-        function gbWCAction() {
+        async function gbWCAction() {
             const wc = gbState.wc;
             const ta = document.getElementById('gb-wc-textarea');
             const answer = ta ? ta.value.trim() : '';
@@ -4053,26 +5171,57 @@
             const chain = GB_WHY_CHAIN[wc.chainIdx];
             const level = chain.chain[wc.levelIdx];
             gbWCAppendStudentBubble(answer);
-            if (ta) ta.value = '';
-            const ok = gbWCEvaluate(answer, level.expect);
+            if (ta) { ta.value = ''; ta.disabled = true; }
             const reprompt = document.getElementById('gb-wc-reprompt');
+            // Show "checking" indicator while AI grades.
+            const checkingBubble = document.createElement('div');
+            checkingBubble.className = 'gb-wc-bubble-ai gb-wc-bubble-checking';
+            checkingBubble.innerHTML = '<em>Tekshirilmoqda…</em>';
+            const conv = document.getElementById('gb-wc-conv');
+            if (conv) conv.appendChild(checkingBubble);
+            const result = await gbWCAIGrade(level.probe, answer, level.expect);
+            if (checkingBubble && checkingBubble.parentNode) checkingBubble.parentNode.removeChild(checkingBubble);
+            if (ta) ta.disabled = false;
+            const ok = !!result.correct;
+            // Log the result for the end-of-session AMR scorecard. We log
+            // ONCE per chain (not per sub-level) so the report mirrors the
+            // five sentence-fill prompts the student saw, with the axis
+            // values from the level-1 attempt that resolved the chain.
+            if (window.__sessionLog && (ok || wc.retries >= 1)) {
+                window.__sessionLog.push({
+                    phase: 'sentence-fill',
+                    id: 'wc-' + (wc.chainIdx + 1),
+                    correct: ok,
+                    score: typeof result.score === 'number' ? result.score : (ok ? 1 : 0),
+                    axis_1: result.axis_1 || (ok ? 4 : 1),
+                    axis_2: result.axis_2 || (ok ? 4 : 1),
+                    first_try: ok && wc.retries === 0,
+                    feedback: result.feedback || '',
+                });
+            }
             if (ok) {
                 wc.retries = 0;
                 if (reprompt) reprompt.className = 'gb-wc-reprompt';
-                wc.levelIdx++;
-                gbWCUpdateHeader();
-                if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                // Surface the AI's positive feedback if provided.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe('✓ ' + result.feedback);
+                // First-try correct OR any-try correct: skip remaining hint
+                // levels in this chain and jump straight to the invariant
+                // (which advances to the next sentence-fill prompt). The old
+                // flow forced the student through 3 sub-levels even after a
+                // correct first-try answer.
+                gbWCShowInvariant(chain);
             } else {
                 wc.retries++;
+                // Surface the AI hint if any so the student knows what's missing.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe(result.feedback);
                 if (wc.retries >= 2) {
                     wc.retries = 0;
                     if (reprompt) reprompt.className = 'gb-wc-reprompt';
                     gbWCAppendProbe("To'g'ri javob: " + level.expect);
-                    wc.levelIdx++;
-                    gbWCUpdateHeader();
-                    if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                    else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                    // After 2 wrong tries, reveal the answer and advance to
+                    // the next chain — same skip behavior as a correct
+                    // answer, but with the answer surfaced first.
+                    gbWCShowInvariant(chain);
                 } else {
                     if (reprompt) reprompt.classList.add('show');
                     gbSetButtonForWC();
@@ -4109,127 +5258,133 @@
             });
         }
 
+        // Tile Match — left/right column matching.
+        // Left column shows all `a` sides in order; right column shows all
+        // `b` sides shuffled. Click a left tile, then click a right tile to
+        // attempt a match. Match → both lock green. Wrong → red flash, both
+        // deselect. Win at GB_MEMORY_MATCH.length matched.
         function gbInitMM() {
             const mm = gbState.mm;
-            const tiles = [];
-            GB_MEMORY_MATCH.forEach((p, i) => {
-                tiles.push({ pairId:i, side:'a', text:p.a, data:p });
-                tiles.push({ pairId:i, side:'b', text:p.b, data:p });
-            });
-            for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [tiles[i],tiles[j]]=[tiles[j],tiles[i]]; }
-            mm.tiles = tiles; mm.flipped = []; mm.matched = 0; mm.pendingPair = null; mm.busy = false;
+            const total = GB_MEMORY_MATCH.length;
+            // Left side keeps source order; right side is shuffled.
+            const lefts  = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.a }));
+            const rights = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.b }));
+            for (let i = rights.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rights[i], rights[j]] = [rights[j], rights[i]];
+            }
+            mm.lefts = lefts;
+            mm.rights = rights;
+            mm.matched = 0;
+            mm.total = total;
+            mm.selectedLeft = null;
+            mm.busy = false;
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.className = 'gb-mm-win-banner';
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (confirm) confirm.className = 'gb-mm-confirm-box';
-            gbMMRenderGrid();
+            gbMMRenderBoard();
             gbMMUpdateStatus();
         }
 
-        function gbMMRenderGrid() {
-            const grid = document.getElementById('gb-mm-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            gbState.mm.tiles.forEach((tile, idx) => {
-                const card = document.createElement('div');
-                card.className = 'gb-mm-card';
-                card.dataset.idx = idx;
-                // tile.text is HTML from the rich-text editor (already sanitized).
-                // Render raw so images/SVGs/formatting show on card fronts.
-                card.innerHTML = '<div class="gb-mm-inner"><div class="gb-mm-face gb-mm-back-face">⬛</div><div class="gb-mm-face gb-mm-front-face">' + tile.text + '</div></div>';
-                card.addEventListener('click', () => gbMMFlipCard(idx));
-                grid.appendChild(card);
+        function gbMMRenderBoard() {
+            const left  = document.getElementById('gb-tm-left');
+            const right = document.getElementById('gb-tm-right');
+            if (!left || !right) return;
+            left.innerHTML = '';
+            right.innerHTML = '';
+            gbState.mm.lefts.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-left-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'left';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMSelectLeft(tile.pairId, el));
+                left.appendChild(el);
             });
+            gbState.mm.rights.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-right-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'right';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMTryMatch(tile.pairId, el));
+                right.appendChild(el);
+            });
+            // Re-render any KaTeX/math the board contains (the tiles are
+            // populated after the page-level KaTeX pass ran).
+            if (typeof window.__renderMath === 'function') window.__renderMath();
         }
 
         function gbMMUpdateStatus() {
             const st = document.getElementById('gb-mm-status');
-            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / 8';
+            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / ' + (gbState.mm.total || GB_MEMORY_MATCH.length);
         }
 
-        function gbMMFlipCard(idx) {
+        function gbMMSelectLeft(pairId, el) {
             const mm = gbState.mm;
-            if (mm.busy || state.isAnimating) return;
-            if (mm.flipped.includes(idx)) return;
-            const card = document.querySelector('[data-idx="' + idx + '"]');
-            if (!card || card.classList.contains('matched')) return;
-            card.classList.add('flipped');
-            mm.flipped.push(idx);
-            if (mm.flipped.length < 2) return;
-            mm.busy = true;
-            const [i1, i2] = mm.flipped;
-            const t1 = mm.tiles[i1]; const t2 = mm.tiles[i2];
-            if (t1.pairId === t2.pairId && t1.side !== t2.side) {
-                mm.pendingPair = { i1, i2, data:t1.data };
-                const confirm = document.getElementById('gb-mm-confirm-box');
-                const qEl = document.getElementById('gb-mm-confirm-q');
-                if (qEl) qEl.textContent = t1.data.confirmQ;
-                if (confirm) confirm.classList.add('show');
-                const inp = document.getElementById('gb-mm-confirm-input');
-                if (inp) { inp.value = ''; inp.style.borderColor = ''; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-pill');
-                setBtnText('Tasdiqlash');
-                btn.classList.add('pulse');
-            } else {
-                setTimeout(() => {
-                    const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                    const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                    if (c1) { c1.classList.add('wrong-flash'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    setTimeout(() => {
-                        if (c1) c1.classList.remove('flipped');
-                        if (c2) c2.classList.remove('flipped');
-                        mm.flipped = []; mm.busy = false;
-                    }, 800);
-                }, 100);
+            if (mm.busy) return;
+            if (el.classList.contains('matched')) return;
+            // Clear any prior left selection
+            document.querySelectorAll('.gb-tm-left-tile.selected').forEach(n => n.classList.remove('selected'));
+            // Toggle off if same tile clicked twice
+            if (mm.selectedLeft && mm.selectedLeft.pairId === pairId) {
+                mm.selectedLeft = null;
+                return;
             }
+            el.classList.add('selected');
+            mm.selectedLeft = { pairId, el };
         }
 
-        function gbMMAction() {
+        function gbMMTryMatch(rightPairId, rightEl) {
             const mm = gbState.mm;
-            if (!mm.pendingPair) return;
-            const inp = document.getElementById('gb-mm-confirm-input');
-            const answer = inp ? inp.value.trim().toLowerCase() : '';
-            const correct = mm.pendingPair.data.correct.toLowerCase();
-            const norm = s => s.replace(/\s+/g,' ').trim();
-            const isOk = norm(answer) === norm(correct) || (norm(answer).length > 3 && norm(correct).includes(norm(answer)));
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (isOk) {
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (c1) c1.classList.add('matched');
-                if (c2) c2.classList.add('matched');
+            if (mm.busy) return;
+            if (rightEl.classList.contains('matched')) return;
+            if (!mm.selectedLeft) {
+                // No left tile selected — flash the right tile to hint at order.
+                rightEl.classList.add('wrong-flash');
+                setTimeout(() => rightEl.classList.remove('wrong-flash'), 360);
+                return;
+            }
+            const leftEl = mm.selectedLeft.el;
+            const matches = mm.selectedLeft.pairId === rightPairId;
+            if (matches) {
+                leftEl.classList.remove('selected');
+                leftEl.classList.add('matched');
+                rightEl.classList.add('matched');
                 mm.matched++;
+                mm.selectedLeft = null;
                 gbMMUpdateStatus();
-                if (confirm) confirm.classList.remove('show');
-                mm.pendingPair = null; mm.flipped = []; mm.busy = false;
-                if (mm.matched >= 8) { gbMMWin(); return; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                if (mm.matched >= mm.total) gbMMWin();
             } else {
-                if (inp) { inp.style.borderColor = '#d9534f'; setTimeout(() => { inp.style.borderColor = ''; }, 1200); }
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (confirm) confirm.classList.remove('show');
+                mm.busy = true;
+                leftEl.classList.add('wrong-flash');
+                rightEl.classList.add('wrong-flash');
                 setTimeout(() => {
-                    if (c1) { c1.classList.add('wrong-flash'); c1.classList.remove('flipped'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); c2.classList.remove('flipped'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    mm.flipped = []; mm.pendingPair = null; mm.busy = false;
-                }, 100);
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                    leftEl.classList.remove('wrong-flash');
+                    rightEl.classList.remove('wrong-flash');
+                    leftEl.classList.remove('selected');
+                    mm.selectedLeft = null;
+                    mm.busy = false;
+                }, 420);
             }
         }
+
+        // No-op shim — the runtime button handler used to call gbMMAction()
+        // for the legacy confirm-question mechanic. Tile Match is fully
+        // self-driven via tile clicks, so the action button stays inert.
+        function gbMMAction() { /* intentionally empty */ }
 
         function gbMMWin() {
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.classList.add('show');
             gbState.subGame = 3;
+            // Log Tile Match phase outcome — pure self-grade, all 6 pairs
+            // matched = 100% for the AMR scorecard.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'tile-match', id: 'tm-all',
+                    correct: true, score: 1,
+                });
+            }
             gbSetButtonNext('Keyingi bosqich');
         }
 
@@ -4331,6 +5486,11 @@ Prezident ertaga hisobot kutmoqda.`,
             qIndex: 0,
             attempts: [0, 0, 0, 0, 0, 0],
             correct: [false, false, false, false, false, false],
+            // Per-question capture flag — one slot per question. The old
+            // single-boolean captureQ3Done blocked submissions on every
+            // text-with-capture question after Q3 since only the Q3 button
+            // could set it. Kept the legacy field for back-compat reads.
+            captureDone: [false, false, false, false, false, false],
             captureQ3Done: false,
             submitted: [false, false, false, false, false, false],
             captureCount: 0
@@ -4355,14 +5515,29 @@ Prezident ertaga hisobot kutmoqda.`,
             return allOk;
         }
 
-        function rlCaptureQ3() {
-            stage6State.captureQ3Done = true;
+        function rlCapture(idx) {
+            // Per-question capture handler — replaces the legacy
+            // rlCaptureQ3 single-button flow. Marks captureDone[idx] so
+            // rlSubmitQuestion's "uploaded?" gate passes for THAT question
+            // (the gate used to be a single boolean → all text-with-capture
+            // questions other than Q3 were un-submittable).
+            if (!stage6State.captureDone) stage6State.captureDone = [];
+            stage6State.captureDone[idx] = true;
             stage6State.captureCount++;
-            const btn = document.getElementById('rl-q3-capture-btn');
-            const done = document.getElementById('rl-q3-capture-done');
+            // Legacy alias kept so anything still reading captureQ3Done
+            // behaves the same once any capture happens.
+            stage6State.captureQ3Done = true;
+            const btn = document.getElementById('rl-q' + (idx + 1) + '-capture-btn');
+            const done = document.getElementById('rl-q' + (idx + 1) + '-capture-done');
             if (btn) btn.style.display = 'none';
-            if (done) done.classList.add('rl-visible');
+            if (done) {
+                done.classList.add('rl-visible');
+                done.classList.add('show');
+            }
         }
+
+        // Legacy alias for the hardcoded Q3 button still in the markup.
+        function rlCaptureQ3() { rlCapture(2); }
 
         function rlSetFeedback(id, cls, text) {
             const el = document.getElementById(id);
@@ -4391,12 +5566,98 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function rlRenderQuestion(idx) {
             const q = RL_SCENARIO.questions[idx];
+            const total = (RL_SCENARIO.questions || []).length || 6;
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / 6';
+            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / ' + total;
 
             const promptEl = document.getElementById('rl-q' + (idx + 1) + '-prompt');
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
             if (promptEl) promptEl.innerHTML = q.prompt || '';
+
+            // The static markup historically pre-bakes a specific input
+            // type per question slot:
+            //   Q1, Q3, Q4 → <input type="text" id="rl-q{n}-input">
+            //   Q2         → <div class="rl-field-group">  (multi-input only)
+            //   Q5         → <div class="rl-field-group">
+            //   Q6         → <textarea id="rl-q6-input">
+            // Modern homeworks (e.g. HW-008) author types per question, so
+            // the static slot may not match: HW-008's Q2 is text-with-capture
+            // (needs a text input) and Q5 is textarea (needs a textarea).
+            // The two blocks below dynamically inject the right input and
+            // capture-area into .rl-q-body so any q.type lands on a real
+            // focusable input. Order matters — input must come BEFORE the
+            // capture button visually, so we inject the input first and the
+            // capture-area below it (both anchor on .rl-feedback).
+            const qBody = document.querySelector('#rl-q' + (idx + 1) + ' .rl-q-body');
+
+            // ── Block 1: per-question input element ────────────────────
+            const wantTag = (q.type === 'textarea') ? 'TEXTAREA' : 'INPUT';
+            let curInput = document.getElementById('rl-q' + (idx + 1) + '-input');
+            if (curInput && curInput.tagName !== wantTag) {
+                curInput.remove();
+                curInput = null;
+            }
+            if (!curInput && qBody) {
+                // Clear any leftover field-group markup from the original
+                // multi-input slot — only the multi-input branch below uses it.
+                const fieldsHost = document.getElementById('rl-q' + (idx + 1) + '-fields');
+                if (fieldsHost) fieldsHost.innerHTML = '';
+                if (q.type === 'textarea') {
+                    curInput = document.createElement('textarea');
+                    curInput.className = 'rl-input rl-textarea';
+                    curInput.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
+                    curInput.autocomplete = 'off';
+                    curInput.spellcheck = false;
+                } else if (q.type === 'text' || q.type === 'text-with-capture') {
+                    curInput = document.createElement('input');
+                    curInput.type = 'text';
+                    curInput.inputMode = 'text';
+                    curInput.className = 'rl-input';
+                    curInput.placeholder = 'Javobingiz...';
+                    curInput.autocomplete = 'off';
+                    curInput.spellcheck = false;
+                } // multi-input handled by its own branch below
+                if (curInput) {
+                    curInput.id = 'rl-q' + (idx + 1) + '-input';
+                    const fb = qBody.querySelector('.rl-feedback');
+                    if (fb) qBody.insertBefore(curInput, fb);
+                    else qBody.appendChild(curInput);
+                }
+            }
+            if (curInput && q.type !== 'multi-input') curInput.value = '';
+
+            // ── Block 2: per-question capture button ───────────────────
+            // Any text-with-capture question gets a dynamically-injected
+            // upload button under the input. State is tracked in
+            // stage6State.captureDone[idx]. Previously only Q3 had a
+            // hardcoded button, so other capture questions could never
+            // satisfy the "upload your work" gate and the submission
+            // was silently blocked → no AI call.
+            if (qBody) {
+                const oldCap = qBody.querySelector('.rl-capture-area-dyn');
+                if (oldCap) oldCap.remove();
+                if (q.type === 'text-with-capture' && q.capture) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'rl-capture-area rl-capture-area-dyn';
+                    wrap.innerHTML =
+                        '<button type="button" class="rl-capture-btn" id="rl-q' + (idx + 1) + '-capture-btn">' +
+                        '📷 Yechimni yuklash</button>' +
+                        '<div class="rl-capture-done" id="rl-q' + (idx + 1) + '-capture-done">' +
+                        '<div class="rl-capture-confirm">✓ Yechimingiz yuklandi</div>' +
+                        '<div class="rl-capture-mock-img">📄</div>' +
+                        '</div>';
+                    const fb = qBody.querySelector('.rl-feedback');
+                    if (fb) qBody.insertBefore(wrap, fb);
+                    else qBody.appendChild(wrap);
+                    const btnEl = wrap.querySelector('button');
+                    if (btnEl) btnEl.addEventListener('click', () => rlCapture(idx));
+                    if (stage6State.captureDone && stage6State.captureDone[idx]) {
+                        if (btnEl) btnEl.classList.add('hidden');
+                        const doneEl = wrap.querySelector('.rl-capture-done');
+                        if (doneEl) doneEl.classList.add('show');
+                    }
+                }
+            }
 
             if (q.type === 'multi-input') {
                 const container = document.getElementById('rl-q' + (idx + 1) + '-fields');
@@ -4467,6 +5728,30 @@ Prezident ertaga hisobot kutmoqda.`,
             setBtnText(label);
         }
 
+        // Tracks pending AI tutor lookups for real-life questions, keyed by
+        // question index — guards against stale responses overwriting the
+        // current view.
+        let rlPendingAi = null;
+
+        function rlDispatchTutorAi(idx, q, val) {
+            const ticket = { qIndex: idx };
+            rlPendingAi = ticket;
+            try {
+                document.dispatchEvent(new CustomEvent('nets:submit', { detail: {
+                    kind: 'tutor',
+                    payload: {
+                        phase: 'real-life',
+                        question: q.prompt || q.label || ('Savol ' + (idx + 1)),
+                        studentInput: val,
+                        context: (q.acceptableAnswers || []).join(' | '),
+                    },
+                }}));
+            } catch (e) {
+                rlPendingAi = null;
+            }
+            return ticket;
+        }
+
         function rlSubmitQuestion() {
             if (state.isAnimating) return;
             const idx = stage6State.qIndex;
@@ -4484,7 +5769,12 @@ Prezident ertaga hisobot kutmoqda.`,
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
 
-                if (q.type === 'text-with-capture' && !stage6State.captureQ3Done) {
+                // Per-question capture gate — was checking the legacy
+                // global captureQ3Done flag, which only the (hardcoded)
+                // Q3 button could set. Now reads the per-question
+                // captureDone[idx] populated by rlCapture(idx) on any
+                // dynamically-rendered upload button.
+                if (q.type === 'text-with-capture' && !(stage6State.captureDone && stage6State.captureDone[idx])) {
                     rlSetFeedback(fbId, 'rl-hint', '📷 Iltimos, yechimingiz rasmini ham yuklang.');
                     return;
                 }
@@ -4500,15 +5790,37 @@ Prezident ertaga hisobot kutmoqda.`,
                     stage6State.correct[idx] = true;
                     stage6State.submitted[idx] = true;
                     rlSetFeedback(fbId, 'rl-correct', '✓ To\'g\'ri! ' + (q.type === 'text-with-capture' ? q.expectedWork : ''));
+                    if (window.__sessionLog) {
+                        // Closed-form numeric/text — log correctness + score
+                        // for the per-phase tally only. Do NOT emit
+                        // axis_1/axis_2 here. The 2-axis AMR rubric is for
+                        // OPEN responses where the student shows reasoning;
+                        // a pure number like "40" demonstrates neither
+                        // Concept Identification (no rule named) nor
+                        // Process Integrity (no chain of steps), so
+                        // claiming Mastered on both axes inflates the
+                        // overall AMR average. Aggregator skips items
+                        // without axes when computing axis means.
+                        window.__sessionLog.push({
+                            phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
+                            correct: true, score: 1,
+                            first_try: true,
+                        });
+                    }
                     rlMorphButton('Keyingi savol');
                 } else {
                     stage6State.attempts[idx]++;
                     if (stage6State.attempts[idx] === 1 && q.hint) {
                         rlSetFeedback(fbId, 'rl-hint', '💡 ' + q.hint);
+                        // First-attempt failure with a local hint — also ask the AI for
+                        // a nuanced grade so the student gets ONE feedback bubble.
+                        // (Local hint stays; AI may upgrade to "correct" when /api/ai/tutor returns.)
+                        rlDispatchTutorAi(idx, q, val);
                     } else {
                         stage6State.submitted[idx] = true;
-                        rlSetFeedback(fbId, 'rl-wrong', '✗ To\'g\'ri javob: ' + q.acceptableAnswers[0]);
+                        rlSetFeedback(fbId, 'rl-wrong', '✗ AI tahlil qilmoqda...');
                         rlMorphButton('Keyingi savol');
+                        rlDispatchTutorAi(idx, q, val);
                     }
                 }
 
@@ -4530,37 +5842,138 @@ Prezident ertaga hisobot kutmoqda.`,
                     rlMorphButton('Keyingi savol');
                 } else {
                     stage6State.attempts[idx]++;
+                    const studentMulti = Array.from(inputs).map((inp, ii) => {
+                        const lbl = (q.fields[ii] && q.fields[ii].label) || ('field' + ii);
+                        return lbl + '=' + (inp.value || '').trim();
+                    }).join(' · ');
                     if (stage6State.attempts[idx] === 1) {
                         rlSetFeedback(fbId, 'rl-hint', '💡 Bir yoki bir nechta maydon noto\'g\'ri. Qayta tekshiring.');
+                        rlDispatchTutorAi(idx, q, studentMulti);
                     } else {
                         stage6State.submitted[idx] = true;
                         const answers = q.fields.map(f => f.label + ': ' + f.acceptable[0]).join(' · ');
                         rlSetFeedback(fbId, 'rl-wrong', '✗ To\'g\'ri javoblar: ' + answers);
                         rlMorphButton('Keyingi savol');
+                        rlDispatchTutorAi(idx, q, studentMulti);
                     }
                 }
 
             } else if (q.type === 'textarea') {
-                const inp = document.getElementById('rl-q6-input');
+                // Read from the CURRENT question's textarea (rlRenderQuestion
+                // injects one with id=`rl-q{idx+1}-input` for any open-ended
+                // question). The reader was hardcoded to rl-q6-input which
+                // only existed for the legacy Yashil Makon Q6 — modern
+                // homeworks (e.g. HW-008) put the textarea on Q5.
+                const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
                 if (val.length < 20) {
                     rlSetFeedback(fbId, 'rl-hint', 'Iltimos, kamida 20 belgili tahlil yozing.');
                     return;
                 }
-                correct = true;
-                stage6State.correct[idx] = true;
                 stage6State.submitted[idx] = true;
-                rlSetFeedback(fbId, 'rl-open', '✓ O\'ylantiradigan tahlil! Yangi shartda tenglama o\'zgaradi va byudjet qayta hisoblanadi.');
+                rlSetFeedback(fbId, 'rl-open', '✓ Tahlilingiz qabul qilindi. AI baho beryapti...');
                 rlMorphButton('Keyingi savol');
+                // Open-ended responses ALWAYS get AI grading — the local
+                // checker has no way to evaluate a free-form analysis. The
+                // tutor result listener (further down in the file) updates
+                // stage6State.correct[idx] when the AI verdict comes back.
+                rlDispatchTutorAi(idx, q, val);
             }
         }
+
+        // AI tutor result listener for real-life questions. Updates the
+        // currently-displayed feedback bubble with AI-generated text. If the
+        // AI errors / falls back, the local "incorrect" state is kept verbatim.
+        document.addEventListener('nets:result', (ev) => {
+            const detail = ev.detail || {};
+            if (detail.kind !== 'tutor') return;
+            const ticket = rlPendingAi;
+            if (!ticket) return;
+            // User moved on to the next question already — drop stale response.
+            if (ticket.qIndex !== stage6State.qIndex) { rlPendingAi = null; return; }
+            const result = detail.result || {};
+            const fbId = 'rl-q' + (ticket.qIndex + 1) + '-fb';
+            const fbEl = document.getElementById(fbId);
+            // Graceful degrade — keep whatever local feedback is already shown.
+            if (result._fallback || result._error || result._offline) { rlPendingAi = null; return; }
+            // Tutor endpoint returns {response, guidance_type}. There's no canonical
+            // "correct" boolean — we infer correctness from guidance_type if it's
+            // explicitly "validation" with a positive response, otherwise treat
+            // as nuanced wrong-feedback to display.
+            const response = result.response || '';
+            const guidance = (result.guidance_type || '').toLowerCase();
+            const aiCorrect = guidance === 'validation' || guidance === 'correct';
+            if (!fbEl) { rlPendingAi = null; return; }
+            // The AI's axis_1/axis_2 live on `result`, not `detail` —
+            // earlier code mistakenly read detail.axis_1 (always
+            // undefined) and fell back to a default of 3 on the correct
+            // path or never logged on the wrong path. Both branches now
+            // correctly source axes from result.
+            const axis_1 = (typeof result.axis_1 === 'number') ? result.axis_1 : null;
+            const axis_2 = (typeof result.axis_2 === 'number') ? result.axis_2 : null;
+
+            if (aiCorrect) {
+                stage6State.correct[ticket.qIndex] = true;
+                stage6State.submitted[ticket.qIndex] = true;
+                fbEl.className = 'rl-feedback rl-correct';
+                fbEl.innerHTML = '✓ ' + (response || 'To\'g\'ri!') + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                if (window.__sessionLog) {
+                    const q = RL_SCENARIO.questions[ticket.qIndex];
+                    const entry = {
+                        phase: 'real-life', id: (q && q.id) || ('rl-' + (ticket.qIndex + 1)),
+                        correct: true,
+                        score: typeof result.score === 'number' ? result.score : 1,
+                        first_try: false,
+                    };
+                    if (axis_1 !== null && axis_2 !== null) {
+                        entry.axis_1 = axis_1;
+                        entry.axis_2 = axis_2;
+                    }
+                    window.__sessionLog.push(entry);
+                }
+                rlMorphButton('Keyingi savol');
+            } else if (response) {
+                // Replace generic "wrong" text with AI feedback. Preserve current
+                // class (rl-wrong / rl-hint) so the color band stays consistent.
+                const cls = fbEl.classList.contains('rl-correct') ? 'rl-correct'
+                          : fbEl.classList.contains('rl-hint') ? 'rl-hint'
+                          : 'rl-wrong';
+                fbEl.className = 'rl-feedback ' + cls;
+                fbEl.innerHTML = response + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                // Wrong-path logging: capture AI's axis assessment even
+                // when the verdict was incorrect, so the AMR scorecard
+                // reflects ALL the student's open responses, not just the
+                // ones the AI judged correct. Without this, a partially-
+                // wrong answer with axis_1=3, axis_2=2 (showed work,
+                // wrong answer) was previously dropped from the rubric
+                // mean entirely.
+                if (window.__sessionLog && axis_1 !== null && axis_2 !== null) {
+                    const q = RL_SCENARIO.questions[ticket.qIndex];
+                    window.__sessionLog.push({
+                        phase: 'real-life', id: (q && q.id) || ('rl-' + (ticket.qIndex + 1)),
+                        correct: false,
+                        score: typeof result.score === 'number' ? result.score : 0,
+                        axis_1: axis_1, axis_2: axis_2,
+                        first_try: false,
+                    });
+                }
+            }
+            rlPendingAi = null;
+        });
 
         function rlAdvanceFromQuestion() {
             if (state.isAnimating) return;
             state.isAnimating = true;
             const idx = stage6State.qIndex;
+            // Total is whatever the homework actually authored — not a
+            // hardcoded 6. HW-008 has q1..q5, so the legacy `idx < 5`
+            // check tried to render a non-existent q6 and stranded the
+            // student on Q5 with no path forward.
+            const total = (typeof RL_SCENARIO !== 'undefined'
+                && Array.isArray(RL_SCENARIO.questions))
+                ? RL_SCENARIO.questions.length : 6;
 
-            if (idx < 5) {
+            if (idx < total - 1) {
                 const curEl = document.getElementById('rl-q' + (idx + 1));
                 const nextIdx = idx + 1;
                 rlRenderQuestion(nextIdx);
@@ -4570,7 +5983,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.screen = 'q' + (nextIdx + 1);
 
                 const badge = document.getElementById('rl-header-badge');
-                if (badge) badge.textContent = 'Savol ' + (nextIdx + 1) + ' / 6';
+                if (badge) badge.textContent = 'Savol ' + (nextIdx + 1) + ' / ' + total;
 
                 rlAnimateTransition(curEl, nextEl, () => {
                     rlMorphButton('Javobni yuborish');
@@ -4595,7 +6008,10 @@ Prezident ertaga hisobot kutmoqda.`,
 
             if (banner) { banner.style.animation = 'none'; banner.textContent = RL_SCENARIO.closure.title; void banner.offsetHeight; banner.style.animation = ''; }
             if (msg) { msg.style.animation = 'none'; msg.textContent = RL_SCENARIO.closure.message; void msg.offsetHeight; msg.style.animation = ''; }
-            if (stats) { stats.style.animation = 'none'; stats.textContent = 'To\'g\'ri javoblar: ' + correctCount + ' / 6' + (captureCount > 0 ? ' · Yuklangan yechimlar: ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
+            const totalQ = (typeof RL_SCENARIO !== 'undefined'
+                && Array.isArray(RL_SCENARIO.questions))
+                ? RL_SCENARIO.questions.length : 6;
+            if (stats) { stats.style.animation = 'none'; stats.textContent = 'To\'g\'ri javoblar: ' + correctCount + ' / ' + totalQ + (captureCount > 0 ? ' · Yuklangan yechimlar: ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
 
             if (lastQ) lastQ.classList.remove('rl-active');
             const badge = document.getElementById('rl-header-badge');
@@ -4641,6 +6057,7 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.qIndex = 0;
             stage6State.attempts = [0, 0, 0, 0, 0, 0];
             stage6State.correct = [false, false, false, false, false, false];
+            stage6State.captureDone = [false, false, false, false, false, false];
             stage6State.captureQ3Done = false;
             stage6State.submitted = [false, false, false, false, false, false];
             stage6State.captureCount = 0;
@@ -4749,8 +6166,75 @@ Prezident ertaga hisobot kutmoqda.`,
 
         const bossState = {
             hp:100, maxHp:100, qIndex:0, combo:0,
-            hintsUsed:0, hintStep:0, correct:0, answered:false, done:false
+            hintsUsed:0, hintStep:0, correct:0, answered:false, done:false,
+            persona_traits: ['mentor'], // Wave F3: set by initBossPlan()
         };
+
+        // Wave F3 — load personalised boss plan (ordering + framing + persona).
+        // Runs once at boss-start, before the first question renders.
+        // Uses localStorage as a refresh-recovery cache so a mid-boss reload keeps
+        // the same ordering.  Falls back to default order + 'mentor' on any error.
+        async function initBossPlan() {
+            const hwId = (typeof state !== 'undefined' && state.hwId)
+                ? state.hwId
+                : (window.NETS_CTX && window.NETS_CTX.hwId) || '';
+            const cacheKey = 'nets_boss_plan_' + hwId;
+            let plan = null;
+
+            // 1. Try localStorage (refresh-recovery).
+            try {
+                const raw = localStorage.getItem(cacheKey);
+                if (raw) plan = JSON.parse(raw);
+            } catch (e) { plan = null; }
+
+            // 2. If no cache, fetch from backend.
+            if (!plan) {
+                try {
+                    plan = await window.NETS_AI.bossPlan({
+                        session_id: localStorage.getItem('nets_tutor_session'),
+                        hw_id: hwId,
+                    });
+                    localStorage.setItem(cacheKey, JSON.stringify(plan));
+                } catch (err) {
+                    console.warn('[F3] boss-plan fetch failed, using default order:', err);
+                    plan = {
+                        ordered: BOSS_QUESTIONS.map(q => ({
+                            question_id: q.id || q.question_id,
+                            framing_text: '',
+                        })),
+                        persona_traits: ['mentor'],
+                    };
+                }
+            }
+
+            // 3. Validate and apply ordering.
+            if (plan && Array.isArray(plan.ordered) && plan.ordered.length) {
+                const byId = new Map(BOSS_QUESTIONS.map(q => [q.id || q.question_id, q]));
+                const reordered = plan.ordered
+                    .map(o => {
+                        const q = byId.get(o.question_id);
+                        return q ? Object.assign({}, q, { _framing: o.framing_text || '' }) : null;
+                    })
+                    .filter(Boolean);
+
+                if (reordered.length === BOSS_QUESTIONS.length) {
+                    // Replace in-place so existing references stay valid.
+                    BOSS_QUESTIONS.length = 0;
+                    reordered.forEach(q => BOSS_QUESTIONS.push(q));
+                } else {
+                    console.warn('[F3] boss-plan ordering incomplete; falling back to default');
+                    // Keep existing order, just add empty _framing.
+                    BOSS_QUESTIONS.forEach(q => { if (!('_framing' in q)) q._framing = ''; });
+                }
+            } else {
+                BOSS_QUESTIONS.forEach(q => { if (!('_framing' in q)) q._framing = ''; });
+            }
+
+            // 4. Store persona_traits on bossState.
+            bossState.persona_traits = (
+                Array.isArray(plan && plan.persona_traits) && plan.persona_traits.length
+            ) ? plan.persona_traits : ['mentor'];
+        }
 
         function startFinalBoss() {
             setStage(7);
@@ -4759,6 +6243,7 @@ Prezident ertaga hisobot kutmoqda.`,
             if (sb) sb.classList.add('active');
 
             Object.assign(bossState, {hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false});
+            // persona_traits intentionally NOT reset here — initBossPlan sets it once.
 
             btn.classList.remove('pulse','state-pill');
             btn.classList.add('state-line');
@@ -4773,12 +6258,28 @@ Prezident ertaga hisobot kutmoqda.`,
             if (victory) victory.style.display   = 'none';
             if (defeat)  defeat.style.display    = 'none';
 
+            // Wave F3 — kick off boss-plan personalisation alongside the intro.
+            // Cap the wait at 3 s so a slow Kimi response can't stall the boss
+            // forever; on timeout we fall back to default order with empty
+            // framing (initBossPlan's own try/catch already does this).
+            const planPromise = initBossPlan().catch(e => {
+                console.warn('[F3] initBossPlan error:', e);
+            });
+            const planReady = Promise.race([
+                planPromise,
+                new Promise(r => setTimeout(r, 3000))
+            ]);
+
             setTimeout(() => {
                 if (intro) { intro.style.transition = 'opacity 500ms ease'; intro.style.opacity = '0'; }
-                setTimeout(() => {
+                setTimeout(async () => {
                     if (intro) { intro.style.cssText = 'display:none;'; }
                     if (battle) battle.style.display = '';
                     bossUpdateHP(100, false);
+                    // Wait for the plan (or 3 s cap) before rendering Q0 so the
+                    // first question always reflects the personalised order +
+                    // framing rather than racing the intro animation.
+                    await planReady;
                     bossRenderQuestion(0);
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
@@ -4802,6 +6303,18 @@ Prezident ertaga hisobot kutmoqda.`,
         function bossRenderQuestion(idx) {
             const q = BOSS_QUESTIONS[idx];
             const el = (id) => document.getElementById(id);
+            // Wave F3 — personalized framing banner (purely additive; stems untouched).
+            const framingEl = el('boss-framing');
+            if (framingEl) {
+                const framing = q._framing || '';
+                if (framing) {
+                    framingEl.textContent = framing;
+                    framingEl.style.display = '';
+                } else {
+                    framingEl.textContent = '';
+                    framingEl.style.display = 'none';
+                }
+            }
             // innerHTML — boss question may contain inline images/SVGs/bold/italic.
             if (el('boss-q-text'))    el('boss-q-text').innerHTML      = q.prompt || '';
             if (el('boss-q-tags'))    el('boss-q-tags').textContent    = '[Bloom: ' + q.bloom + ' | PISA: ' + q.pisa + ']';
@@ -4814,6 +6327,56 @@ Prezident ertaga hisobot kutmoqda.`,
             bossState.answered = false;
             bossState.hintStep = 0;
             bossUpdateCombo();
+        }
+
+        // Tracks the currently-pending boss AI lookup so a stale response from a
+        // previous question can't overwrite the current question's UI.
+        let bossPendingAi = null;
+
+        function bossApplyCorrect(q, fbEl, opts) {
+            // opts: { aiGraded: bool, message: string|null, axis_1?, axis_2? }
+            bossState.correct++;
+            bossState.combo++;
+            const doubled = bossState.combo >= 3;
+            const dmg = doubled ? q.damage * 2 : q.damage;
+            bossState.hp = Math.max(0, bossState.hp - dmg);
+            bossUpdateHP(bossState.hp, true);
+            bossUpdateCombo();
+            if (fbEl) {
+                fbEl.className = 'boss-feedback correct';
+                const baseMsg = doubled ? '🔥 COMBO ×2! −' + dmg + ' HP' : '✓ To\'g\'ri! −' + dmg + ' HP';
+                if (opts && opts.aiGraded) {
+                    fbEl.innerHTML = baseMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                } else {
+                    fbEl.textContent = baseMsg;
+                }
+            }
+            // Log boss attack outcome for the AMR scorecard.
+            //
+            // Important: AMR's 2-axis rubric was designed for OPEN
+            // responses. Concept Identification asks "did the student
+            // name the rule?" and Process Integrity asks "did they show
+            // a chain of steps?" — neither is meaningful for a numeric
+            // input like "40" where the question accepts only the
+            // result. So we ONLY emit axis_1/axis_2 when the AI was
+            // actually involved (semantic Boss Q3-Q5 or AI-fallback on
+            // any item). Closed-form local matches contribute to the
+            // per-phase tally (-X HP delivered) but stay out of the
+            // axis means — the aggregator excludes items without axes.
+            if (window.__sessionLog) {
+                const entry = {
+                    phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                    correct: true, score: 1,
+                    first_try: !(opts && opts.aiGraded),
+                    damage: dmg,
+                };
+                if (opts && typeof opts.axis_1 === 'number' && typeof opts.axis_2 === 'number') {
+                    entry.axis_1 = opts.axis_1;
+                    entry.axis_2 = opts.axis_2;
+                }
+                window.__sessionLog.push(entry);
+            }
+            if (bossState.hp <= 0) { setTimeout(() => bossEnd(true), 900); }
         }
 
         function bossHandleAction() {
@@ -4841,23 +6404,89 @@ Prezident ertaga hisobot kutmoqda.`,
             bossState.answered = true;
 
             if (isCorrect) {
-                bossState.correct++;
-                bossState.combo++;
-                const doubled = bossState.combo >= 3;
-                const dmg = doubled ? q.damage * 2 : q.damage;
-                bossState.hp = Math.max(0, bossState.hp - dmg);
-                bossUpdateHP(bossState.hp, true);
-                bossUpdateCombo();
-                if (fb) { fb.className = 'boss-feedback correct'; fb.textContent = doubled ? '🔥 COMBO ×2! −'+dmg+' HP' : '✓ To\'g\'ri! −'+dmg+' HP'; }
-                if (bossState.hp <= 0) { setTimeout(() => bossEnd(true), 900); return; }
+                bossApplyCorrect(q, fb, { aiGraded: false });
+                if (bossState.hp <= 0) { return; /* bossEnd already scheduled */ }
             } else {
                 bossState.combo = 0;
                 bossUpdateCombo();
-                if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = '✗ Noto\'g\'ri. Keyingi savolga o\'ting.'; }
+                if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = '✗ Noto\'g\'ri. AI tahlil qilmoqda...'; }
+
+                // Local match said "incorrect" — ask the AI tutor for a nuanced grade.
+                // The runtime.js bridge handles `kind:'boss'` → POST /api/ai/boss-turn
+                // and re-emits the result via `nets:result`.
+                const ticket = { qIndex: bossState.qIndex, qId: q.id };
+                bossPendingAi = ticket;
+                try {
+                    document.dispatchEvent(new CustomEvent('nets:submit', { detail: {
+                        kind: 'boss',
+                        payload: {
+                            bossQuestion: q.prompt || '',
+                            studentAnswer: val,
+                            expectedAnswers: q.acceptable || [],
+                            damageValue: q.damage || 10,
+                            hpRemaining: bossState.hp,
+                            attemptNumber: 1,
+                            // Wave F3 — forward persona_traits so boss-tutor adapts tone.
+                            persona_traits: bossState.persona_traits,
+                        },
+                    }}));
+                } catch (e) {
+                    if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = '✗ Noto\'g\'ri. Keyingi savolga o\'ting.'; }
+                    bossPendingAi = null;
+                }
             }
 
             setBtnText('Keyingi savol');
         }
+
+        // Listen for AI grading results — only act if the answer is still on screen
+        // for the same question we asked about (prevents late responses from
+        // mutating a later question).
+        document.addEventListener('nets:result', (ev) => {
+            const detail = ev.detail || {};
+            if (detail.kind !== 'boss') return;
+            const ticket = bossPendingAi;
+            if (!ticket) return;
+            // Has the user already moved on?
+            if (ticket.qIndex !== bossState.qIndex) { bossPendingAi = null; return; }
+            const result = detail.result || {};
+            const fb = document.getElementById('boss-feedback');
+            // Graceful degrade — keep local "incorrect" state on _fallback / _error.
+            if (result._fallback || result._error || result._offline) {
+                if (fb && fb.classList.contains('wrong')) {
+                    fb.textContent = '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
+                }
+                bossPendingAi = null;
+                return;
+            }
+            const aiCorrect = result.correct === true && (typeof result.score !== 'number' || result.score > 0.8);
+            if (aiCorrect) {
+                const q = BOSS_QUESTIONS[bossState.qIndex];
+                bossApplyCorrect(q, fb, {
+                    aiGraded: true,
+                    axis_1: result.axis_1, axis_2: result.axis_2,
+                });
+            } else {
+                if (fb) {
+                    fb.className = 'boss-feedback wrong';
+                    const aiMsg = result.boss_response || result.feedback || '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
+                    fb.innerHTML = aiMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                }
+                // Log incorrect boss attack so it appears on the AMR card
+                // with low axes — the student loses 0 HP but their attempt
+                // still informs the rubric.
+                if (window.__sessionLog) {
+                    const q = BOSS_QUESTIONS[bossState.qIndex];
+                    window.__sessionLog.push({
+                        phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                        correct: false, score: typeof result.score === 'number' ? result.score : 0,
+                        axis_1: result.axis_1 || 1, axis_2: result.axis_2 || 1,
+                        first_try: false, damage: 0,
+                    });
+                }
+            }
+            bossPendingAi = null;
+        });
 
         function bossUseHint() {
             if (bossState.answered) return;
@@ -4895,6 +6524,20 @@ Prezident ertaga hisobot kutmoqda.`,
             else                           { el.classList.remove('active'); }
         }
 
+        // Re-runs the boss from scratch when the student clicks
+        // "Boss'ni qayta urinish" on the defeat card. Resets HP / qIndex /
+        // combo / correct counter so the next run is clean. Does NOT clear
+        // the existing session log — that already captured the failed
+        // attempts and the AMR scorecard prefers latest entry per (phase,
+        // id), so a successful retry's items will overwrite the failed ones.
+        function bossRetry() {
+            const dEl = document.getElementById('boss-defeat');
+            if (dEl) dEl.style.display = 'none';
+            const battle = document.getElementById('boss-battle');
+            if (battle) { battle.style.display = ''; battle.style.opacity = ''; }
+            startFinalBoss();
+        }
+
         function bossEnd(victory) {
             bossState.done = true;
             const battle = document.getElementById('boss-battle');
@@ -4902,6 +6545,8 @@ Prezident ertaga hisobot kutmoqda.`,
             setTimeout(() => {
                 if (battle) { battle.style.display = 'none'; battle.style.opacity = ''; battle.style.transition = ''; }
                 if (victory) {
+                    // Victory keeps its short celebration (stars + stats);
+                    // student clicks "Yakunlash" once to reach Results.
                     const vEl = document.getElementById('boss-victory');
                     if (vEl) vEl.style.display = '';
                     const stars = (bossState.hintsUsed === 0 && bossState.correct >= 8) ? '⭐⭐⭐'
@@ -4913,18 +6558,31 @@ Prezident ertaga hisobot kutmoqda.`,
                         + ' · Boss zarari: ' + (bossState.maxHp - bossState.hp) + ' HP';
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
-                    setBtnText('§22 Yakunlash');
+                    setBtnText('Yakunlash');
+                    setStage(7.5);
                 } else {
-                    const dEl = document.getElementById('boss-defeat'); if (dEl) dEl.style.display = '';
-                    const sbEl = document.getElementById('boss-d-sub');
-                    if (sbEl) sbEl.textContent = 'Boss qolgan HP: ' + bossState.hp + ' · To\'g\'ri: ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length;
-                    const tpEl = document.getElementById('boss-d-tip');
-                    if (tpEl) tpEl.textContent = 'Zaif savollarni qayta ko\'rib chiqing va qayta urinib ko\'ring.';
-                    btn.classList.remove('state-line');
-                    btn.classList.add('state-pill','pulse');
-                    setBtnText('Qayta urinish');
+                    // Defeat: skip the "Hali emas..." intermediate card and
+                    // jump directly to Reflection → Results. The student
+                    // explicitly does NOT want a "try again" gate between
+                    // them and their grades — the AMR scorecard already
+                    // shows what to revisit. Retry stays available as a
+                    // secondary button on the Results screen for anyone
+                    // who wants to redo the boss after seeing their score.
+                    const dEl = document.getElementById('boss-defeat');
+                    if (dEl) dEl.style.display = 'none';
+                    setStage(7.7);
+                    const showResults = () => {
+                        if (typeof showResultsScreen === 'function') showResultsScreen();
+                        btn.classList.remove('pulse', 'state-pill');
+                        btn.classList.add('state-line');
+                        if (btnText) btnText.style.opacity = '0';
+                    };
+                    if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
+                        showReflectionScreen(showResults);
+                    } else {
+                        showResults();
+                    }
                 }
-                setStage(7.5);
             }, 440);
         }
 
@@ -4982,6 +6640,22 @@ Prezident ertaga hisobot kutmoqda.`,
             return Boolean(has);
         }
 
+        function readingNorm(s) {
+            return String(s || '').trim().toLowerCase()
+                .replace(/\s+/g, ' ')
+                .replace(/[''ʻʼ`]/g, "'")
+                .replace(/[–—]/g, '-');
+        }
+
+        function readingMatchLocal(studentVal, cp) {
+            const norm = readingNorm(studentVal);
+            if (!norm) return false;
+            const candidates = [];
+            if (cp.ans) candidates.push(cp.ans);
+            if (Array.isArray(cp.acceptable)) candidates.push(...cp.acceptable);
+            return candidates.some(a => readingNorm(a) === norm);
+        }
+
         function renderReading() {
             const titleEl = document.getElementById('reading-title');
             const passageEl = document.getElementById('reading-passage');
@@ -4993,24 +6667,109 @@ Prezident ertaga hisobot kutmoqda.`,
                 const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
                 checkpoints.forEach((cp, i) => {
                     const block = document.createElement('div');
-                    block.style.cssText = 'margin-top:14px; padding:12px; border-left:3px solid var(--accent);';
+                    block.className = 'screen-reading-checkpoint';
+                    block.id = 'reading-cp-' + i;
+
                     const q = document.createElement('div');
-                    q.style.cssText = 'font-weight:600; margin-bottom:6px;';
-                    q.innerHTML = '<span class="caption" style="color:var(--accent); margin-right:8px;">Q' + (i+1) + '</span>' + (cp.prompt || '');
+                    q.className = 'screen-reading-prompt';
+                    q.innerHTML = '<span class="caption screen-reading-q-tag">Q' + (i+1) + '</span>' + (cp.prompt || '');
                     block.appendChild(q);
-                    if (cp.ans) {
-                        const a = document.createElement('div');
-                        a.style.cssText = 'opacity:0.75; font-style:italic;';
-                        a.innerHTML = 'Javob: ' + cp.ans;
-                        block.appendChild(a);
-                    }
-                    if (cp.fb) {
-                        const fb = document.createElement('div');
-                        fb.style.cssText = 'opacity:0.7; margin-top:4px;';
-                        fb.innerHTML = cp.fb;
-                        block.appendChild(fb);
-                    }
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'screen-reading-input';
+                    input.id = 'reading-cp-input-' + i;
+                    input.setAttribute('autocomplete', 'off');
+                    input.setAttribute('autocapitalize', 'off');
+                    input.setAttribute('spellcheck', 'false');
+                    input.placeholder = 'Javobingizni yozing...';
+                    block.appendChild(input);
+
+                    const btnRow = document.createElement('div');
+                    btnRow.className = 'screen-reading-btn-row';
+                    const checkBtn = document.createElement('button');
+                    checkBtn.type = 'button';
+                    checkBtn.className = 'screen-reading-btn';
+                    checkBtn.id = 'reading-cp-check-' + i;
+                    checkBtn.textContent = 'Tekshirish';
+                    btnRow.appendChild(checkBtn);
+                    const nextBtn = document.createElement('button');
+                    nextBtn.type = 'button';
+                    nextBtn.className = 'screen-reading-btn';
+                    nextBtn.id = 'reading-cp-next-' + i;
+                    nextBtn.textContent = 'Keyingi savol';
+                    nextBtn.style.display = 'none';
+                    btnRow.appendChild(nextBtn);
+                    block.appendChild(btnRow);
+
+                    const fb = document.createElement('div');
+                    fb.className = 'screen-reading-feedback';
+                    fb.id = 'reading-cp-fb-' + i;
+                    fb.style.display = 'none';
+                    block.appendChild(fb);
+
                     cpEl.appendChild(block);
+
+                    // Click handler — local match + dispatch nets:submit for AI grading
+                    checkBtn.addEventListener('click', () => {
+                        if (input.disabled) return;
+                        const studentAnswer = (input.value || '').trim();
+                        if (!studentAnswer) {
+                            input.style.borderColor = '#d9534f';
+                            setTimeout(() => { input.style.borderColor = ''; }, 1200);
+                            return;
+                        }
+                        const localCorrect = readingMatchLocal(studentAnswer, cp);
+                        input.disabled = true;
+                        checkBtn.disabled = true;
+
+                        // Local-match feedback (instant, immediate)
+                        fb.style.display = '';
+                        if (localCorrect) {
+                            fb.className = 'screen-reading-feedback is-correct';
+                            fb.innerHTML = '✓ To\'g\'ri!' + (cp.fb ? ' <span style="opacity:0.85;">' + cp.fb + '</span>' : '');
+                        } else {
+                            fb.className = 'screen-reading-feedback is-wrong';
+                            const expected = cp.ans ? ('<br><span style="opacity:0.85;">To\'g\'ri javob: ' + cp.ans + '</span>') : '';
+                            const explain = cp.fb ? ('<br><span style="opacity:0.7;">' + cp.fb + '</span>') : '';
+                            fb.innerHTML = '✗ Noto\'g\'ri.' + expected + explain;
+                        }
+
+                        // Show "Next checkpoint" button if not last
+                        if (i < checkpoints.length - 1) {
+                            nextBtn.style.display = '';
+                            nextBtn.addEventListener('click', () => {
+                                const nextBlock = document.getElementById('reading-cp-' + (i+1));
+                                if (nextBlock) {
+                                    nextBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    const nextInput = document.getElementById('reading-cp-input-' + (i+1));
+                                    if (nextInput) { try { nextInput.focus({ preventScroll: true }); } catch(e) { nextInput.focus(); } }
+                                }
+                            }, { once: true });
+                        }
+
+                        // AI fallback: dispatch nets:submit so the runtime can call /api/ai/check-answer.
+                        // The bridge in runtime.js handles 'answer' kind → checkAnswer() → /api/ai/check-answer.
+                        // We tag it with kind 'reading-checkpoint' for clarity but route to 'answer' so the
+                        // existing bridge consumes it; payload mirrors NETS_AI.checkAnswer opts.
+                        const expectedList = [];
+                        if (cp.ans) expectedList.push(cp.ans);
+                        if (Array.isArray(cp.acceptable)) expectedList.push(...cp.acceptable);
+                        try {
+                            document.dispatchEvent(new CustomEvent('nets:submit', { detail: {
+                                kind: 'reading-checkpoint',
+                                payload: {
+                                    questionId: cp.id || ('reading-cp-' + i),
+                                    studentAnswer: studentAnswer,
+                                    expected: expectedList,
+                                    question: cp.prompt || '',
+                                    expectedAnswers: expectedList,
+                                    tier: 'EASY',
+                                    context: READING.passage || '',
+                                },
+                            }}));
+                        } catch (e) { /* ignore — local feedback already shown */ }
+                    });
                 });
             }
         }
@@ -5033,10 +6792,31 @@ Prezident ertaga hisobot kutmoqda.`,
             const checkBlock = document.getElementById('cons-check-block');
             const cp = document.getElementById('cons-check-prompt');
             const ca = document.getElementById('cons-check-answer');
+            const toggle = document.getElementById('cons-check-toggle');
             const hasCheck = Boolean((CONSOLIDATION.check_prompt && String(CONSOLIDATION.check_prompt).trim()));
             if (checkBlock) checkBlock.style.display = hasCheck ? '' : 'none';
             if (cp) cp.innerHTML = CONSOLIDATION.check_prompt || '';
-            if (ca) ca.innerHTML = CONSOLIDATION.check_answer ? ('Kutilayotgan javob: ' + CONSOLIDATION.check_answer) : '';
+            if (ca) {
+                ca.innerHTML = CONSOLIDATION.check_answer ? ('Kutilayotgan javob: ' + CONSOLIDATION.check_answer) : '';
+                ca.classList.remove('is-revealed');
+            }
+            if (toggle) {
+                const hasAnswer = Boolean((CONSOLIDATION.check_answer && String(CONSOLIDATION.check_answer).trim()));
+                toggle.style.display = hasAnswer ? '' : 'none';
+                toggle.disabled = false;
+                toggle.textContent = "Javobni ko'rsatish";
+                // Bind exactly once per render — clone-replace to drop stale listeners.
+                const fresh = toggle.cloneNode(true);
+                toggle.parentNode.replaceChild(fresh, toggle);
+                fresh.addEventListener('click', () => {
+                    if (fresh.disabled) return;
+                    fresh.disabled = true;
+                    if (ca) {
+                        ca.classList.add('is-revealed');
+                        try { ca.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
+                    }
+                });
+            }
         }
 
         function renderReflection() {
@@ -5050,8 +6830,13 @@ Prezident ertaga hisobot kutmoqda.`,
             if (c) c.innerHTML = REFLECTION.closing || '';
         }
 
+        // Wave 2 stage values — see phaseMap comment near setStage for the
+        // half-step convention. Reading sits between MS-end (4.5) and game
+        // breaks (5); consolidation between real-life (6) and boss (7);
+        // reflection after boss-done (7.5) before the finish state.
         function showReadingScreen(onContinue) {
             if (!readingHasContent()) { onContinue(); return; }
+            setStage(4.7);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sr = document.getElementById('screen-reading');
             if (sr) sr.classList.add('active');
@@ -5070,6 +6855,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function showConsolidationScreen(onContinue) {
             if (!consolidationHasContent()) { onContinue(); return; }
+            setStage(6.5);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sc = document.getElementById('screen-consolidation');
             if (sc) sc.classList.add('active');
@@ -5087,6 +6873,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function showReflectionScreen(onContinue) {
             if (!reflectionHasContent()) { onContinue(); return; }
+            setStage(7.7);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sr = document.getElementById('screen-reflection');
             if (sr) sr.classList.add('active');
@@ -5101,6 +6888,654 @@ Prezident ertaga hisobot kutmoqda.`,
             };
             btn.addEventListener('click', handler, true);
         }
+
+        /* ── Stage 9 · AMR Results Scorecard ──────────────────────────
+           Aggregates window.__sessionLog (populated live by AQ, MS, TM,
+           SF, RL, Boss handlers) into:
+             - per-phase tally (X/N items correct)
+             - per-phase mean axis_1 / axis_2 for items that recorded axes
+             - overall mastery band based on combined axis means
+           See standards/framework/AMR-GRADING-SYSTEM.md and
+           standards/framework/GRADING.md for the rubric definitions.
+        */
+
+        // Initialize the session log as early as the script runs so
+        // every phase's grading handler can write to it without checking.
+        if (!window.__sessionLog) window.__sessionLog = [];
+
+        // Phase ordering for the scorecard rows.
+        const RESULTS_PHASE_ORDER = [
+            { key: 'memory-sprint', label: 'Memory Sprint',  total: () => (typeof MS_QUESTIONS !== 'undefined' ? MS_QUESTIONS.length : 0) },
+            { key: 'adaptive-quiz', label: 'Adaptive Quiz',  total: () => 5 },
+            { key: 'tile-match',    label: 'Tile Match',     total: () => 1, isPhaseLevel: true },
+            { key: 'sentence-fill', label: 'Sentence Fill',  total: () => (typeof GB_WHY_CHAIN !== 'undefined' ? GB_WHY_CHAIN.length : 0) },
+            { key: 'real-life',     label: 'Real-Life',      total: () => (typeof RL_SCENARIO !== 'undefined' && RL_SCENARIO.questions ? RL_SCENARIO.questions.length : 0) },
+            { key: 'final-boss',    label: 'Final Boss',     total: () => (typeof BOSS_QUESTIONS !== 'undefined' ? BOSS_QUESTIONS.length : 0) },
+        ];
+
+        function _amrBandFor(score) {
+            // score is a 1-4 mean. Map to AMR band labels per GRADING.md §rubric.
+            if (score >= 3.5) return { name: 'Mastered',   key: 'mastered'   };
+            if (score >= 2.5) return { name: 'Proficient', key: 'proficient' };
+            if (score >= 1.5) return { name: 'Apprentice', key: 'apprentice' };
+            return                       { name: 'Novice',     key: 'novice'     };
+        }
+
+        function _amrAggregate(log) {
+            // Per-phase tally + axis means. Skip duplicate ids per phase
+            // (we only keep the LAST entry — captures a student's final
+            // answer on a given item).
+            const byPhase = {};
+            const seen = new Set();
+            // Walk in reverse so we keep the latest entry per (phase,id).
+            for (let i = log.length - 1; i >= 0; i--) {
+                const e = log[i];
+                const key = e.phase + '::' + e.id;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                if (!byPhase[e.phase]) byPhase[e.phase] = [];
+                byPhase[e.phase].unshift(e);  // unshift to preserve forward order
+            }
+
+            const phaseStats = RESULTS_PHASE_ORDER.map(p => {
+                const items = byPhase[p.key] || [];
+                const total = p.total();
+                const correct = items.filter(x => x.correct).length;
+                // Items that have axis values (came from AI semantic grading).
+                const axed = items.filter(x => typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number');
+                let axis_1_mean = null, axis_2_mean = null;
+                if (axed.length) {
+                    axis_1_mean = axed.reduce((s, x) => s + x.axis_1, 0) / axed.length;
+                    axis_2_mean = axed.reduce((s, x) => s + x.axis_2, 0) / axed.length;
+                }
+                return {
+                    key: p.key, label: p.label, isPhaseLevel: !!p.isPhaseLevel,
+                    correct, total, items_logged: items.length,
+                    axis_1_mean, axis_2_mean,
+                };
+            });
+
+            // Overall AMR axes — pool every axed item across all phases.
+            const allAxed = [];
+            Object.keys(byPhase).forEach(k => {
+                byPhase[k].forEach(x => {
+                    if (typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number') allAxed.push(x);
+                });
+            });
+            let overall_axis_1 = null, overall_axis_2 = null, overall_score = null, overall_band = null;
+            if (allAxed.length) {
+                overall_axis_1 = allAxed.reduce((s, x) => s + x.axis_1, 0) / allAxed.length;
+                overall_axis_2 = allAxed.reduce((s, x) => s + x.axis_2, 0) / allAxed.length;
+                // item_score = ((a1 + a2) / 2) × 25 per GRADING.md
+                overall_score = ((overall_axis_1 + overall_axis_2) / 2) * 25;
+                overall_band = _amrBandFor((overall_axis_1 + overall_axis_2) / 2);
+            }
+
+            // Overall closed-form tally too — sum correct / sum total across
+            // all phases that produced log entries.
+            let totalCorrect = 0, totalItems = 0;
+            phaseStats.forEach(p => {
+                if (p.isPhaseLevel) {
+                    if (p.correct) { totalCorrect += p.total; totalItems += p.total; }
+                    else totalItems += p.total;
+                } else {
+                    totalCorrect += p.correct;
+                    totalItems += p.total;
+                }
+            });
+
+            return {
+                phaseStats,
+                allAxed,
+                overall_axis_1, overall_axis_2, overall_score, overall_band,
+                totalCorrect, totalItems,
+                hasAxes: allAxed.length > 0,
+            };
+        }
+
+        // Color rule used everywhere on the scorecard so the whole card
+        // reads as one chart: red <50%, yellow 50–74%, green ≥75%.
+        function _perfFromPct(pct) {
+            if (pct >= 75) return 'perf-good';
+            if (pct >= 50) return 'perf-mid';
+            return 'perf-bad';
+        }
+        // Same idea on the 1–4 axis: ≥3 green, 2–2.99 yellow, <2 red.
+        function _perfFromAxis(mean) {
+            if (mean == null) return 'perf-neutral';
+            if (mean >= 3.0) return 'perf-good';
+            if (mean >= 2.0) return 'perf-mid';
+            return 'perf-bad';
+        }
+        function _axisTagFor(mean) {
+            if (mean == null) return "AI baholangan ochiq javob yo'q";
+            if (mean >= 3.0) return 'Yaxshi daraja';
+            if (mean >= 2.0) return "O'rta daraja";
+            return 'Past daraja';
+        }
+
+        function _renderAxisBar(label, mean) {
+            if (mean == null) {
+                return `<div class="results-axis">
+                  <div class="results-axis-label">${label}</div>
+                  <div class="results-axis-value">—</div>
+                  <div class="results-axis-bar-wrap">
+                    <div class="results-axis-bar is-empty"></div>
+                    <div class="results-axis-ticks"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+                  </div>
+                  <div class="results-axis-tag perf-neutral">${_axisTagFor(null)}</div>
+                </div>`;
+            }
+            // Map mean ∈ [1,4] → x ∈ [0%,100%] along the bar.
+            const x = Math.max(0, Math.min(100, ((mean - 1) / 3) * 100));
+            const cls = _perfFromAxis(mean);
+            return `<div class="results-axis">
+              <div class="results-axis-label">${label}</div>
+              <div class="results-axis-value">${mean.toFixed(2)} / 4</div>
+              <div class="results-axis-bar-wrap">
+                <div class="results-axis-bar"></div>
+                <div class="results-axis-marker" style="left:${x.toFixed(2)}%"></div>
+                <div class="results-axis-ticks"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+              </div>
+              <div class="results-axis-tag ${cls}">${_axisTagFor(mean)}</div>
+            </div>`;
+        }
+
+        function showResultsScreen() {
+            const log = window.__sessionLog || [];
+            const agg = _amrAggregate(log);
+            // Activate the screen
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const sr = document.getElementById('screen-results');
+            if (sr) sr.classList.add('active');
+            setStage(8);
+
+            // Single headline number that drives the whole color scheme.
+            const overallPct = agg.totalItems > 0 ? Math.round(100 * agg.totalCorrect / agg.totalItems) : 0;
+            const itemScore  = agg.hasAxes ? Math.round(agg.overall_score) : overallPct;
+            const perfClass  = _perfFromPct(itemScore);
+            const perfHex    = perfClass === 'perf-good' ? '#22c55e'
+                             : perfClass === 'perf-mid'  ? '#eab308'
+                             :                             '#ef4444';
+
+            // Band pill — keep the AMR label, recolor with red/yellow/green.
+            const bandEl = document.getElementById('results-band');
+            if (bandEl) {
+                const bandName = (agg.hasAxes && agg.overall_band)
+                    ? agg.overall_band.name
+                    : _amrBandFor(overallPct / 25).name;
+                bandEl.textContent = bandName;
+                bandEl.className = 'screen-results-band ' + perfClass;
+            }
+
+            // Hero — donut gauge with score in the middle.
+            const headline = document.getElementById('results-headline');
+            if (headline) {
+                const C = 2 * Math.PI * 42;             // circumference of r=42 ring
+                const dashOffset = C * (1 - itemScore / 100);
+                headline.innerHTML = `
+                <div class="screen-results-hero">
+                  <div class="results-gauge" role="img" aria-label="Umumiy ball ${itemScore} foiz">
+                    <svg viewBox="0 0 100 100" aria-hidden="true">
+                      <circle cx="50" cy="50" r="42" class="results-gauge-track" fill="none" stroke-width="9"/>
+                      <circle cx="50" cy="50" r="42" class="results-gauge-fill"  fill="none" stroke-width="9"
+                              stroke="${perfHex}"
+                              stroke-dasharray="${C.toFixed(2)}"
+                              stroke-dashoffset="${dashOffset.toFixed(2)}"/>
+                    </svg>
+                    <div class="results-gauge-center">
+                      <div class="results-gauge-pct" style="color:${perfHex}">${itemScore}%</div>
+                      <div class="results-gauge-frac">${agg.totalCorrect} / ${agg.totalItems} to'g'ri</div>
+                    </div>
+                  </div>
+                </div>`;
+            }
+
+            // Per-phase progress bars.
+            const phasesEl = document.getElementById('results-phases');
+            if (phasesEl) {
+                const rows = agg.phaseStats.map(p => {
+                    let pct, scoreText, perfCls;
+                    if (p.isPhaseLevel) {
+                        // Tile Match — pass/fail row.
+                        pct = p.correct ? 100 : 0;
+                        scoreText = p.correct ? 'Bajarildi' : '—';
+                        perfCls   = p.correct ? 'perf-good' : 'perf-bad';
+                    } else if (p.total > 0) {
+                        pct = Math.round(100 * p.correct / p.total);
+                        scoreText = p.correct + '/' + p.total;
+                        perfCls = _perfFromPct(pct);
+                    } else {
+                        pct = 0; scoreText = '—'; perfCls = 'perf-neutral';
+                    }
+                    const axisLine = (p.axis_1_mean != null)
+                        ? `<small>A1 ${p.axis_1_mean.toFixed(1)} · A2 ${p.axis_2_mean.toFixed(1)}</small>`
+                        : '';
+                    return `<div class="results-phase-row">
+                      <div class="results-phase-name">${p.label}${axisLine}</div>
+                      <div class="results-phase-bar-track">
+                        <div class="results-phase-bar-fill ${perfCls}" style="width:${pct}%"></div>
+                      </div>
+                      <div class="results-phase-score ${perfCls}">${scoreText}</div>
+                    </div>`;
+                }).join('');
+                phasesEl.innerHTML =
+                    `<div class="results-section-title">Faza ko'rsatkichlari</div>
+                     <div class="results-phase-list">${rows}</div>`;
+            }
+
+            // AMR axes — gradient bars with marker triangles.
+            const amrEl = document.getElementById('results-amr');
+            if (amrEl) {
+                if (agg.hasAxes) {
+                    amrEl.innerHTML = `
+                    <div class="results-section-title">AMR · 2-eksa tahlili</div>
+                    <div class="results-amr-grid">
+                      ${_renderAxisBar('1-eksa · Konseptni nomlash',     agg.overall_axis_1)}
+                      ${_renderAxisBar('2-eksa · Bosqichlar izchilligi', agg.overall_axis_2)}
+                    </div>
+                    <div class="results-amr-note">
+                      2-eksa baholash <strong>faqat ochiq javoblarda</strong>
+                      (Sentence Fill, Real-Life ochiq savol, Boss Q3-Q5) qo'llaniladi.
+                      Yopiq raqamli javoblar to'g'ri/no'tog'ri sifatida hisoblanadi,
+                      lekin eksa o'rtachasiga qo'shilmaydi — chunki rubrika qoidani
+                      nomlash va bosqichma-bosqich asoslashni baholaydi.
+                    </div>`;
+                } else {
+                    amrEl.innerHTML = `
+                    <div class="results-section-title">AMR · 2-eksa tahlili</div>
+                    <div class="results-amr-empty">
+                      Bu sessiyada hech qaysi ochiq javob AI tomonidan baholanmadi
+                      (faqat yopiq-format savollarga javob bergansiz). 2-eksa AMR
+                      ochiq javoblarni talab qiladi: konseptni nomlang va
+                      bosqichlarni yozing, shunda Mastered darajasiga yetishasiz.
+                    </div>`;
+                }
+            }
+
+            // Coaching tip — tinted to match the band.
+            const masteryEl = document.getElementById('results-mastery');
+            if (masteryEl) {
+                let tip;
+                if (agg.hasAxes && agg.overall_band) {
+                    const tipByBand = {
+                        mastered:   "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
+                        proficient: "Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.",
+                        apprentice: "Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
+                        novice:     "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
+                    };
+                    tip = tipByBand[agg.overall_band.key] || '';
+                } else {
+                    tip = "Yopiq-format javoblar tahlilingiz: " + overallPct + "%. Ochiq topshiriqlarda AMR baholash to'liq amal qiladi.";
+                }
+                masteryEl.textContent = tip;
+                masteryEl.className = 'screen-results-mastery ' + perfClass;
+            }
+
+            const closingEl = document.getElementById('results-closing');
+            if (closingEl) {
+                closingEl.textContent = "Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.";
+            }
+
+            // Final button — reset to "done" state.
+            btn.classList.remove('pulse', 'state-pill');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
+            // Expose the aggregate for tests / future export.
+            window.__sessionAggregate = agg;
+        }
+    </script>
+
+    <!-- ── Wave F2: Persistent AI Tutor Widget ───────────────────── -->
+    <div id="nets-ai-tutor" class="nets-tutor-collapsed">
+        <button id="nets-tutor-fab" type="button" aria-label="Open tutor chat">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+        <div id="nets-tutor-panel" hidden>
+            <header>
+                <span id="nets-tutor-phase-badge" data-phase="preview">Preview — ask me anything</span>
+                <button id="nets-tutor-close" type="button" aria-label="Close">×</button>
+            </header>
+            <div id="nets-tutor-messages" role="log" aria-live="polite"></div>
+            <form id="nets-tutor-input-form">
+                <textarea id="nets-tutor-input" rows="2" placeholder="Type your question…" maxlength="2000"></textarea>
+                <button type="submit" id="nets-tutor-send">Send</button>
+            </form>
+            <div id="nets-tutor-cap-warning" hidden>Session limit reached.</div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        // Wave F2 — persistent floating tutor widget. Listens for `nets:phase-change`,
+        // talks to /api/ai/tutor/{chat,history}. Pure vanilla JS, all assets inline.
+
+        const PHASE_LABELS = {
+            en: {
+                preview:  'Preview — ask me anything',
+                practice: "Practice — I'll guide you",
+                boss:     "Boss — let's go",
+                send:     'Send',
+                placeholder: 'Type your question…',
+                cap:      'Session limit reached.',
+                error:    'Something went wrong. Please try again.',
+                offline:  'Tutor is offline right now.',
+            },
+            uz: {
+                preview:  "Ko'rib chiqish — istalgan savolni bering",
+                practice: "Mashq — yo'l ko'rsataman",
+                boss:     "Boss — boshladik",
+                send:     'Yuborish',
+                placeholder: "Savolingizni yozing…",
+                cap:      "Sessiya chegarasiga yetildi.",
+                error:    "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
+                offline:  "Tyutor hozir ishlamaydi.",
+            },
+            ru: {
+                preview:  'Превью — спрашивайте, что хотите',
+                practice: 'Практика — буду направлять',
+                boss:     'Босс — поехали',
+                send:     'Отправить',
+                placeholder: 'Введите вопрос…',
+                cap:      'Достигнут лимит сообщений.',
+                error:    'Что-то пошло не так. Попробуйте ещё раз.',
+                offline:  'Тьютор сейчас недоступен.',
+            },
+        };
+
+        function detectLang() {
+            const ctx = window.NETS_CTX || {};
+            const raw = (ctx.lang || document.documentElement.lang || 'en').toLowerCase().slice(0, 2);
+            return PHASE_LABELS[raw] ? raw : 'en';
+        }
+
+        const lang = detectLang();
+        const L = PHASE_LABELS[lang];
+        const SESSION_CAP = 60;
+
+        // Generate UUID without crypto.randomUUID (older Safari).
+        function uuid() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        const ctx = window.NETS_CTX || {};
+        const state = {
+            sessionId: localStorage.getItem('nets_tutor_session') || uuid(),
+            hwId: ctx.hwId || (document.body.dataset && document.body.dataset.hwId) || '',
+            currentPhase: 'preview',
+            currentQuestionId: null,
+            messageCount: 0,
+            isOpen: false,
+            isSending: false,
+        };
+        try { localStorage.setItem('nets_tutor_session', state.sessionId); } catch (e) { /* private mode */ }
+
+        // ── DOM refs ────────────────────────────────────────────
+        const root      = document.getElementById('nets-ai-tutor');
+        const fab       = document.getElementById('nets-tutor-fab');
+        const panel     = document.getElementById('nets-tutor-panel');
+        const badge     = document.getElementById('nets-tutor-phase-badge');
+        const closeBtn  = document.getElementById('nets-tutor-close');
+        const messages  = document.getElementById('nets-tutor-messages');
+        const inputForm = document.getElementById('nets-tutor-input-form');
+        const input     = document.getElementById('nets-tutor-input');
+        const sendBtn   = document.getElementById('nets-tutor-send');
+        const capEl     = document.getElementById('nets-tutor-cap-warning');
+
+        if (!root) return;  // safety
+
+        // Apply localized labels.
+        input.placeholder = L.placeholder;
+        sendBtn.textContent = L.send;
+        capEl.textContent = L.cap;
+        updateBadge('preview');
+
+        // ── Markdown subset rendering — XSS-safe via textContent ───
+        // Supports: paragraphs (blank-line split), **bold**, *italic*,
+        // `code`, line breaks, and "- " or "1. " lists.
+        function renderMarkdownInto(parent, text) {
+            if (!text) return;
+            const blocks = String(text).split(/\n{2,}/);
+            for (const block of blocks) {
+                const trimmed = block.trim();
+                if (!trimmed) continue;
+                const lines = trimmed.split('\n');
+                const isUl = lines.every(l => /^\s*[-*]\s+/.test(l));
+                const isOl = lines.every(l => /^\s*\d+[.)]\s+/.test(l));
+                if (isUl || isOl) {
+                    const list = document.createElement(isUl ? 'ul' : 'ol');
+                    for (const line of lines) {
+                        const li = document.createElement('li');
+                        const stripped = line.replace(/^\s*(?:[-*]|\d+[.)])\s+/, '');
+                        appendInline(li, stripped);
+                        list.appendChild(li);
+                    }
+                    parent.appendChild(list);
+                } else {
+                    const p = document.createElement('p');
+                    const segments = trimmed.split('\n');
+                    segments.forEach((seg, idx) => {
+                        appendInline(p, seg);
+                        if (idx < segments.length - 1) p.appendChild(document.createElement('br'));
+                    });
+                    parent.appendChild(p);
+                }
+            }
+        }
+
+        // Inline markdown — bold, italic, code. Token-based to avoid regex pitfalls.
+        function appendInline(parent, text) {
+            // Split by `code` first (highest precedence), then bold/italic inside.
+            const parts = String(text).split(/(`[^`]+`)/g);
+            for (const part of parts) {
+                if (!part) continue;
+                if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+                    const code = document.createElement('code');
+                    code.textContent = part.slice(1, -1);
+                    parent.appendChild(code);
+                } else {
+                    appendBoldItalic(parent, part);
+                }
+            }
+        }
+
+        function appendBoldItalic(parent, text) {
+            // Tokenize **bold** and *italic*. Greedy on bold first.
+            const re = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+            let lastIndex = 0;
+            let m;
+            while ((m = re.exec(text)) !== null) {
+                if (m.index > lastIndex) {
+                    parent.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+                }
+                const tok = m[0];
+                if (tok.startsWith('**') && tok.endsWith('**')) {
+                    const s = document.createElement('strong');
+                    s.textContent = tok.slice(2, -2);
+                    parent.appendChild(s);
+                } else if (tok.startsWith('*') && tok.endsWith('*')) {
+                    const e = document.createElement('em');
+                    e.textContent = tok.slice(1, -1);
+                    parent.appendChild(e);
+                }
+                lastIndex = re.lastIndex;
+            }
+            if (lastIndex < text.length) {
+                parent.appendChild(document.createTextNode(text.slice(lastIndex)));
+            }
+        }
+
+        // ── Message rendering ───────────────────────────────────
+        function appendMessage(role, content) {
+            const el = document.createElement('div');
+            el.className = 'nets-tutor-msg ' + (role === 'user' ? 'user' : (role === 'error' ? 'error' : 'assistant'));
+            renderMarkdownInto(el, content);
+            // If markdown produced nothing (empty after trim), fall back to raw text.
+            if (!el.firstChild) el.textContent = String(content || '');
+            messages.appendChild(el);
+            messages.scrollTop = messages.scrollHeight;
+            return el;
+        }
+
+        function appendTyping() {
+            const el = document.createElement('div');
+            el.className = 'nets-tutor-typing';
+            el.id = 'nets-tutor-typing-indicator';
+            for (let i = 0; i < 3; i++) el.appendChild(document.createElement('span'));
+            messages.appendChild(el);
+            messages.scrollTop = messages.scrollHeight;
+            return el;
+        }
+        function removeTyping() {
+            const el = document.getElementById('nets-tutor-typing-indicator');
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        }
+
+        // ── Phase badge ─────────────────────────────────────────
+        function updateBadge(phase) {
+            const p = (phase === 'practice' || phase === 'boss') ? phase : 'preview';
+            badge.dataset.phase = p;
+            badge.textContent = L[p];
+        }
+
+        // ── Cap handling ────────────────────────────────────────
+        function applyCap() {
+            if (state.messageCount >= SESSION_CAP) {
+                input.disabled = true;
+                sendBtn.disabled = true;
+                capEl.hidden = false;
+            } else {
+                input.disabled = false;
+                sendBtn.disabled = state.isSending;
+                capEl.hidden = true;
+            }
+        }
+
+        // ── Open / close panel ──────────────────────────────────
+        function openPanel() {
+            if (state.isOpen) return;
+            panel.hidden = false;
+            fab.hidden = true;
+            state.isOpen = true;
+            root.classList.remove('nets-tutor-collapsed');
+            setTimeout(() => { try { input.focus(); } catch (e) {} }, 50);
+        }
+        function closePanel() {
+            if (!state.isOpen) return;
+            panel.hidden = true;
+            fab.hidden = false;
+            state.isOpen = false;
+            root.classList.add('nets-tutor-collapsed');
+        }
+        fab.addEventListener('click', openPanel);
+        closeBtn.addEventListener('click', closePanel);
+
+        // ── Phase-change listener ───────────────────────────────
+        document.addEventListener('nets:phase-change', (ev) => {
+            const detail = (ev && ev.detail) || {};
+            const phase = detail.phase || 'preview';
+            state.currentPhase = (phase === 'practice' || phase === 'boss') ? phase : 'preview';
+            state.currentQuestionId = detail.questionId || null;
+            updateBadge(state.currentPhase);
+        });
+
+        // ── API ─────────────────────────────────────────────────
+        function apiAvailable() {
+            return !!(window.NETS_AI && typeof window.NETS_AI.tutorChat === 'function'
+                      && window.NETS_AI.isAvailable && window.NETS_AI.isAvailable()
+                      && state.hwId);
+        }
+
+        async function sendMessage(text) {
+            if (state.isSending || !text) return;
+            state.isSending = true;
+            sendBtn.disabled = true;
+            appendMessage('user', text);
+            state.messageCount += 1;
+            const typing = appendTyping();
+            try {
+                if (!apiAvailable()) {
+                    removeTyping();
+                    appendMessage('error', L.offline);
+                    return;
+                }
+                const res = await window.NETS_AI.tutorChat({
+                    session_id: state.sessionId,
+                    hw_id: state.hwId,
+                    phase: state.currentPhase,
+                    question_id: state.currentQuestionId || undefined,
+                    message: text,
+                });
+                removeTyping();
+                if (res && res._cap) {
+                    state.messageCount = SESSION_CAP;
+                    appendMessage('error', L.cap);
+                } else if (res && res._error) {
+                    appendMessage('error', res.message || L.error);
+                } else if (res && res.response) {
+                    appendMessage('assistant', res.response);
+                    state.messageCount += 1;
+                } else {
+                    appendMessage('error', L.error);
+                }
+            } catch (e) {
+                removeTyping();
+                appendMessage('error', L.error);
+            } finally {
+                state.isSending = false;
+                applyCap();
+            }
+        }
+
+        inputForm.addEventListener('submit', (ev) => {
+            ev.preventDefault();
+            const text = (input.value || '').trim();
+            if (!text) return;
+            input.value = '';
+            sendMessage(text);
+        });
+
+        // Submit on Enter, newline on Shift+Enter.
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' && !ev.shiftKey) {
+                ev.preventDefault();
+                inputForm.requestSubmit ? inputForm.requestSubmit() : inputForm.dispatchEvent(new Event('submit', { cancelable: true }));
+            }
+        });
+
+        // ── History restore on load ─────────────────────────────
+        async function restoreHistory() {
+            if (!apiAvailable() || !window.NETS_AI.tutorHistory) return;
+            try {
+                const res = await window.NETS_AI.tutorHistory({
+                    session_id: state.sessionId,
+                    hw_id: state.hwId,
+                });
+                const turns = (res && res.turns) || [];
+                let count = 0;
+                for (const t of turns) {
+                    if (!t || !t.role || !t.content) continue;
+                    if (t.role === 'system') continue;
+                    appendMessage(t.role === 'user' ? 'user' : 'assistant', t.content);
+                    count += 1;
+                }
+                state.messageCount = count;
+                applyCap();
+            } catch (e) { /* swallow — history is best-effort */ }
+        }
+
+        // Kick off after a tick so runtime.js has registered.
+        setTimeout(restoreHistory, 0);
+    })();
     </script>
 </body>
 </html>

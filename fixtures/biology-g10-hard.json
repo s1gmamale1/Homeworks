@@ -10,55 +10,425 @@
     "Har bir hujayrada minglab sirlar yashiringan."
   ],
   "panels": [
-    { "id": 1, "title": "PANEL 1 — DNK TUZILISHI", "pages": [{"blocks": [{"type": "h2", "text": "DNK nima?"}, {"type": "p", "text": "Dezoksiribonuklein kislotasi (DNK) tirik organizmlarning irsiy ma'lumotlarini saqlovchi makromolekuladir."}]}] },
-    { "id": 2, "title": "PANEL 2 — NUKLEOTIDLAR", "pages": [{"blocks": [{"type": "h2", "text": "Nukleotidlar"}, {"type": "p", "text": "DNK nukleotidlardan tashkil topgan. Har bir nukleotid azotli asos, dezoksiriboza va fosfat kislota qoldig'idan iborat."}]}] },
-    { "id": 3, "title": "PANEL 3 — ASOSLAR", "pages": [{"blocks": [{"type": "h2", "text": "Azotli asoslar"}, {"type": "p", "text": "To'rt xil asos mavjud: Adenin (A), Timin (T), Guanin (G), Sitozin (C)."}]}] },
-    { "id": 4, "title": "PANEL 4 — QOIDA", "pages": [{"blocks": [{"type": "h2", "text": "Komplementarlik qoidasi"}, {"type": "p", "text": "Asoslar o'ziga xos tarzda juftlashadi: A doimo T bilan, G doimo C bilan bog'lanadi."}]}] },
-    { "id": 5, "title": "PANEL 5 — MODEL", "pages": [{"blocks": [{"type": "h2", "text": "Qo'sh spiral"}, {"type": "p", "text": "1953-yilda Jeyms Uotson va Frensis Krik DNKning qo'sh spiral modelini yaratdilar."}]}] },
-    { "id": 6, "title": "PANEL 6 — RNK", "pages": [{"blocks": [{"type": "h2", "text": "RNK haqida qisqacha"}, {"type": "p", "text": "DNKdan farqli o'laroq RNK bir zanjirli va unda Timin o'rniga Uratsil (U) qatnashadi."}]}] },
-    { "id": 7, "title": "PANEL 7 — GEN", "pages": [{"blocks": [{"type": "h2", "text": "Gen nima?"}, {"type": "p", "text": "Gen — oqsil molekulasining tuzilishi haqidagi ma'lumotni saqlovchi DNK qismidir."}]}] }
+    {
+      "id": 1,
+      "title": "PANEL 1 — DNK TUZILISHI",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "DNK nima?"
+            },
+            {
+              "type": "p",
+              "text": "Dezoksiribonuklein kislotasi (DNK) tirik organizmlarning irsiy ma'lumotlarini saqlovchi makromolekuladir."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "PANEL 2 — NUKLEOTIDLAR",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Nukleotidlar"
+            },
+            {
+              "type": "p",
+              "text": "DNK nukleotidlardan tashkil topgan. Har bir nukleotid azotli asos, dezoksiriboza va fosfat kislota qoldig'idan iborat."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "PANEL 3 — ASOSLAR",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Azotli asoslar"
+            },
+            {
+              "type": "p",
+              "text": "To'rt xil asos mavjud: Adenin (A), Timin (T), Guanin (G), Sitozin (C)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "PANEL 4 — QOIDA",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Komplementarlik qoidasi"
+            },
+            {
+              "type": "p",
+              "text": "Asoslar o'ziga xos tarzda juftlashadi: A doimo T bilan, G doimo C bilan bog'lanadi."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "PANEL 5 — MODEL",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Qo'sh spiral"
+            },
+            {
+              "type": "p",
+              "text": "1953-yilda Jeyms Uotson va Frensis Krik DNKning qo'sh spiral modelini yaratdilar."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "PANEL 6 — RNK",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "RNK haqida qisqacha"
+            },
+            {
+              "type": "p",
+              "text": "DNKdan farqli o'laroq RNK bir zanjirli va unda Timin o'rniga Uratsil (U) qatnashadi."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "PANEL 7 — GEN",
+      "pages": [
+        {
+          "blocks": [
+            {
+              "type": "h2",
+              "text": "Gen nima?"
+            },
+            {
+              "type": "p",
+              "text": "Gen — oqsil molekulasining tuzilishi haqidagi ma'lumotni saqlovchi DNK qismidir."
+            }
+          ]
+        }
+      ]
+    }
   ],
   "flashcards": [
-    { "term": "DNK", "def": "Irsiy ma'lumotni saqlovchi makromolekula.", "cluster": "QOIDA" },
-    { "term": "Nukleotid", "def": "DNKning monomeri.", "cluster": "QOIDA" },
-    { "term": "Adenin", "def": "Timin bilan juftlashuvchi asos.", "cluster": "QOIDA" },
-    { "term": "Komplementarlik qoidasi", "def": "A=T, G=C o'zaro juftlashuvi.", "cluster": "METOD" },
-    { "term": "Qo'sh spiral", "def": "DNKning fazoviy tuzilishi (Uotson va Krik).", "cluster": "TAHLIL" },
-    { "term": "Gen", "def": "DNKning ma'lumot saqlovchi qismi.", "cluster": "QOIDA" },
-    { "term": "RNK", "def": "Ribonuklein kislotasi (bir zanjirli).", "cluster": "QOIDA" }
+    {
+      "term": "DNK",
+      "def": "Irsiy ma'lumotni saqlovchi makromolekula.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Nukleotid",
+      "def": "DNKning monomeri.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Adenin",
+      "def": "Timin bilan juftlashuvchi asos.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Komplementarlik qoidasi",
+      "def": "A=T, G=C o'zaro juftlashuvi.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Qo'sh spiral",
+      "def": "DNKning fazoviy tuzilishi (Uotson va Krik).",
+      "cluster": "TAHLIL"
+    },
+    {
+      "term": "Gen",
+      "def": "DNKning ma'lumot saqlovchi qismi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "RNK",
+      "def": "Ribonuklein kislotasi (bir zanjirli).",
+      "cluster": "QOIDA"
+    }
   ],
   "memory_sprint": [
-    { "type": "KO", "prompt": "Adenin qaysi asos bilan juftlashadi?", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "Komplementarlik qoidasiga ko'ra A faqat T bilan juftlashadi.", "options": ["Guanin", "Sitozin", "Timin", "Uratsil"], "correct": 2 },
-    { "type": "TF", "prompt": "DNK asosan hujayra yadrosida joylashadi.", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "To'g'ri, yadro hujayraning irsiy ma'lumotlar markazidir.", "options": ["To'g'ri", "Noto'g'ri"], "correct": 0 },
-    { "type": "YNNG", "prompt": "Viruslarda DNK o'rniga faqat RNK bo'lishi mumkinmi?", "subtitle": "", "tags": "[Bloom: L2 | PISA: L1]", "explain": "Ha, ba'zi viruslar (masalan retroviruslar) o'z genetik ma'lumotini RNKda saqlaydi.", "options": ["Ha", "Yo'q", "Ma'lum emas"], "correct": 0 },
-    { "type": "KO", "prompt": "DNK tarkibiga kirmaydigan azotli asosni toping.", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "Uratsil faqat RNK tarkibida bo'ladi.", "options": ["Adenin", "Timin", "Sitozin", "Uratsil"], "correct": 3 },
-    { "type": "TF", "prompt": "DNK molekulasi bir zanjirlidir.", "subtitle": "", "tags": "[Bloom: L1 | PISA: L1]", "explain": "Noto'g'ri, u qo'sh spiral shaklidagi ikki zanjirli molekuladir.", "options": ["To'g'ri", "Noto'g'ri"], "correct": 1 }
+    {
+      "type": "KO",
+      "prompt": "Adenin qaysi asos bilan juftlashadi?",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "Komplementarlik qoidasiga ko'ra A faqat T bilan juftlashadi.",
+      "options": [
+        "Guanin",
+        "Sitozin",
+        "Timin",
+        "Uratsil"
+      ],
+      "correct": 2
+    },
+    {
+      "type": "TF",
+      "prompt": "DNK asosan hujayra yadrosida joylashadi.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "To'g'ri, yadro hujayraning irsiy ma'lumotlar markazidir.",
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
+      "correct": 0
+    },
+    {
+      "type": "YNNG",
+      "prompt": "Viruslarda DNK o'rniga faqat RNK bo'lishi mumkinmi?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "explain": "Ha, ba'zi viruslar (masalan retroviruslar) o'z genetik ma'lumotini RNKda saqlaydi.",
+      "options": [
+        "Ha",
+        "Yo'q",
+        "Ma'lum emas"
+      ],
+      "correct": 0
+    },
+    {
+      "type": "KO",
+      "prompt": "DNK tarkibiga kirmaydigan azotli asosni toping.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "Uratsil faqat RNK tarkibida bo'ladi.",
+      "options": [
+        "Adenin",
+        "Timin",
+        "Sitozin",
+        "Uratsil"
+      ],
+      "correct": 3
+    },
+    {
+      "type": "TF",
+      "prompt": "DNK molekulasi bir zanjirlidir.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "Noto'g'ri, u qo'sh spiral shaklidagi ikki zanjirli molekuladir.",
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
+      "correct": 1
+    }
   ],
   "gb_adaptive_quiz": [
-    { "q": "DNKning fazoviy modeli nima deb ataladi?", "tags": "[Bloom: L1 | PISA: L1]", "tier": "EASY", "ans": ["qo'sh spiral"], "capture": false }
+    {
+      "q": "DNKning fazoviy modeli nima deb ataladi?",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "tier": "EASY",
+      "ans": [
+        "qo'sh spiral"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "qo'sh spiral",
+        "canonical_display": "qo'sh spiral",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "qo'sh spiral"
+      ]
+    }
   ],
   "gb_why_chain": [],
   "gb_memory_match": [
-    ["A", "T"], ["G", "C"], ["DNK", "Ikki zanjir"], ["RNK", "Bir zanjir"]
+    [
+      "A",
+      "T"
+    ],
+    [
+      "G",
+      "C"
+    ],
+    [
+      "DNK",
+      "Ikki zanjir"
+    ],
+    [
+      "RNK",
+      "Bir zanjir"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Genetik tahlil",
     "story": "Kriminologlar jinoyat joyidan topilgan sochni DNK tahlilidan o'tkazishmoqda. Ular DNK zanjirining kichik qismini ajratib olishdi.",
-    "q1": { "prompt": "Agar zanjirning bir tomonida 'ATTGGC' ketma-ketligi bo'lsa, ikkinchi tomoni qanday bo'ladi?", "ans": "TAACCG", "fb": "Juda yaxshi, komplementarlik qoidasini to'g'ri qo'lladingiz." },
-    "q2": { "prompt": "Bu qoida nima deb ataladi?", "fields": [{"id": "rule", "label": "Qoida", "ans": "komplementarlik"}], "fb": "To'g'ri, bu komplementarlik qoidasidir." },
-    "q3": { "prompt": "Soch tolasida DNK asosan hujayraning qaysi qismida joylashgan bo'ladi?", "ans": "yadro", "fb": "To'g'ri, hujayra yadrosida." },
-    "q4": { "prompt": "DNK tarkibidagi Adenin miqdori 20% bo'lsa, Timin miqdori necha % bo'ladi?", "fields": [{"id": "T_percent", "label": "Timin %", "ans": "20"}], "fb": "To'g'ri, A=T qoidasiga ko'ra." },
-    "q5": { "prompt": "DNK ketma-ketligining har qanday tasodifiy o'zgarishi nima deb ataladi?", "open": true, "fb": "Mutatsiya – to'g'ri fikr." },
-    "q6": { "prompt": "Oqsil molekulasining tuzilishi haqidagi ma'lumot saqlanuvchi DNK qismi nima deb ataladi?", "ans": "gen", "fb": "To'g'ri, gen irsiyat birligidir." },
+    "q1": {
+      "prompt": "Agar zanjirning bir tomonida 'ATTGGC' ketma-ketligi bo'lsa, ikkinchi tomoni qanday bo'ladi?",
+      "ans": "TAACCG",
+      "fb": "Juda yaxshi, komplementarlik qoidasini to'g'ri qo'lladingiz."
+    },
+    "q2": {
+      "prompt": "Bu qoida nima deb ataladi?",
+      "fields": [
+        {
+          "id": "rule",
+          "label": "Qoida",
+          "ans": "komplementarlik"
+        }
+      ],
+      "fb": "To'g'ri, bu komplementarlik qoidasidir."
+    },
+    "q3": {
+      "prompt": "Soch tolasida DNK asosan hujayraning qaysi qismida joylashgan bo'ladi?",
+      "ans": "yadro",
+      "fb": "To'g'ri, hujayra yadrosida."
+    },
+    "q4": {
+      "prompt": "DNK tarkibidagi Adenin miqdori 20% bo'lsa, Timin miqdori necha % bo'ladi?",
+      "fields": [
+        {
+          "id": "T_percent",
+          "label": "Timin %",
+          "ans": "20"
+        }
+      ],
+      "fb": "To'g'ri, A=T qoidasiga ko'ra."
+    },
+    "q5": {
+      "prompt": "DNK ketma-ketligining har qanday tasodifiy o'zgarishi nima deb ataladi?",
+      "open": true,
+      "fb": "Mutatsiya – to'g'ri fikr."
+    },
+    "q6": {
+      "prompt": "Oqsil molekulasining tuzilishi haqidagi ma'lumot saqlanuvchi DNK qismi nima deb ataladi?",
+      "ans": "gen",
+      "fb": "To'g'ri, gen irsiyat birligidir."
+    },
     "endTitle": "Genetik tahlil yakunlandi",
     "endSub": "DNK sirlarini tahlil qilish orqali jinoyat ishi bo'yicha muhim dalillar topildi."
   },
   "boss_questions": [
-    { "q": "Agar DNK tarkibida Guanin 30% bo'lsa, Adenin miqdori necha % bo'ladi?", "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]", "ans": ["20", "20%"], "hint": "G=30 bo'lsa C=30. G+C=60. Qolgan 40% Adenin va Timinga teng bo'linadi.", "dmg": 30 },
-    { "q": "DNK qisqartmasida 'D' harfi qaysi so'zni anglatadi?", "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]", "ans": ["dezoksiriboza", "dezoksiribonuklein"], "hint": "Nukleotid tarkibidagi shakarning nomi bilan bog'liq.", "dmg": 10 },
-    { "q": "Guanin va Sitozin o'rtasida nechta vodorod bog'i mavjud?", "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]", "ans": ["3", "uchta"], "hint": "Adenin va Timin o'rtasida ikkita, ular orasida esa...", "dmg": 20 },
-    { "q": "Oqsil biosintezi uchun ma'lumot DNKdan qaysi molekulaga ko'chiriladi?", "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]", "ans": ["rnk", "i-rnk", "xabarchi rnk"], "hint": "DNKning bir zanjirli egizagi.", "dmg": 20 },
-    { "q": "Irsiyat va o'zgaruvchanlikni o'rganadigan fan nima?", "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]", "ans": ["genetika"], "hint": "Ushbu bo'limning nomi ham shunday.", "dmg": 10 }
+    {
+      "q": "Agar DNK tarkibida Guanin 30% bo'lsa, Adenin miqdori necha % bo'ladi?",
+      "tags": "[Bloom: L3 | PISA: L3 | Damage: -30 HP]",
+      "ans": [
+        "20",
+        "20%"
+      ],
+      "hint": "G=30 bo'lsa C=30. G+C=60. Qolgan 40% Adenin va Timinga teng bo'linadi.",
+      "dmg": 30,
+      "answer_spec": {
+        "type": "text_exact",
+        "expected": "20",
+        "canonical_display": "20",
+        "allow_ai_fallback": false
+      },
+      "accepted_answers": [
+        "20",
+        "20%"
+      ]
+    },
+    {
+      "q": "DNK qisqartmasida 'D' harfi qaysi so'zni anglatadi?",
+      "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]",
+      "ans": [
+        "dezoksiriboza",
+        "dezoksiribonuklein"
+      ],
+      "hint": "Nukleotid tarkibidagi shakarning nomi bilan bog'liq.",
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "dezoksiriboza",
+        "canonical_display": "dezoksiriboza",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "dezoksiriboza",
+        "dezoksiribonuklein"
+      ]
+    },
+    {
+      "q": "Guanin va Sitozin o'rtasida nechta vodorod bog'i mavjud?",
+      "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]",
+      "ans": [
+        "3",
+        "uchta"
+      ],
+      "hint": "Adenin va Timin o'rtasida ikkita, ular orasida esa...",
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_exact",
+        "expected": "3",
+        "canonical_display": "3",
+        "allow_ai_fallback": false
+      },
+      "accepted_answers": [
+        "3",
+        "uchta"
+      ]
+    },
+    {
+      "q": "Oqsil biosintezi uchun ma'lumot DNKdan qaysi molekulaga ko'chiriladi?",
+      "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]",
+      "ans": [
+        "rnk",
+        "i-rnk",
+        "xabarchi rnk"
+      ],
+      "hint": "DNKning bir zanjirli egizagi.",
+      "dmg": 20,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "rnk",
+        "canonical_display": "rnk",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "rnk",
+        "i-rnk",
+        "xabarchi rnk"
+      ]
+    },
+    {
+      "q": "Irsiyat va o'zgaruvchanlikni o'rganadigan fan nima?",
+      "tags": "[Bloom: L1 | PISA: L1 | Damage: -10 HP]",
+      "ans": [
+        "genetika"
+      ],
+      "hint": "Ushbu bo'limning nomi ham shunday.",
+      "dmg": 10,
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "genetika",
+        "canonical_display": "genetika",
+        "allow_ai_fallback": true
+      },
+      "accepted_answers": [
+        "genetika"
+      ]
+    }
   ],
   "reflection": {
     "summary": "Biz DNKning strukturasi, nukleotidlar va komplementarlik qoidasini o'rgandik.",

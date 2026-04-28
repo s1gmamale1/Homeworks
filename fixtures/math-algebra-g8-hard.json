@@ -16,21 +16,57 @@
       "pages": [
         {
           "blocks": [
-            { "type": "h2", "text": "Kvadrat tenglama nima?" },
-            { "type": "p", "text": "ax² + bx + c = 0 ko'rinishidagi tenglama kvadrat tenglama deyiladi, bu yerda a, b, c — berilgan sonlar (a ≠ 0), x — noma'lum." },
-            { "type": "quote", "text": "Asosiy tushuncha: a - bosh koeffitsiyent, b - ikkinchi koeffitsiyent, c - ozod had." },
-            { "type": "p", "text": "Diskriminant (D) formulasini eslaysizmi?" },
-            { "type": "ul", "items": ["D = b² - 4ac", "Agar D > 0 bo'lsa, ikkita yechim.", "Agar D = 0 bo'lsa, bitta yechim.", "Agar D < 0 bo'lsa, haqiqiy sonlar to'plamida yechim yo'q."] }
+            {
+              "type": "h2",
+              "text": "Kvadrat tenglama nima?"
+            },
+            {
+              "type": "p",
+              "text": "ax² + bx + c = 0 ko'rinishidagi tenglama kvadrat tenglama deyiladi, bu yerda a, b, c — berilgan sonlar (a ≠ 0), x — noma'lum."
+            },
+            {
+              "type": "quote",
+              "text": "Asosiy tushuncha: a - bosh koeffitsiyent, b - ikkinchi koeffitsiyent, c - ozod had."
+            },
+            {
+              "type": "p",
+              "text": "Diskriminant (D) formulasini eslaysizmi?"
+            },
+            {
+              "type": "ul",
+              "items": [
+                "D = b² - 4ac",
+                "Agar D > 0 bo'lsa, ikkita yechim.",
+                "Agar D = 0 bo'lsa, bitta yechim.",
+                "Agar D < 0 bo'lsa, haqiqiy sonlar to'plamida yechim yo'q."
+              ]
+            }
           ]
         }
       ]
     }
   ],
   "flashcards": [
-    { "term": "Kvadrat tenglama", "def": "ax² + bx + c = 0 ko'rinishidagi tenglama.", "cluster": "QOIDA" },
-    { "term": "Diskriminant", "def": "D = b² - 4ac", "cluster": "METOD" },
-    { "term": "Ildizlar yig'indisi", "def": "x₁ + x₂ = -b/a (Viyet teoremasi)", "cluster": "QOIDA" },
-    { "term": "Ildizlar ko'paytmasi", "def": "x₁ · x₂ = c/a", "cluster": "QOIDA" }
+    {
+      "term": "Kvadrat tenglama",
+      "def": "ax² + bx + c = 0 ko'rinishidagi tenglama.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Diskriminant",
+      "def": "D = b² - 4ac",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Ildizlar yig'indisi",
+      "def": "x₁ + x₂ = -b/a (Viyet teoremasi)",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Ildizlar ko'paytmasi",
+      "def": "x₁ · x₂ = c/a",
+      "cluster": "QOIDA"
+    }
   ],
   "memory_sprint": [
     {
@@ -39,7 +75,12 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Ta'rifga ko'ra ax² + bx + c = 0 kvadrat tenglama deyiladi (a ≠ 0).",
-      "options": ["ax + b = 0", "ax² + bx + c = 0", "ax³ + bx² + cx + d = 0", "a/x + b = 0"],
+      "options": [
+        "ax + b = 0",
+        "ax² + bx + c = 0",
+        "ax³ + bx² + cx + d = 0",
+        "a/x + b = 0"
+      ],
       "correct": 1
     },
     {
@@ -48,7 +89,10 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "To'g'ri, chunki manfiy sondan haqiqiy ildiz chiqarib bo'lmaydi.",
-      "options": ["To'g'ri", "Noto'g'ri"],
+      "options": [
+        "To'g'ri",
+        "Noto'g'ri"
+      ],
       "correct": 0
     },
     {
@@ -57,7 +101,11 @@
       "subtitle": "",
       "tags": "[Bloom: L1 | PISA: L1]",
       "explain": "Ha, faqat 'a' nolga teng bo'lmasligi kerak. b=0 bo'lsa chala kvadrat tenglama hosil bo'ladi.",
-      "options": ["Ha", "Yo'q", "Ma'lum emas"],
+      "options": [
+        "Ha",
+        "Yo'q",
+        "Ma'lum emas"
+      ],
       "correct": 0
     }
   ],
@@ -66,46 +114,143 @@
       "q": "x² - 5x + 6 = 0 tenglamaning diskriminantini toping.",
       "tags": "[Bloom: L2 | PISA: L1]",
       "tier": "EASY",
-      "ans": ["1"],
-      "capture": false
+      "ans": [
+        "1"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 1,
+        "canonical_display": "1",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "1"
+      ]
     },
     {
       "q": "x² - 5x + 6 = 0 tenglamaning kichik ildizini yozing.",
       "tags": "[Bloom: L3 | PISA: L2]",
       "tier": "MEDIUM",
-      "ans": ["2"],
-      "capture": false
+      "ans": [
+        "2"
+      ],
+      "capture": false,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 2,
+        "canonical_display": "2",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "2"
+      ]
     },
     {
       "q": "Agar kvadrat tenglamaning ildizlari 3 va 4 bo'lsa, tenglamaning ko'rinishini x²-px+q=0 deb qarab q ni toping.",
       "tags": "[Bloom: L3 | PISA: L3]",
       "tier": "HARD",
-      "ans": ["12"],
-      "capture": true
+      "ans": [
+        "12"
+      ],
+      "capture": true,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 12,
+        "canonical_display": "12",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "12"
+      ]
     }
   ],
   "gb_why_chain": [
     {
       "q": "Nima uchun Viyet teoremasi muhim?",
       "inv": "tenglamani yechmasdan",
-      "reprompts": ["U ildizlarni hisoblamasdan nimani topishga yordam beradi?", "Ildizlarning yig'indisi haqida o'ylab ko'ring."]
+      "reprompts": [
+        "U ildizlarni hisoblamasdan nimani topishga yordam beradi?",
+        "Ildizlarning yig'indisi haqida o'ylab ko'ring."
+      ]
     }
   ],
   "gb_memory_match": [
-    ["x₁ + x₂ = -b/a", "Viyet teoremasi - yig'indi"],
-    ["x₁ · x₂ = c/a", "Viyet teoremasi - ko'paytma"],
-    ["D < 0", "Ildiz yo'q"],
-    ["D = 0", "Bitta ildiz"]
+    [
+      "x₁ + x₂ = -b/a",
+      "Viyet teoremasi - yig'indi"
+    ],
+    [
+      "x₁ · x₂ = c/a",
+      "Viyet teoremasi - ko'paytma"
+    ],
+    [
+      "D < 0",
+      "Ildiz yo'q"
+    ],
+    [
+      "D = 0",
+      "Bitta ildiz"
+    ]
   ],
   "real_life": {
     "badge": "VAZIFA · Bobur parki favvorasi",
     "story": "Samarqanddagi yangi Bobur parkida balandlikka otiladigan favvora o'rnatilmoqda. Muhandislar favvoradan chiqayotgan suv oqimining traektoriyasini hisoblashlari kerak. Suvning balandligi (h, metrlarda) t (sekund) vaqtga bog'liq holda h = -5t² + 20t + 2 tenglamasi bilan ifodalanadi.",
-    "q1": { "prompt": "Suv otila boshlagan vaqtdagi dastlabki balandlikni toping (t=0 bo'lganda).", "ans": "2", "fb": "To'g'ri, h = -5(0)² + 20(0) + 2 = 2." },
-    "q2": { "prompt": "Ushbu tenglamada a, b, c koeffitsiyentlarni aniqlang.", "fields": [{"id": "a", "label": "a=", "ans": "-5"}, {"id": "b", "label": "b=", "ans": "20"}, {"id": "c", "label": "c=", "ans": "2"}], "fb": "Juda yaxshi! Kvadrat funksiya koeffitsiyentlari to'g'ri topildi." },
-    "q3": { "prompt": "Suv qachon eng yuqori balandlikka erishishini topish uchun t = -b/(2a) formulasidan foydalaning.", "ans": "2", "fb": "Ajoyib. t = -20 / (2 * -5) = 2 sekund." },
-    "q4": { "prompt": "Eng yuqori balandlik necha metrni tashkil qiladi? t = 2 ni tenglamaga qo'yib hisoblang.", "fields": [{"id": "h_max", "label": "h(2)=", "ans": "22"}], "fb": "h = -5(2)² + 20(2) + 2 = -20 + 40 + 2 = 22 metr. To'g'ri!" },
-    "q5": { "prompt": "Favvoradagi suvning yerni urishi vaqtida h qanday bo'lishi kerak va kvadrat tenglamani qanday ishlatsak bo'ladi?", "open": true, "fb": "Javobingiz tahlil qilinmoqda. Asosiysi h=0 deb, -5t² + 20t + 2 = 0 tenglamani yechish kerakligini tushunishingizdir." },
-    "q6": { "prompt": "Diskriminant (D) musbat chiqdimi yoki manfiymi? (-5t² + 20t + 2 = 0 tenglamasi uchun)", "ans": "musbat", "fb": "To'g'ri, D = 400 - 4(-5)(2) = 440, ya'ni D > 0." },
+    "q1": {
+      "prompt": "Suv otila boshlagan vaqtdagi dastlabki balandlikni toping (t=0 bo'lganda).",
+      "ans": "2",
+      "fb": "To'g'ri, h = -5(0)² + 20(0) + 2 = 2."
+    },
+    "q2": {
+      "prompt": "Ushbu tenglamada a, b, c koeffitsiyentlarni aniqlang.",
+      "fields": [
+        {
+          "id": "a",
+          "label": "a=",
+          "ans": "-5"
+        },
+        {
+          "id": "b",
+          "label": "b=",
+          "ans": "20"
+        },
+        {
+          "id": "c",
+          "label": "c=",
+          "ans": "2"
+        }
+      ],
+      "fb": "Juda yaxshi! Kvadrat funksiya koeffitsiyentlari to'g'ri topildi."
+    },
+    "q3": {
+      "prompt": "Suv qachon eng yuqori balandlikka erishishini topish uchun t = -b/(2a) formulasidan foydalaning.",
+      "ans": "2",
+      "fb": "Ajoyib. t = -20 / (2 * -5) = 2 sekund."
+    },
+    "q4": {
+      "prompt": "Eng yuqori balandlik necha metrni tashkil qiladi? t = 2 ni tenglamaga qo'yib hisoblang.",
+      "fields": [
+        {
+          "id": "h_max",
+          "label": "h(2)=",
+          "ans": "22"
+        }
+      ],
+      "fb": "h = -5(2)² + 20(2) + 2 = -20 + 40 + 2 = 22 metr. To'g'ri!"
+    },
+    "q5": {
+      "prompt": "Favvoradagi suvning yerni urishi vaqtida h qanday bo'lishi kerak va kvadrat tenglamani qanday ishlatsak bo'ladi?",
+      "open": true,
+      "fb": "Javobingiz tahlil qilinmoqda. Asosiysi h=0 deb, -5t² + 20t + 2 = 0 tenglamani yechish kerakligini tushunishingizdir."
+    },
+    "q6": {
+      "prompt": "Diskriminant (D) musbat chiqdimi yoki manfiymi? (-5t² + 20t + 2 = 0 tenglamasi uchun)",
+      "ans": "musbat",
+      "fb": "To'g'ri, D = 400 - 4(-5)(2) = 440, ya'ni D > 0."
+    },
     "endTitle": "Favvora dizayni tugallandi!",
     "endSub": "Kvadrat tenglama sizga aniq traektoriyani tushunishga yordam berdi."
   },
@@ -113,23 +258,59 @@
     {
       "q": "x² - 9x + 20 = 0 tenglamaning ildizlari yig'indisini toping.",
       "tags": "[Bloom: L2 | PISA: L2 | Damage: -10 HP]",
-      "ans": ["9"],
+      "ans": [
+        "9"
+      ],
       "hint": "Viyet teoremasidan foydalaning: x₁ + x₂ = -b/a.",
-      "dmg": 10
+      "dmg": 10,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 9,
+        "canonical_display": "9",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "9"
+      ]
     },
     {
       "q": "2x² - 12x + 18 = 0 tenglamaning diskriminantini hisoblang.",
       "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
-      "ans": ["0"],
+      "ans": [
+        "0"
+      ],
       "hint": "D = b² - 4ac formulasiga a=2, b=-12, c=18 ni qo'ying.",
-      "dmg": 20
+      "dmg": 20,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 0,
+        "canonical_display": "0",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "0"
+      ]
     },
     {
       "q": "Parametrning qanday qiymatida x² - px + 25 = 0 tenglama bitta ildizga ega bo'ladi? (Faqat musbat qiymatini yozing)",
       "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
-      "ans": ["10"],
+      "ans": [
+        "10"
+      ],
       "hint": "Bitta ildizga ega bo'lishi uchun D = 0 bo'lishi kerak. p² - 100 = 0.",
-      "dmg": 30
+      "dmg": 30,
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 10,
+        "canonical_display": "10",
+        "allow_ai_fallback": false,
+        "tolerance": 0
+      },
+      "accepted_answers": [
+        "10"
+      ]
     }
   ],
   "reflection": {
