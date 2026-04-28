@@ -6,6 +6,7 @@ Each function loads its prompt from server/prompts/runtime/{name}.md,
 sends to Gemini with request-specific context, returns typed result.
 """
 import hashlib
+import logging
 import re
 from typing import Optional, Any
 from pathlib import Path
@@ -17,6 +18,90 @@ from ..config import PROMPTS_DIR
 from . import gemini
 from . import answer_checker
 from .. import db
+
+# Server-side log channel for the tutor — full provider errors land here while
+# the client receives a scrubbed friendly message.
+_log = logging.getLogger("nets.tutor")
+
+# Minimum entropy + safe charset for session_id. The frontend produces
+# UUIDv4 (`crypto.randomUUID()`); test fixtures use shorter slug-style ids.
+# Anything ≥8 chars in this charset passes; trivial enumeration vectors
+# (single digits, plain words, empty strings) are rejected. Until proper
+# auth lands, the only thing protecting one student's history from another
+# is the unguessability of this token.
+_SESSION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{8,}$")
+_SESSION_ID_MIN_LEN = 8
+
+
+def _validate_session_id(session_id: str) -> str:
+    """Reject malformed or trivially-guessable session IDs.
+
+    Returns the value unchanged on success; raises 400 otherwise.
+    """
+    if (
+        not isinstance(session_id, str)
+        or len(session_id) < _SESSION_ID_MIN_LEN
+        or not _SESSION_ID_RE.match(session_id)
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": (
+                    "session_id must be at least "
+                    f"{_SESSION_ID_MIN_LEN} chars, alphanumeric/-/_"
+                ),
+                "code": "INVALID_SESSION_ID",
+            },
+        )
+    return session_id
+
+
+def _fence_untrusted(text: str) -> str:
+    """Wrap a chunk of user-controlled text in tags that the system prompt
+    instructs the model to treat as data, not instructions.
+
+    Defense-in-depth for prompt injection — the prompt-side rule does the
+    actual work, but the fence makes the boundary visible to the model and
+    impossible to miss.
+    """
+    if not isinstance(text, str):
+        text = "" if text is None else str(text)
+    # Strip any pre-existing fence tags from the input so a student can't
+    # forge a closing tag and inject instructions outside the fence.
+    cleaned = text.replace("<UNTRUSTED>", "").replace("</UNTRUSTED>", "")
+    return f"<UNTRUSTED>{cleaned}</UNTRUSTED>"
+
+
+def _scrub_provider_error(exc: Exception) -> str:
+    """Return a client-safe error message; full detail goes to server logs.
+
+    Provider exceptions sometimes embed API-key fragments, GCP project IDs,
+    or internal endpoints — never forward those to a browser. We log the
+    raw exception so on-call can still diagnose, and we hand the user a
+    generic message.
+    """
+    _log.exception("Tutor LLM call failed: %s", exc)
+    return "Tutor backend temporarily unavailable. Please try again."
+
+
+def _was_correct_normalized(student_answer: str, expected_answers: list[str]) -> bool:
+    """Pre-compute correctness server-side for boss-turn so the LLM never sees
+    the raw expected_answers list (which would otherwise be a leak surface
+    against prompt injection in BOSS).
+
+    Uses normalized whitespace+case comparison — same shape as `_normalize`.
+    """
+    if not student_answer or not expected_answers:
+        return False
+    needle = _normalize(student_answer)
+    if not needle:
+        return False
+    for expected in expected_answers:
+        if not isinstance(expected, str):
+            continue
+        if needle == _normalize(expected):
+            return True
+    return False
 
 
 # Wave F1 — per-(session_id, hw_id) message cap for the live tutor widget.
@@ -76,16 +161,13 @@ def _normalize(text: str) -> str:
 def _is_boss(question_id: str, phase: Optional[str]) -> bool:
     """Return True when the current request is a boss-phase interaction.
 
-    Preference order:
-      1. Explicit ``phase == "boss"`` field — canonical, preferred.
-      2. ``question_id.startswith("boss")`` — legacy fallback kept for
-         backward-compatibility with callers that pre-date the ``phase`` field.
-         DEPRECATED: pass ``phase="boss"`` explicitly instead.
+    Boss state is determined exclusively by the explicit ``phase`` field. The
+    legacy ``question_id.startswith("boss")`` fallback was removed because a
+    student could craft `question_id="boss-anything"` to enable boss-mode
+    scoring (which awards `correct: True` on low-confidence AI responses)
+    and bypass the practice-phase grading path entirely.
     """
-    if phase is not None:
-        return phase == "boss"
-    # DEPRECATED fallback: infer from question_id prefix when phase is absent.
-    return question_id.startswith("boss")
+    return phase == "boss"
 
 
 async def check_answer(
@@ -262,12 +344,21 @@ async def boss_turn(
 
     Wave F3: optional `persona_traits` (e.g. ["challenger", "mentor"]) adapts the boss
     tone. When None or empty, behavior is identical to prior versions (backward-compat).
+
+    Security note: `expected_answers` is NEVER forwarded to the LLM. Correctness
+    is computed server-side via `_was_correct_normalized` and the LLM receives
+    only `was_correct: bool`. This closes the prompt-injection leak surface
+    where a crafted boss-turn message could trick the model into echoing the
+    raw expected answers back to the student. AMR axes (concept identification
+    + process integrity) are still graded by the LLM since they evaluate the
+    student's *reasoning shown*, not the answer value.
     """
     prompt = _load_runtime_prompt("boss-tutor")
+    was_correct = _was_correct_normalized(student_answer, expected_answers or [])
     payload = {
         "boss_question": boss_question,
         "student_answer": student_answer,
-        "expected_answers": expected_answers,
+        "was_correct": was_correct,
         "damage_value": damage_value,
         "hp_remaining": hp_remaining,
         "attempt_number": attempt_number,
@@ -292,21 +383,31 @@ async def boss_turn(
     payload["amr_mode"] = True
 
     schema = {
-        "correct": "bool",
-        "damage_dealt": "int (0 or damage_value)",
+        "correct": "bool — must equal was_correct from input",
+        "damage_dealt": "int (damage_value if was_correct else 0)",
         "boss_response": "Uzbek string, in-character boss, 1 sentence",
-        "hint": "Uzbek string or null (null if attempt 1 or if correct)",
+        "hint": "Uzbek string or null (null if attempt 1 or if was_correct)",
         "score": "float 0-1",
         "axis_1": "integer 1..4 (Concept Identification)",
         "axis_2": "integer 1..4 (Process Integrity)",
         "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
         "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
     }
-    return await gemini.generate_json(
+    result = await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
         schema_hint=schema,
         model=gemini.PRO_MODEL,  # boss uses stronger model
     )
+    # Authoritative correctness + damage come from the server-side check.
+    # Override whatever the model returned to keep scoring deterministic and
+    # prevent a prompt-injection from flipping the outcome (in either direction
+    # — student-flipping-correct-to-true OR a confused LLM dealing 0 damage on
+    # a correct answer). Axes (axis_1/axis_2) are LEFT untouched: those grade
+    # the student's process, not the answer value.
+    if isinstance(result, dict):
+        result["correct"] = was_correct
+        result["damage_dealt"] = int(damage_value) if was_correct else 0
+    return result
 
 
 async def reflection_feedback(
@@ -353,17 +454,37 @@ async def reflection_feedback(
 
 # Keys we strip from any question payload before it enters the LLM context for
 # practice/boss phases. Bridge B (answer-leak prevention) — see the plan.
+# Includes camelCase, snake_case, and common alternative names from external
+# content schemas. Adding a new field name here is the cheapest way to plug a
+# leak when a content author introduces new naming.
 _ANSWER_LEAK_KEYS: tuple[str, ...] = (
-    "expected",
-    "ans",
-    "answer",
     "a",
     "acceptable",
-    "accepted_answers",
     "acceptableAnswers",
+    "accepted_answers",
+    "answer",
+    "answer_key",
+    "answerKey",
+    "ans",
     "canonical_display",
+    "canonicalDisplay",
     "correct",
+    "correctAnswer",
+    "correct_answer",
+    "correctChoice",
+    "correct_choice",
+    "expected",
+    "expectedAnswer",
+    "expected_answer",
+    "expectedValue",
+    "expected_value",
+    "key",
     "matched_expected",
+    "right_answer",
+    "rightAnswer",
+    "solution",
+    "solutionKey",
+    "solution_key",
 )
 
 
@@ -395,12 +516,18 @@ def _redact_question_for_tutor(question: dict, phase: str) -> dict:
 
 
 def _format_history_for_prompt(turns: list[dict]) -> str:
-    """Render recent chat turns as compact lines for the tutor prompt."""
+    """Render recent chat turns as compact lines for the tutor prompt.
+
+    Each turn's content is fenced as untrusted data because the student-side
+    turns are user-controlled and could otherwise re-inject on every request.
+    """
     lines: list[str] = []
     for t in turns:
         role = t.get("role", "")
         content = t.get("content", "")
-        lines.append(f"{role}: {content}")
+        # Fence both roles uniformly — the model is told to treat anything
+        # inside the fence as data, regardless of who "spoke" it.
+        lines.append(f"{role}: {_fence_untrusted(content)}")
     return "\n".join(lines)
 
 
@@ -441,7 +568,7 @@ def _build_tutor_chat_prompt(
     parts.append(
         "CHAT_HISTORY:\n" + (_format_history_for_prompt(chat_history) or "(none)")
     )
-    parts.append(f"STUDENT_MESSAGE:\n{student_message}")
+    parts.append(f"STUDENT_MESSAGE:\n{_fence_untrusted(student_message)}")
     return "\n\n".join(parts)
 
 
@@ -463,21 +590,14 @@ async def tutor_chat(
     question payload before it enters the LLM context.
     """
     hw_meta = hw_meta or {}
+    _validate_session_id(session_id)
 
-    # Step 1 — persist the user turn first so it's never lost on a downstream
-    # error, AND so the cap counts the message we just received.
-    user_turn_id = await db.add_tutor_turn(
-        session_id=session_id,
-        hw_id=hw_id,
-        phase=phase,
-        question_id=question_id,
-        role="user",
-        content=message,
-    )
-
-    # Step 2 — enforce the per-session cap.
+    # Step 1 — enforce the per-session cap BEFORE writing the user turn.
+    # Counting first prevents a spam burst from accumulating cap+N rows in
+    # tutor_conversations before the limit kicks in. The user message is only
+    # persisted once we've confirmed there's room for it.
     total = await db.count_session_messages(session_id, hw_id)
-    if total > SESSION_MESSAGE_CAP:
+    if total >= SESSION_MESSAGE_CAP:
         raise HTTPException(
             status_code=429,
             detail={
@@ -488,6 +608,16 @@ async def tutor_chat(
                 "code": "TUTOR_SESSION_CAP",
             },
         )
+
+    # Step 2 — persist the user turn now that we know it's under cap.
+    user_turn_id = await db.add_tutor_turn(
+        session_id=session_id,
+        hw_id=hw_id,
+        phase=phase,
+        question_id=question_id,
+        role="user",
+        content=message,
+    )
 
     # Step 3 — chat history (last N turns).
     all_turns = await db.list_tutor_turns(session_id, hw_id, limit=200)
@@ -536,10 +666,13 @@ async def tutor_chat(
     except HTTPException:
         raise
     except Exception as exc:
+        # Scrub the provider error string before it reaches the browser —
+        # raw exceptions can carry API-key fragments, GCP project IDs, or
+        # internal endpoints. Full detail is logged server-side.
         raise HTTPException(
             status_code=500,
             detail={
-                "error": f"Tutor backend error: {exc}",
+                "error": _scrub_provider_error(exc),
                 "code": "TUTOR_BACKEND_ERROR",
             },
         ) from exc

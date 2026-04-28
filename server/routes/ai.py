@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from ..services import tutor, gemini
-from ..services.slur_filter import callout_for as _slur_callout
+from ..services.slur_filter import callout_for as _slur_callout, detect_slurs
 from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
@@ -294,6 +294,9 @@ def _extract_boss_questions(content: dict) -> list[dict]:
 @router.post("/ai/tutor/chat")
 async def tutor_chat(req: TutorChatRequest):
     """Live tutor chat — persists turns + invokes the LLM."""
+    # Reject malformed session IDs early so they never reach the DB layer.
+    tutor._validate_session_id(req.session_id)
+
     hw = await db.get_homework(req.hw_id)
     hw_meta: dict[str, Any] = {}
     if hw:
@@ -304,7 +307,10 @@ async def tutor_chat(req: TutorChatRequest):
             q = _find_question_in_content(content, req.question_id)
             if q is not None:
                 hw_meta["question"] = q
-    if req.screen_context:
+    # screen_context is allowed only in PREVIEW phase. In PRACTICE/BOSS the
+    # student can put rendered DOM (including the answer) into this field, so
+    # we drop it entirely outside preview rather than try to scrub.
+    if req.screen_context and req.phase == "preview":
         hw_meta["preview_context"] = req.screen_context[:2000]
     lang = hw.get("language", "uz") if hw else "uz"
     callout = _slur_callout(req.message, lang=lang)
@@ -317,8 +323,16 @@ async def tutor_chat(req: TutorChatRequest):
             message=req.message,
             hw_meta=hw_meta,
         )
-        if callout:
-            result["response"] = callout + " " + result["response"]
+        # Defense in depth: slur filter on the LLM output too. A prompt
+        # injection that tricked the model into emitting a slur would
+        # otherwise pass through to the student. Replace the body, not just
+        # prepend, so the slur itself is scrubbed.
+        response_text = result.get("response", "") or ""
+        if detect_slurs(response_text):
+            replacement = _slur_callout(response_text, lang=lang) or "Keling, savolingizga qaytaylik."
+            result["response"] = replacement
+        elif callout:
+            result["response"] = callout + " " + response_text
         return result
     except HTTPException:
         # tutor_chat raises HTTPException itself for the cap + LLM-error cases —
@@ -331,6 +345,7 @@ async def tutor_chat(req: TutorChatRequest):
 @router.post("/ai/tutor/boss-plan")
 async def tutor_boss_plan(req: BossPlanRequest):
     """Build a personalized boss-question plan for a session."""
+    tutor._validate_session_id(req.session_id)
     hw = await db.get_homework(req.hw_id)
     boss_questions: list[dict] = []
     if hw:
@@ -353,5 +368,6 @@ async def tutor_history(
     hw_id: str = Query(...),
 ):
     """Return the chronological chat history for a (session_id, hw_id), capped at 50."""
+    tutor._validate_session_id(session_id)
     turns = await db.list_tutor_turns(session_id=session_id, hw_id=hw_id, limit=50)
     return {"turns": turns}

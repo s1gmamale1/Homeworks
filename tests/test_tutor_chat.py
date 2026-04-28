@@ -472,10 +472,10 @@ def test_history_returns_chronological_turns(client):
 
 def test_cross_session_isolation(client):
     hw_id = "HW-FAKE-2"
-    _direct_insert_tutor_turn("sess-A", hw_id, "preview", "user", "alice msg")
-    _direct_insert_tutor_turn("sess-A", hw_id, "preview", "assistant", "alice reply")
+    _direct_insert_tutor_turn("sess-A-alice", hw_id, "preview", "user", "alice msg")
+    _direct_insert_tutor_turn("sess-A-alice", hw_id, "preview", "assistant", "alice reply")
 
-    resp = client.get("/api/ai/tutor/history", params={"session_id": "sess-B", "hw_id": hw_id})
+    resp = client.get("/api/ai/tutor/history", params={"session_id": "sess-B-bob", "hw_id": hw_id})
     assert resp.status_code == 200, resp.text
     assert resp.json()["turns"] == []
 

@@ -193,14 +193,17 @@ def test_check_answer_ai_fallback_low_confidence(mock_generate, client):
         "matched_expected": None,
         "confidence": 0.8
     }
-    # Test boss phase
+    # Test boss phase — must pass phase="boss" explicitly. The legacy
+    # question_id.startswith("boss") fallback was removed because it allowed
+    # callers to bypass practice-grading by crafting the question_id.
     payload = {
         "question_id": "boss-1",
         "question": "Explain quantum mechanics",
         "student_answer": "It is hard",
-        "answer_spec": {"type": "semantic"}, 
+        "answer_spec": {"type": "semantic"},
         "subject": "physics",
-        "grade": 11
+        "grade": 11,
+        "phase": "boss",
     }
     resp = client.post("/api/ai/check-answer", json=payload)
     assert resp.status_code == 200
