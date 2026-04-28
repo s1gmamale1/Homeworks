@@ -2869,3 +2869,43 @@ body:has(.preview-panel:not([hidden])) .fab-add {
 [data-theme="dark"] .phase-list button.active .status-dot {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.20);
 }
+
+/* -------- Lang Switch -------- */
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.lang-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: calc(var(--radius-md) - 3px);
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  line-height: 1.4;
+}
+
+.lang-pill:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.lang-pill.is-active,
+.lang-pill[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 4px var(--accent-glow);
+}
+

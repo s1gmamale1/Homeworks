@@ -40,6 +40,11 @@
         </div>
 
         <div class="builder-actions">
+          <div class="lang-switch" role="group" aria-label="Language">
+            <button type="button" class="lang-pill" data-lang="uz">UZ</button>
+            <button type="button" class="lang-pill" data-lang="ru">RU</button>
+            <button type="button" class="lang-pill" data-lang="en">EN</button>
+          </div>
           <button class="btn btn-ghost theme-toggle" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
           <div class="save-indicator" id="save-indicator" data-state="idle" role="status" aria-live="polite">
             <span class="save-dot" aria-hidden="true"></span>
@@ -107,6 +112,8 @@
     <span class="fab-label">Add</span>
   </button>
 
+  <script src="/js/i18n/strings.js?v=__VERSION__"></script>
+  <script src="/js/i18n.js?v=__VERSION__"></script>
   <script src="/js/api.js?v=__VERSION__"></script>
 
   <script src="/js/editors/_paste-util.js?v=__VERSION__"></script>
