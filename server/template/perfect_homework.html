@@ -1446,7 +1446,68 @@
             gap: 6px;
             margin-bottom: 14px;
         }
-        /* ── MEMORY MATCH ── */
+        /* ── TILE MATCH (left ↔ right column matching) ── */
+        .gb-mm-instructions {
+            font-size: 13px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .gb-tm-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .gb-tm-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .gb-tm-tile {
+            background: rgba(99, 184, 255, 0.08);
+            border: 2px solid rgba(99, 184, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 240ms ease;
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text);
+            user-select: none;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .gb-tm-tile:hover:not(.matched):not(.locked) {
+            background: rgba(99, 184, 255, 0.16);
+            border-color: rgba(99, 184, 255, 0.55);
+            transform: translateY(-1px);
+        }
+        .gb-tm-tile.selected {
+            background: rgba(99, 184, 255, 0.22);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .gb-tm-tile.matched {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.65);
+            color: rgba(220, 252, 231, 0.92);
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .gb-tm-tile.wrong-flash {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.7);
+            animation: gbTmShake 320ms ease;
+        }
+        @keyframes gbTmShake {
+            0%,100% { transform: translateX(0); }
+            25%     { transform: translateX(-4px); }
+            75%     { transform: translateX(4px); }
+        }
+        /* ── MEMORY MATCH (legacy classes — retained for any older homeworks) ── */
         .gb-mm-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -2417,6 +2478,61 @@
             }
         }
     </style>
+
+    <!-- KaTeX: render $...$ / $$...$$ math in any prompt that uses LaTeX. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <script>
+      (function () {
+        const KATEX_OPTS = {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false,
+          ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+          ignoredClasses: ['katex','katex-display']
+        };
+
+        let isRendering = false;
+        function renderNow(node) {
+          if (isRendering || !window.renderMathInElement) return;
+          isRendering = true;
+          try { window.renderMathInElement(node || document.body, KATEX_OPTS); } catch (e) {}
+          setTimeout(() => { isRendering = false; }, 50);
+        }
+
+        let scheduled = false;
+        function scheduleRender() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(() => {
+            scheduled = false;
+            renderNow(document.body);
+          });
+        }
+        window.__renderMath = scheduleRender;
+
+        function start() {
+          renderNow(document.body);
+          new MutationObserver(scheduleRender).observe(document.body, {
+            childList: true, subtree: true, characterData: true
+          });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          if (window.renderMathInElement) start();
+          else {
+            const iv = setInterval(() => {
+              if (window.renderMathInElement) { clearInterval(iv); start(); }
+            }, 50);
+          }
+        });
+      })();
+    </script>
 </head>
 <body>
     <div id="bg-canvas">
@@ -2608,7 +2724,7 @@
                     </div>
                     <!-- Sub-game 2: Why Chain -->
                     <div class="gb-game-panel enter-right" id="gb-panel-wc">
-                        <div class="gb-section-title">O'YIN 2 — WHY CHAIN</div>
+                        <div class="gb-section-title">O'YIN 2 — SENTENCE FILL</div>
                         <div class="gb-wc-chain-header" id="gb-wc-chain-header">
                             <div class="gb-wc-level-dot active" id="gb-wcd-1"></div>
                             <div class="gb-wc-level-dot" id="gb-wcd-2"></div>
@@ -2623,14 +2739,14 @@
                         </div>
                         <textarea class="gb-wc-textarea" id="gb-wc-textarea" placeholder="Javobingizni yozing..."></textarea>
                     </div>
-                    <!-- Sub-game 3: Memory Match Blitz -->
+                    <!-- Sub-game 3: Tile Match (left ↔ right column matching) -->
                     <div class="gb-game-panel enter-right" id="gb-panel-mm">
-                        <div class="gb-section-title">O'YIN 3 — MEMORY MATCH BLITZ</div>
-                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 8</div>
-                        <div class="gb-mm-grid" id="gb-mm-grid"></div>
-                        <div class="gb-mm-confirm-box" id="gb-mm-confirm-box">
-                            <div class="gb-mm-confirm-q" id="gb-mm-confirm-q"></div>
-                            <input class="gb-mm-confirm-input" id="gb-mm-confirm-input" type="text" inputmode="text" placeholder="Javob..." autocomplete="off" />
+                        <div class="gb-section-title">O'YIN 3 — TILE MATCH</div>
+                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 6</div>
+                        <div class="gb-mm-instructions" id="gb-mm-instructions">Chap ustundagi plitkani bosing, so'ng o'ng ustunda unga mos keluvchini tanlang.</div>
+                        <div class="gb-tm-board" id="gb-tm-board">
+                            <div class="gb-tm-col" id="gb-tm-left"></div>
+                            <div class="gb-tm-col" id="gb-tm-right"></div>
                         </div>
                         <div class="gb-mm-win-banner" id="gb-mm-win-banner">
                             <div class="gb-mm-win-text">Barcha juftlar topildi!</div>
@@ -3512,8 +3628,24 @@
                         // block.html is raw SVG markup; insert as-is (authored content, not user input)
                         el.innerHTML = block.html || '';
                     }
+                    else if (block.type === 'callout') {
+                        // Builder schema doesn't formally support callout, but
+                        // some imported homeworks carry it. Render as blockquote.
+                        el = document.createElement('blockquote');
+                        el.className = 'callout';
+                        el.innerText = block.text || '';
+                    }
 
-                    if (block.text && !['code','quote','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
+                    // Defensive fallback: if the block type was unrecognized,
+                    // render whatever text we have as a paragraph instead of
+                    // crashing the whole panel.
+                    if (!el) {
+                        el = document.createElement('p');
+                        el.className = 'block-unknown';
+                        el.innerText = block.text || JSON.stringify(block).slice(0, 200);
+                    }
+
+                    if (block.text && !['code','quote','callout','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
                     el.classList.add('bubbly');
                     pageEl.appendChild(el);
                     
@@ -4275,7 +4407,7 @@
         }
 
         function gbUpdateProgress(idx) {
-            const labels = ['1/3 Adaptive Quiz','2/3 Why Chain','3/3 Memory Match'];
+            const labels = ['1/3 Adaptive Quiz','2/3 Sentence Fill','3/3 Tile Match'];
             const label = document.getElementById('gb-plabel');
             if (label) label.textContent = labels[idx] || '';
             for (let i = 1; i <= 3; i++) {
@@ -4355,14 +4487,26 @@
         function gbInitAQ() {
             const aq = gbState.aq;
             aq.shown = 0; aq.correct = 0; aq.currentTier = 'easy'; aq.captureOk = false; aq.answered = false;
+            aq.shownIds = [];
             const fb = document.getElementById('gb-aq-feedback');
             if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
             gbAQShowNext();
         }
 
         function gbAQPickItem() {
-            const candidates = GB_ADAPTIVE_QUIZ.filter(q => q.tier === gbState.aq.currentTier);
-            return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : GB_ADAPTIVE_QUIZ[0];
+            const aq = gbState.aq;
+            if (!aq.shownIds) aq.shownIds = [];
+            const tier = aq.currentTier;
+            const idOf = q => q.id || (q.prompt || '').slice(0, 40);
+            const inTier  = GB_ADAPTIVE_QUIZ.filter(q => q.tier === tier);
+            const fresh   = inTier.filter(q => !aq.shownIds.includes(idOf(q)));
+            const pool    = fresh.length ? fresh
+                          : (GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q))).length
+                              ? GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q)))
+                              : (inTier.length ? inTier : GB_ADAPTIVE_QUIZ));
+            const item = pool[Math.floor(Math.random() * pool.length)];
+            if (item) aq.shownIds.push(idOf(item));
+            return item || GB_ADAPTIVE_QUIZ[0];
         }
 
         function gbAQShowNext() {
@@ -4543,15 +4687,48 @@
             setTimeout(() => b.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
         }
 
-        function gbWCEvaluate(answer, expect) {
-            const aLow = answer.toLowerCase();
-            const keywords = expect.toLowerCase().split(/[\s.,;()\[\]]+/).filter(w => w.length > 3);
-            if (!keywords.length) return answer.length > 5;
-            const hits = keywords.filter(k => aLow.includes(k));
-            return hits.length >= Math.max(1, Math.floor(keywords.length * 0.3));
+        // Sentence Fill is graded by /api/ai/check-answer with a text_fuzzy
+        // answer_spec + AI fallback. The deterministic rapidfuzz checker
+        // catches exact / minor-typo matches fast; for paraphrases and
+        // synonyms, the Kimi semantic grader takes over (~1-3s).
+        async function gbWCAIGrade(question, studentAnswer, expected) {
+            try {
+                const resp = await fetch('/api/ai/check-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_id: 'wc-' + (gbState.wc.chainIdx + 1) + '-' + (gbState.wc.levelIdx + 1),
+                        question: question || '',
+                        student_answer: studentAnswer,
+                        expected_answers: [expected],
+                        // Sentence-fill answers are short and frequently
+                        // expressed as synonyms or grammatical variants
+                        // (e.g., "ayirmasi" ↔ "ayirmasining", "kichraytirish"
+                        // ↔ "ayirish"). text_fuzzy bails below ratio 75
+                        // without escalating, so we go straight to semantic
+                        // — the deterministic checker always returns
+                        // "unsure" and the AI does the meaning-aware match.
+                        answer_spec: {
+                            type: 'semantic',
+                            expected: expected,
+                            canonical_display: expected,
+                            allow_ai_fallback: true
+                        },
+                        allow_ai_fallback: true,
+                        subject: (window.NETS_CTX && NETS_CTX.subject) || 'geometriya-g7-11',
+                        grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
+                        tier: 'EASY',
+                        phase: 'sentence-fill'
+                    })
+                });
+                if (!resp.ok) return { correct: false, error: 'http ' + resp.status };
+                return await resp.json();
+            } catch (e) {
+                return { correct: false, error: String(e) };
+            }
         }
 
-        function gbWCAction() {
+        async function gbWCAction() {
             const wc = gbState.wc;
             const ta = document.getElementById('gb-wc-textarea');
             const answer = ta ? ta.value.trim() : '';
@@ -4559,18 +4736,31 @@
             const chain = GB_WHY_CHAIN[wc.chainIdx];
             const level = chain.chain[wc.levelIdx];
             gbWCAppendStudentBubble(answer);
-            if (ta) ta.value = '';
-            const ok = gbWCEvaluate(answer, level.expect);
+            if (ta) { ta.value = ''; ta.disabled = true; }
             const reprompt = document.getElementById('gb-wc-reprompt');
+            // Show "checking" indicator while AI grades.
+            const checkingBubble = document.createElement('div');
+            checkingBubble.className = 'gb-wc-bubble-ai gb-wc-bubble-checking';
+            checkingBubble.innerHTML = '<em>Tekshirilmoqda…</em>';
+            const conv = document.getElementById('gb-wc-conv');
+            if (conv) conv.appendChild(checkingBubble);
+            const result = await gbWCAIGrade(level.probe, answer, level.expect);
+            if (checkingBubble && checkingBubble.parentNode) checkingBubble.parentNode.removeChild(checkingBubble);
+            if (ta) ta.disabled = false;
+            const ok = !!result.correct;
             if (ok) {
                 wc.retries = 0;
                 if (reprompt) reprompt.className = 'gb-wc-reprompt';
+                // Surface the AI's positive feedback if provided.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe('✓ ' + result.feedback);
                 wc.levelIdx++;
                 gbWCUpdateHeader();
                 if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
                 else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
             } else {
                 wc.retries++;
+                // Surface the AI hint if any so the student knows what's missing.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe(result.feedback);
                 if (wc.retries >= 2) {
                     wc.retries = 0;
                     if (reprompt) reprompt.className = 'gb-wc-reprompt';
@@ -4615,122 +4805,120 @@
             });
         }
 
+        // Tile Match — left/right column matching.
+        // Left column shows all `a` sides in order; right column shows all
+        // `b` sides shuffled. Click a left tile, then click a right tile to
+        // attempt a match. Match → both lock green. Wrong → red flash, both
+        // deselect. Win at GB_MEMORY_MATCH.length matched.
         function gbInitMM() {
             const mm = gbState.mm;
-            const tiles = [];
-            GB_MEMORY_MATCH.forEach((p, i) => {
-                tiles.push({ pairId:i, side:'a', text:p.a, data:p });
-                tiles.push({ pairId:i, side:'b', text:p.b, data:p });
-            });
-            for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [tiles[i],tiles[j]]=[tiles[j],tiles[i]]; }
-            mm.tiles = tiles; mm.flipped = []; mm.matched = 0; mm.pendingPair = null; mm.busy = false;
+            const total = GB_MEMORY_MATCH.length;
+            // Left side keeps source order; right side is shuffled.
+            const lefts  = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.a }));
+            const rights = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.b }));
+            for (let i = rights.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rights[i], rights[j]] = [rights[j], rights[i]];
+            }
+            mm.lefts = lefts;
+            mm.rights = rights;
+            mm.matched = 0;
+            mm.total = total;
+            mm.selectedLeft = null;
+            mm.busy = false;
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.className = 'gb-mm-win-banner';
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (confirm) confirm.className = 'gb-mm-confirm-box';
-            gbMMRenderGrid();
+            gbMMRenderBoard();
             gbMMUpdateStatus();
         }
 
-        function gbMMRenderGrid() {
-            const grid = document.getElementById('gb-mm-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            gbState.mm.tiles.forEach((tile, idx) => {
-                const card = document.createElement('div');
-                card.className = 'gb-mm-card';
-                card.dataset.idx = idx;
-                // tile.text is HTML from the rich-text editor (already sanitized).
-                // Render raw so images/SVGs/formatting show on card fronts.
-                card.innerHTML = '<div class="gb-mm-inner"><div class="gb-mm-face gb-mm-back-face">⬛</div><div class="gb-mm-face gb-mm-front-face">' + tile.text + '</div></div>';
-                card.addEventListener('click', () => gbMMFlipCard(idx));
-                grid.appendChild(card);
+        function gbMMRenderBoard() {
+            const left  = document.getElementById('gb-tm-left');
+            const right = document.getElementById('gb-tm-right');
+            if (!left || !right) return;
+            left.innerHTML = '';
+            right.innerHTML = '';
+            gbState.mm.lefts.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-left-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'left';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMSelectLeft(tile.pairId, el));
+                left.appendChild(el);
             });
+            gbState.mm.rights.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-right-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'right';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMTryMatch(tile.pairId, el));
+                right.appendChild(el);
+            });
+            // Re-render any KaTeX/math the board contains (the tiles are
+            // populated after the page-level KaTeX pass ran).
+            if (typeof window.__renderMath === 'function') window.__renderMath();
         }
 
         function gbMMUpdateStatus() {
             const st = document.getElementById('gb-mm-status');
-            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / 8';
+            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / ' + (gbState.mm.total || GB_MEMORY_MATCH.length);
         }
 
-        function gbMMFlipCard(idx) {
+        function gbMMSelectLeft(pairId, el) {
             const mm = gbState.mm;
-            if (mm.busy || state.isAnimating) return;
-            if (mm.flipped.includes(idx)) return;
-            const card = document.querySelector('[data-idx="' + idx + '"]');
-            if (!card || card.classList.contains('matched')) return;
-            card.classList.add('flipped');
-            mm.flipped.push(idx);
-            if (mm.flipped.length < 2) return;
-            mm.busy = true;
-            const [i1, i2] = mm.flipped;
-            const t1 = mm.tiles[i1]; const t2 = mm.tiles[i2];
-            if (t1.pairId === t2.pairId && t1.side !== t2.side) {
-                mm.pendingPair = { i1, i2, data:t1.data };
-                const confirm = document.getElementById('gb-mm-confirm-box');
-                const qEl = document.getElementById('gb-mm-confirm-q');
-                if (qEl) qEl.textContent = t1.data.confirmQ;
-                if (confirm) confirm.classList.add('show');
-                const inp = document.getElementById('gb-mm-confirm-input');
-                if (inp) { inp.value = ''; inp.style.borderColor = ''; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-pill');
-                setBtnText('Tasdiqlash');
-                btn.classList.add('pulse');
-            } else {
-                setTimeout(() => {
-                    const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                    const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                    if (c1) { c1.classList.add('wrong-flash'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    setTimeout(() => {
-                        if (c1) c1.classList.remove('flipped');
-                        if (c2) c2.classList.remove('flipped');
-                        mm.flipped = []; mm.busy = false;
-                    }, 800);
-                }, 100);
+            if (mm.busy) return;
+            if (el.classList.contains('matched')) return;
+            // Clear any prior left selection
+            document.querySelectorAll('.gb-tm-left-tile.selected').forEach(n => n.classList.remove('selected'));
+            // Toggle off if same tile clicked twice
+            if (mm.selectedLeft && mm.selectedLeft.pairId === pairId) {
+                mm.selectedLeft = null;
+                return;
             }
+            el.classList.add('selected');
+            mm.selectedLeft = { pairId, el };
         }
 
-        function gbMMAction() {
+        function gbMMTryMatch(rightPairId, rightEl) {
             const mm = gbState.mm;
-            if (!mm.pendingPair) return;
-            const inp = document.getElementById('gb-mm-confirm-input');
-            const answer = inp ? inp.value.trim().toLowerCase() : '';
-            const correct = mm.pendingPair.data.correct.toLowerCase();
-            const norm = s => s.replace(/\s+/g,' ').trim();
-            const isOk = norm(answer) === norm(correct) || (norm(answer).length > 3 && norm(correct).includes(norm(answer)));
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (isOk) {
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (c1) c1.classList.add('matched');
-                if (c2) c2.classList.add('matched');
+            if (mm.busy) return;
+            if (rightEl.classList.contains('matched')) return;
+            if (!mm.selectedLeft) {
+                // No left tile selected — flash the right tile to hint at order.
+                rightEl.classList.add('wrong-flash');
+                setTimeout(() => rightEl.classList.remove('wrong-flash'), 360);
+                return;
+            }
+            const leftEl = mm.selectedLeft.el;
+            const matches = mm.selectedLeft.pairId === rightPairId;
+            if (matches) {
+                leftEl.classList.remove('selected');
+                leftEl.classList.add('matched');
+                rightEl.classList.add('matched');
                 mm.matched++;
+                mm.selectedLeft = null;
                 gbMMUpdateStatus();
-                if (confirm) confirm.classList.remove('show');
-                mm.pendingPair = null; mm.flipped = []; mm.busy = false;
-                if (mm.matched >= 8) { gbMMWin(); return; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                if (mm.matched >= mm.total) gbMMWin();
             } else {
-                if (inp) { inp.style.borderColor = '#d9534f'; setTimeout(() => { inp.style.borderColor = ''; }, 1200); }
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (confirm) confirm.classList.remove('show');
+                mm.busy = true;
+                leftEl.classList.add('wrong-flash');
+                rightEl.classList.add('wrong-flash');
                 setTimeout(() => {
-                    if (c1) { c1.classList.add('wrong-flash'); c1.classList.remove('flipped'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); c2.classList.remove('flipped'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    mm.flipped = []; mm.pendingPair = null; mm.busy = false;
-                }, 100);
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                    leftEl.classList.remove('wrong-flash');
+                    rightEl.classList.remove('wrong-flash');
+                    leftEl.classList.remove('selected');
+                    mm.selectedLeft = null;
+                    mm.busy = false;
+                }, 420);
             }
         }
+
+        // No-op shim — the runtime button handler used to call gbMMAction()
+        // for the legacy confirm-question mechanic. Tile Match is fully
+        // self-driven via tile clicks, so the action button stays inert.
+        function gbMMAction() { /* intentionally empty */ }
 
         function gbMMWin() {
             const win = document.getElementById('gb-mm-win-banner');
