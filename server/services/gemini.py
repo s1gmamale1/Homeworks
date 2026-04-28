@@ -14,16 +14,26 @@ This module exists purely to keep existing call-sites (tutor.py etc.) unchanged.
 from __future__ import annotations
 
 import json
+import logging
 import os
-from typing import Optional
+from typing import Iterator, Optional
 
 # Keep for backward compat — ai.py status endpoint reads these
 from ..config import VERTEX_CREDENTIALS_PATH, VERTEX_LOCATION  # noqa: F401
 
 # Provider registry — concrete providers self-register on import
-from .ai_providers import get_provider, select_provider, available_providers  # noqa: F401
+from .ai_providers import (  # noqa: F401
+    AIProvider,
+    available_providers,
+    get_provider,
+    select_provider,
+)
 from .ai_providers.kimi import KimiProvider
 from .ai_providers.vertex import VertexProvider
+
+# Server-side log channel for provider failures. Errors are recorded with full
+# detail here while the public RuntimeError stays generic.
+_log = logging.getLogger("nets.gemini")
 
 # ── Compatibility helper used by routes/ai.py ─────────────────────────────────
 def _resolve_vertex_project(creds_path: str) -> str:
@@ -66,6 +76,22 @@ def _active_backend() -> str:
     return p.name if p else "none"
 
 
+def _iter_available_providers(preference: list[str]) -> Iterator[AIProvider]:
+    """Yield every available provider in preference order (not just the first).
+
+    `select_provider` returns only the top-of-list provider, which is fine for
+    "what's our primary backend?" reporting. The runtime fallback chain needs
+    to walk the rest of the list when the primary fails, so we iterate here.
+    """
+    for name in preference:
+        try:
+            provider = get_provider(name)
+        except ValueError:
+            continue
+        if provider.is_available():
+            yield provider
+
+
 def __getattr__(name: str):  # noqa: N807
     """Module-level __getattr__ so `gemini.ACTIVE_BACKEND` stays dynamic."""
     if name == "ACTIVE_BACKEND":
@@ -97,19 +123,54 @@ async def generate(
     json_mode: bool = False,
     temperature: float = 0.7,
 ) -> str:
-    """Return raw text from the active provider."""
+    """Return raw text from the first provider in the preference list that
+    succeeds.
+
+    Walks every available provider (not just the first). On any exception
+    from a provider — network 5xx, auth failure, parse error, timeout — logs
+    server-side and falls through to the next provider. Only raises
+    ``RuntimeError`` when *all* available providers have failed, OR when no
+    provider is available at all.
+
+    The previous behaviour stopped at the first provider and surfaced the
+    raw exception; that meant a single Vertex 5xx took the tutor down even
+    when Kimi and the Gemini API were healthy. The chain advertised in
+    `STATE.md` (Vertex → Gemini → Kimi → stock) is now actually wired.
+    """
     full_prompt = f"{prompt}\n\n---\n\nCONTEXT:\n{context}" if context else prompt
-    provider = select_provider(_preference_list())
-    if provider is None:
+    available = list(_iter_available_providers(_preference_list()))
+    if not available:
         raise RuntimeError(
             "No AI backend available. Set KIMI_API_KEY, VERTEX_CREDENTIALS_PATH, "
             "or GEMINI_API_KEY in .env"
         )
-    resolved_model = _resolve_model(model, provider)
-    envelope = await provider.generate_json(
-        full_prompt, resolved_model, json_mode=json_mode, temperature=temperature
-    )
-    return envelope["text"]
+
+    tried: list[str] = []
+    last_exc: Optional[BaseException] = None
+    for provider in available:
+        resolved_model = _resolve_model(model, provider)
+        try:
+            envelope = await provider.generate_json(
+                full_prompt,
+                resolved_model,
+                json_mode=json_mode,
+                temperature=temperature,
+            )
+            return envelope["text"]
+        except Exception as exc:
+            tried.append(provider.name)
+            last_exc = exc
+            _log.warning(
+                "AI provider %s failed (%s); falling through to next provider",
+                provider.name,
+                exc.__class__.__name__,
+                exc_info=True,
+            )
+            continue
+
+    raise RuntimeError(
+        f"All AI providers failed (tried: {', '.join(tried) or 'none'})"
+    ) from last_exc
 
 
 async def generate_json(
