@@ -6068,8 +6068,8 @@ Prezident ertaga hisobot kutmoqda.`,
         }
 
         // NOTE: this inline script runs BEFORE the injector's
-        // <script>window.NETS_CTX={...}</script><script src="runtime.js"></script>
-        // tags (which the injector appends just before </body>). So we cannot
+        // <script>window.NETS_CTX={...}<\/script><script src="/static/runtime/runtime.js"><\/script>
+        // tags (which the injector appends just before <\/body>). So we cannot
         // read NETS_CTX or NETS_AI at IIFE-init — they aren't defined yet.
         // Resolve hwId lazily on first read so it picks up NETS_CTX once the
         // injector's scripts have executed.
