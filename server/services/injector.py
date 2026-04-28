@@ -670,14 +670,25 @@ def inject(
         if primary:
             html = html[: primary.start()] + rl_json + "\n// BOSS" + html[primary.end():]
         else:
-            # Fallback: find object literal followed by const/var/let/function/comment
+            # Fallback: match the const statement up to its TERMINATING ';'.
+            # Earlier this used `}\s*(?=\s*(const|var|let|function|//))` but
+            # that regex backtracked through every `}` inside the literal
+            # until it found one followed by a const/function declaration.
+            # When the template kept `const stage6State = {...}` immediately
+            # after RL_SCENARIO, that worked; when subsequent edits added a
+            # bare `;` between them or a function followed RL directly, the
+            # regex over-matched and ate `stage6State` plus the `rl*`
+            # helpers, producing a white screen after Tile Match.
+            # The non-greedy `.*?};` reliably stops at RL_SCENARIO's
+            # terminating semicolon — no nested `};` exists in the literal
+            # body (object members end with `}` + comma, not semicolon).
             fallback = re.search(
-                r"const RL_SCENARIO\s*=\s*\{.*?\}\s*(?=\s*(const|var|let|function|//))",
+                r"const RL_SCENARIO\s*=\s*\{.*?\};",
                 html,
                 flags=re.DOTALL,
             )
             if fallback:
-                html = html[: fallback.start()] + rl_json + "\n\n" + html[fallback.end():]
+                html = html[: fallback.start()] + rl_json + html[fallback.end():]
 
     # 5. Replace OBJECT constants — reading / consolidation / reflection.
     # Authors edit these via dedicated editors; builder routes them straight into
