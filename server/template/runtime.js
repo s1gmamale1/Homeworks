@@ -172,6 +172,7 @@
             message: opts.message,
         };
         if (opts.question_id) body.question_id = opts.question_id;
+        if (opts.screen_context) body.screen_context = opts.screen_context;
         return _post('/tutor/chat', body);
     }
 

@@ -7270,12 +7270,16 @@ Prezident ertaga hisobot kutmoqda.`,
                     appendMessage('error', L.offline);
                     return;
                 }
+                const activeScreen = document.querySelector('.screen.active');
+                const rawText = activeScreen ? (activeScreen.textContent || '') : '';
+                const screenContext = rawText.replace(/\s+/g, ' ').trim().slice(0, 2000);
                 const res = await window.NETS_AI.tutorChat({
                     session_id: state.sessionId,
                     hw_id: state.hwId,
                     phase: state.currentPhase,
                     question_id: state.currentQuestionId || undefined,
                     message: text,
+                    screen_context: screenContext || undefined,
                 });
                 removeTyping();
                 if (res && res._cap) {

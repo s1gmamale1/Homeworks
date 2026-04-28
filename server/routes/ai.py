@@ -79,6 +79,7 @@ class TutorChatRequest(BaseModel):
     phase: str
     question_id: Optional[str] = None
     message: str
+    screen_context: Optional[str] = None
 
 
 class TutorChatResponse(BaseModel):
@@ -302,6 +303,8 @@ async def tutor_chat(req: TutorChatRequest):
             q = _find_question_in_content(content, req.question_id)
             if q is not None:
                 hw_meta["question"] = q
+    if req.screen_context:
+        hw_meta["preview_context"] = req.screen_context[:2000]
     try:
         return await tutor.tutor_chat(
             session_id=req.session_id,

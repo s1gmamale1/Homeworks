@@ -556,3 +556,79 @@ def test_missing_tutor_attempts_table_is_graceful(mock_generate, client):
     assert "STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION:\n-" not in prompt, (
         "Attempts section leaked into prompt despite empty attempts list"
     )
+
+
+# ---------------------------------------------------------------------------
+# 11. screen_context reaches the LLM prompt as PREVIEW_CONTEXT
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.gemini.generate")
+def test_tutor_chat_accepts_screen_context(mock_generate, client):
+    """screen_context sent from the client must appear in the prompt under
+    the PREVIEW_CONTEXT: heading so the tutor can reference on-screen text."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, *args, **kwargs):
+        captured["prompt"] = prompt
+        return "Here is what the summary panel says."
+
+    mock_generate.side_effect = _fake_generate
+
+    hw_id = _make_homework_with_question(client)
+    screen_text = "Photosynthesis converts light energy into chemical energy stored as glucose."
+    payload = {
+        "session_id": "sess-screen-ctx",
+        "hw_id": hw_id,
+        "phase": "preview",
+        "message": "What is written inside this summary panel?",
+        "screen_context": screen_text,
+    }
+    resp = client.post("/api/ai/tutor/chat", json=payload)
+    assert resp.status_code == 200, resp.text
+
+    prompt = captured.get("prompt", "")
+    assert "PREVIEW_CONTEXT:" in prompt, "PREVIEW_CONTEXT: section missing from prompt"
+    assert screen_text in prompt, "screen_context text not found in prompt"
+
+
+# ---------------------------------------------------------------------------
+# 12. oversized screen_context is truncated to 2000 chars server-side
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.gemini.generate")
+def test_tutor_chat_truncates_long_screen_context(mock_generate, client):
+    """A 5000-char screen_context must be capped at 2000 chars in the prompt."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, *args, **kwargs):
+        captured["prompt"] = prompt
+        return "Got it."
+
+    mock_generate.side_effect = _fake_generate
+
+    hw_id = _make_homework_with_question(client)
+    long_context = "A" * 5000
+    payload = {
+        "session_id": "sess-truncate",
+        "hw_id": hw_id,
+        "phase": "preview",
+        "message": "Summarise the screen.",
+        "screen_context": long_context,
+    }
+    resp = client.post("/api/ai/tutor/chat", json=payload)
+    assert resp.status_code == 200, resp.text
+
+    prompt = captured.get("prompt", "")
+    assert "PREVIEW_CONTEXT:" in prompt, "PREVIEW_CONTEXT: section missing from prompt"
+    # The section injected is "PREVIEW_CONTEXT:\n<context>"; find its content.
+    marker = "PREVIEW_CONTEXT:\n"
+    idx = prompt.index(marker)
+    context_slice = prompt[idx + len(marker):]
+    # The slice ends at the next "\n" separator or end of string.
+    next_section = context_slice.find("\n")
+    injected = context_slice if next_section == -1 else context_slice[:next_section]
+    assert len(injected) <= 2000, (
+        f"PREVIEW_CONTEXT section is {len(injected)} chars, expected ≤ 2000"
+    )
