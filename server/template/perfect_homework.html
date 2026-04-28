@@ -5211,6 +5211,11 @@ Prezident ertaga hisobot kutmoqda.`,
             qIndex: 0,
             attempts: [0, 0, 0, 0, 0, 0],
             correct: [false, false, false, false, false, false],
+            // Per-question capture flag — one slot per question. The old
+            // single-boolean captureQ3Done blocked submissions on every
+            // text-with-capture question after Q3 since only the Q3 button
+            // could set it. Kept the legacy field for back-compat reads.
+            captureDone: [false, false, false, false, false, false],
             captureQ3Done: false,
             submitted: [false, false, false, false, false, false],
             captureCount: 0
@@ -5235,14 +5240,29 @@ Prezident ertaga hisobot kutmoqda.`,
             return allOk;
         }
 
-        function rlCaptureQ3() {
-            stage6State.captureQ3Done = true;
+        function rlCapture(idx) {
+            // Per-question capture handler — replaces the legacy
+            // rlCaptureQ3 single-button flow. Marks captureDone[idx] so
+            // rlSubmitQuestion's "uploaded?" gate passes for THAT question
+            // (the gate used to be a single boolean → all text-with-capture
+            // questions other than Q3 were un-submittable).
+            if (!stage6State.captureDone) stage6State.captureDone = [];
+            stage6State.captureDone[idx] = true;
             stage6State.captureCount++;
-            const btn = document.getElementById('rl-q3-capture-btn');
-            const done = document.getElementById('rl-q3-capture-done');
+            // Legacy alias kept so anything still reading captureQ3Done
+            // behaves the same once any capture happens.
+            stage6State.captureQ3Done = true;
+            const btn = document.getElementById('rl-q' + (idx + 1) + '-capture-btn');
+            const done = document.getElementById('rl-q' + (idx + 1) + '-capture-done');
             if (btn) btn.style.display = 'none';
-            if (done) done.classList.add('rl-visible');
+            if (done) {
+                done.classList.add('rl-visible');
+                done.classList.add('show');
+            }
         }
+
+        // Legacy alias for the hardcoded Q3 button still in the markup.
+        function rlCaptureQ3() { rlCapture(2); }
 
         function rlSetFeedback(id, cls, text) {
             const el = document.getElementById(id);
@@ -5271,12 +5291,78 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function rlRenderQuestion(idx) {
             const q = RL_SCENARIO.questions[idx];
+            const total = (RL_SCENARIO.questions || []).length || 6;
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / 6';
+            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / ' + total;
 
             const promptEl = document.getElementById('rl-q' + (idx + 1) + '-prompt');
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
             if (promptEl) promptEl.innerHTML = q.prompt || '';
+
+            // Per-question capture button. Any text-with-capture question
+            // gets a dynamically-injected upload button right under the
+            // input, with state tracked in stage6State.captureDone[idx].
+            // Previously only Q3 had a hardcoded button, so other capture
+            // questions could never satisfy the "upload your work" gate
+            // and the submission was silently blocked → no AI call.
+            const qBody = document.querySelector('#rl-q' + (idx + 1) + ' .rl-q-body');
+            if (qBody) {
+                const oldCap = qBody.querySelector('.rl-capture-area-dyn');
+                if (oldCap) oldCap.remove();
+                if (q.type === 'text-with-capture' && q.capture) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'rl-capture-area rl-capture-area-dyn';
+                    wrap.innerHTML =
+                        '<button type="button" class="rl-capture-btn" id="rl-q' + (idx + 1) + '-capture-btn">' +
+                        '📷 Yechimni yuklash</button>' +
+                        '<div class="rl-capture-done" id="rl-q' + (idx + 1) + '-capture-done">' +
+                        '<div class="rl-capture-confirm">✓ Yechimingiz yuklandi</div>' +
+                        '<div class="rl-capture-mock-img">📄</div>' +
+                        '</div>';
+                    // Insert before the feedback element so the capture row
+                    // sits visually under the input.
+                    const fb = qBody.querySelector('.rl-feedback');
+                    if (fb) qBody.insertBefore(wrap, fb);
+                    else qBody.appendChild(wrap);
+                    const btnEl = wrap.querySelector('button');
+                    if (btnEl) btnEl.addEventListener('click', () => rlCapture(idx));
+                    // Restore the per-question done UI if the student already
+                    // captured this Q earlier in the session.
+                    if (stage6State.captureDone && stage6State.captureDone[idx]) {
+                        if (btnEl) btnEl.classList.add('hidden');
+                        const doneEl = wrap.querySelector('.rl-capture-done');
+                        if (doneEl) doneEl.classList.add('show');
+                    }
+                }
+            }
+
+            // Per-question textarea injection. Q5 (and any other open-ended
+            // RL question) authored with `open: true` lands as type=textarea
+            // but the markup may only have a multi-input field group OR no
+            // text input at all. Dynamically swap in a textarea so the
+            // student has somewhere to type.
+            if (q.type === 'textarea') {
+                // Existing input in the markup (if any) — remove it.
+                const existingInput = document.getElementById('rl-q' + (idx + 1) + '-input');
+                if (existingInput && existingInput.tagName !== 'TEXTAREA') existingInput.remove();
+                // Field-group container (used by multi-input markup) — clear.
+                const fields = document.getElementById('rl-q' + (idx + 1) + '-fields');
+                if (fields) fields.innerHTML = '';
+                // Inject a textarea if not already there.
+                let ta = document.getElementById('rl-q' + (idx + 1) + '-input');
+                if (!ta || ta.tagName !== 'TEXTAREA') {
+                    ta = document.createElement('textarea');
+                    ta.id = 'rl-q' + (idx + 1) + '-input';
+                    ta.className = 'rl-input rl-textarea';
+                    ta.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
+                    ta.autocomplete = 'off';
+                    ta.spellcheck = false;
+                    const fb = qBody && qBody.querySelector('.rl-feedback');
+                    if (qBody && fb) qBody.insertBefore(ta, fb);
+                    else if (qBody) qBody.appendChild(ta);
+                }
+                ta.value = '';
+            }
 
             if (q.type === 'multi-input') {
                 const container = document.getElementById('rl-q' + (idx + 1) + '-fields');
@@ -5388,7 +5474,12 @@ Prezident ertaga hisobot kutmoqda.`,
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
 
-                if (q.type === 'text-with-capture' && !stage6State.captureQ3Done) {
+                // Per-question capture gate — was checking the legacy
+                // global captureQ3Done flag, which only the (hardcoded)
+                // Q3 button could set. Now reads the per-question
+                // captureDone[idx] populated by rlCapture(idx) on any
+                // dynamically-rendered upload button.
+                if (q.type === 'text-with-capture' && !(stage6State.captureDone && stage6State.captureDone[idx])) {
                     rlSetFeedback(fbId, 'rl-hint', '📷 Iltimos, yechimingiz rasmini ham yuklang.');
                     return;
                 }
@@ -5464,17 +5555,25 @@ Prezident ertaga hisobot kutmoqda.`,
                 }
 
             } else if (q.type === 'textarea') {
-                const inp = document.getElementById('rl-q6-input');
+                // Read from the CURRENT question's textarea (rlRenderQuestion
+                // injects one with id=`rl-q{idx+1}-input` for any open-ended
+                // question). The reader was hardcoded to rl-q6-input which
+                // only existed for the legacy Yashil Makon Q6 — modern
+                // homeworks (e.g. HW-008) put the textarea on Q5.
+                const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
                 if (val.length < 20) {
                     rlSetFeedback(fbId, 'rl-hint', 'Iltimos, kamida 20 belgili tahlil yozing.');
                     return;
                 }
-                correct = true;
-                stage6State.correct[idx] = true;
                 stage6State.submitted[idx] = true;
-                rlSetFeedback(fbId, 'rl-open', '✓ O\'ylantiradigan tahlil! Yangi shartda tenglama o\'zgaradi va byudjet qayta hisoblanadi.');
+                rlSetFeedback(fbId, 'rl-open', '✓ Tahlilingiz qabul qilindi. AI baho beryapti...');
                 rlMorphButton('Keyingi savol');
+                // Open-ended responses ALWAYS get AI grading — the local
+                // checker has no way to evaluate a free-form analysis. The
+                // tutor result listener (further down in the file) updates
+                // stage6State.correct[idx] when the AI verdict comes back.
+                rlDispatchTutorAi(idx, q, val);
             }
         }
 
@@ -5615,6 +5714,7 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.qIndex = 0;
             stage6State.attempts = [0, 0, 0, 0, 0, 0];
             stage6State.correct = [false, false, false, false, false, false];
+            stage6State.captureDone = [false, false, false, false, false, false];
             stage6State.captureQ3Done = false;
             stage6State.submitted = [false, false, false, false, false, false];
             stage6State.captureCount = 0;
