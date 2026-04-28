@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from ..services import tutor, gemini
+from ..services.slur_filter import callout_for as _slur_callout
 from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
@@ -305,8 +306,10 @@ async def tutor_chat(req: TutorChatRequest):
                 hw_meta["question"] = q
     if req.screen_context:
         hw_meta["preview_context"] = req.screen_context[:2000]
+    lang = hw.get("language", "uz") if hw else "uz"
+    callout = _slur_callout(req.message, lang=lang)
     try:
-        return await tutor.tutor_chat(
+        result = await tutor.tutor_chat(
             session_id=req.session_id,
             hw_id=req.hw_id,
             phase=req.phase,
@@ -314,6 +317,9 @@ async def tutor_chat(req: TutorChatRequest):
             message=req.message,
             hw_meta=hw_meta,
         )
+        if callout:
+            result["response"] = callout + " " + result["response"]
+        return result
     except HTTPException:
         # tutor_chat raises HTTPException itself for the cap + LLM-error cases —
         # let those propagate untouched.
