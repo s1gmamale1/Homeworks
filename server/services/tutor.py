@@ -236,7 +236,8 @@ async def check_answer(
             "correct": is_correct,
             "score": score,
             "feedback": feedback,
-            "source": "deterministic"
+            "source": "deterministic",
+            "matched_expected": None
         }
         if det_result.get("format_tip"):
             res["format_tip"] = det_result["format_tip"]
@@ -252,7 +253,8 @@ async def check_answer(
             "correct": False,
             "score": 0.0,
             "feedback": "Notog'ri javob.",
-            "source": "deterministic"
+            "source": "deterministic",
+            "matched_expected": None
         }
 
     # Cache key includes the answer_spec/expected fingerprint so the same question_id
@@ -326,7 +328,8 @@ async def check_answer(
                 "score": 0.7,
                 "feedback": ai_response.get("feedback", "Javobingiz tekshirilmoqda..."),
                 "source": "ai_unsure",
-                "needs_review": True
+                "needs_review": True,
+                "matched_expected": None
             }
         else:
             res = {
@@ -334,7 +337,8 @@ async def check_answer(
                 "score": 0.0,
                 "feedback": ai_response.get("feedback", "Javobingizni tushunmadim, qayta urinib ko'ring."),
                 "source": "ai_unsure",
-                "needs_review": True
+                "needs_review": True,
+                "matched_expected": None
             }
 
         # Preserve AMR axes from the AI response on the low-confidence path so

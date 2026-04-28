@@ -317,6 +317,84 @@ def test_check_answer_no_ai_fallback(mock_generate, client):
 
 
 @patch("server.services.gemini.generate_json")
+def test_check_answer_always_returns_matched_expected_key(mock_generate, client):
+    """
+    Regression: every check_answer return path MUST include matched_expected
+    key (even if None). runtime.js destructures it unconditionally; missing
+    key broke prod (see triage 2026-04-29).
+
+    This test parametrizes over three critical paths:
+      1. deterministic_success: verdict={correct,incorrect}
+      2. no_fallback: allow_ai_fallback=False on unsure verdict
+      3. ai_unsure: high-quality AI but low confidence (<0.90)
+    """
+    # Test 1: Deterministic success path
+    payload_det = {
+        "question_id": "test-matched-det",
+        "question": "2+2",
+        "student_answer": "4",
+        "answer_spec": {"type": "numeric", "expected": 4.0},
+        "subject": "math",
+        "grade": 8
+    }
+    resp = client.post("/api/ai/check-answer", json=payload_det)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "matched_expected" in data, (
+        "deterministic_success path dropped matched_expected key — "
+        "this regressed prod once already, see PR #50"
+    )
+    assert data["source"] == "deterministic"
+    mock_generate.assert_not_called()
+
+    # Test 2: No-fallback path (allow_ai_fallback=False on unsure verdict)
+    payload_no_fallback = {
+        "question_id": "test-matched-nofb",
+        "question": "Free-form answer",
+        "student_answer": "something",
+        "answer_spec": {"type": "semantic"},
+        "allow_ai_fallback": False,
+        "subject": "history",
+        "grade": 8,
+    }
+    resp = client.post("/api/ai/check-answer", json=payload_no_fallback)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "matched_expected" in data, (
+        "no_fallback path dropped matched_expected key — "
+        "this regressed prod once already, see PR #50"
+    )
+    assert data["source"] == "deterministic"
+    mock_generate.assert_not_called()
+
+    # Test 3: AI unsure path (low confidence)
+    mock_generate.return_value = {
+        "correct": False,
+        "score": 0.0,
+        "feedback": "I am not sure.",
+        "matched_expected": None,
+        "confidence": 0.8  # Low confidence triggers ai_unsure branch
+    }
+    payload_unsure = {
+        "question_id": "test-matched-unsure",
+        "question": "Explain concept",
+        "student_answer": "my answer",
+        "answer_spec": {"type": "semantic"},
+        "subject": "physics",
+        "grade": 11
+    }
+    resp = client.post("/api/ai/check-answer", json=payload_unsure)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "matched_expected" in data, (
+        "ai_unsure path dropped matched_expected key — "
+        "this regressed prod once already, see PR #50"
+    )
+    assert data["source"] == "ai_unsure"
+    mock_generate.assert_called_once()
+
+
+@patch("server.services.gemini.generate_json")
 def test_cache_key_namespaced_by_spec(mock_generate, client):
     """Same question_id + same student_answer but different answer_spec MUST NOT collide."""
     mock_generate.side_effect = [
