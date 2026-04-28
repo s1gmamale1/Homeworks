@@ -1,5 +1,10 @@
 # End-to-end smoke tests (Puppeteer)
 
+> **Looking for the visible "watch a student play" script?**
+> See `scripts/watch.sh` and `scripts/watch_simulation.cjs` one level up.
+> Those open a real Chromium window so you can see every click. The
+> scripts in *this* folder are headless regression tests for CI.
+
 Headless-browser audits for the runtime homework page (`/h/{id}`) and the
 builder editor (`/builder.html`). They probe live state — running runtime
 JS, hitting `/api/ai/check-answer`, walking through phase transitions —
