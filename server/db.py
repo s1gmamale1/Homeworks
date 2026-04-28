@@ -731,36 +731,3 @@ async def build_session_profile(session_id: str, hw_id: str) -> str:
     if len(profile) > 1500:
         profile = profile[-1500:]
     return profile
-
-
-async def list_recent_attempts(
-    session_id: str,
-    hw_id: str,
-    question_id: str,
-    limit: int = 3,
-) -> list[dict]:
-    """Read up to `limit` most recent attempts on a question.
-
-    The `tutor_attempts` table is owned by the grading-lane teammate. We READ
-    only — never INSERT. If the table doesn't exist yet (pre-merge with grading
-    lane), return [] silently so the tutor still works.
-    """
-    db = await connect()
-    try:
-        try:
-            cursor = await db.execute(
-                "SELECT id, session_id, hw_id, question_id, phase, student_answer, "
-                "verdict, score, source, feedback, created_at "
-                "FROM tutor_attempts "
-                "WHERE session_id = ? AND hw_id = ? AND question_id = ? "
-                "ORDER BY created_at DESC, id DESC LIMIT ?",
-                (session_id, hw_id, question_id, limit),
-            )
-            rows = await cursor.fetchall()
-            return [dict(r) for r in rows]
-        except (sqlite3.OperationalError, aiosqlite.OperationalError):
-            # Pre-merge fallback: grading lane hasn't created the table yet.
-            return []
-    finally:
-        await db.close()
-

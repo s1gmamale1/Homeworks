@@ -394,20 +394,6 @@ def _redact_question_for_tutor(question: dict, phase: str) -> dict:
     return scrub(question)
 
 
-def _format_attempts_for_prompt(attempts: list[dict]) -> str:
-    """Render recent attempts as compact bullet lines for the tutor prompt."""
-    lines: list[str] = []
-    for a in attempts:
-        ans = a.get("student_answer", "")
-        verdict = a.get("verdict", "")
-        feedback = a.get("feedback")
-        if feedback:
-            lines.append(f'- "{ans}" -> {verdict} (AI: {feedback})')
-        else:
-            lines.append(f'- "{ans}" -> {verdict}')
-    return "\n".join(lines)
-
-
 def _format_history_for_prompt(turns: list[dict]) -> str:
     """Render recent chat turns as compact lines for the tutor prompt."""
     lines: list[str] = []
@@ -429,7 +415,6 @@ def _build_tutor_chat_prompt(
     preview_context: Optional[str],
     student_profile: Optional[str],
     persona_traits: Optional[list[str]],
-    prior_attempts: list[dict],
     chat_history: list[dict],
     student_message: str,
 ) -> str:
@@ -453,11 +438,6 @@ def _build_tutor_chat_prompt(
         parts.append(f"STUDENT_PROFILE:\n{student_profile}")
     if persona_traits:
         parts.append(f"PERSONA_TRAITS: {', '.join(persona_traits)}")
-    if prior_attempts:
-        parts.append(
-            "STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION:\n"
-            + _format_attempts_for_prompt(prior_attempts)
-        )
     parts.append(
         "CHAT_HISTORY:\n" + (_format_history_for_prompt(chat_history) or "(none)")
     )
@@ -513,17 +493,7 @@ async def tutor_chat(
     all_turns = await db.list_tutor_turns(session_id, hw_id, limit=200)
     chat_history = all_turns[-TUTOR_CHAT_HISTORY_WINDOW:]
 
-    # Step 4 — recent attempts (read-only; graceful empty if table missing).
-    prior_attempts: list[dict] = []
-    if question_id:
-        prior_attempts = await db.list_recent_attempts(
-            session_id=session_id,
-            hw_id=hw_id,
-            question_id=question_id,
-            limit=TUTOR_PRIOR_ATTEMPTS_WINDOW,
-        )
-
-    # Step 5 — build the prompt.
+    # Step 4 — build the prompt.
     system_prompt = _load_runtime_prompt("tutor-assistant")
 
     # Pull the full question dict from the homework's content_json when one was
@@ -552,7 +522,6 @@ async def tutor_chat(
         preview_context=preview_context,
         student_profile=hw_meta.get("student_profile"),
         persona_traits=hw_meta.get("persona_traits"),
-        prior_attempts=prior_attempts,
         chat_history=chat_history,
         student_message=message,
     )
@@ -671,16 +640,6 @@ async def boss_plan(
 
     student_profile = await db.build_session_profile(session_id, hw_id)
 
-    # Recent attempts across all questions in this session — graceful empty if
-    # the producer table doesn't exist yet.
-    recent_attempts: list[dict] = []
-    for q in boss_questions:
-        qid = q.get("question_id") or q.get("id") or ""
-        if not qid:
-            continue
-        rows = await db.list_recent_attempts(session_id, hw_id, qid, limit=2)
-        recent_attempts.extend(rows)
-
     # Normalize the LLM input. Strip any answer-bearing keys from the boss-Q
     # payload — the planner doesn't need the answers.
     sanitized_questions = [_redact_question_for_tutor(q, "boss") for q in boss_questions]
@@ -693,15 +652,6 @@ async def boss_plan(
     payload = {
         "BOSS_QUESTIONS": sanitized_questions,
         "STUDENT_PROFILE": student_profile or "(empty)",
-        "RECENT_PRACTICE_ATTEMPTS": [
-            {
-                "question_id": r.get("question_id"),
-                "verdict": r.get("verdict"),
-                "score": r.get("score"),
-                "feedback": r.get("feedback"),
-            }
-            for r in recent_attempts
-        ],
     }
     schema = {
         "ordered": "array of {question_id: string, framing_text: string (<=180 chars)}",

@@ -356,15 +356,21 @@ producer (those are owned by the grading-lane teammate).
 **New files:**
 - `scripts/migrate_tutor_conversations.py` — idempotent CREATE TABLE + index for `tutor_conversations` (only).
 - `server/prompts/runtime/tutor-boss-plan.md` — system prompt for the boss reorder + framing planner.
-- `tests/test_tutor_chat.py` — 10 tests covering chat persistence, the answer-leak guard, boss-plan validation + fallback, history endpoint, cross-session isolation, the 60-message cap, prior-attempts injection, and the graceful missing-table fallback.
+- `tests/test_tutor_chat.py` — 8 tests covering chat persistence, the answer-leak guard, boss-plan validation + fallback, history endpoint, cross-session isolation, the 60-message cap, screen context handling, and voice tone.
 
-**Modified:**
-- `server/db.py` — added `tutor_conversations` schema + helpers `add_tutor_turn`, `list_tutor_turns`, `count_session_messages`, `build_session_profile`, and the read-only `list_recent_attempts` (wraps `sqlite3.OperationalError` for the pre-merge case).
+**Modified (F1):**
+- `server/db.py` — added `tutor_conversations` schema + helpers `add_tutor_turn`, `list_tutor_turns`, `count_session_messages`, `build_session_profile`.
 - `server/services/tutor.py` — added `tutor_chat`, `boss_plan`, `_redact_question_for_tutor` (Bridge B answer-leak guard), `_validate_boss_plan` + `_default_boss_plan` (LLM-failure fallback), constants `SESSION_MESSAGE_CAP=60`, `ALLOWED_PERSONA_TRAITS`, `BOSS_FRAMING_MAX_CHARS=180`.
 - `server/routes/ai.py` — added `POST /api/ai/tutor/chat`, `POST /api/ai/tutor/boss-plan`, `GET /api/ai/tutor/history` plus their Pydantic models. `CheckAnswerRequest` and the `check-answer` route are untouched (grading lane's territory).
 - `server/prompts/runtime/tutor-assistant.md` — overwritten with the 3-phase rule extension (preview/practice/boss).
 - `docs/API.md` — documented the 3 new endpoints.
-- `CONTRACTS.md` — new section §11 documents the `tutor_conversations` schema (we own) and the read-only `tutor_attempts` contract (they own).
+- `CONTRACTS.md` — new section §11 documents the `tutor_conversations` schema (we own).
+
+**Modified (F4 — cleanup):**
+- `server/db.py` — deleted `list_recent_attempts` (read-only helper for the cancelled tutor_attempts producer).
+- `server/services/tutor.py` — removed `list_recent_attempts` calls, `_format_attempts_for_prompt`, and prompt-stuffing logic for prior student attempts (grading-lane producer was not built).
+- `tests/test_tutor_chat.py` — deleted 2 tests (`test_prior_attempts_reach_prompt`, `test_missing_tutor_attempts_table_is_graceful`) and helper functions that were specific to the dead producer contract.
+- `CONTRACTS.md` — removed the `tutor_attempts` schema section; added a note that the producer was cancelled (PR #34).
 
 **Behavior:**
 - Per-(session_id, hw_id) cap of 60 turns. 61st `/chat` returns 429 `TUTOR_SESSION_CAP`.
@@ -372,8 +378,8 @@ producer (those are owned by the grading-lane teammate).
 - Boss-plan validates LLM output covers every input `question_id` exactly once with framing ≤180 chars and persona ⊂ {challenger, mentor, analyst}; on any failure (LLM error, schema mismatch, missing question) it returns the default `mentor` plan in input order.
 
 **Verification (`python -m pytest tests/test_tutor_chat.py -v`):**
-- 10/10 passing.
-- Full suite minus `test_ai_runtime.py`'s live-AI tests: 61/61 (was 51/51 after F0; 10 new tests).
+- 11/11 passing (F1: 10 + F3: 1 persona test; F4 removed 2 dead tests on tutor_attempts producer).
+- Full suite: see CI results.
 
 **Migration step (run once on each environment):**
 ```bash

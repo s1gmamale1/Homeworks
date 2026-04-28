@@ -10,8 +10,11 @@ Covers:
   6. history endpoint returns turns chronologically
   7. cross-session isolation
   8. 60-message cap returns 429 on the 61st chat
-  9. tutor sees prior attempts when tutor_attempts table exists
- 10. graceful missing-table fallback when tutor_attempts is absent
+  9. screen_context reaches LLM prompt as PREVIEW_CONTEXT
+ 10. oversized screen_context is truncated to 2000 chars server-side
+ 11. Wave K — system prompt locks in Opus 4.7 tone keywords
+ 12. Wave F — math subjects use PRO_MODEL to avoid hallucinations
+ 13. Wave F — non-math subjects use FAST_MODEL for cost efficiency
 
 Run:
     python -m pytest tests/test_tutor_chat.py -v
@@ -50,70 +53,6 @@ def _wipe_tutor_tables() -> None:
                 await conn.execute("DROP TABLE IF EXISTS tutor_attempts")
             except Exception:
                 pass
-            await conn.commit()
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(_do())
-    finally:
-        loop.close()
-        asyncio.set_event_loop(None)
-
-
-def _create_tutor_attempts_table() -> None:
-    """Mirror the contract schema. Used only by tests that simulate the
-    grading lane having been merged."""
-
-    async def _do() -> None:
-        async with aiosqlite.connect(_db_path()) as conn:
-            await conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS tutor_attempts (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    session_id TEXT NOT NULL,
-                    hw_id TEXT NOT NULL,
-                    question_id TEXT NOT NULL,
-                    phase TEXT NOT NULL,
-                    student_answer TEXT NOT NULL,
-                    verdict TEXT NOT NULL,
-                    score REAL,
-                    source TEXT NOT NULL,
-                    feedback TEXT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-            )
-            await conn.commit()
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(_do())
-    finally:
-        loop.close()
-        asyncio.set_event_loop(None)
-
-
-def _insert_tutor_attempt(**fields: Any) -> None:
-    async def _do() -> None:
-        async with aiosqlite.connect(_db_path()) as conn:
-            await conn.execute(
-                "INSERT INTO tutor_attempts "
-                "(session_id, hw_id, question_id, phase, student_answer, verdict, score, source, feedback) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    fields.get("session_id"),
-                    fields.get("hw_id"),
-                    fields.get("question_id"),
-                    fields.get("phase", "practice"),
-                    fields.get("student_answer", ""),
-                    fields.get("verdict", "incorrect"),
-                    fields.get("score", 0.0),
-                    fields.get("source", "ai"),
-                    fields.get("feedback"),
-                ),
-            )
             await conn.commit()
 
     loop = asyncio.new_event_loop()
@@ -569,112 +508,7 @@ def test_session_message_cap_returns_429(mock_generate, client):
 
 
 # ---------------------------------------------------------------------------
-# 9. tutor sees prior attempts when tutor_attempts exists
-# ---------------------------------------------------------------------------
-
-
-@patch("server.services.gemini.generate")
-def test_prior_attempts_reach_prompt(mock_generate, client):
-    captured: dict[str, str] = {}
-
-    def _fake_generate(prompt: str, *args, **kwargs):
-        captured["prompt"] = prompt
-        return "Let's break it down."
-
-    mock_generate.side_effect = _fake_generate
-
-    hw_id = _make_homework_with_question(client, expected="7")
-    sess = "sess-attempts"
-
-    _create_tutor_attempts_table()
-    _insert_tutor_attempt(
-        session_id=sess,
-        hw_id=hw_id,
-        question_id="qb1",
-        phase="practice",
-        student_answer="5 km",
-        verdict="incorrect",
-        source="deterministic",
-    )
-    _insert_tutor_attempt(
-        session_id=sess,
-        hw_id=hw_id,
-        question_id="qb1",
-        phase="practice",
-        student_answer="5000",
-        verdict="unsure",
-        source="ai",
-        feedback="missing context",
-    )
-
-    payload = {
-        "session_id": sess,
-        "hw_id": hw_id,
-        "phase": "practice",
-        "question_id": "qb1",
-        "message": "What did I do wrong?",
-    }
-    resp = client.post("/api/ai/tutor/chat", json=payload)
-    assert resp.status_code == 200, resp.text
-
-    prompt = captured.get("prompt", "")
-    assert "5 km" in prompt, f"prior attempt #1 missing from prompt:\n{prompt[:600]}"
-    assert "5000" in prompt, f"prior attempt #2 missing from prompt:\n{prompt[:600]}"
-    # The section is injected as "STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION:\n- ..."
-    # — the colon+newline+dash is what distinguishes the *injected* section from
-    # the literal {STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION} placeholder reference
-    # inside the system prompt MD.
-    assert "STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION:\n-" in prompt
-
-
-# ---------------------------------------------------------------------------
-# 10. graceful missing-table fallback
-# ---------------------------------------------------------------------------
-
-
-@patch("server.services.gemini.generate")
-def test_missing_tutor_attempts_table_is_graceful(mock_generate, client):
-    """Pre-merge with the grading lane: tutor_attempts may not exist yet.
-    We must NOT crash; the prompt should simply omit the attempts section."""
-    captured: dict[str, str] = {}
-
-    def _fake_generate(prompt: str, *args, **kwargs):
-        captured["prompt"] = prompt
-        return "Sure, here's how to think about it."
-
-    mock_generate.side_effect = _fake_generate
-
-    # _wipe_tutor_tables already drops tutor_attempts — confirm it's gone.
-    conn = sqlite3.connect(_db_path())
-    try:
-        cur = conn.execute(
-            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='tutor_attempts'"
-        )
-        assert cur.fetchone() is None, "tutor_attempts must NOT exist for this test"
-    finally:
-        conn.close()
-
-    hw_id = _make_homework_with_question(client, expected="42")
-    payload = {
-        "session_id": "sess-missing-table",
-        "hw_id": hw_id,
-        "phase": "practice",
-        "question_id": "qb1",
-        "message": "Help?",
-    }
-    resp = client.post("/api/ai/tutor/chat", json=payload)
-    assert resp.status_code == 200, resp.text
-
-    prompt = captured.get("prompt", "")
-    # Same convention as test #9: the *injected* section is "...:\n- " — the
-    # placeholder-reference inside the system prompt MD is a different shape.
-    assert "STUDENT_PRIOR_ATTEMPTS_ON_THIS_QUESTION:\n-" not in prompt, (
-        "Attempts section leaked into prompt despite empty attempts list"
-    )
-
-
-# ---------------------------------------------------------------------------
-# 11. screen_context reaches the LLM prompt as PREVIEW_CONTEXT
+# 9. screen_context reaches the LLM prompt as PREVIEW_CONTEXT
 # ---------------------------------------------------------------------------
 
 
@@ -708,7 +542,7 @@ def test_tutor_chat_accepts_screen_context(mock_generate, client):
 
 
 # ---------------------------------------------------------------------------
-# 12. oversized screen_context is truncated to 2000 chars server-side
+# 10. oversized screen_context is truncated to 2000 chars server-side
 # ---------------------------------------------------------------------------
 
 
@@ -750,7 +584,7 @@ def test_tutor_chat_truncates_long_screen_context(mock_generate, client):
 
 
 # ---------------------------------------------------------------------------
-# 13. Wave K — system prompt locks in the Opus 4.7 tone keywords
+# 11. Wave K — system prompt locks in the Opus 4.7 tone keywords
 # ---------------------------------------------------------------------------
 
 
@@ -785,7 +619,7 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
 
 
 # ---------------------------------------------------------------------------
-# 14. Wave F: math subjects use PRO_MODEL to avoid hallucinations
+# 12. Wave F: math subjects use PRO_MODEL to avoid hallucinations
 # ---------------------------------------------------------------------------
 
 

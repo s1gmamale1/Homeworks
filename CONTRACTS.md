@@ -598,33 +598,8 @@ CREATE INDEX IF NOT EXISTS idx_tutor_session
 - Migration: `python scripts/migrate_tutor_conversations.py [--db-path X] [--dry-run]`.
   Idempotent. Also auto-applied via `init_db()` for fresh installs.
 
-### `tutor_attempts` (owned by grading lane — we ONLY read)
-
-This table is the contract between the tutor lane and the grading lane. The
-grading lane writes one row per `/api/ai/check-answer` invocation; the tutor
-lane reads it (read-only) to seed `tutor_chat` context. **The tutor lane never
-INSERTs, UPDATEs, or DELETEs from this table.**
-
-```sql
-CREATE TABLE tutor_attempts (
-    id              INTEGER PRIMARY KEY,
-    session_id      TEXT NOT NULL,    -- same UUID as tutor_conversations
-    hw_id           TEXT NOT NULL,
-    question_id     TEXT NOT NULL,
-    phase           TEXT NOT NULL,    -- practice|boss
-    student_answer  TEXT NOT NULL,
-    verdict         TEXT NOT NULL,    -- correct|incorrect|unsure
-    score           REAL,
-    source          TEXT NOT NULL,    -- deterministic|ai|cache
-    feedback        TEXT NULL,        -- 1-2 sentence AI grader explanation
-    created_at      TEXT DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX (session_id, hw_id, question_id, created_at);
-```
-
-**Pre-merge graceful fallback:** `db.list_recent_attempts(...)` wraps its SELECT
-in a `try/except sqlite3.OperationalError` so if the table doesn't exist yet,
-the tutor still works (just with chat-history-only context).
+**Note:** The `tutor_attempts` producer (grading lane) was cancelled per Wave F4 cleanup.
+Our read-side `list_recent_attempts` helper is removed. See PR #34 for lane decision.
 
 **Answer-leak prevention (Bridge B).** When `phase != "preview"`, the tutor
 strips `expected`, `ans`, `accepted_answers`, and `correct` from any question
