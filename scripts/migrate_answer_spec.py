@@ -251,10 +251,13 @@ def migrate_content(content: dict) -> bool:
                 mutated = True
 
     # real_life is a dict of sub-keys (badge, story, q1..q6, endTitle, endSub, …).
-    # Only the q-keys that are dicts with options[]+correct need migration.
+    # Only q-prefixed keys (q1, q2, …) can be question items; skip structural keys
+    # like badge/story/endTitle/endSub even if they happen to look like dicts.
     real_life = content.get("real_life")
     if isinstance(real_life, dict):
-        for q_item in real_life.values():
+        for key, q_item in real_life.items():
+            if not str(key).startswith("q"):
+                continue
             if isinstance(q_item, dict):
                 if migrate_real_life(q_item):
                     mutated = True

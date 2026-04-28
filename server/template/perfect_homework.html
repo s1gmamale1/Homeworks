@@ -2646,6 +2646,98 @@
                 max-height: none;
             }
         }
+
+        /* ── Wave J: Dark-mode theme overrides ──────────────────── */
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: rgba(30, 41, 59, 0.72);
+            --text: #e5e7eb;
+            --text-muted: #94a3b8;
+            --accent: #007AFF;
+            --accent-glow: rgba(0, 122, 255, 0.38);
+            --line: rgba(0, 122, 255, 0.6);
+            --dot: rgba(0, 122, 255, 0.22);
+            --shadow-low:  0 1px 4px rgba(0,0,0,0.24);
+            --shadow-mid:  0 8px 24px rgba(0,0,0,0.38);
+            --shadow-card: 0 20px 48px rgba(0,0,0,0.48);
+        }
+        [data-theme="dark"] body {
+            background:
+                radial-gradient(circle at 15% 20%, rgba(0, 122, 255, 0.12), transparent 30%),
+                radial-gradient(circle at 85% 18%, rgba(0, 122, 255, 0.08), transparent 26%),
+                radial-gradient(circle at 50% 88%, rgba(0, 122, 255, 0.10), transparent 34%),
+                linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        }
+        [data-theme="dark"] #nets-tutor-panel {
+            background: rgba(15, 23, 42, 0.97);
+        }
+        [data-theme="dark"] #nets-tutor-panel header {
+            background: rgba(30, 41, 59, 0.85);
+            border-bottom-color: rgba(255,255,255,0.08);
+        }
+        [data-theme="dark"] #nets-tutor-input {
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--text);
+            border-color: rgba(255,255,255,0.12);
+        }
+        [data-theme="dark"] #nets-tutor-input-form {
+            border-top-color: rgba(255,255,255,0.08);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        [data-theme="dark"] .nets-tutor-msg.assistant {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text);
+        }
+        [data-theme="dark"] #nets-tutor-close:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+        }
+
+        /* ── Wave J: Tutor persona avatar ───────────────────────── */
+        #nets-tutor-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.10);
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-right: 6px;
+        }
+
+        /* ── Wave J: Theme toggle button ────────────────────────── */
+        #nets-tutor-theme-toggle {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 8px;
+            color: var(--text-muted, #86868b);
+            margin-left: auto;
+            margin-right: 4px;
+            transition: background 120ms ease;
+        }
+        #nets-tutor-theme-toggle:hover {
+            background: rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] #nets-tutor-theme-toggle:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* ── Wave J: FAB pulse animation ────────────────────────── */
+        @keyframes nets-tutor-fab-pulse {
+            0%   { box-shadow: 0 6px 18px rgba(0,122,255,0.42), 0 0 0 0 rgba(0,122,255,0.30); }
+            50%  { box-shadow: 0 6px 22px rgba(0,122,255,0.52), 0 0 0 8px rgba(0,122,255,0.00); }
+            100% { box-shadow: 0 6px 18px rgba(0,122,255,0.42), 0 0 0 0 rgba(0,122,255,0.00); }
+        }
+        .nets-tutor-collapsed #nets-tutor-fab {
+            animation: nets-tutor-fab-pulse 2.4s infinite ease-in-out;
+        }
     </style>
 
     <!-- KaTeX: render $...$ / $$...$$ math in any prompt that uses LaTeX. -->
@@ -6847,7 +6939,9 @@ Prezident ertaga hisobot kutmoqda.`,
         </button>
         <div id="nets-tutor-panel" hidden>
             <header>
+                <span id="nets-tutor-avatar" aria-hidden="true">🎓</span>
                 <span id="nets-tutor-phase-badge" data-phase="preview">Preview — ask me anything</span>
+                <button id="nets-tutor-theme-toggle" type="button" aria-label="Toggle theme">🌙</button>
                 <button id="nets-tutor-close" type="button" aria-label="Close">×</button>
             </header>
             <div id="nets-tutor-messages" role="log" aria-live="polite"></div>
@@ -6943,11 +7037,13 @@ Prezident ertaga hisobot kutmoqda.`,
         try { localStorage.setItem('nets_tutor_session', state.sessionId); } catch (e) { /* private mode */ }
 
         // ── DOM refs ────────────────────────────────────────────
-        const root      = document.getElementById('nets-ai-tutor');
-        const fab       = document.getElementById('nets-tutor-fab');
-        const panel     = document.getElementById('nets-tutor-panel');
-        const badge     = document.getElementById('nets-tutor-phase-badge');
-        const closeBtn  = document.getElementById('nets-tutor-close');
+        const root        = document.getElementById('nets-ai-tutor');
+        const fab         = document.getElementById('nets-tutor-fab');
+        const panel       = document.getElementById('nets-tutor-panel');
+        const badge       = document.getElementById('nets-tutor-phase-badge');
+        const closeBtn    = document.getElementById('nets-tutor-close');
+        const avatarEl    = document.getElementById('nets-tutor-avatar');
+        const themeToggle = document.getElementById('nets-tutor-theme-toggle');
         const messages  = document.getElementById('nets-tutor-messages');
         const inputForm = document.getElementById('nets-tutor-input-form');
         const input     = document.getElementById('nets-tutor-input');
@@ -7102,6 +7198,48 @@ Prezident ertaga hisobot kutmoqda.`,
         fab.addEventListener('click', openPanel);
         closeBtn.addEventListener('click', closePanel);
 
+        // ── Wave J: Theme toggle ─────────────────────────────────
+        const PERSONA_AVATARS = {
+            challenger: '⚔️',
+            mentor:     '🦉',
+            analyst:    '🔬',
+        };
+        const THEME_KEY = 'nets_theme';
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (themeToggle) {
+                themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+                themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+        }
+
+        function setupThemeToggle() {
+            const saved = (function () {
+                try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; }
+            }());
+            applyTheme(saved === 'dark' ? 'dark' : 'light');
+            if (!themeToggle) return;
+            themeToggle.addEventListener('click', function () {
+                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                applyTheme(next);
+                try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* private mode */ }
+            });
+        }
+        setupThemeToggle();
+
+        // ── Wave J: Avatar update ────────────────────────────────
+        function updateAvatar(phase) {
+            if (!avatarEl) return;
+            if (phase === 'boss') {
+                const bs = window.bossState || {};
+                const traits = (bs.persona_traits && bs.persona_traits[0]) || 'mentor';
+                avatarEl.textContent = PERSONA_AVATARS[traits] || '🦉';
+            } else {
+                avatarEl.textContent = '🎓';
+            }
+        }
+
         // ── Phase-change listener ───────────────────────────────
         document.addEventListener('nets:phase-change', (ev) => {
             const detail = (ev && ev.detail) || {};
@@ -7109,6 +7247,7 @@ Prezident ertaga hisobot kutmoqda.`,
             state.currentPhase = (phase === 'practice' || phase === 'boss') ? phase : 'preview';
             state.currentQuestionId = detail.questionId || null;
             updateBadge(state.currentPhase);
+            updateAvatar(state.currentPhase);
         });
 
         // ── API ─────────────────────────────────────────────────

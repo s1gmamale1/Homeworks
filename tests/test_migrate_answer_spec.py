@@ -368,3 +368,36 @@ def test_migrate_gb_why_chain_basic() -> None:
     assert spec["expected"] == 1
     assert spec["option_count"] == 3
     assert spec["canonical_display"] == "Kuchni topish uchun"
+
+
+def test_migrate_real_life_skips_non_q_keys() -> None:
+    """Sigma PR #21 nit: real_life non-q structural keys (badge, story, …) must not
+    be treated as question items even if they happen to be dicts with options+correct."""
+    content = {
+        "boss_questions": [],
+        "gb_adaptive_quiz": [],
+        "memory_sprint": [],
+        "real_life": {
+            # Legitimate question key — should be migrated.
+            "q1": {
+                "prompt": "Real question",
+                "options": ["Option A", "Option B", "Option C"],
+                "correct": 1,
+            },
+            # Structural key that looks like a q-item — must NOT be migrated.
+            "badge": {
+                "options": ["gold", "silver"],
+                "correct": 0,
+            },
+        },
+    }
+    mutated = m.migrate_content(content)
+    assert mutated is True
+    # q1 must have been migrated.
+    assert "answer_spec" in content["real_life"]["q1"]
+    assert content["real_life"]["q1"]["answer_spec"]["type"] == "option_index"
+    assert content["real_life"]["q1"]["answer_spec"]["expected"] == 1
+    # badge must NOT have been migrated.
+    assert "answer_spec" not in content["real_life"]["badge"], (
+        "badge is a structural key — migrate_content must not add answer_spec to it"
+    )

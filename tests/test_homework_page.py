@@ -302,3 +302,35 @@ def test_tutor_widget_hwid_uses_lazy_getter(client, created_hw):
     # Helper function that the getter relies on must be defined.
     assert "function currentHwId()" in body, \
         "tutor widget must define currentHwId() helper function"
+
+
+# ──────────────────────────────────────────────────────────────────
+# Wave J — visual cosmetics
+# ──────────────────────────────────────────────────────────────────
+
+def test_theme_toggle_button_present(client, created_hw):
+    """Wave J F1: rendered HTML must contain the theme-toggle button inside the panel."""
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    assert 'id="nets-tutor-theme-toggle"' in body, \
+        "Wave J theme toggle button (id=nets-tutor-theme-toggle) missing from rendered HTML"
+    # Must be inside the panel header — ensure it appears after the panel div.
+    panel_pos = body.find('id="nets-tutor-panel"')
+    toggle_pos = body.find('id="nets-tutor-theme-toggle"')
+    assert panel_pos != -1 and toggle_pos != -1
+    assert toggle_pos > panel_pos, "theme toggle must appear inside the tutor panel"
+
+
+def test_tutor_avatar_present(client, created_hw):
+    """Wave J F2: rendered HTML must contain the persona avatar element."""
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    assert 'id="nets-tutor-avatar"' in body, \
+        "Wave J tutor avatar (id=nets-tutor-avatar) missing from rendered HTML"
+    # Avatar must appear inside the panel header — before the phase badge.
+    avatar_pos = body.find('id="nets-tutor-avatar"')
+    badge_pos  = body.find('id="nets-tutor-phase-badge"')
+    assert avatar_pos != -1 and badge_pos != -1
+    assert avatar_pos < badge_pos, "avatar must appear before the phase badge in the header"
