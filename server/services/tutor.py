@@ -72,6 +72,28 @@ def _fence_untrusted(text: str) -> str:
     return f"<UNTRUSTED>{cleaned}</UNTRUSTED>"
 
 
+def _validate_phase(phase: str) -> str:
+    """Reject phases that are not in `ALLOWED_PHASES`.
+
+    Pre-fix the route accepted any string as `phase` — `phase="xyzzy"` would
+    bypass the boss-mode check (`phase == "boss"`) silently and the
+    `_redact_question_for_tutor` strip pass would still run since "xyzzy"
+    isn't "preview". Safe-by-default, but we'd rather hard-reject so callers
+    get clear errors and the logic can rely on the field shape.
+    """
+    if phase not in ALLOWED_PHASES:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": (
+                    f"phase must be one of {ALLOWED_PHASES!r}, got {phase!r}"
+                ),
+                "code": "INVALID_PHASE",
+            },
+        )
+    return phase
+
+
 def _scrub_provider_error(exc: Exception) -> str:
     """Return a client-safe error message; full detail goes to server logs.
 
@@ -126,6 +148,10 @@ TUTOR_PRIOR_ATTEMPTS_WINDOW: int = 3
 
 # Allowed boss-persona traits. Anything else from the LLM falls back to default.
 ALLOWED_PERSONA_TRAITS: tuple[str, ...] = ("challenger", "mentor", "analyst")
+
+# Allowed phase strings. Any unknown phase received from the client is rejected
+# at the route boundary so the tutor's mode logic only ever sees known values.
+ALLOWED_PHASES: tuple[str, ...] = ("preview", "practice", "boss")
 
 # Max length for the per-question framing wrapper rendered above each boss Q.
 BOSS_FRAMING_MAX_CHARS: int = 180
@@ -591,6 +617,7 @@ async def tutor_chat(
     """
     hw_meta = hw_meta or {}
     _validate_session_id(session_id)
+    _validate_phase(phase)
 
     # Step 1 — enforce the per-session cap BEFORE writing the user turn.
     # Counting first prevents a spam burst from accumulating cap+N rows in
@@ -619,9 +646,15 @@ async def tutor_chat(
         content=message,
     )
 
-    # Step 3 — chat history (last N turns).
-    all_turns = await db.list_tutor_turns(session_id, hw_id, limit=200)
-    chat_history = all_turns[-TUTOR_CHAT_HISTORY_WINDOW:]
+    # Step 3 — chat history (last N turns). Fetch only the window we'll use
+    # rather than pulling everything and slicing — the cap is 60, but every
+    # request was scanning up to 200 rows just to take the last 6.
+    chat_history = await db.list_tutor_turns(
+        session_id,
+        hw_id,
+        limit=TUTOR_CHAT_HISTORY_WINDOW,
+        most_recent=True,
+    )
 
     # Step 4 — build the prompt.
     system_prompt = _load_runtime_prompt("tutor-assistant")

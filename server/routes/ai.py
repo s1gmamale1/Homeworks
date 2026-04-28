@@ -262,23 +262,36 @@ async def tutor_help(req: TutorRequest):
 
 
 def _find_question_in_content(content: dict, question_id: str) -> Optional[dict]:
-    """Best-effort lookup for a question dict by id across the buckets we know.
+    """Best-effort lookup for a question dict by id, walking nested structures.
 
-    We touch only top-level lists of dicts inside `content_json` (boss_questions,
-    gb_adaptive_quiz, memory_sprint, etc). Nothing fancy — the tutor still works
-    if we don't find the question; question_text just stays empty.
+    Pre-fix this only scanned top-level *list* values of `content_json`, so
+    questions parked under nested objects (e.g. `reading.questions[]`,
+    `consolidation.problems[]`, `gb_why_chain.steps[]`) silently returned
+    None and the tutor lost its question_text context. The scan now recurses
+    into dicts and lists of arbitrary depth — first match wins.
     """
     if not isinstance(content, dict) or not question_id:
         return None
-    for value in content.values():
-        if isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict) and (
-                    item.get("question_id") == question_id
-                    or item.get("id") == question_id
-                ):
-                    return item
-    return None
+
+    def _walk(node):
+        if isinstance(node, dict):
+            if (
+                node.get("question_id") == question_id
+                or node.get("id") == question_id
+            ):
+                return node
+            for v in node.values():
+                hit = _walk(v)
+                if hit is not None:
+                    return hit
+        elif isinstance(node, list):
+            for item in node:
+                hit = _walk(item)
+                if hit is not None:
+                    return hit
+        return None
+
+    return _walk(content)
 
 
 def _extract_boss_questions(content: dict) -> list[dict]:

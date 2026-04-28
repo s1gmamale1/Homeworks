@@ -8056,7 +8056,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
     <!-- ── Wave F2: Persistent AI Tutor Widget ───────────────────── -->
     <div id="nets-ai-tutor" class="nets-tutor-collapsed">
-        <button id="nets-tutor-fab" type="button" aria-label="Open tutor chat">
+        <button id="nets-tutor-fab" type="button" aria-label="Open tutor chat" aria-expanded="false" aria-controls="nets-tutor-panel">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -8074,7 +8074,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 <textarea id="nets-tutor-input" rows="2" placeholder="Type your question…" maxlength="2000"></textarea>
                 <button type="submit" id="nets-tutor-send">Send</button>
             </form>
-            <div id="nets-tutor-cap-warning" hidden>Session limit reached.</div>
+            <div id="nets-tutor-cap-warning" role="alert" aria-live="assertive" hidden>Session limit reached.</div>
         </div>
     </div>
 
@@ -8309,6 +8309,7 @@ Prezident ertaga hisobot kutmoqda.`,
             if (state.isOpen) return;
             panel.hidden = false;
             fab.hidden = true;
+            fab.setAttribute('aria-expanded', 'true');
             state.isOpen = true;
             root.classList.remove('nets-tutor-collapsed');
             setTimeout(() => { try { input.focus(); } catch (e) {} }, 50);
@@ -8317,11 +8318,23 @@ Prezident ertaga hisobot kutmoqda.`,
             if (!state.isOpen) return;
             panel.hidden = true;
             fab.hidden = false;
+            fab.setAttribute('aria-expanded', 'false');
             state.isOpen = false;
             root.classList.add('nets-tutor-collapsed');
+            // Return focus to the FAB so keyboard users don't lose their place
+            // in the document. preventScroll avoids a jarring viewport shift.
+            try { fab.focus({ preventScroll: true }); } catch (e) { try { fab.focus(); } catch (_) {} }
         }
         fab.addEventListener('click', openPanel);
         closeBtn.addEventListener('click', closePanel);
+
+        // ── Escape closes the panel (ARIA dialog convention) ────
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && state.isOpen) {
+                e.preventDefault();
+                closePanel();
+            }
+        });
 
         // ── Wave J: Theme toggle ─────────────────────────────────
         const PERSONA_AVATARS = {
@@ -8344,11 +8357,19 @@ Prezident ertaga hisobot kutmoqda.`,
                 try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; }
             }());
             applyTheme(saved === 'dark' ? 'dark' : 'light');
-            if (!themeToggle) return;
-            themeToggle.addEventListener('click', function () {
-                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-                applyTheme(next);
-                try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* private mode */ }
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    applyTheme(next);
+                    try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* private mode */ }
+                });
+            }
+            // Cross-document sync: when the parent navbar toggle (frontend/js/theme.js)
+            // writes nets_theme on a sibling tab or the parent frame, the storage
+            // event fires here and we resync the icon + attribute.
+            window.addEventListener('storage', function (e) {
+                if (e.key !== THEME_KEY) return;
+                applyTheme(e.newValue === 'dark' ? 'dark' : 'light');
             });
         }
         setupThemeToggle();
@@ -8387,7 +8408,6 @@ Prezident ertaga hisobot kutmoqda.`,
             state.isSending = true;
             sendBtn.disabled = true;
             appendMessage('user', text);
-            state.messageCount += 1;
             const typing = appendTyping();
             try {
                 if (!apiAvailable()) {
@@ -8395,6 +8415,10 @@ Prezident ertaga hisobot kutmoqda.`,
                     appendMessage('error', L.offline);
                     return;
                 }
+                // Only count this turn against the cap once we know the API
+                // is reachable. Pre-fix code incremented before the offline
+                // guard, burning 1/SESSION_CAP for every failed offline ping.
+                state.messageCount += 1;
                 const activeScreen = document.querySelector('.screen.active');
                 const rawText = activeScreen ? (activeScreen.textContent || '') : '';
                 const screenContext = rawText.replace(/\s+/g, ' ').trim().slice(0, 2000);

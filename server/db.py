@@ -674,10 +674,29 @@ async def list_tutor_turns(
     session_id: str,
     hw_id: str,
     limit: int = 50,
+    *,
+    most_recent: bool = False,
 ) -> list[dict]:
-    """Chronological turns for a (session_id, hw_id), oldest first, capped at `limit`."""
+    """Turns for a (session_id, hw_id), capped at `limit`.
+
+    Default order is chronological (oldest first) — the shape `/api/ai/tutor/history`
+    returns to the client. When `most_recent=True`, fetch the *last* N turns
+    (newest first in SQL, then reversed to chronological) — used by the chat
+    prompt builder to grab the recent-history window without scanning the full
+    session up to the cap.
+    """
     db = await connect()
     try:
+        if most_recent:
+            cursor = await db.execute(
+                "SELECT id, session_id, hw_id, phase, question_id, role, content, created_at "
+                "FROM tutor_conversations "
+                "WHERE session_id = ? AND hw_id = ? "
+                "ORDER BY created_at DESC, id DESC LIMIT ?",
+                (session_id, hw_id, limit),
+            )
+            rows = await cursor.fetchall()
+            return list(reversed([dict(r) for r in rows]))
         cursor = await db.execute(
             "SELECT id, session_id, hw_id, phase, question_id, role, content, created_at "
             "FROM tutor_conversations "
