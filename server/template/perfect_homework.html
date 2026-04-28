@@ -1446,7 +1446,68 @@
             gap: 6px;
             margin-bottom: 14px;
         }
-        /* ── MEMORY MATCH ── */
+        /* ── TILE MATCH (left ↔ right column matching) ── */
+        .gb-mm-instructions {
+            font-size: 13px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .gb-tm-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .gb-tm-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .gb-tm-tile {
+            background: rgba(99, 184, 255, 0.08);
+            border: 2px solid rgba(99, 184, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 240ms ease;
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text);
+            user-select: none;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+        .gb-tm-tile:hover:not(.matched):not(.locked) {
+            background: rgba(99, 184, 255, 0.16);
+            border-color: rgba(99, 184, 255, 0.55);
+            transform: translateY(-1px);
+        }
+        .gb-tm-tile.selected {
+            background: rgba(99, 184, 255, 0.22);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .gb-tm-tile.matched {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.65);
+            color: rgba(220, 252, 231, 0.92);
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .gb-tm-tile.wrong-flash {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.7);
+            animation: gbTmShake 320ms ease;
+        }
+        @keyframes gbTmShake {
+            0%,100% { transform: translateX(0); }
+            25%     { transform: translateX(-4px); }
+            75%     { transform: translateX(4px); }
+        }
+        /* ── MEMORY MATCH (legacy classes — retained for any older homeworks) ── */
         .gb-mm-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -2171,6 +2232,110 @@
             color: var(--accent);
         }
 
+        /* ── Results / AMR Scorecard ──────────────────────────────── */
+        .screen-results-card { padding: 24px 22px; }
+        .screen-results-caption { letter-spacing: 1.5px; }
+        .screen-results-band {
+            display: inline-block;
+            margin: 8px 0 12px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .screen-results-band.band-mastered   { background: rgba(34,197,94,0.18);  color: #86efac; border: 1px solid rgba(34,197,94,0.45); }
+        .screen-results-band.band-proficient { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.45); }
+        .screen-results-band.band-apprentice { background: rgba(234,179,8,0.18);  color: #fde68a; border: 1px solid rgba(234,179,8,0.45); }
+        .screen-results-band.band-novice     { background: rgba(239,68,68,0.18);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
+        .screen-results-headline {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--text);
+        }
+        .screen-results-phases {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .results-phase-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(99,184,255,0.07);
+            border: 1px solid rgba(99,184,255,0.2);
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .results-phase-row .results-phase-name { color: var(--text-dim); }
+        .results-phase-row .results-phase-score { font-weight: 700; color: var(--accent); }
+        .screen-results-amr {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            background: rgba(168,85,247,0.07);
+            border: 1px solid rgba(168,85,247,0.25);
+            border-radius: 12px;
+        }
+        .results-amr-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(216,180,254,0.95);
+            margin-bottom: 10px;
+            letter-spacing: 0.4px;
+        }
+        .results-amr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .results-amr-axis {
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+        }
+        .results-amr-axis-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .results-amr-axis-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .results-amr-axis-band {
+            font-size: 11px;
+            color: rgba(216,180,254,0.85);
+            margin-top: 2px;
+        }
+        .screen-results-mastery {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text-dim);
+            padding: 12px 14px;
+            background: rgba(34,197,94,0.05);
+            border-left: 3px solid rgba(34,197,94,0.45);
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+        .screen-results-closing {
+            font-size: 13px;
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+            margin-top: 8px;
+        }
+        @media (max-width: 600px) {
+            .screen-results-phases { grid-template-columns: 1fr; }
+            .results-amr-grid { grid-template-columns: 1fr; }
+        }
+
         /* ── Wave F2: Persistent AI Tutor Widget ────────────────── */
         #nets-ai-tutor {
             position: fixed;
@@ -2417,6 +2582,76 @@
             }
         }
     </style>
+
+    <!-- KaTeX: render $...$ / $$...$$ math in any prompt that uses LaTeX. -->
+    <!--
+      KaTeX from jsDelivr — SRI-pinned to katex@0.16.11 dist/.
+      If you bump the version, regenerate hashes:
+        curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+      Browsers refuse to execute / apply the resource if the hash mismatches.
+    -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+          integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+"
+          crossorigin="anonymous">
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+            integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
+            crossorigin="anonymous"></script>
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+            integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk"
+            crossorigin="anonymous"></script>
+    <script>
+      (function () {
+        const KATEX_OPTS = {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false,
+          ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+          ignoredClasses: ['katex','katex-display']
+        };
+
+        let isRendering = false;
+        function renderNow(node) {
+          if (isRendering || !window.renderMathInElement) return;
+          isRendering = true;
+          try { window.renderMathInElement(node || document.body, KATEX_OPTS); } catch (e) {}
+          setTimeout(() => { isRendering = false; }, 50);
+        }
+
+        let scheduled = false;
+        function scheduleRender() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(() => {
+            scheduled = false;
+            renderNow(document.body);
+          });
+        }
+        window.__renderMath = scheduleRender;
+
+        function start() {
+          renderNow(document.body);
+          new MutationObserver(scheduleRender).observe(document.body, {
+            childList: true, subtree: true, characterData: true
+          });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          if (window.renderMathInElement) start();
+          else {
+            const iv = setInterval(() => {
+              if (window.renderMathInElement) { clearInterval(iv); start(); }
+            }, 50);
+          }
+        });
+      })();
+    </script>
 </head>
 <body>
     <div id="bg-canvas">
@@ -2608,7 +2843,7 @@
                     </div>
                     <!-- Sub-game 2: Why Chain -->
                     <div class="gb-game-panel enter-right" id="gb-panel-wc">
-                        <div class="gb-section-title">O'YIN 2 — WHY CHAIN</div>
+                        <div class="gb-section-title">O'YIN 2 — SENTENCE FILL</div>
                         <div class="gb-wc-chain-header" id="gb-wc-chain-header">
                             <div class="gb-wc-level-dot active" id="gb-wcd-1"></div>
                             <div class="gb-wc-level-dot" id="gb-wcd-2"></div>
@@ -2623,14 +2858,14 @@
                         </div>
                         <textarea class="gb-wc-textarea" id="gb-wc-textarea" placeholder="Javobingizni yozing..."></textarea>
                     </div>
-                    <!-- Sub-game 3: Memory Match Blitz -->
+                    <!-- Sub-game 3: Tile Match (left ↔ right column matching) -->
                     <div class="gb-game-panel enter-right" id="gb-panel-mm">
-                        <div class="gb-section-title">O'YIN 3 — MEMORY MATCH BLITZ</div>
-                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 8</div>
-                        <div class="gb-mm-grid" id="gb-mm-grid"></div>
-                        <div class="gb-mm-confirm-box" id="gb-mm-confirm-box">
-                            <div class="gb-mm-confirm-q" id="gb-mm-confirm-q"></div>
-                            <input class="gb-mm-confirm-input" id="gb-mm-confirm-input" type="text" inputmode="text" placeholder="Javob..." autocomplete="off" />
+                        <div class="gb-section-title">O'YIN 3 — TILE MATCH</div>
+                        <div class="gb-mm-status" id="gb-mm-status">Juftlarni toping: 0 / 6</div>
+                        <div class="gb-mm-instructions" id="gb-mm-instructions">Chap ustundagi plitkani bosing, so'ng o'ng ustunda unga mos keluvchini tanlang.</div>
+                        <div class="gb-tm-board" id="gb-tm-board">
+                            <div class="gb-tm-col" id="gb-tm-left"></div>
+                            <div class="gb-tm-col" id="gb-tm-right"></div>
                         </div>
                         <div class="gb-mm-win-banner" id="gb-mm-win-banner">
                             <div class="gb-mm-win-text">Barcha juftlar topildi!</div>
@@ -2800,6 +3035,19 @@
                 <div class="content-area screen-reflection-question" id="ref-question"></div>
                 <div class="content-area screen-reflection-spaced-rep" id="ref-spaced-rep"></div>
                 <div class="content-area screen-reflection-closing" id="ref-closing"></div>
+            </div>
+        </div>
+
+        <!-- Stage 9 — Results / AMR Scorecard -->
+        <div id="screen-results" class="screen">
+            <div class="card panel-card screen-results-card">
+                <div class="caption screen-results-caption">Yakuniy Hisobot · AMR</div>
+                <div class="screen-results-band" id="results-band"></div>
+                <div class="screen-results-headline" id="results-headline"></div>
+                <div class="screen-results-phases" id="results-phases"></div>
+                <div class="screen-results-amr" id="results-amr"></div>
+                <div class="screen-results-mastery" id="results-mastery"></div>
+                <div class="screen-results-closing" id="results-closing"></div>
             </div>
         </div>
 
@@ -3295,16 +3543,24 @@
                     startFinalBoss();
                 } else {
                     // Wave 2: Reflection sits after Boss before finish (auto-skip if empty).
-                    const finishUp = () => {
-                        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    // After Reflection (or directly after Boss when Reflection is empty),
+                    // we always show the AMR Results scorecard as the final stage.
+                    const showResultsThenFinish = () => {
+                        if (typeof showResultsScreen === 'function') {
+                            showResultsScreen();
+                        } else {
+                            // Defensive — if for any reason showResultsScreen wasn't
+                            // injected, fall through to plain finish.
+                            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                        }
                         btn.classList.remove('pulse', 'state-pill');
                         btn.classList.add('state-line');
                         if (btnText) btnText.style.opacity = '0';
                     };
                     if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
-                        showReflectionScreen(finishUp);
+                        showReflectionScreen(showResultsThenFinish);
                     } else {
-                        finishUp();
+                        showResultsThenFinish();
                     }
                 }
             }
@@ -3512,8 +3768,24 @@
                         // block.html is raw SVG markup; insert as-is (authored content, not user input)
                         el.innerHTML = block.html || '';
                     }
+                    else if (block.type === 'callout') {
+                        // Builder schema doesn't formally support callout, but
+                        // some imported homeworks carry it. Render as blockquote.
+                        el = document.createElement('blockquote');
+                        el.className = 'callout';
+                        el.innerText = block.text || '';
+                    }
 
-                    if (block.text && !['code','quote','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
+                    // Defensive fallback: if the block type was unrecognized,
+                    // render whatever text we have as a paragraph instead of
+                    // crashing the whole panel.
+                    if (!el) {
+                        el = document.createElement('p');
+                        el.className = 'block-unknown';
+                        el.innerText = block.text || JSON.stringify(block).slice(0, 200);
+                    }
+
+                    if (block.text && !['code','quote','callout','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
                     el.classList.add('bubbly');
                     pageEl.appendChild(el);
                     
@@ -3983,6 +4255,14 @@
             const item = MS_QUESTIONS[msState.index];
             const localCorrect = selectedIndex === item.correct;
             if (localCorrect) msState.score++;
+            // Log Memory Sprint result for end-of-session AMR scorecard.
+            // Closed multiple-choice — score-only, no AI axes.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'memory-sprint', id: 'ms-' + (msState.index + 1),
+                    correct: localCorrect, score: localCorrect ? 1 : 0,
+                });
+            }
 
             const optBtns = document.querySelectorAll('.ms-option-btn');
             optBtns.forEach((b, i) => {
@@ -4275,7 +4555,7 @@
         }
 
         function gbUpdateProgress(idx) {
-            const labels = ['1/3 Adaptive Quiz','2/3 Why Chain','3/3 Memory Match'];
+            const labels = ['1/3 Adaptive Quiz','2/3 Sentence Fill','3/3 Tile Match'];
             const label = document.getElementById('gb-plabel');
             if (label) label.textContent = labels[idx] || '';
             for (let i = 1; i <= 3; i++) {
@@ -4355,14 +4635,26 @@
         function gbInitAQ() {
             const aq = gbState.aq;
             aq.shown = 0; aq.correct = 0; aq.currentTier = 'easy'; aq.captureOk = false; aq.answered = false;
+            aq.shownIds = [];
             const fb = document.getElementById('gb-aq-feedback');
             if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
             gbAQShowNext();
         }
 
         function gbAQPickItem() {
-            const candidates = GB_ADAPTIVE_QUIZ.filter(q => q.tier === gbState.aq.currentTier);
-            return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : GB_ADAPTIVE_QUIZ[0];
+            const aq = gbState.aq;
+            if (!aq.shownIds) aq.shownIds = [];
+            const tier = aq.currentTier;
+            const idOf = q => q.id || (q.prompt || '').slice(0, 40);
+            const inTier  = GB_ADAPTIVE_QUIZ.filter(q => q.tier === tier);
+            const fresh   = inTier.filter(q => !aq.shownIds.includes(idOf(q)));
+            const pool    = fresh.length ? fresh
+                          : (GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q))).length
+                              ? GB_ADAPTIVE_QUIZ.filter(q => !aq.shownIds.includes(idOf(q)))
+                              : (inTier.length ? inTier : GB_ADAPTIVE_QUIZ));
+            const item = pool[Math.floor(Math.random() * pool.length)];
+            if (item) aq.shownIds.push(idOf(item));
+            return item || GB_ADAPTIVE_QUIZ[0];
         }
 
         function gbAQShowNext() {
@@ -4445,6 +4737,17 @@
                 if (fb) { fb.className = 'gb-aq-feedback wrong'; fb.textContent = "Noto'g'ri. To'g'ri javob: " + displayAnswer + '. ' + item.work; }
                 if (item.tier === 'hard') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'easy';
+            }
+            // Log AQ result for the end-of-session AMR scorecard.
+            // AQ items are closed-form numeric, so no AMR axes — score-only.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'adaptive-quiz',
+                    id: item.id || ('aq-' + (aq.shown + 1)),
+                    tier: item.tier,
+                    correct: isCorrect,
+                    score: isCorrect ? 1 : 0,
+                });
             }
             gbSetButtonNext('Keyingi savol');
         }
@@ -4543,15 +4846,49 @@
             setTimeout(() => b.scrollIntoView({ behavior:'smooth', block:'nearest' }), 50);
         }
 
-        function gbWCEvaluate(answer, expect) {
-            const aLow = answer.toLowerCase();
-            const keywords = expect.toLowerCase().split(/[\s.,;()\[\]]+/).filter(w => w.length > 3);
-            if (!keywords.length) return answer.length > 5;
-            const hits = keywords.filter(k => aLow.includes(k));
-            return hits.length >= Math.max(1, Math.floor(keywords.length * 0.3));
+        // Sentence Fill is graded by /api/ai/check-answer with a text_fuzzy
+        // answer_spec + AI fallback. The deterministic rapidfuzz checker
+        // catches exact / minor-typo matches fast; for paraphrases and
+        // synonyms, the Kimi semantic grader takes over (~1-3s).
+        async function gbWCAIGrade(question, studentAnswer, expected) {
+            try {
+                const resp = await fetch('/api/ai/check-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_id: 'wc-' + (gbState.wc.chainIdx + 1) + '-' + (gbState.wc.levelIdx + 1),
+                        question: question || '',
+                        student_answer: studentAnswer,
+                        expected_answers: [expected],
+                        // Sentence-fill answers are short and frequently
+                        // expressed as synonyms or grammatical variants
+                        // (e.g., "ayirmasi" ↔ "ayirmasining", "kichraytirish"
+                        // ↔ "ayirish"). text_fuzzy bails below ratio 75
+                        // without escalating, so we go straight to semantic
+                        // — the deterministic checker always returns
+                        // "unsure" and the AI does the meaning-aware match.
+                        answer_spec: {
+                            type: 'semantic',
+                            expected: expected,
+                            canonical_display: expected,
+                            allow_ai_fallback: true,
+                            amr: true
+                        },
+                        allow_ai_fallback: true,
+                        subject: (window.NETS_CTX && NETS_CTX.subject) || 'geometriya-g7-11',
+                        grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
+                        tier: 'EASY',
+                        phase: 'sentence-fill'
+                    })
+                });
+                if (!resp.ok) return { correct: false, error: 'http ' + resp.status };
+                return await resp.json();
+            } catch (e) {
+                return { correct: false, error: String(e) };
+            }
         }
 
-        function gbWCAction() {
+        async function gbWCAction() {
             const wc = gbState.wc;
             const ta = document.getElementById('gb-wc-textarea');
             const answer = ta ? ta.value.trim() : '';
@@ -4559,26 +4896,57 @@
             const chain = GB_WHY_CHAIN[wc.chainIdx];
             const level = chain.chain[wc.levelIdx];
             gbWCAppendStudentBubble(answer);
-            if (ta) ta.value = '';
-            const ok = gbWCEvaluate(answer, level.expect);
+            if (ta) { ta.value = ''; ta.disabled = true; }
             const reprompt = document.getElementById('gb-wc-reprompt');
+            // Show "checking" indicator while AI grades.
+            const checkingBubble = document.createElement('div');
+            checkingBubble.className = 'gb-wc-bubble-ai gb-wc-bubble-checking';
+            checkingBubble.innerHTML = '<em>Tekshirilmoqda…</em>';
+            const conv = document.getElementById('gb-wc-conv');
+            if (conv) conv.appendChild(checkingBubble);
+            const result = await gbWCAIGrade(level.probe, answer, level.expect);
+            if (checkingBubble && checkingBubble.parentNode) checkingBubble.parentNode.removeChild(checkingBubble);
+            if (ta) ta.disabled = false;
+            const ok = !!result.correct;
+            // Log the result for the end-of-session AMR scorecard. We log
+            // ONCE per chain (not per sub-level) so the report mirrors the
+            // five sentence-fill prompts the student saw, with the axis
+            // values from the level-1 attempt that resolved the chain.
+            if (window.__sessionLog && (ok || wc.retries >= 1)) {
+                window.__sessionLog.push({
+                    phase: 'sentence-fill',
+                    id: 'wc-' + (wc.chainIdx + 1),
+                    correct: ok,
+                    score: typeof result.score === 'number' ? result.score : (ok ? 1 : 0),
+                    axis_1: result.axis_1 || (ok ? 4 : 1),
+                    axis_2: result.axis_2 || (ok ? 4 : 1),
+                    first_try: ok && wc.retries === 0,
+                    feedback: result.feedback || '',
+                });
+            }
             if (ok) {
                 wc.retries = 0;
                 if (reprompt) reprompt.className = 'gb-wc-reprompt';
-                wc.levelIdx++;
-                gbWCUpdateHeader();
-                if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                // Surface the AI's positive feedback if provided.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe('✓ ' + result.feedback);
+                // First-try correct OR any-try correct: skip remaining hint
+                // levels in this chain and jump straight to the invariant
+                // (which advances to the next sentence-fill prompt). The old
+                // flow forced the student through 3 sub-levels even after a
+                // correct first-try answer.
+                gbWCShowInvariant(chain);
             } else {
                 wc.retries++;
+                // Surface the AI hint if any so the student knows what's missing.
+                if (result.feedback && result.source === 'ai') gbWCAppendProbe(result.feedback);
                 if (wc.retries >= 2) {
                     wc.retries = 0;
                     if (reprompt) reprompt.className = 'gb-wc-reprompt';
                     gbWCAppendProbe("To'g'ri javob: " + level.expect);
-                    wc.levelIdx++;
-                    gbWCUpdateHeader();
-                    if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                    else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                    // After 2 wrong tries, reveal the answer and advance to
+                    // the next chain — same skip behavior as a correct
+                    // answer, but with the answer surfaced first.
+                    gbWCShowInvariant(chain);
                 } else {
                     if (reprompt) reprompt.classList.add('show');
                     gbSetButtonForWC();
@@ -4615,127 +4983,133 @@
             });
         }
 
+        // Tile Match — left/right column matching.
+        // Left column shows all `a` sides in order; right column shows all
+        // `b` sides shuffled. Click a left tile, then click a right tile to
+        // attempt a match. Match → both lock green. Wrong → red flash, both
+        // deselect. Win at GB_MEMORY_MATCH.length matched.
         function gbInitMM() {
             const mm = gbState.mm;
-            const tiles = [];
-            GB_MEMORY_MATCH.forEach((p, i) => {
-                tiles.push({ pairId:i, side:'a', text:p.a, data:p });
-                tiles.push({ pairId:i, side:'b', text:p.b, data:p });
-            });
-            for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [tiles[i],tiles[j]]=[tiles[j],tiles[i]]; }
-            mm.tiles = tiles; mm.flipped = []; mm.matched = 0; mm.pendingPair = null; mm.busy = false;
+            const total = GB_MEMORY_MATCH.length;
+            // Left side keeps source order; right side is shuffled.
+            const lefts  = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.a }));
+            const rights = GB_MEMORY_MATCH.map((p, i) => ({ pairId: i, text: p.b }));
+            for (let i = rights.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [rights[i], rights[j]] = [rights[j], rights[i]];
+            }
+            mm.lefts = lefts;
+            mm.rights = rights;
+            mm.matched = 0;
+            mm.total = total;
+            mm.selectedLeft = null;
+            mm.busy = false;
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.className = 'gb-mm-win-banner';
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (confirm) confirm.className = 'gb-mm-confirm-box';
-            gbMMRenderGrid();
+            gbMMRenderBoard();
             gbMMUpdateStatus();
         }
 
-        function gbMMRenderGrid() {
-            const grid = document.getElementById('gb-mm-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            gbState.mm.tiles.forEach((tile, idx) => {
-                const card = document.createElement('div');
-                card.className = 'gb-mm-card';
-                card.dataset.idx = idx;
-                // tile.text is HTML from the rich-text editor (already sanitized).
-                // Render raw so images/SVGs/formatting show on card fronts.
-                card.innerHTML = '<div class="gb-mm-inner"><div class="gb-mm-face gb-mm-back-face">⬛</div><div class="gb-mm-face gb-mm-front-face">' + tile.text + '</div></div>';
-                card.addEventListener('click', () => gbMMFlipCard(idx));
-                grid.appendChild(card);
+        function gbMMRenderBoard() {
+            const left  = document.getElementById('gb-tm-left');
+            const right = document.getElementById('gb-tm-right');
+            if (!left || !right) return;
+            left.innerHTML = '';
+            right.innerHTML = '';
+            gbState.mm.lefts.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-left-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'left';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMSelectLeft(tile.pairId, el));
+                left.appendChild(el);
             });
+            gbState.mm.rights.forEach((tile) => {
+                const el = document.createElement('div');
+                el.className = 'gb-tm-tile gb-tm-right-tile';
+                el.dataset.pair = tile.pairId;
+                el.dataset.side = 'right';
+                el.innerHTML = tile.text;
+                el.addEventListener('click', () => gbMMTryMatch(tile.pairId, el));
+                right.appendChild(el);
+            });
+            // Re-render any KaTeX/math the board contains (the tiles are
+            // populated after the page-level KaTeX pass ran).
+            if (typeof window.__renderMath === 'function') window.__renderMath();
         }
 
         function gbMMUpdateStatus() {
             const st = document.getElementById('gb-mm-status');
-            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / 8';
+            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / ' + (gbState.mm.total || GB_MEMORY_MATCH.length);
         }
 
-        function gbMMFlipCard(idx) {
+        function gbMMSelectLeft(pairId, el) {
             const mm = gbState.mm;
-            if (mm.busy || state.isAnimating) return;
-            if (mm.flipped.includes(idx)) return;
-            const card = document.querySelector('[data-idx="' + idx + '"]');
-            if (!card || card.classList.contains('matched')) return;
-            card.classList.add('flipped');
-            mm.flipped.push(idx);
-            if (mm.flipped.length < 2) return;
-            mm.busy = true;
-            const [i1, i2] = mm.flipped;
-            const t1 = mm.tiles[i1]; const t2 = mm.tiles[i2];
-            if (t1.pairId === t2.pairId && t1.side !== t2.side) {
-                mm.pendingPair = { i1, i2, data:t1.data };
-                const confirm = document.getElementById('gb-mm-confirm-box');
-                const qEl = document.getElementById('gb-mm-confirm-q');
-                if (qEl) qEl.textContent = t1.data.confirmQ;
-                if (confirm) confirm.classList.add('show');
-                const inp = document.getElementById('gb-mm-confirm-input');
-                if (inp) { inp.value = ''; inp.style.borderColor = ''; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-pill');
-                setBtnText('Tasdiqlash');
-                btn.classList.add('pulse');
-            } else {
-                setTimeout(() => {
-                    const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                    const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                    if (c1) { c1.classList.add('wrong-flash'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    setTimeout(() => {
-                        if (c1) c1.classList.remove('flipped');
-                        if (c2) c2.classList.remove('flipped');
-                        mm.flipped = []; mm.busy = false;
-                    }, 800);
-                }, 100);
+            if (mm.busy) return;
+            if (el.classList.contains('matched')) return;
+            // Clear any prior left selection
+            document.querySelectorAll('.gb-tm-left-tile.selected').forEach(n => n.classList.remove('selected'));
+            // Toggle off if same tile clicked twice
+            if (mm.selectedLeft && mm.selectedLeft.pairId === pairId) {
+                mm.selectedLeft = null;
+                return;
             }
+            el.classList.add('selected');
+            mm.selectedLeft = { pairId, el };
         }
 
-        function gbMMAction() {
+        function gbMMTryMatch(rightPairId, rightEl) {
             const mm = gbState.mm;
-            if (!mm.pendingPair) return;
-            const inp = document.getElementById('gb-mm-confirm-input');
-            const answer = inp ? inp.value.trim().toLowerCase() : '';
-            const correct = mm.pendingPair.data.correct.toLowerCase();
-            const norm = s => s.replace(/\s+/g,' ').trim();
-            const isOk = norm(answer) === norm(correct) || (norm(answer).length > 3 && norm(correct).includes(norm(answer)));
-            const confirm = document.getElementById('gb-mm-confirm-box');
-            if (isOk) {
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (c1) c1.classList.add('matched');
-                if (c2) c2.classList.add('matched');
+            if (mm.busy) return;
+            if (rightEl.classList.contains('matched')) return;
+            if (!mm.selectedLeft) {
+                // No left tile selected — flash the right tile to hint at order.
+                rightEl.classList.add('wrong-flash');
+                setTimeout(() => rightEl.classList.remove('wrong-flash'), 360);
+                return;
+            }
+            const leftEl = mm.selectedLeft.el;
+            const matches = mm.selectedLeft.pairId === rightPairId;
+            if (matches) {
+                leftEl.classList.remove('selected');
+                leftEl.classList.add('matched');
+                rightEl.classList.add('matched');
                 mm.matched++;
+                mm.selectedLeft = null;
                 gbMMUpdateStatus();
-                if (confirm) confirm.classList.remove('show');
-                mm.pendingPair = null; mm.flipped = []; mm.busy = false;
-                if (mm.matched >= 8) { gbMMWin(); return; }
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                if (mm.matched >= mm.total) gbMMWin();
             } else {
-                if (inp) { inp.style.borderColor = '#d9534f'; setTimeout(() => { inp.style.borderColor = ''; }, 1200); }
-                const { i1, i2 } = mm.pendingPair;
-                const c1 = document.querySelector('[data-idx="' + i1 + '"]');
-                const c2 = document.querySelector('[data-idx="' + i2 + '"]');
-                if (confirm) confirm.classList.remove('show');
+                mm.busy = true;
+                leftEl.classList.add('wrong-flash');
+                rightEl.classList.add('wrong-flash');
                 setTimeout(() => {
-                    if (c1) { c1.classList.add('wrong-flash'); c1.classList.remove('flipped'); setTimeout(() => c1.classList.remove('wrong-flash'), 450); }
-                    if (c2) { c2.classList.add('wrong-flash'); c2.classList.remove('flipped'); setTimeout(() => c2.classList.remove('wrong-flash'), 450); }
-                    mm.flipped = []; mm.pendingPair = null; mm.busy = false;
-                }, 100);
-                btn.classList.remove('pulse','state-pill','state-line');
-                btn.classList.add('state-line');
-                if (btnText) btnText.style.opacity = '0';
+                    leftEl.classList.remove('wrong-flash');
+                    rightEl.classList.remove('wrong-flash');
+                    leftEl.classList.remove('selected');
+                    mm.selectedLeft = null;
+                    mm.busy = false;
+                }, 420);
             }
         }
+
+        // No-op shim — the runtime button handler used to call gbMMAction()
+        // for the legacy confirm-question mechanic. Tile Match is fully
+        // self-driven via tile clicks, so the action button stays inert.
+        function gbMMAction() { /* intentionally empty */ }
 
         function gbMMWin() {
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.classList.add('show');
             gbState.subGame = 3;
+            // Log Tile Match phase outcome — pure self-grade, all 6 pairs
+            // matched = 100% for the AMR scorecard.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'tile-match', id: 'tm-all',
+                    correct: true, score: 1,
+                });
+            }
             gbSetButtonNext('Keyingi bosqich');
         }
 
@@ -4837,6 +5211,11 @@ Prezident ertaga hisobot kutmoqda.`,
             qIndex: 0,
             attempts: [0, 0, 0, 0, 0, 0],
             correct: [false, false, false, false, false, false],
+            // Per-question capture flag — one slot per question. The old
+            // single-boolean captureQ3Done blocked submissions on every
+            // text-with-capture question after Q3 since only the Q3 button
+            // could set it. Kept the legacy field for back-compat reads.
+            captureDone: [false, false, false, false, false, false],
             captureQ3Done: false,
             submitted: [false, false, false, false, false, false],
             captureCount: 0
@@ -4861,14 +5240,29 @@ Prezident ertaga hisobot kutmoqda.`,
             return allOk;
         }
 
-        function rlCaptureQ3() {
-            stage6State.captureQ3Done = true;
+        function rlCapture(idx) {
+            // Per-question capture handler — replaces the legacy
+            // rlCaptureQ3 single-button flow. Marks captureDone[idx] so
+            // rlSubmitQuestion's "uploaded?" gate passes for THAT question
+            // (the gate used to be a single boolean → all text-with-capture
+            // questions other than Q3 were un-submittable).
+            if (!stage6State.captureDone) stage6State.captureDone = [];
+            stage6State.captureDone[idx] = true;
             stage6State.captureCount++;
-            const btn = document.getElementById('rl-q3-capture-btn');
-            const done = document.getElementById('rl-q3-capture-done');
+            // Legacy alias kept so anything still reading captureQ3Done
+            // behaves the same once any capture happens.
+            stage6State.captureQ3Done = true;
+            const btn = document.getElementById('rl-q' + (idx + 1) + '-capture-btn');
+            const done = document.getElementById('rl-q' + (idx + 1) + '-capture-done');
             if (btn) btn.style.display = 'none';
-            if (done) done.classList.add('rl-visible');
+            if (done) {
+                done.classList.add('rl-visible');
+                done.classList.add('show');
+            }
         }
+
+        // Legacy alias for the hardcoded Q3 button still in the markup.
+        function rlCaptureQ3() { rlCapture(2); }
 
         function rlSetFeedback(id, cls, text) {
             const el = document.getElementById(id);
@@ -4897,12 +5291,78 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function rlRenderQuestion(idx) {
             const q = RL_SCENARIO.questions[idx];
+            const total = (RL_SCENARIO.questions || []).length || 6;
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / 6';
+            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / ' + total;
 
             const promptEl = document.getElementById('rl-q' + (idx + 1) + '-prompt');
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
             if (promptEl) promptEl.innerHTML = q.prompt || '';
+
+            // Per-question capture button. Any text-with-capture question
+            // gets a dynamically-injected upload button right under the
+            // input, with state tracked in stage6State.captureDone[idx].
+            // Previously only Q3 had a hardcoded button, so other capture
+            // questions could never satisfy the "upload your work" gate
+            // and the submission was silently blocked → no AI call.
+            const qBody = document.querySelector('#rl-q' + (idx + 1) + ' .rl-q-body');
+            if (qBody) {
+                const oldCap = qBody.querySelector('.rl-capture-area-dyn');
+                if (oldCap) oldCap.remove();
+                if (q.type === 'text-with-capture' && q.capture) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'rl-capture-area rl-capture-area-dyn';
+                    wrap.innerHTML =
+                        '<button type="button" class="rl-capture-btn" id="rl-q' + (idx + 1) + '-capture-btn">' +
+                        '📷 Yechimni yuklash</button>' +
+                        '<div class="rl-capture-done" id="rl-q' + (idx + 1) + '-capture-done">' +
+                        '<div class="rl-capture-confirm">✓ Yechimingiz yuklandi</div>' +
+                        '<div class="rl-capture-mock-img">📄</div>' +
+                        '</div>';
+                    // Insert before the feedback element so the capture row
+                    // sits visually under the input.
+                    const fb = qBody.querySelector('.rl-feedback');
+                    if (fb) qBody.insertBefore(wrap, fb);
+                    else qBody.appendChild(wrap);
+                    const btnEl = wrap.querySelector('button');
+                    if (btnEl) btnEl.addEventListener('click', () => rlCapture(idx));
+                    // Restore the per-question done UI if the student already
+                    // captured this Q earlier in the session.
+                    if (stage6State.captureDone && stage6State.captureDone[idx]) {
+                        if (btnEl) btnEl.classList.add('hidden');
+                        const doneEl = wrap.querySelector('.rl-capture-done');
+                        if (doneEl) doneEl.classList.add('show');
+                    }
+                }
+            }
+
+            // Per-question textarea injection. Q5 (and any other open-ended
+            // RL question) authored with `open: true` lands as type=textarea
+            // but the markup may only have a multi-input field group OR no
+            // text input at all. Dynamically swap in a textarea so the
+            // student has somewhere to type.
+            if (q.type === 'textarea') {
+                // Existing input in the markup (if any) — remove it.
+                const existingInput = document.getElementById('rl-q' + (idx + 1) + '-input');
+                if (existingInput && existingInput.tagName !== 'TEXTAREA') existingInput.remove();
+                // Field-group container (used by multi-input markup) — clear.
+                const fields = document.getElementById('rl-q' + (idx + 1) + '-fields');
+                if (fields) fields.innerHTML = '';
+                // Inject a textarea if not already there.
+                let ta = document.getElementById('rl-q' + (idx + 1) + '-input');
+                if (!ta || ta.tagName !== 'TEXTAREA') {
+                    ta = document.createElement('textarea');
+                    ta.id = 'rl-q' + (idx + 1) + '-input';
+                    ta.className = 'rl-input rl-textarea';
+                    ta.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
+                    ta.autocomplete = 'off';
+                    ta.spellcheck = false;
+                    const fb = qBody && qBody.querySelector('.rl-feedback');
+                    if (qBody && fb) qBody.insertBefore(ta, fb);
+                    else if (qBody) qBody.appendChild(ta);
+                }
+                ta.value = '';
+            }
 
             if (q.type === 'multi-input') {
                 const container = document.getElementById('rl-q' + (idx + 1) + '-fields');
@@ -5014,7 +5474,12 @@ Prezident ertaga hisobot kutmoqda.`,
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
 
-                if (q.type === 'text-with-capture' && !stage6State.captureQ3Done) {
+                // Per-question capture gate — was checking the legacy
+                // global captureQ3Done flag, which only the (hardcoded)
+                // Q3 button could set. Now reads the per-question
+                // captureDone[idx] populated by rlCapture(idx) on any
+                // dynamically-rendered upload button.
+                if (q.type === 'text-with-capture' && !(stage6State.captureDone && stage6State.captureDone[idx])) {
                     rlSetFeedback(fbId, 'rl-hint', '📷 Iltimos, yechimingiz rasmini ham yuklang.');
                     return;
                 }
@@ -5030,6 +5495,14 @@ Prezident ertaga hisobot kutmoqda.`,
                     stage6State.correct[idx] = true;
                     stage6State.submitted[idx] = true;
                     rlSetFeedback(fbId, 'rl-correct', '✓ To\'g\'ri! ' + (q.type === 'text-with-capture' ? q.expectedWork : ''));
+                    if (window.__sessionLog) {
+                        window.__sessionLog.push({
+                            phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
+                            correct: true, score: 1,
+                            // Closed text/numeric — no AI axes; treat as Mastered both axes.
+                            axis_1: 4, axis_2: 4, first_try: true,
+                        });
+                    }
                     rlMorphButton('Keyingi savol');
                 } else {
                     stage6State.attempts[idx]++;
@@ -5082,17 +5555,25 @@ Prezident ertaga hisobot kutmoqda.`,
                 }
 
             } else if (q.type === 'textarea') {
-                const inp = document.getElementById('rl-q6-input');
+                // Read from the CURRENT question's textarea (rlRenderQuestion
+                // injects one with id=`rl-q{idx+1}-input` for any open-ended
+                // question). The reader was hardcoded to rl-q6-input which
+                // only existed for the legacy Yashil Makon Q6 — modern
+                // homeworks (e.g. HW-008) put the textarea on Q5.
+                const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
                 if (val.length < 20) {
                     rlSetFeedback(fbId, 'rl-hint', 'Iltimos, kamida 20 belgili tahlil yozing.');
                     return;
                 }
-                correct = true;
-                stage6State.correct[idx] = true;
                 stage6State.submitted[idx] = true;
-                rlSetFeedback(fbId, 'rl-open', '✓ O\'ylantiradigan tahlil! Yangi shartda tenglama o\'zgaradi va byudjet qayta hisoblanadi.');
+                rlSetFeedback(fbId, 'rl-open', '✓ Tahlilingiz qabul qilindi. AI baho beryapti...');
                 rlMorphButton('Keyingi savol');
+                // Open-ended responses ALWAYS get AI grading — the local
+                // checker has no way to evaluate a free-form analysis. The
+                // tutor result listener (further down in the file) updates
+                // stage6State.correct[idx] when the AI verdict comes back.
+                rlDispatchTutorAi(idx, q, val);
             }
         }
 
@@ -5124,6 +5605,16 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.submitted[ticket.qIndex] = true;
                 fbEl.className = 'rl-feedback rl-correct';
                 fbEl.innerHTML = '✓ ' + (response || 'To\'g\'ri!') + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                if (window.__sessionLog) {
+                    const q = RL_SCENARIO.questions[ticket.qIndex];
+                    const ax1 = (detail && detail.axis_1) || 3;
+                    const ax2 = (detail && detail.axis_2) || 3;
+                    window.__sessionLog.push({
+                        phase: 'real-life', id: (q && q.id) || ('rl-' + (ticket.qIndex + 1)),
+                        correct: true, score: typeof (detail && detail.score) === 'number' ? detail.score : 1,
+                        axis_1: ax1, axis_2: ax2, first_try: false,
+                    });
+                }
                 rlMorphButton('Keyingi savol');
             } else if (response) {
                 // Replace generic "wrong" text with AI feedback. Preserve current
@@ -5223,6 +5714,7 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.qIndex = 0;
             stage6State.attempts = [0, 0, 0, 0, 0, 0];
             stage6State.correct = [false, false, false, false, false, false];
+            stage6State.captureDone = [false, false, false, false, false, false];
             stage6State.captureQ3Done = false;
             stage6State.submitted = [false, false, false, false, false, false];
             stage6State.captureCount = 0;
@@ -5499,7 +5991,7 @@ Prezident ertaga hisobot kutmoqda.`,
         let bossPendingAi = null;
 
         function bossApplyCorrect(q, fbEl, opts) {
-            // opts: { aiGraded: bool, message: string|null }
+            // opts: { aiGraded: bool, message: string|null, axis_1?, axis_2? }
             bossState.correct++;
             bossState.combo++;
             const doubled = bossState.combo >= 3;
@@ -5515,6 +6007,19 @@ Prezident ertaga hisobot kutmoqda.`,
                 } else {
                     fbEl.textContent = baseMsg;
                 }
+            }
+            // Log boss attack outcome for the AMR scorecard. Closed numeric
+            // boss items (Q1, Q2) have no AI axes — treat as Mastered both
+            // axes since damage was dealt. AI-graded items use returned axes.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                    correct: true, score: 1,
+                    axis_1: (opts && opts.axis_1) || 4,
+                    axis_2: (opts && opts.axis_2) || 4,
+                    first_try: !(opts && opts.aiGraded),  // local match = first try
+                    damage: dmg,
+                });
             }
             if (bossState.hp <= 0) { setTimeout(() => bossEnd(true), 900); }
         }
@@ -5602,12 +6107,27 @@ Prezident ertaga hisobot kutmoqda.`,
             const aiCorrect = result.correct === true && (typeof result.score !== 'number' || result.score > 0.8);
             if (aiCorrect) {
                 const q = BOSS_QUESTIONS[bossState.qIndex];
-                bossApplyCorrect(q, fb, { aiGraded: true });
+                bossApplyCorrect(q, fb, {
+                    aiGraded: true,
+                    axis_1: result.axis_1, axis_2: result.axis_2,
+                });
             } else {
                 if (fb) {
                     fb.className = 'boss-feedback wrong';
                     const aiMsg = result.boss_response || result.feedback || '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
                     fb.innerHTML = aiMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                }
+                // Log incorrect boss attack so it appears on the AMR card
+                // with low axes — the student loses 0 HP but their attempt
+                // still informs the rubric.
+                if (window.__sessionLog) {
+                    const q = BOSS_QUESTIONS[bossState.qIndex];
+                    window.__sessionLog.push({
+                        phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                        correct: false, score: typeof result.score === 'number' ? result.score : 0,
+                        axis_1: result.axis_1 || 1, axis_2: result.axis_2 || 1,
+                        first_try: false, damage: 0,
+                    });
                 }
             }
             bossPendingAi = null;
@@ -5983,6 +6503,224 @@ Prezident ertaga hisobot kutmoqda.`,
                 onContinue();
             };
             btn.addEventListener('click', handler, true);
+        }
+
+        /* ── Stage 9 · AMR Results Scorecard ──────────────────────────
+           Aggregates window.__sessionLog (populated live by AQ, MS, TM,
+           SF, RL, Boss handlers) into:
+             - per-phase tally (X/N items correct)
+             - per-phase mean axis_1 / axis_2 for items that recorded axes
+             - overall mastery band based on combined axis means
+           See standards/framework/AMR-GRADING-SYSTEM.md and
+           standards/framework/GRADING.md for the rubric definitions.
+        */
+
+        // Initialize the session log as early as the script runs so
+        // every phase's grading handler can write to it without checking.
+        if (!window.__sessionLog) window.__sessionLog = [];
+
+        // Phase ordering for the scorecard rows.
+        const RESULTS_PHASE_ORDER = [
+            { key: 'memory-sprint', label: 'Memory Sprint',  total: () => (typeof MS_QUESTIONS !== 'undefined' ? MS_QUESTIONS.length : 0) },
+            { key: 'adaptive-quiz', label: 'Adaptive Quiz',  total: () => 5 },
+            { key: 'tile-match',    label: 'Tile Match',     total: () => 1, isPhaseLevel: true },
+            { key: 'sentence-fill', label: 'Sentence Fill',  total: () => (typeof GB_WHY_CHAIN !== 'undefined' ? GB_WHY_CHAIN.length : 0) },
+            { key: 'real-life',     label: 'Real-Life',      total: () => (typeof RL_SCENARIO !== 'undefined' && RL_SCENARIO.questions ? RL_SCENARIO.questions.length : 0) },
+            { key: 'final-boss',    label: 'Final Boss',     total: () => (typeof BOSS_QUESTIONS !== 'undefined' ? BOSS_QUESTIONS.length : 0) },
+        ];
+
+        function _amrBandFor(score) {
+            // score is a 1-4 mean. Map to AMR band labels per GRADING.md §rubric.
+            if (score >= 3.5) return { name: 'Mastered',   key: 'mastered'   };
+            if (score >= 2.5) return { name: 'Proficient', key: 'proficient' };
+            if (score >= 1.5) return { name: 'Apprentice', key: 'apprentice' };
+            return                       { name: 'Novice',     key: 'novice'     };
+        }
+
+        function _amrAggregate(log) {
+            // Per-phase tally + axis means. Skip duplicate ids per phase
+            // (we only keep the LAST entry — captures a student's final
+            // answer on a given item).
+            const byPhase = {};
+            const seen = new Set();
+            // Walk in reverse so we keep the latest entry per (phase,id).
+            for (let i = log.length - 1; i >= 0; i--) {
+                const e = log[i];
+                const key = e.phase + '::' + e.id;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                if (!byPhase[e.phase]) byPhase[e.phase] = [];
+                byPhase[e.phase].unshift(e);  // unshift to preserve forward order
+            }
+
+            const phaseStats = RESULTS_PHASE_ORDER.map(p => {
+                const items = byPhase[p.key] || [];
+                const total = p.total();
+                const correct = items.filter(x => x.correct).length;
+                // Items that have axis values (came from AI semantic grading).
+                const axed = items.filter(x => typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number');
+                let axis_1_mean = null, axis_2_mean = null;
+                if (axed.length) {
+                    axis_1_mean = axed.reduce((s, x) => s + x.axis_1, 0) / axed.length;
+                    axis_2_mean = axed.reduce((s, x) => s + x.axis_2, 0) / axed.length;
+                }
+                return {
+                    key: p.key, label: p.label, isPhaseLevel: !!p.isPhaseLevel,
+                    correct, total, items_logged: items.length,
+                    axis_1_mean, axis_2_mean,
+                };
+            });
+
+            // Overall AMR axes — pool every axed item across all phases.
+            const allAxed = [];
+            Object.keys(byPhase).forEach(k => {
+                byPhase[k].forEach(x => {
+                    if (typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number') allAxed.push(x);
+                });
+            });
+            let overall_axis_1 = null, overall_axis_2 = null, overall_score = null, overall_band = null;
+            if (allAxed.length) {
+                overall_axis_1 = allAxed.reduce((s, x) => s + x.axis_1, 0) / allAxed.length;
+                overall_axis_2 = allAxed.reduce((s, x) => s + x.axis_2, 0) / allAxed.length;
+                // item_score = ((a1 + a2) / 2) × 25 per GRADING.md
+                overall_score = ((overall_axis_1 + overall_axis_2) / 2) * 25;
+                overall_band = _amrBandFor((overall_axis_1 + overall_axis_2) / 2);
+            }
+
+            // Overall closed-form tally too — sum correct / sum total across
+            // all phases that produced log entries.
+            let totalCorrect = 0, totalItems = 0;
+            phaseStats.forEach(p => {
+                if (p.isPhaseLevel) {
+                    if (p.correct) { totalCorrect += p.total; totalItems += p.total; }
+                    else totalItems += p.total;
+                } else {
+                    totalCorrect += p.correct;
+                    totalItems += p.total;
+                }
+            });
+
+            return {
+                phaseStats,
+                allAxed,
+                overall_axis_1, overall_axis_2, overall_score, overall_band,
+                totalCorrect, totalItems,
+                hasAxes: allAxed.length > 0,
+            };
+        }
+
+        function _renderAxisCard(label, mean) {
+            if (mean == null) {
+                return `<div class="results-amr-axis">
+                  <div class="results-amr-axis-label">${label}</div>
+                  <div class="results-amr-axis-value">—</div>
+                  <div class="results-amr-axis-band">no AI-graded items</div>
+                </div>`;
+            }
+            const band = _amrBandFor(mean);
+            return `<div class="results-amr-axis">
+              <div class="results-amr-axis-label">${label}</div>
+              <div class="results-amr-axis-value">${mean.toFixed(2)} / 4</div>
+              <div class="results-amr-axis-band">${band.name}</div>
+            </div>`;
+        }
+
+        function showResultsScreen() {
+            const log  = window.__sessionLog || [];
+            const agg  = _amrAggregate(log);
+            // Activate the screen
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const sr = document.getElementById('screen-results');
+            if (sr) sr.classList.add('active');
+            setStage(8);
+
+            // Headline + band
+            const overallPct = agg.totalItems > 0 ? Math.round(100 * agg.totalCorrect / agg.totalItems) : 0;
+            const headline = document.getElementById('results-headline');
+            const bandEl   = document.getElementById('results-band');
+            if (agg.hasAxes && agg.overall_band) {
+                if (bandEl) {
+                    bandEl.textContent = agg.overall_band.name;
+                    bandEl.className = 'screen-results-band band-' + agg.overall_band.key;
+                }
+            } else if (bandEl) {
+                // No AI-graded items — derive band from raw % via the same thresholds.
+                const pseudo = overallPct / 25;  // 0–4 scale
+                const band = _amrBandFor(pseudo);
+                bandEl.textContent = band.name;
+                bandEl.className = 'screen-results-band band-' + band.key;
+            }
+            if (headline) {
+                const itemScore = agg.hasAxes ? Math.round(agg.overall_score) : overallPct;
+                headline.innerHTML = `Sizning umumiy natijangiz: <strong>${itemScore}%</strong>`
+                                   + ` &nbsp;<span style="opacity:0.6;font-weight:400">(${agg.totalCorrect} / ${agg.totalItems} to'g'ri)</span>`;
+            }
+
+            // Per-phase rows
+            const phasesEl = document.getElementById('results-phases');
+            if (phasesEl) {
+                phasesEl.innerHTML = agg.phaseStats.map(p => {
+                    const score = p.isPhaseLevel
+                        ? (p.correct ? 'Tamomlandi' : 'Bajarilmadi')
+                        : `${p.correct} / ${p.total}`;
+                    const axisStr = (p.axis_1_mean != null)
+                        ? ` · A1=${p.axis_1_mean.toFixed(1)} A2=${p.axis_2_mean.toFixed(1)}`
+                        : '';
+                    return `<div class="results-phase-row">
+                      <span class="results-phase-name">${p.label}${axisStr}</span>
+                      <span class="results-phase-score">${score}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            // AMR axis breakdown
+            const amrEl = document.getElementById('results-amr');
+            if (amrEl) {
+                if (agg.hasAxes) {
+                    amrEl.innerHTML = `
+                      <div class="results-amr-title">AMR — 2-axis Anchored Mastery Rubric</div>
+                      <div class="results-amr-grid">
+                        ${_renderAxisCard('Axis 1 — Concept Identification', agg.overall_axis_1)}
+                        ${_renderAxisCard('Axis 2 — Process Integrity',      agg.overall_axis_2)}
+                      </div>`;
+                } else {
+                    amrEl.innerHTML = `
+                      <div class="results-amr-title">AMR — 2-axis rubric</div>
+                      <div style="font-size:13px;color:var(--text-dim);">
+                        Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat
+                        yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill,
+                        Real-Life Q5, Boss Q3-Q5) AI orqali 2-axis bo'yicha baholanadi.
+                      </div>`;
+                }
+            }
+
+            // Mastery promotion note (per GRADING.md §6)
+            const masteryEl = document.getElementById('results-mastery');
+            if (masteryEl) {
+                if (agg.hasAxes && agg.overall_band) {
+                    const tipByBand = {
+                        mastered:   "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
+                        proficient: "Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.",
+                        apprentice: "Haqida o'ylash kerak. Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
+                        novice:     "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
+                    };
+                    masteryEl.textContent = tipByBand[agg.overall_band.key] || '';
+                } else {
+                    masteryEl.textContent = "Yopiq-format javoblar tahlilingiz: " + overallPct + "%. Ochiq topshiriqlarda AMR baholash to'liq amal qiladi.";
+                }
+            }
+
+            const closingEl = document.getElementById('results-closing');
+            if (closingEl) {
+                closingEl.textContent = "Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.";
+            }
+
+            // Final button — reset to "done" state
+            btn.classList.remove('pulse','state-pill');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
+            // Expose the aggregate for tests / future export.
+            window.__sessionAggregate = agg;
         }
     </script>
 
