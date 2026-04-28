@@ -403,6 +403,79 @@ Returns all `status = "pending"` items.
 
 ---
 
+## Internationalization (i18n)
+
+Client-side translation layer (Wave I1+) exposes `window.i18n` and `window.STRINGS` in all frontend pages. Server populates `NETS_CTX.lang` from the homework's `language` DB column (default `'uz'`).
+
+### `window.i18n` API
+
+| Method | Signature | Notes |
+|--------|-----------|-------|
+| `t(key, fallback)` | `(string, ?string) → string` | Resolve key in current lang; chain: `current → en → uz → fallback → key` |
+| `setLang(lang)` | `(string) → void` | Set active lang (`'uz'` \| `'ru'` \| `'en'`); writes `localStorage.nets_lang`, updates `<html lang>`, re-renders all `data-i18n*` attrs, fires `onChange` callbacks |
+| `getLang()` | `() → string` | Get active lang; resolves from `localStorage.nets_lang → <html lang> → 'en'` |
+| `onChange(cb)` | `(callback) → void` | Register function called on `setLang()` |
+
+### `window.STRINGS` shape
+
+```javascript
+{
+  uz: { "dashboard.btn_new_hw": "...", "builder.save": "...", ... },
+  ru: { "dashboard.btn_new_hw": "...", ... },
+  en: { "dashboard.btn_new_hw": "...", ... }
+}
+```
+
+**Key naming convention:** `page.element_role` (e.g., `dashboard.btn_new_hw`, `builder.input_placeholder`, `library.title_text`). ~111 keys across dashboard, builder, library, common subsections (I2 in flight).
+
+### HTML attribute wrappers
+
+Four attributes auto-render on page load and after `setLang()`:
+
+| Attribute | Target | Example |
+|-----------|--------|---------|
+| `data-i18n="key"` | `textContent` | `<button data-i18n="dashboard.btn_new_hw">…</button>` |
+| `data-i18n-placeholder="key"` | input `placeholder` | `<input data-i18n-placeholder="builder.input_q">` |
+| `data-i18n-aria-label="key"` | `aria-label` | `<button data-i18n-aria-label="common.close">…</button>` |
+| `data-i18n-title="key"` | `title` attr | `<span data-i18n-title="common.tooltip">hover me</span>` |
+
+### Resolution & fallback chains
+
+**Language resolution** (when page loads, or `i18n.getLang()` called):
+```
+localStorage.nets_lang (if set) → <html lang> value → 'en' (final fallback)
+```
+
+**String resolution** in `t(key, fallback)`:
+```
+STRINGS[current_lang][key] → STRINGS['en'][key] → STRINGS['uz'][key] → fallback arg → key string
+```
+
+### Adding a new translatable string
+
+1. **Add to all 3 languages** in `frontend/js/i18n/strings.js`:
+   ```javascript
+   STRINGS.uz.new_page_title = "...";
+   STRINGS.ru.new_page_title = "...";
+   STRINGS.en.new_page_title = "...";
+   ```
+
+2. **Use in HTML** (auto-translates on load + on `setLang()`):
+   ```html
+   <h1 data-i18n="new_page_title">English fallback text</h1>
+   ```
+   OR **in JavaScript** (manual):
+   ```javascript
+   el.textContent = i18n.t('new_page_title', 'English fallback');
+   ```
+
+### HTML `<html lang>` convention
+
+- **Dashboard pages** (`/`, `/builder.html`, `/library.html`): `<html lang="en">` (static fallback; no dynamic language changes)
+- **Runtime template** (`perfect_homework.html`, `/h/{id}`): `<html lang="uz">` (student-facing default; respects `localStorage.nets_lang` switch)
+
+---
+
 ## Meta
 
 ### GET /api/health
