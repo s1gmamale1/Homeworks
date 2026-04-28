@@ -337,6 +337,141 @@ def test_cache_key_namespaced_by_spec(mock_generate, client):
 
 
 # ---------------------------------------------------------------------------
+# Sentence Fill semantic-grade tests
+# ---------------------------------------------------------------------------
+# Sentence Fill (gb_why_chain runtime constant) used to grade with a local
+# keyword-overlap heuristic in gbWCEvaluate that rejected paraphrases and
+# grammatical variants ("ayirmasi" vs "ayirmasining"). The runtime now
+# POSTs to /api/ai/check-answer with answer_spec.type == "semantic" so
+# the deterministic checker returns "unsure" and the AI grades for
+# meaning. These tests pin that contract so a future refactor can't
+# silently revert to text_fuzzy (which bails at ratio<75 without
+# escalating, re-introducing the synonym-rejection bug).
+
+
+@patch("server.services.gemini.generate_json")
+def test_check_answer_semantic_always_routes_through_ai(mock_generate, client):
+    """type=semantic must NEVER short-circuit the deterministic path —
+    even an exact-string match has to go through AI for meaning checks."""
+    mock_generate.return_value = {
+        "correct": True, "score": 1.0,
+        "feedback": "To'g'ri!", "matched_expected": "ayirmasining",
+        "confidence": 0.95,
+    }
+    payload = {
+        "question_id": "wc-1-1",
+        "question": "Yoylar bir-biridan ___ qiladi.",
+        "student_answer": "ayirmasining",  # exact match would short-circuit text_fuzzy
+        "expected_answers": ["ayirmasining"],
+        "answer_spec": {
+            "type": "semantic",
+            "expected": "ayirmasining",
+            "canonical_display": "ayirmasining",
+            "allow_ai_fallback": True,
+        },
+        "phase": "sentence-fill",
+        "subject": "geometriya-g7-11",
+        "grade": 8,
+    }
+
+    resp = client.post("/api/ai/check-answer", json=payload)
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["source"] == "ai", (
+        f"semantic must route through AI even on exact match; got source={data['source']!r}"
+    )
+    mock_generate.assert_called_once()
+
+
+@patch("server.services.gemini.generate_json")
+def test_sentence_fill_amr_flag_extends_schema(mock_generate, client):
+    """When the SF runtime sends answer_spec.amr=true, the grader must
+    accept and surface axis_1 / axis_2 in the response so the
+    end-of-session AMR scorecard has axis values to aggregate."""
+    mock_generate.return_value = {
+        "correct": True, "score": 1.0,
+        "feedback": "Mukammal!", "matched_expected": "ayirmasining",
+        "confidence": 0.95,
+        "axis_1": 4, "axis_2": 4,
+        "axis_1_label": "Mastered", "axis_2_label": "Mastered",
+    }
+    payload = {
+        "question_id": "wc-1-1",
+        "question": "Yoylar bir-biridan ___ qiladi.",
+        "student_answer": "ayirmasining",
+        "expected_answers": ["ayirmasining"],
+        "answer_spec": {
+            "type": "semantic",
+            "expected": "ayirmasining",
+            "canonical_display": "ayirmasining",
+            "allow_ai_fallback": True,
+            "amr": True,
+        },
+        "phase": "sentence-fill",
+        "subject": "geometriya-g7-11",
+        "grade": 8,
+    }
+
+    resp = client.post("/api/ai/check-answer", json=payload)
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["correct"] is True
+    # Axes must round-trip so the scorecard aggregator can read them.
+    assert data.get("axis_1") == 4
+    assert data.get("axis_2") == 4
+    assert data.get("axis_1_label") == "Mastered"
+    assert data.get("axis_2_label") == "Mastered"
+
+    # Inspect the prompt that was actually sent to the AI — the schema
+    # hint should include axis_1/axis_2 fields so Kimi knows to emit them.
+    call_args = mock_generate.call_args
+    schema_hint = call_args.kwargs.get("schema_hint") or (call_args.args[1] if len(call_args.args) > 1 else None)
+    assert schema_hint is not None, "generate_json must receive a schema hint"
+    assert "axis_1" in schema_hint and "axis_2" in schema_hint, (
+        "AMR-mode schema must request axis_1/axis_2 from the AI"
+    )
+
+
+@patch("server.services.gemini.generate_json")
+def test_sentence_fill_unsure_path_preserves_axes(mock_generate, client):
+    """Low-confidence AI verdicts must still pass axis values through
+    to the response — the scorecard depends on them even when the
+    grade itself is uncertain."""
+    mock_generate.return_value = {
+        "correct": False, "score": 0.4,
+        "feedback": "Unsure but partially correct.",
+        "matched_expected": None,
+        "confidence": 0.7,  # below the 0.9 threshold → ai_unsure path
+        "axis_1": 2, "axis_2": 3,
+        "axis_1_label": "Apprentice", "axis_2_label": "Proficient",
+    }
+    payload = {
+        "question_id": "wc-2-1",
+        "question": "Tashqaridagi burchak — yoylar ___.",
+        "student_answer": "ayirib bo'lib chiqishi",
+        "expected_answers": ["ayirmasining"],
+        "answer_spec": {
+            "type": "semantic", "expected": "ayirmasining",
+            "canonical_display": "ayirmasining", "allow_ai_fallback": True, "amr": True,
+        },
+        "phase": "sentence-fill",
+        "subject": "geometriya-g7-11",
+        "grade": 8,
+    }
+
+    resp = client.post("/api/ai/check-answer", json=payload)
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["source"] == "ai_unsure"
+    # Axes survive the unsure-path normalization in tutor.check_answer.
+    assert data.get("axis_1") == 2
+    assert data.get("axis_2") == 3
+
+
+# ---------------------------------------------------------------------------
 # D3 coverage tests (cache-hit / queue-insert / boss-soft-fail / dedup)
 # ---------------------------------------------------------------------------
 

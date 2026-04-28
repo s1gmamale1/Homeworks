@@ -11,26 +11,47 @@
   if (window.__nets_katex_loaded) return;
   window.__nets_katex_loaded = true;
 
+  // KaTeX from jsDelivr — SRI-pinned to katex@0.16.11 dist/.
+  // If you bump the version, regenerate hashes with:
+  //   curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+  // Browsers refuse the resource if the hash mismatches, closing the
+  // CDN-compromise XSS gap that plain <script src=cdn> exposes.
+  const KATEX_VERSION = '0.16.11';
+  const KATEX_SRI = {
+    css:        'sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+',
+    js:         'sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg',
+    autoRender: 'sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk',
+  };
+
   function injectAsset(tag, attrs) {
     const el = document.createElement(tag);
-    Object.assign(el, attrs);
+    // setAttribute (not Object.assign) so `integrity`/`crossorigin` land on
+    // the rendered HTML attribute — Object.assign sets DOM properties, and
+    // `integrity` is one that browsers only honour from the attribute.
+    Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
     document.head.appendChild(el);
     return el;
   }
 
   injectAsset('link', {
     rel: 'stylesheet',
-    href: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css',
+    href: `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.css`,
+    integrity: KATEX_SRI.css,
+    crossorigin: 'anonymous',
   });
   // Load katex.min.js first; only inject auto-render after it's loaded so that
   // window.katex (which auto-render references) is guaranteed to exist.
   // (Dynamically-injected <script defer> ignores defer order — must chain via onload.)
   const katexScript = injectAsset('script', {
-    src: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js',
+    src: `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/katex.min.js`,
+    integrity: KATEX_SRI.js,
+    crossorigin: 'anonymous',
   });
   katexScript.addEventListener('load', () => {
     injectAsset('script', {
-      src: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+      src: `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist/contrib/auto-render.min.js`,
+      integrity: KATEX_SRI.autoRender,
+      crossorigin: 'anonymous',
     });
   });
 
