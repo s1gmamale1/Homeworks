@@ -2787,3 +2787,85 @@ body:has(.preview-panel:not([hidden])) .fab-add {
   .quote-picker-filters { grid-template-columns: 1fr 1fr; }
   .quote-picker-filters .js-quote-search { grid-column: 1 / -1; }
 }
+
+/* ============================================================
+   Theme toggle button + dark-mode coverage patches
+   Mounts in the navbar of every page; reads/writes `nets_theme`.
+   ============================================================ */
+
+.theme-toggle {
+  min-width: 40px;
+  padding: 8px 12px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Form controls — light defaults at app.css:758 hardcode #fff. */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="url"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: rgba(15, 23, 42, 0.90);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] input:disabled,
+[data-theme="dark"] textarea:disabled,
+[data-theme="dark"] select:disabled {
+  background: rgba(30, 41, 59, 0.60);
+  color: var(--text-muted);
+}
+
+/* Inline panels that hardcode rgba(255,255,255,…) at lines 1325/1405/1435. */
+[data-theme="dark"] .nested-card {
+  background: rgba(15, 23, 42, 0.58);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .empty-mini {
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(10, 132, 255, 0.22);
+}
+
+[data-theme="dark"] .fixture-card {
+  background: rgba(15, 23, 42, 0.82);
+  border-color: var(--border);
+}
+[data-theme="dark"] .fixture-card:hover {
+  background: rgba(15, 23, 42, 0.94);
+  border-color: rgba(10, 132, 255, 0.28);
+}
+
+/* Light blue JSON preview tile at app.css:1373–1374. */
+[data-theme="dark"] .json-preview {
+  background: rgba(15, 23, 42, 0.90);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Save indicator — base bg is invisible on dark, status text colors unreadable. */
+[data-theme="dark"] .save-indicator {
+  background: rgba(148, 163, 184, 0.10);
+}
+[data-theme="dark"] .save-indicator[data-state="saved"] {
+  color: var(--status-ready);
+}
+[data-theme="dark"] .save-indicator[data-state="offline"] {
+  color: var(--status-generating);
+}
+
+/* Homework card hover border — accent alpha is too dim on dark. */
+[data-theme="dark"] .homework-grid .glass-card:hover,
+[data-theme="dark"] .homework-grid .homework-card:hover {
+  border-color: rgba(10, 132, 255, 0.35);
+}
+
+/* Active phase ring — slightly dimmer on dark for restraint. */
+[data-theme="dark"] .phase-item.active .status-dot,
+[data-theme="dark"] .phase-list button.active .status-dot {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.20);
+}

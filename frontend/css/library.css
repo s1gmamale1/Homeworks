@@ -162,3 +162,19 @@
         padding: 14px 16px;
     }
 }
+
+/* ---- Dark-mode contrast fixes for hardcoded badge/pill colors ---- */
+[data-theme="dark"] .lib-mode-badge[data-mode="easy"] {
+    color: var(--status-ready);
+    background: rgba(52, 199, 89, 0.18);
+}
+
+[data-theme="dark"] .lib-mode-badge[data-mode="hard"] {
+    color: var(--status-error);
+    background: rgba(255, 59, 48, 0.18);
+}
+
+[data-theme="dark"] .lib-card-pill.grade {
+    color: var(--family-til);
+    background: rgba(175, 82, 222, 0.18);
+}
