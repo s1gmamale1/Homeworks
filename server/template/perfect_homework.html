@@ -4775,11 +4775,17 @@
 
         function gbAQShowNext() {
             const aq = gbState.aq;
-            if (aq.shown >= 5) { gbAQFinish(); return; }
+            // Round count derives from the data, not a hardcoded 5. HW
+            // authors can set a 3-round mini-AQ or a 7-round long form
+            // and the runtime will respect it. Falls back to 5 if
+            // GB_ADAPTIVE_QUIZ wasn't injected (defensive only).
+            const totalRounds = (typeof GB_ADAPTIVE_QUIZ !== 'undefined' && GB_ADAPTIVE_QUIZ.length)
+                ? GB_ADAPTIVE_QUIZ.length : 5;
+            if (aq.shown >= totalRounds) { gbAQFinish(); return; }
             const item = gbAQPickItem();
             aq.currentItem = item; aq.captureOk = false; aq.answered = false;
             const counter = document.getElementById('gb-aq-counter');
-            if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / 5';
+            if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / ' + totalRounds;
             const tierEl = document.getElementById('gb-aq-tier');
             if (tierEl) { tierEl.textContent = item.tier.toUpperCase(); tierEl.className = 'gb-aq-tier ' + item.tier; }
             const qEl = document.getElementById('gb-aq-question');
@@ -5768,8 +5774,15 @@ Prezident ertaga hisobot kutmoqda.`,
             if (state.isAnimating) return;
             state.isAnimating = true;
             const idx = stage6State.qIndex;
+            // Total is whatever the homework actually authored — not a
+            // hardcoded 6. HW-008 has q1..q5, so the legacy `idx < 5`
+            // check tried to render a non-existent q6 and stranded the
+            // student on Q5 with no path forward.
+            const total = (typeof RL_SCENARIO !== 'undefined'
+                && Array.isArray(RL_SCENARIO.questions))
+                ? RL_SCENARIO.questions.length : 6;
 
-            if (idx < 5) {
+            if (idx < total - 1) {
                 const curEl = document.getElementById('rl-q' + (idx + 1));
                 const nextIdx = idx + 1;
                 rlRenderQuestion(nextIdx);
@@ -5779,7 +5792,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.screen = 'q' + (nextIdx + 1);
 
                 const badge = document.getElementById('rl-header-badge');
-                if (badge) badge.textContent = 'Savol ' + (nextIdx + 1) + ' / 6';
+                if (badge) badge.textContent = 'Savol ' + (nextIdx + 1) + ' / ' + total;
 
                 rlAnimateTransition(curEl, nextEl, () => {
                     rlMorphButton('Javobni yuborish');
@@ -5804,7 +5817,10 @@ Prezident ertaga hisobot kutmoqda.`,
 
             if (banner) { banner.style.animation = 'none'; banner.textContent = RL_SCENARIO.closure.title; void banner.offsetHeight; banner.style.animation = ''; }
             if (msg) { msg.style.animation = 'none'; msg.textContent = RL_SCENARIO.closure.message; void msg.offsetHeight; msg.style.animation = ''; }
-            if (stats) { stats.style.animation = 'none'; stats.textContent = 'To\'g\'ri javoblar: ' + correctCount + ' / 6' + (captureCount > 0 ? ' · Yuklangan yechimlar: ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
+            const totalQ = (typeof RL_SCENARIO !== 'undefined'
+                && Array.isArray(RL_SCENARIO.questions))
+                ? RL_SCENARIO.questions.length : 6;
+            if (stats) { stats.style.animation = 'none'; stats.textContent = 'To\'g\'ri javoblar: ' + correctCount + ' / ' + totalQ + (captureCount > 0 ? ' · Yuklangan yechimlar: ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
 
             if (lastQ) lastQ.classList.remove('rl-active');
             const badge = document.getElementById('rl-header-badge');
