@@ -1993,6 +1993,26 @@
         .boss-v-stats, .boss-d-sub, .boss-d-tip {
             font-size: 14px; color: var(--text-muted); line-height: 1.5; max-width: 340px;
         }
+        /* Defeat-card retry button — secondary affordance so the student
+           can choose between seeing their grades (main button) or
+           re-fighting the boss (this button). */
+        .boss-d-retry {
+            margin-top: 6px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 180ms ease, border-color 180ms ease, transform 120ms ease;
+        }
+        .boss-d-retry:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.30);
+        }
+        .boss-d-retry:active { transform: translateY(1px); }
         /* ── BABYLONIAN DIAGRAM ─────────────────────────────── */
         .babyl-diagram {
             display: flex; align-items: flex-start; gap: 6px;
@@ -3116,6 +3136,8 @@
                     <div class="boss-d-title">Hali emas...</div>
                     <div class="boss-d-sub" id="boss-d-sub"></div>
                     <div class="boss-d-tip" id="boss-d-tip"></div>
+                    <button type="button" class="boss-d-retry" id="boss-d-retry-btn"
+                            onclick="bossRetry()">Boss'ni qayta urinish</button>
                 </div>
             </div>
         </div>
@@ -3654,30 +3676,27 @@
             else if (state.stage === 6) rlHandleAction();
             else if (state.stage === 7) bossHandleAction();
             else if (state.stage === 7.5 && btn.classList.contains('state-pill')) {
-                const defeatEl = document.getElementById('boss-defeat');
-                if (defeatEl && defeatEl.style.display !== 'none') {
-                    startFinalBoss();
-                } else {
-                    // Wave 2: Reflection sits after Boss before finish (auto-skip if empty).
-                    // After Reflection (or directly after Boss when Reflection is empty),
-                    // we always show the AMR Results scorecard as the final stage.
-                    const showResultsThenFinish = () => {
-                        if (typeof showResultsScreen === 'function') {
-                            showResultsScreen();
-                        } else {
-                            // Defensive — if for any reason showResultsScreen wasn't
-                            // injected, fall through to plain finish.
-                            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                        }
-                        btn.classList.remove('pulse', 'state-pill');
-                        btn.classList.add('state-line');
-                        if (btnText) btnText.style.opacity = '0';
-                    };
-                    if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
-                        showReflectionScreen(showResultsThenFinish);
+                // Whether the student won or lost the boss, the main button
+                // advances to Reflection → Results. Defeat used to dead-end
+                // here by always restarting the boss — students who couldn't
+                // beat it never saw their grades. Retry is now a separate
+                // affordance inside the defeat card (boss-d-retry-btn →
+                // bossRetry()), so the student can choose between seeing
+                // their score now or trying the boss again.
+                const showResultsThenFinish = () => {
+                    if (typeof showResultsScreen === 'function') {
+                        showResultsScreen();
                     } else {
-                        showResultsThenFinish();
+                        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                     }
+                    btn.classList.remove('pulse', 'state-pill');
+                    btn.classList.add('state-line');
+                    if (btnText) btnText.style.opacity = '0';
+                };
+                if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
+                    showReflectionScreen(showResultsThenFinish);
+                } else {
+                    showResultsThenFinish();
                 }
             }
         }
@@ -6321,6 +6340,20 @@ Prezident ertaga hisobot kutmoqda.`,
             else                           { el.classList.remove('active'); }
         }
 
+        // Re-runs the boss from scratch when the student clicks
+        // "Boss'ni qayta urinish" on the defeat card. Resets HP / qIndex /
+        // combo / correct counter so the next run is clean. Does NOT clear
+        // the existing session log — that already captured the failed
+        // attempts and the AMR scorecard prefers latest entry per (phase,
+        // id), so a successful retry's items will overwrite the failed ones.
+        function bossRetry() {
+            const dEl = document.getElementById('boss-defeat');
+            if (dEl) dEl.style.display = 'none';
+            const battle = document.getElementById('boss-battle');
+            if (battle) { battle.style.display = ''; battle.style.opacity = ''; }
+            startFinalBoss();
+        }
+
         function bossEnd(victory) {
             bossState.done = true;
             const battle = document.getElementById('boss-battle');
@@ -6345,10 +6378,12 @@ Prezident ertaga hisobot kutmoqda.`,
                     const sbEl = document.getElementById('boss-d-sub');
                     if (sbEl) sbEl.textContent = 'Boss qolgan HP: ' + bossState.hp + ' · To\'g\'ri: ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length;
                     const tpEl = document.getElementById('boss-d-tip');
-                    if (tpEl) tpEl.textContent = 'Zaif savollarni qayta ko\'rib chiqing va qayta urinib ko\'ring.';
+                    if (tpEl) tpEl.textContent = 'Zaif savollarni qayta ko\'rib chiqing. Natijalaringizni ko\'rib oling, so\'ng xohlasangiz qayta urining.';
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
-                    setBtnText('Qayta urinish');
+                    // Button advances to Results (same as victory). Retry is
+                    // a secondary action on the defeat card itself.
+                    setBtnText('Natijalarni ko\'rish');
                 }
                 setStage(7.5);
             }, 440);
