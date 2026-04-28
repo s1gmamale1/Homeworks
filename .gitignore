@@ -51,6 +51,7 @@ notes/
 .mypy_cache/
 .ruff_cache/
 node_modules/
+CLAUDE.md
 
 # Generated / runtime
 data/
