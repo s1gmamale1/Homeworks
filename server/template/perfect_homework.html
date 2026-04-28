@@ -2738,6 +2738,22 @@
         .nets-tutor-collapsed #nets-tutor-fab {
             animation: nets-tutor-fab-pulse 2.4s infinite ease-in-out;
         }
+
+        /* ── Wave F4: Stuck? Ask tutor CTA ─────────────────────── */
+        #nets-tutor-cta {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 10px; padding: 8px 14px;
+            background: #007aff; color: #fff;
+            border: none; border-radius: 20px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.35);
+            transition: background 0.15s, transform 0.1s;
+        }
+        #nets-tutor-cta:hover  { background: #0062cc; transform: scale(1.03); }
+        #nets-tutor-cta:active { transform: scale(0.97); }
+        #nets-tutor-cta[hidden] { display: none !important; }
+        [data-theme="dark"] #nets-tutor-cta { background: #3395ff; box-shadow: 0 2px 8px rgba(51,149,255,0.35); }
+        [data-theme="dark"] #nets-tutor-cta:hover { background: #57aaff; }
     </style>
 
     <!-- KaTeX: render $...$ / $$...$$ math in any prompt that uses LaTeX. -->
@@ -6929,6 +6945,15 @@ Prezident ertaga hisobot kutmoqda.`,
         }
     </script>
 
+    <!-- ── Wave F4: Stuck? Ask tutor CTA ───────────────────────── -->
+    <button id="nets-tutor-cta" class="nets-tutor-cta" hidden>
+        <span class="nets-tutor-cta-icon">💡</span>
+        <span class="nets-tutor-cta-label"
+              data-i18n-uz="Tushunmadingmi? Tyutorga ayt"
+              data-i18n-en="Stuck? Ask the tutor →"
+              data-i18n-ru="Не понял? Спроси у тьютора →">Tushunmadingmi? Tyutorga ayt</span>
+    </button>
+
     <!-- ── Wave F2: Persistent AI Tutor Widget ───────────────────── -->
     <div id="nets-ai-tutor" class="nets-tutor-collapsed">
         <button id="nets-tutor-fab" type="button" aria-label="Open tutor chat">
@@ -7337,6 +7362,66 @@ Prezident ertaga hisobot kutmoqda.`,
                 state.messageCount = count;
                 applyCap();
             } catch (e) { /* swallow — history is best-effort */ }
+        }
+
+        // ── Wave F4: Stuck? Ask tutor CTA ──────────────────────
+        const CTA_LABELS = {
+            uz: 'Tushunmadingmi? Tyutorga ayt',
+            en: 'Stuck? Ask the tutor →',
+            ru: 'Не понял? Спроси у тьютора →',
+        };
+        const CTA_PREFILL = {
+            uz: "Tushunmadingmi? '",
+            en: "Stuck on: '",
+            ru: "Не понял: '",
+        };
+        const ctaBtn = document.getElementById('nets-tutor-cta');
+        const ctaLabel = ctaBtn && ctaBtn.querySelector('.nets-tutor-cta-label');
+
+        if (ctaBtn && ctaLabel) {
+            ctaLabel.textContent = CTA_LABELS[lang] || CTA_LABELS.uz;
+
+            document.addEventListener('nets:result', function (ev) {
+                const detail = (ev && ev.detail) || {};
+                // Only wire CTA for practice phase (kind: 'tutor'), not boss phase.
+                if (detail.kind !== 'tutor') return;
+                if (state.currentPhase === 'boss') return;
+                const result = detail.result || {};
+                const aiCorrect = (result.guidance_type || '').toLowerCase() === 'validation'
+                               || (result.guidance_type || '').toLowerCase() === 'correct';
+                if (aiCorrect) {
+                    ctaBtn.hidden = true;
+                    return;
+                }
+                // Wrong answer — surface the CTA.
+                // Resolve active question id + text from RL_SCENARIO.
+                const rlScenario = (typeof RL_SCENARIO !== 'undefined') ? RL_SCENARIO : null;
+                const rlState   = (typeof stage6State !== 'undefined') ? stage6State : null;
+                const idx       = rlState ? rlState.qIndex : null;
+                const q         = (rlScenario && idx !== null) ? (rlScenario.questions || [])[idx] : null;
+                state.pendingCtaQuestion = {
+                    id:   (q && (q.id || ('rl-' + (idx + 1)))) || state.currentQuestionId,
+                    text: (q && (q.prompt || q.label)) || '',
+                };
+                // Append CTA into the active feedback div if possible.
+                if (idx !== null) {
+                    const fbEl = document.getElementById('rl-q' + (idx + 1) + '-fb');
+                    if (fbEl && !fbEl.contains(ctaBtn)) fbEl.appendChild(ctaBtn);
+                }
+                ctaBtn.hidden = false;
+            });
+
+            ctaBtn.addEventListener('click', function () {
+                const pending = state.pendingCtaQuestion || {};
+                if (pending.id)   state.currentQuestionId = pending.id;
+                openPanel();
+                updateBadge(state.currentPhase);
+                const prefill = (CTA_PREFILL[lang] || CTA_PREFILL.uz)
+                    + (pending.text ? pending.text.replace(/<[^>]+>/g, '') : '') + "'";
+                input.value = prefill;
+                setTimeout(function () { try { input.focus(); } catch (e) {} }, 60);
+                ctaBtn.hidden = true;
+            });
         }
 
         // Kick off after a tick so runtime.js has registered.

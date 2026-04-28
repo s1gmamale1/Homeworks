@@ -334,3 +334,29 @@ def test_tutor_avatar_present(client, created_hw):
     badge_pos  = body.find('id="nets-tutor-phase-badge"')
     assert avatar_pos != -1 and badge_pos != -1
     assert avatar_pos < badge_pos, "avatar must appear before the phase badge in the header"
+
+
+# Wave F4 — Stuck? Ask tutor CTA
+# ──────────────────────────────────────────────────────────────────
+
+def test_tutor_cta_button_present_in_template(client, created_hw):
+    """Wave F4: rendered homework page must include the Stuck? Ask tutor CTA button."""
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    # CTA button element must be present.
+    assert 'id="nets-tutor-cta"' in body, \
+        "Wave F4 CTA button (id=nets-tutor-cta) missing from rendered HTML"
+    # At least one of the three i18n labels must appear verbatim.
+    i18n_labels = (
+        'Tushunmadingmi? Tyutorga ayt',
+        'Stuck? Ask the tutor →',
+        'Не понял? Спроси у тьютора →',
+    )
+    assert any(label in body for label in i18n_labels), \
+        f"Wave F4 CTA: none of the expected i18n labels found. Checked: {i18n_labels}"
+    # CTA must appear before the tutor widget in the DOM.
+    cta_pos    = body.find('id="nets-tutor-cta"')
+    widget_pos = body.find('id="nets-ai-tutor"')
+    assert cta_pos != -1 and widget_pos != -1
+    assert cta_pos < widget_pos, "CTA button must appear before the tutor widget in the HTML"
