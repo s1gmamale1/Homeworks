@@ -5299,13 +5299,65 @@ Prezident ertaga hisobot kutmoqda.`,
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
             if (promptEl) promptEl.innerHTML = q.prompt || '';
 
-            // Per-question capture button. Any text-with-capture question
-            // gets a dynamically-injected upload button right under the
-            // input, with state tracked in stage6State.captureDone[idx].
-            // Previously only Q3 had a hardcoded button, so other capture
-            // questions could never satisfy the "upload your work" gate
-            // and the submission was silently blocked → no AI call.
+            // The static markup historically pre-bakes a specific input
+            // type per question slot:
+            //   Q1, Q3, Q4 → <input type="text" id="rl-q{n}-input">
+            //   Q2         → <div class="rl-field-group">  (multi-input only)
+            //   Q5         → <div class="rl-field-group">
+            //   Q6         → <textarea id="rl-q6-input">
+            // Modern homeworks (e.g. HW-008) author types per question, so
+            // the static slot may not match: HW-008's Q2 is text-with-capture
+            // (needs a text input) and Q5 is textarea (needs a textarea).
+            // The two blocks below dynamically inject the right input and
+            // capture-area into .rl-q-body so any q.type lands on a real
+            // focusable input. Order matters — input must come BEFORE the
+            // capture button visually, so we inject the input first and the
+            // capture-area below it (both anchor on .rl-feedback).
             const qBody = document.querySelector('#rl-q' + (idx + 1) + ' .rl-q-body');
+
+            // ── Block 1: per-question input element ────────────────────
+            const wantTag = (q.type === 'textarea') ? 'TEXTAREA' : 'INPUT';
+            let curInput = document.getElementById('rl-q' + (idx + 1) + '-input');
+            if (curInput && curInput.tagName !== wantTag) {
+                curInput.remove();
+                curInput = null;
+            }
+            if (!curInput && qBody) {
+                // Clear any leftover field-group markup from the original
+                // multi-input slot — only the multi-input branch below uses it.
+                const fieldsHost = document.getElementById('rl-q' + (idx + 1) + '-fields');
+                if (fieldsHost) fieldsHost.innerHTML = '';
+                if (q.type === 'textarea') {
+                    curInput = document.createElement('textarea');
+                    curInput.className = 'rl-input rl-textarea';
+                    curInput.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
+                    curInput.autocomplete = 'off';
+                    curInput.spellcheck = false;
+                } else if (q.type === 'text' || q.type === 'text-with-capture') {
+                    curInput = document.createElement('input');
+                    curInput.type = 'text';
+                    curInput.inputMode = 'text';
+                    curInput.className = 'rl-input';
+                    curInput.placeholder = 'Javobingiz...';
+                    curInput.autocomplete = 'off';
+                    curInput.spellcheck = false;
+                } // multi-input handled by its own branch below
+                if (curInput) {
+                    curInput.id = 'rl-q' + (idx + 1) + '-input';
+                    const fb = qBody.querySelector('.rl-feedback');
+                    if (fb) qBody.insertBefore(curInput, fb);
+                    else qBody.appendChild(curInput);
+                }
+            }
+            if (curInput && q.type !== 'multi-input') curInput.value = '';
+
+            // ── Block 2: per-question capture button ───────────────────
+            // Any text-with-capture question gets a dynamically-injected
+            // upload button under the input. State is tracked in
+            // stage6State.captureDone[idx]. Previously only Q3 had a
+            // hardcoded button, so other capture questions could never
+            // satisfy the "upload your work" gate and the submission
+            // was silently blocked → no AI call.
             if (qBody) {
                 const oldCap = qBody.querySelector('.rl-capture-area-dyn');
                 if (oldCap) oldCap.remove();
@@ -5319,49 +5371,17 @@ Prezident ertaga hisobot kutmoqda.`,
                         '<div class="rl-capture-confirm">✓ Yechimingiz yuklandi</div>' +
                         '<div class="rl-capture-mock-img">📄</div>' +
                         '</div>';
-                    // Insert before the feedback element so the capture row
-                    // sits visually under the input.
                     const fb = qBody.querySelector('.rl-feedback');
                     if (fb) qBody.insertBefore(wrap, fb);
                     else qBody.appendChild(wrap);
                     const btnEl = wrap.querySelector('button');
                     if (btnEl) btnEl.addEventListener('click', () => rlCapture(idx));
-                    // Restore the per-question done UI if the student already
-                    // captured this Q earlier in the session.
                     if (stage6State.captureDone && stage6State.captureDone[idx]) {
                         if (btnEl) btnEl.classList.add('hidden');
                         const doneEl = wrap.querySelector('.rl-capture-done');
                         if (doneEl) doneEl.classList.add('show');
                     }
                 }
-            }
-
-            // Per-question textarea injection. Q5 (and any other open-ended
-            // RL question) authored with `open: true` lands as type=textarea
-            // but the markup may only have a multi-input field group OR no
-            // text input at all. Dynamically swap in a textarea so the
-            // student has somewhere to type.
-            if (q.type === 'textarea') {
-                // Existing input in the markup (if any) — remove it.
-                const existingInput = document.getElementById('rl-q' + (idx + 1) + '-input');
-                if (existingInput && existingInput.tagName !== 'TEXTAREA') existingInput.remove();
-                // Field-group container (used by multi-input markup) — clear.
-                const fields = document.getElementById('rl-q' + (idx + 1) + '-fields');
-                if (fields) fields.innerHTML = '';
-                // Inject a textarea if not already there.
-                let ta = document.getElementById('rl-q' + (idx + 1) + '-input');
-                if (!ta || ta.tagName !== 'TEXTAREA') {
-                    ta = document.createElement('textarea');
-                    ta.id = 'rl-q' + (idx + 1) + '-input';
-                    ta.className = 'rl-input rl-textarea';
-                    ta.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
-                    ta.autocomplete = 'off';
-                    ta.spellcheck = false;
-                    const fb = qBody && qBody.querySelector('.rl-feedback');
-                    if (qBody && fb) qBody.insertBefore(ta, fb);
-                    else if (qBody) qBody.appendChild(ta);
-                }
-                ta.value = '';
             }
 
             if (q.type === 'multi-input') {
