@@ -667,3 +667,94 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
     ]
     missing = [m for m in required_markers if m not in text]
     assert not missing, f"Wave K tone markers missing from tutor-assistant.md: {missing}"
+
+
+# ---------------------------------------------------------------------------
+# 14. Wave F: math subjects use PRO_MODEL to avoid hallucinations
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.gemini.generate")
+def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
+    """Math subjects must use PRO_MODEL for deeper reasoning to avoid hallucinations."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, model: str = None, **kwargs):
+        captured["model"] = model
+        return "Try factoring both sides."
+
+    mock_generate.side_effect = _fake_generate
+
+    # _make_homework_with_question creates with math-algebra by default
+    hw_id = _make_homework_with_question(client, expected="7")
+    payload = {
+        "session_id": "sess-math-pro",
+        "hw_id": hw_id,
+        "phase": "practice",
+        "question_id": "qb1",
+        "message": "How do I solve this?",
+    }
+    resp = client.post("/api/ai/tutor/chat", json=payload)
+    assert resp.status_code == 200, resp.text
+
+    model = captured.get("model")
+    from server.services import gemini
+    assert model == gemini.PRO_MODEL, (
+        f"math-algebra should use PRO_MODEL, got {model}"
+    )
+
+
+@patch("server.services.gemini.generate")
+def test_tutor_chat_uses_fast_model_for_non_math(mock_generate, client):
+    """Non-math subjects like English use FAST_MODEL for cost efficiency."""
+    captured: dict[str, str] = {}
+
+    def _fake_generate(prompt: str, model: str = None, **kwargs):
+        captured["model"] = model
+        return "Good question!"
+
+    mock_generate.side_effect = _fake_generate
+
+    # Create homework with English subject (not math-algebra)
+    content = {
+        "boss_questions": [
+            {
+                "question_id": "qb1",
+                "q": "What is the meaning of serendipity?",
+                "answer_spec": {"type": "text_fuzzy", "expected": "answer"},
+                "ans": ["answer"],
+                "accepted_answers": ["answer"],
+                "dmg": 10,
+                "tags": "[Bloom: L1]",
+            }
+        ],
+    }
+    create_resp = client.post(
+        "/api/homeworks",
+        json={
+            "title": "English test HW",
+            "subject": "english",
+            "grade": 8,
+            "mode": "hard",
+        },
+    )
+    assert create_resp.status_code == 200, create_resp.text
+    hw_id = create_resp.json()["id"]
+    put_resp = client.put(f"/api/homeworks/{hw_id}", json={"content_json": content})
+    assert put_resp.status_code == 200, put_resp.text
+
+    payload = {
+        "session_id": "sess-english-fast",
+        "hw_id": hw_id,
+        "phase": "practice",
+        "question_id": "qb1",
+        "message": "What does this mean?",
+    }
+    resp = client.post("/api/ai/tutor/chat", json=payload)
+    assert resp.status_code == 200, resp.text
+
+    model = captured.get("model")
+    from server.services import gemini
+    assert model == gemini.FAST_MODEL, (
+        f"english should use FAST_MODEL, got {model}"
+    )

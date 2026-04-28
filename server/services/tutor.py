@@ -23,6 +23,16 @@ from .. import db
 # Beyond this we hard-cut the chat (cost guard).
 SESSION_MESSAGE_CAP: int = 60
 
+# Wave F: Subjects requiring PRO_MODEL for math hallucination guard.
+# Kimi small model invents math facts; use 128k for reasoning-heavy subjects.
+# Extensible for future subject→provider routing (math→Kimi-PRO, science→Vertex, etc.)
+_PRO_SUBJECTS = frozenset({
+    "math-algebra",
+    "geometriya-g7-11",
+    "physics",
+    "kimyo-g7-11",  # chemistry
+})
+
 # Recent chat-history window injected into each tutor_chat prompt.
 TUTOR_CHAT_HISTORY_WINDOW: int = 6
 
@@ -36,6 +46,18 @@ ALLOWED_PERSONA_TRAITS: tuple[str, ...] = ("challenger", "mentor", "analyst")
 BOSS_FRAMING_MAX_CHARS: int = 180
 
 RUNTIME_PROMPTS = PROMPTS_DIR / "runtime"
+
+
+def _model_for_subject(subject: str) -> str:
+    """Pick the appropriate model tier based on subject difficulty.
+
+    Math and science subjects require deeper reasoning to avoid hallucinations;
+    route to PRO_MODEL. Others use FAST_MODEL to minimize latency/cost.
+    Extensible for future subject→provider routing.
+    """
+    if subject in _PRO_SUBJECTS:
+        return gemini.PRO_MODEL
+    return gemini.FAST_MODEL
 
 
 def _load_runtime_prompt(name: str) -> str:
@@ -507,8 +529,11 @@ async def tutor_chat(
 
     # Step 6 — call the LLM. Wrap in a try/except so a backend hiccup surfaces
     # as a friendly 500 instead of an uncaught traceback.
+    # Route math-heavy subjects through PRO_MODEL to avoid hallucinations.
+    subject = str(hw_meta.get("subject", ""))
+    model = _model_for_subject(subject)
     try:
-        response_text = await gemini.generate(full_prompt, model=gemini.FAST_MODEL)
+        response_text = await gemini.generate(full_prompt, model=model)
     except HTTPException:
         raise
     except Exception as exc:
