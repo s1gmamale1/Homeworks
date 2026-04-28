@@ -24,6 +24,7 @@ _ARRAY_CONSTANTS = [
     ("gb_why_chain",     "GB_WHY_CHAIN"),
     ("gb_memory_match",  "GB_MEMORY_MATCH"),
     ("gb_puzzle_lock",   "GB_PUZZLE_LOCK"),
+    ("gb_mystery_box",   "GB_MYSTERY_BOX"),
     ("boss_questions",   "BOSS_QUESTIONS"),
 ]
 
@@ -550,6 +551,32 @@ def inject(
                     "prompt":     item.get("q", ""),
                     "acceptable": [a for a in ans_list if a],
                     "hints":      hint_parts[:3],
+                })
+            data = adapted
+
+        # Shape adapter: Mystery Box — contract uses [{category, q, a}] objects.
+        # Pre-compute the shared picker label list (union of all items' categories,
+        # in original first-occurrence order) and stamp it onto every box so the
+        # runtime can render the ID step without rescanning. Empty/missing
+        # categories are dropped from the picker; if the union is empty, the
+        # runtime should fall back to a confirmation-only ID step.
+        if key == "gb_mystery_box":
+            seen = []
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                cat = (item.get("category") or "").strip()
+                if cat and cat not in seen:
+                    seen.append(cat)
+            adapted = []
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                adapted.append({
+                    "category": str(item.get("category") or ""),
+                    "q":        str(item.get("q") or ""),
+                    "a":        str(item.get("a") or ""),
+                    "labels":   list(seen),
                 })
             data = adapted
 

@@ -90,7 +90,7 @@ async def create_homework(hw: HomeworkCreate):
       "meta": { "title": hw.title, "subject_display": hw.subject, "section": "", "cefr_level": "" },
       "gate_quote": { "mode": "auto" },
       "panels": [], "flashcards": [], "memory_sprint": [],
-      "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [], "gb_puzzle_lock": [],
+      "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [], "gb_puzzle_lock": [], "gb_mystery_box": [],
       "real_life": None, "boss_questions": [], "reflection": None
     }
 

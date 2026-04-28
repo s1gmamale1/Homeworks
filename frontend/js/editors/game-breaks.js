@@ -5,6 +5,7 @@
 // - /js/editors/games/sentence-fill.js
 // - /js/editors/games/tile-match.js
 // - /js/editors/games/puzzle-lock.js
+// - /js/editors/games/mystery-box.js
 
 (function () {
   "use strict";
@@ -40,6 +41,13 @@
       icon: "🧩",
       editor: "puzzleLock",
       description: "Knowledge-gated sliding-tile puzzle. Each tile has content + question + answer. 8 tiles → 3×3, 15 → 4×4.",
+    },
+    {
+      id: "mystery_box",
+      label: "Mystery Box",
+      icon: "📦",
+      editor: "mysteryBox",
+      description: "Interleaved category recognition. Each box has category + problem + answer. Student identifies category first, then solves.",
     },
   ];
 
@@ -97,6 +105,16 @@
       : [];
   }
 
+  function normalizeMysteryBox(items) {
+    return Array.isArray(items)
+      ? items.map((item) => ({
+          category: typeof item?.category === "string" ? item.category : "",
+          q: typeof item?.q === "string" ? item.q : "",
+          a: typeof item?.a === "string" ? item.a : "",
+        }))
+      : [];
+  }
+
   function normalize(data) {
     const safe = data && typeof data === "object" ? data : {};
 
@@ -107,6 +125,7 @@
       why_chain: normalizeSentenceFill(safe.why_chain ?? safe.gb_why_chain),
       memory_match: normalizeTileMatch(safe.memory_match ?? safe.gb_memory_match),
       puzzle_lock: normalizePuzzleLock(safe.puzzle_lock ?? safe.gb_puzzle_lock),
+      mystery_box: normalizeMysteryBox(safe.mystery_box ?? safe.gb_mystery_box),
     };
   }
 
@@ -124,6 +143,7 @@
     if (tabId === "why_chain") return state.why_chain;
     if (tabId === "memory_match") return state.memory_match;
     if (tabId === "puzzle_lock") return state.puzzle_lock;
+    if (tabId === "mystery_box") return state.mystery_box;
     return [];
   }
 
@@ -132,6 +152,7 @@
     if (tabId === "why_chain") state.why_chain = normalizeSentenceFill(value);
     if (tabId === "memory_match") state.memory_match = normalizeTileMatch(value);
     if (tabId === "puzzle_lock") state.puzzle_lock = normalizePuzzleLock(value);
+    if (tabId === "mystery_box") state.mystery_box = normalizeMysteryBox(value);
   }
 
   function renderTabs(state, activeTab) {
@@ -173,7 +194,7 @@
               </div>
             </div>
             <p class="muted-text">
-              Split by production game: Adaptive Quiz, Sentence Fill, Tile Match, and Puzzle Lock. Each game owns its own JS editor.
+              Split by production game: Adaptive Quiz, Sentence Fill, Tile Match, Puzzle Lock, and Mystery Box. Each game owns its own JS editor.
             </p>
           </section>
 
