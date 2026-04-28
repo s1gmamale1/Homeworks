@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from contextlib import asynccontextmanager
 import os
+import base64
 
 from server.routes.meta import router as meta_router
 from server.routes.homework import router as hw_router
@@ -28,6 +30,15 @@ async def lifespan(app: FastAPI):
             print(f"[lifespan] checkpoint on shutdown failed: {e}", file=sys.stderr)
 
 app = FastAPI(lifespan=lifespan)
+
+# 1x1 transparent PNG (minimal favicon to suppress 404 logging)
+FAVICON_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+)
+
+@app.get("/favicon.ico")
+async def get_favicon():
+    return Response(content=FAVICON_PNG, media_type="image/x-icon", headers={"Cache-Control": "max-age=31536000"})
 
 app.add_middleware(
     CORSMiddleware,

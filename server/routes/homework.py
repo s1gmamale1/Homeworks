@@ -12,6 +12,7 @@ class HomeworkCreate(BaseModel):
     subject: str
     grade: int
     mode: str
+    content_json: Optional[Dict[str, Any]] = None
 
 class HomeworkUpdate(BaseModel):
     title: Optional[str] = None
@@ -69,6 +70,10 @@ async def create_homework(hw: HomeworkCreate):
       "real_life": None, "boss_questions": [], "reflection": None
     }
 
+    final_content = {**empty_scaffold, **(hw.content_json or {})}
+    if hw.content_json and "meta" in hw.content_json:
+      final_content["meta"] = {**empty_scaffold["meta"], **hw.content_json["meta"]}
+
     result = await db.create_homework({
         "title": hw.title,
         "subject": hw.subject,
@@ -76,7 +81,7 @@ async def create_homework(hw: HomeworkCreate):
         "mode": mode,
         "family": family,
         "status": "draft",
-        "content_json": empty_scaffold
+        "content_json": final_content
     })
 
     return result
