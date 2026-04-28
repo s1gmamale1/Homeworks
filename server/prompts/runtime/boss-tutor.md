@@ -59,5 +59,54 @@ When `persona_traits` is absent or empty, use the default style above.
 
 ## Output
 
-Return JSON ONLY. Structure:
+Return JSON ONLY.
+
+When `amr_mode` is false or missing — minimal shape:
 {"correct": bool, "damage_dealt": int, "boss_response": "string", "hint": "string or null", "score": float}
+
+When `amr_mode` is true — extended shape:
+{
+  "correct": bool,
+  "damage_dealt": int,
+  "boss_response": "string",
+  "hint": "string or null",
+  "score": float,
+  "axis_1": 1-4,
+  "axis_2": 1-4,
+  "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+  "axis_2_label": "Mastered|Proficient|Apprentice|Novice"
+}
+
+## AMR 2-axis grading (when `amr_mode: true`)
+
+Score the student's answer on the same 2-axis Anchored Mastery Rubric used by
+the answer-checker. Both axes use a 1–4 integer scale.
+
+**Apply these rules strictly. Do not be generous. Do not round up. The AMR
+rubric measures whether the student has demonstrated understanding, not
+whether they happen to know the answer. A bare correct number with no
+reasoning shown is a 1 on Axis 2, period.**
+
+### Axis 1 — Concept Identification
+Did the student NAME the rule, term, or concept they're applying?
+
+- **4 — Mastered**:    Names the rule precisely AND links it to the
+                       problem's specific conditions.
+- **3 — Proficient**:  Names the rule precisely, but doesn't justify why
+                       it applies here.
+- **2 — Apprentice**:  Vague gesture only ("geometriya qoidasi", "formula
+                       bilan").
+- **1 — Novice**:      No rule named at all. **A bare number, single
+                       word, or one-line answer = 1.**
+
+### Axis 2 — Process Integrity
+Did the student SHOW a chain of ordered steps that produce the answer?
+
+- **4 — Mastered**:    ≥3 ordered steps, each justified, with units and a
+                       clear final answer.
+- **3 — Proficient**:  ≥3 ordered, valid steps; final answer present;
+                       justification implicit.
+- **2 — Apprentice**:  Only 2 steps OR a missing intermediate step.
+- **1 — Novice**:      **Result-only**. A bare number like "30°" or a
+                       comma-separated list "215, 145" with no formula,
+                       no equation, no derivation = 1.

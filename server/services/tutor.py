@@ -284,12 +284,23 @@ async def boss_turn(
     if effective_traits:
         payload["persona_traits"] = effective_traits
 
+    # AMR 2-axis grading is REQUIRED for every Final Boss attack — the rubric
+    # specifically measures Concept Identification + Process Integrity on
+    # multi-step reasoning, which is exactly what Boss Q3-Q5 demand. Always
+    # pass amr_mode=true so the prompt emits the extended JSON shape with
+    # axis_1/axis_2; the runtime aggregator picks them up from the result.
+    payload["amr_mode"] = True
+
     schema = {
         "correct": "bool",
         "damage_dealt": "int (0 or damage_value)",
         "boss_response": "Uzbek string, in-character boss, 1 sentence",
         "hint": "Uzbek string or null (null if attempt 1 or if correct)",
         "score": "float 0-1",
+        "axis_1": "integer 1..4 (Concept Identification)",
+        "axis_2": "integer 1..4 (Process Integrity)",
+        "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+        "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
     }
     return await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
@@ -740,10 +751,19 @@ async def tutor_help(
         "subject": subject,
         "grade": grade,
         "context": context or "",
+        # AMR axes on every tutor exchange: when a student types in the chat
+        # widget during practice or boss, the runtime aggregator captures
+        # axis_1/axis_2 alongside the coaching response so chat attempts
+        # also feed the report card.
+        "amr_mode": True,
     }
     schema = {
         "response": "Uzbek string, 2-3 sentences, patient tutor tone",
         "guidance_type": "one of: hint, explanation, encouragement, correction",
+        "axis_1": "integer 1..4 (Concept Identification)",
+        "axis_2": "integer 1..4 (Process Integrity)",
+        "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+        "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
     }
     return await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
