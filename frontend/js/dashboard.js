@@ -66,6 +66,14 @@
     return document.getElementById(id);
   }
 
+  // i18n helper — falls back to the literal string if i18n hasn't loaded yet.
+  function t(key, fallback) {
+    if (window.i18n && typeof window.i18n.t === "function") {
+      return window.i18n.t(key, fallback);
+    }
+    return fallback != null ? fallback : key;
+  }
+
   function cacheElements() {
     Object.assign(els, {
       healthPill: $("health-pill"),
@@ -130,7 +138,7 @@
   }
 
   function getSubjectLabel(subjectId) {
-    return SUBJECT_LABELS[subjectId] || subjectId || "Unknown";
+    return SUBJECT_LABELS[subjectId] || subjectId || "—";
   }
 
   function getSubjectIcon(subjectId) {
@@ -243,9 +251,9 @@
     const hasNext = offset + limit < total;
 
     els.paginationBar.innerHTML = `
-      <button class="btn btn-ghost js-page-prev" type="button" ${hasPrev ? "" : "disabled"}>← Previous</button>
-      <span class="pagination-label">Showing ${start}–${end} of ${total}</span>
-      <button class="btn btn-ghost js-page-next" type="button" ${hasNext ? "" : "disabled"}>Next →</button>
+      <button class="btn btn-ghost js-page-prev" type="button" ${hasPrev ? "" : "disabled"}>← ${escapeHtml(t("common.previous"))}</button>
+      <span class="pagination-label">${start}–${end} / ${total}</span>
+      <button class="btn btn-ghost js-page-next" type="button" ${hasNext ? "" : "disabled"}>${escapeHtml(t("common.next"))} →</button>
     `;
 
     els.paginationBar.querySelector(".js-page-prev")?.addEventListener("click", () => {
@@ -267,8 +275,8 @@
     const filterCurrent = els.subjectFilter.value || "all";
     const createCurrent = els.subjectSelect.value || "";
 
-    els.subjectFilter.innerHTML = '<option value="all">All subjects</option>';
-    els.subjectSelect.innerHTML = '<option value="" disabled selected>Select subject</option>';
+    els.subjectFilter.innerHTML = `<option value="all">${escapeHtml(t("dashboard.all_subjects"))}</option>`;
+    els.subjectSelect.innerHTML = `<option value="" disabled selected>${escapeHtml(t("dashboard.select_subject"))}</option>`;
 
     for (const subject of state.subjects) {
       const label = getSubjectLabel(subject.id);
@@ -295,7 +303,7 @@
 
   function renderGradeOptions(subjectId) {
     const subject = getSubject(subjectId);
-    els.gradeSelect.innerHTML = '<option value="" disabled selected>Select grade</option>';
+    els.gradeSelect.innerHTML = `<option value="" disabled selected>${escapeHtml(t("dashboard.select_grade"))}</option>`;
     els.gradeSelect.disabled = !subject;
 
     if (!subject) return;
@@ -311,19 +319,19 @@
     if (!subject) {
       els.modeSelect.disabled = false;
       els.modeSelect.value = "easy";
-      els.modeNote.textContent = "Choose a subject to see available grades and mode rules.";
+      els.modeNote.textContent = t("dashboard.mode_note_default");
       return;
     }
 
     if (subject.always_hard) {
       els.modeSelect.value = "hard";
       els.modeSelect.disabled = true;
-      els.modeNote.textContent = `${getSubjectLabel(subject.id)} is locked to Hard mode by contract.`;
+      els.modeNote.textContent = `${getSubjectLabel(subject.id)} → ${t("common.hard")}`;
       return;
     }
 
     els.modeSelect.disabled = false;
-    els.modeNote.textContent = `${getSubjectLabel(subject.id)} supports Easy and Hard modes.`;
+    els.modeNote.textContent = `${getSubjectLabel(subject.id)}: ${t("common.easy")} / ${t("common.hard")}`;
   }
 
   function getActiveList() {
@@ -368,29 +376,30 @@
 
     const trashActions = `
       <div class="card-actions">
-        <button class="btn btn-primary js-restore" type="button">Restore</button>
-        <button class="btn btn-ghost danger js-hard-delete" type="button">Delete forever</button>
+        <button class="btn btn-primary js-restore" type="button">${escapeHtml(t("dashboard.card_restore"))}</button>
+        <button class="btn btn-ghost danger js-hard-delete" type="button">${escapeHtml(t("dashboard.card_delete_forever"))}</button>
       </div>
     `;
 
+    const moreActionsLabel = escapeHtml(t("dashboard.card_more_actions"));
     const liveActions = `
       <div class="card-actions">
-        <button class="btn btn-primary js-open" type="button">Open</button>
+        <button class="btn btn-primary js-open" type="button">${escapeHtml(t("dashboard.card_open"))}</button>
         <div class="card-menu ${menuOpen}">
-          <button class="icon-btn js-menu-toggle" type="button" title="More actions" aria-label="More actions" aria-expanded="${menuOpen ? "true" : "false"}">⋯</button>
+          <button class="icon-btn js-menu-toggle" type="button" title="${moreActionsLabel}" aria-label="${moreActionsLabel}" aria-expanded="${menuOpen ? "true" : "false"}">⋯</button>
           <div class="menu-dropdown" role="menu">
-            <a class="menu-item" href="${escapeHtml(shareUrl)}" target="_blank" rel="noreferrer" role="menuitem">Open preview</a>
-            <button class="menu-item js-duplicate" type="button" role="menuitem">Duplicate</button>
-            <button class="menu-item js-versions" type="button" role="menuitem">Version history</button>
-            <button class="menu-item danger js-delete" type="button" role="menuitem">Move to trash</button>
+            <a class="menu-item" href="${escapeHtml(shareUrl)}" target="_blank" rel="noreferrer" role="menuitem">${escapeHtml(t("dashboard.menu_open_preview"))}</a>
+            <button class="menu-item js-duplicate" type="button" role="menuitem">${escapeHtml(t("dashboard.menu_duplicate"))}</button>
+            <button class="menu-item js-versions" type="button" role="menuitem">${escapeHtml(t("dashboard.menu_versions"))}</button>
+            <button class="menu-item danger js-delete" type="button" role="menuitem">${escapeHtml(t("dashboard.menu_move_to_trash"))}</button>
           </div>
         </div>
       </div>
     `;
 
     const metaLine = isTrash
-      ? `Trashed ${escapeHtml(deletedLabel)}`
-      : `Updated <span title="${escapeHtml(updatedAbs)}">${escapeHtml(updatedLabel)}</span>`;
+      ? escapeHtml(deletedLabel)
+      : `<span title="${escapeHtml(updatedAbs)}">${escapeHtml(updatedLabel)}</span>`;
 
     return `
       <article class="homework-card glass-card" style="--family-color: ${escapeHtml(familyColor)}" data-id="${escapeHtml(homework.id)}">
@@ -403,7 +412,7 @@
         </div>
 
         <div>
-          <h3 class="homework-title">${escapeHtml(homework.title || "Untitled homework")}</h3>
+          <h3 class="homework-title">${escapeHtml(homework.title || t("dashboard.untitled"))}</h3>
           <p class="homework-id muted-text">${escapeHtml(homework.id || "")}</p>
         </div>
 
@@ -414,7 +423,7 @@
 
         <div class="pill-row">
           <span class="mode-pill" data-mode="${escapeHtml(mode)}">${escapeHtml(titleCase(mode))}</span>
-          <span class="grade-pill">Grade ${escapeHtml(String(homework.grade))}</span>
+          <span class="grade-pill">${escapeHtml(t("common.grade"))} ${escapeHtml(String(homework.grade))}</span>
         </div>
 
         ${isTrash ? trashActions : liveActions}
@@ -444,22 +453,22 @@
 
     if (state.view === "trash") {
       if (!hasAny) {
-        emptyHeading.textContent = "Trash is empty";
-        emptyBody.textContent = "Deleted homeworks show up here and can be restored.";
+        emptyHeading.textContent = t("dashboard.empty_trash_h3");
+        emptyBody.textContent = t("dashboard.empty_trash_text");
         emptyBtn.hidden = true;
       } else if (!hasFiltered) {
-        emptyHeading.textContent = "No matching trashed items";
-        emptyBody.textContent = "Try clearing search or filters.";
+        emptyHeading.textContent = t("dashboard.empty_no_match_trash_h3");
+        emptyBody.textContent = t("dashboard.empty_no_match_text");
         emptyBtn.hidden = true;
       }
     } else {
       emptyBtn.hidden = false;
       if (!hasAny && !state.loading) {
-        emptyHeading.textContent = "No homework yet";
-        emptyBody.textContent = "Create your first NETS homework to begin the builder flow.";
+        emptyHeading.textContent = t("dashboard.empty_h3");
+        emptyBody.textContent = t("dashboard.empty_text");
       } else if (hasAny && !hasFiltered && !state.loading) {
-        emptyHeading.textContent = "No matching homework";
-        emptyBody.textContent = "Try clearing search or filters.";
+        emptyHeading.textContent = t("dashboard.empty_no_match_h3");
+        emptyBody.textContent = t("dashboard.empty_no_match_text");
       }
     }
   }
@@ -473,7 +482,7 @@
     els.tabLibrary.setAttribute("aria-selected", view === "library" ? "true" : "false");
     els.tabTrash.setAttribute("aria-selected", view === "trash" ? "true" : "false");
 
-    els.libraryTitle.textContent = view === "trash" ? "Trash" : "Homeworks";
+    els.libraryTitle.textContent = view === "trash" ? t("dashboard.tab_trash") : t("dashboard.lib_h2");
     renderHomeworks();
   }
 
@@ -493,10 +502,10 @@
       const provider = aiStatus?.active_provider || 'none';
       const label = PROVIDER_LABEL[provider] || 'AI';
       const aiReady = aiStatus?.ai_ready !== false && provider !== 'none';
-      const statusText = aiReady ? `API ok · ${label} ready` : 'API down · No AI';
+      const statusText = aiReady ? `API ok · ${label} ready` : t("dashboard.health_api_down");
       setHealth(aiReady ? 'ok' : 'error', statusText);
     } catch (error) {
-      setHealth("error", "API offline");
+      setHealth("error", t("dashboard.health_offline"));
     }
   }
 
@@ -545,7 +554,7 @@
       state.total = 0;
       state.trash = [];
       els.errorStateMessage.textContent = state.lastError;
-      showToast("Could not load library", state.lastError, "error");
+      showToast(t("dashboard.toast_could_not_load"), state.lastError, "error");
     } finally {
       setLoading(false);
       renderHomeworks();
@@ -593,7 +602,7 @@
 
   function openCreateModal() {
     els.form.reset();
-    els.gradeSelect.innerHTML = '<option value="" disabled selected>Select grade</option>';
+    els.gradeSelect.innerHTML = `<option value="" disabled selected>${escapeHtml(t("dashboard.select_grade"))}</option>`;
     els.gradeSelect.disabled = true;
     applyModeRules("");
 
@@ -623,23 +632,23 @@
     const mode = els.modeSelect.value;
 
     if (!title || !subject || !grade || !mode) {
-      showToast("Missing fields", "Fill title, subject, grade, and mode.", "warning");
+      showToast(t("dashboard.toast_missing_fields"), t("dashboard.toast_missing_fields_msg"), "warning");
       return;
     }
 
     els.submitCreate.disabled = true;
-    els.submitCreate.textContent = "Creating...";
+    els.submitCreate.textContent = t("dashboard.creating");
 
     try {
       const homework = await API.createHomework({ title, subject, grade, mode });
-      showToast("Homework created", "Opening builder now.", "success");
+      showToast(t("dashboard.toast_homework_created"), t("dashboard.toast_opening_builder"), "success");
       closeCreateModal();
       openBuilder(homework.id);
     } catch (error) {
-      showToast("Could not create homework", error.message, "error");
+      showToast(t("dashboard.toast_could_not_create"), error.message, "error");
     } finally {
       els.submitCreate.disabled = false;
-      els.submitCreate.textContent = "Create and open";
+      els.submitCreate.textContent = t("dashboard.create_and_open");
     }
   }
 
@@ -647,7 +656,7 @@
     const homework = state.homeworks.find((item) => item.id === homeworkId);
     const title = homework?.title || homeworkId;
 
-    const confirmed = window.confirm(`Move "${title}" to trash?`);
+    const confirmed = window.confirm(`"${title}" — ${t("dashboard.confirm_trash")}`);
     if (!confirmed) return;
 
     try {
@@ -657,9 +666,9 @@
         state.trash = [{ ...homework, deleted_at: new Date().toISOString() }, ...state.trash];
       }
       renderHomeworks();
-      showToast("Moved to trash", `"${title}" can be restored from Trash.`, "success");
+      showToast(t("dashboard.toast_moved_to_trash"), `"${title}" → ${t("dashboard.tab_trash")}`, "success");
     } catch (error) {
-      showToast("Could not delete", error.message, "error");
+      showToast(t("dashboard.toast_could_not_delete"), error.message, "error");
     }
   }
 
@@ -674,25 +683,25 @@
         state.homeworks = [rest, ...state.homeworks];
       }
       renderHomeworks();
-      showToast("Restored", `"${title}" is back in the library.`, "success");
+      showToast(t("dashboard.toast_restored"), `"${title}" → ${t("common.library")}`, "success");
     } catch (error) {
-      showToast("Could not restore", error.message, "error");
+      showToast(t("dashboard.toast_could_not_restore"), error.message, "error");
     }
   }
 
   async function handleHardDelete(homeworkId) {
     const homework = state.trash.find((item) => item.id === homeworkId);
     const title = homework?.title || homeworkId;
-    const confirmed = window.confirm(`Permanently delete "${title}"? This wipes the homework and its version history. It cannot be undone.`);
+    const confirmed = window.confirm(`"${title}" — ${t("dashboard.confirm_hard_delete")}`);
     if (!confirmed) return;
 
     try {
       await API.hardDeleteHomework(homeworkId);
       state.trash = state.trash.filter((item) => item.id !== homeworkId);
       renderHomeworks();
-      showToast("Deleted forever", `"${title}" has been permanently removed.`, "success");
+      showToast(t("dashboard.toast_deleted_forever"), `"${title}"`, "success");
     } catch (error) {
-      showToast("Could not delete forever", error.message, "error");
+      showToast(t("dashboard.toast_could_not_delete_forever"), error.message, "error");
     }
   }
 
@@ -703,9 +712,9 @@
       const copy = await API.duplicateHomework(homeworkId);
       state.homeworks = [copy, ...state.homeworks];
       renderHomeworks();
-      showToast("Duplicated", `"${title}" cloned as a draft.`, "success");
+      showToast(t("dashboard.toast_duplicated"), `"${title}" → ${t("common.draft")}`, "success");
     } catch (error) {
-      showToast("Could not duplicate", error.message, "error");
+      showToast(t("dashboard.toast_could_not_duplicate"), error.message, "error");
     }
   }
 
@@ -727,47 +736,47 @@
 
   async function handleVersions(homeworkId) {
     els.versionsList.innerHTML = "";
-    els.versionsSubtitle.textContent = "Loading versions...";
+    els.versionsSubtitle.textContent = t("dashboard.versions_loading");
     openVersionsModal();
 
     try {
       const payload = await API.listVersions(homeworkId);
       const versions = Array.isArray(payload.versions) ? payload.versions : [];
       if (!versions.length) {
-        els.versionsSubtitle.textContent = "No snapshots yet. Versions are captured automatically as you edit.";
+        els.versionsSubtitle.textContent = t("dashboard.no_snapshots");
         els.versionsList.innerHTML = "";
         return;
       }
-      els.versionsSubtitle.textContent = `${versions.length} snapshot${versions.length === 1 ? "" : "s"} for ${homeworkId}. Newest first.`;
+      els.versionsSubtitle.textContent = `${versions.length} · ${homeworkId}`;
       els.versionsList.innerHTML = versions
         .map((v) => `
           <div class="version-row" data-version-id="${escapeHtml(String(v.id))}" data-homework-id="${escapeHtml(homeworkId)}">
             <div class="version-meta">
-              <strong>${escapeHtml(v.title || "Untitled")}</strong>
+              <strong>${escapeHtml(v.title || t("dashboard.untitled"))}</strong>
               <span class="muted-text" title="${escapeHtml(formatAbsolute(v.saved_at))}">
-                Saved ${escapeHtml(formatRelative(v.saved_at))} · ${escapeHtml(String(v.size_bytes || 0))} bytes
+                ${escapeHtml(formatRelative(v.saved_at))} · ${escapeHtml(String(v.size_bytes || 0))} B
               </span>
             </div>
-            <button class="btn btn-ghost js-version-restore" type="button">Restore this version</button>
+            <button class="btn btn-ghost js-version-restore" type="button">${escapeHtml(t("dashboard.version_restore_btn"))}</button>
           </div>
         `)
         .join("");
     } catch (error) {
-      els.versionsSubtitle.textContent = `Failed to load versions: ${error.message}`;
+      els.versionsSubtitle.textContent = `${t("dashboard.toast_could_not_restore_version")}: ${error.message}`;
       els.versionsList.innerHTML = "";
     }
   }
 
   async function handleVersionRestore(homeworkId, versionId) {
-    const confirmed = window.confirm(`Restore this version? Your current content will be saved as a snapshot before being overwritten.`);
+    const confirmed = window.confirm(t("dashboard.confirm_version_restore"));
     if (!confirmed) return;
     try {
       await API.restoreVersion(homeworkId, versionId);
-      showToast("Version restored", "Homework reverted to the selected snapshot.", "success");
+      showToast(t("dashboard.toast_version_restored"), t("dashboard.toast_version_restored_msg"), "success");
       closeVersionsModal();
       await loadHomeworks();
     } catch (error) {
-      showToast("Could not restore version", error.message, "error");
+      showToast(t("dashboard.toast_could_not_restore_version"), error.message, "error");
     }
   }
 
@@ -914,6 +923,21 @@
     cacheElements();
     bindEvents();
     setLoading(true);
+
+    // Re-render dynamic content when the user switches language. The static
+    // [data-i18n] attrs are handled by i18n.js automatically, but rebuilt
+    // <option> lists, card markup and dynamic empty-state text need a re-paint.
+    if (window.i18n && typeof window.i18n.onChange === "function") {
+      window.i18n.onChange(() => {
+        renderSubjectOptions();
+        renderHomeworks();
+        renderPaginationBar();
+        if (els.libraryTitle) {
+          els.libraryTitle.textContent =
+            state.view === "trash" ? t("dashboard.tab_trash") : t("dashboard.lib_h2");
+        }
+      });
+    }
 
     await Promise.allSettled([loadHealth(), loadSubjects()]);
     await loadHomeworks();

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NETS Builder · Dashboard</title>
+  <title data-i18n="dashboard.page_title">NETS Builder · Dashboard</title>
   <link rel="stylesheet" href="/css/app.css?v=__VERSION__" />
   <script src="/js/theme.js?v=__VERSION__"></script>
   <script src="/js/katex-render.js?v=__VERSION__"></script>
@@ -14,30 +14,30 @@
       <div class="brand-block">
         <div class="brand-mark" aria-hidden="true">N</div>
         <div>
-          <p class="eyebrow">NETS Homework Builder</p>
-          <h1>Homework Library</h1>
+          <p class="eyebrow" data-i18n="common.brand_eyebrow">NETS Homework Builder</p>
+          <h1 data-i18n="dashboard.h1">Homework Library</h1>
         </div>
       </div>
 
       <nav class="topbar-nav" aria-label="Site navigation">
-        <a class="btn btn-ghost is-active" href="/index.html" aria-current="page">Dashboard</a>
-        <a class="btn btn-ghost" href="/library.html">Library</a>
+        <a class="btn btn-ghost is-active" href="/index.html" aria-current="page" data-i18n="common.dashboard">Dashboard</a>
+        <a class="btn btn-ghost" href="/library.html" data-i18n="common.library">Library</a>
       </nav>
 
       <div class="topbar-actions">
-        <div class="lang-switch" role="group" aria-label="Language">
+        <div class="lang-switch" role="group" data-i18n-aria-label="common.lang_aria" aria-label="Language">
           <button type="button" class="lang-pill" data-lang="uz">UZ</button>
           <button type="button" class="lang-pill" data-lang="ru">RU</button>
           <button type="button" class="lang-pill" data-lang="en">EN</button>
         </div>
         <button class="btn btn-ghost theme-toggle" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
-        <div class="health-pill" id="health-pill" title="Backend and Gemini status">
+        <div class="health-pill" id="health-pill" data-i18n-title="dashboard.health_title" title="Backend and Gemini status">
           <span class="status-dot muted"></span>
-          <span id="health-label">Checking...</span>
+          <span id="health-label" data-i18n="dashboard.checking">Checking…</span>
         </div>
         <button class="btn btn-primary" id="new-homework-btn" type="button">
           <span aria-hidden="true">＋</span>
-          New Homework
+          <span data-i18n="dashboard.new_homework">New Homework</span>
         </button>
       </div>
     </header>
@@ -45,59 +45,59 @@
     <main class="dashboard-layout">
       <section class="hero-card glass-card">
         <div>
-          <p class="eyebrow">Working demo</p>
-          <h2>Build, edit, preview, and share interactive NETS homework.</h2>
-          <p class="muted-text">
+          <p class="eyebrow" data-i18n="dashboard.hero_eyebrow">Working demo</p>
+          <h2 data-i18n="dashboard.hero_h2">Build, edit, preview, and share interactive NETS homework.</h2>
+          <p class="muted-text" data-i18n="dashboard.hero_text">
             Create a homework record, open the builder, then fill phase editors manually or through AI generation when Wave 3 lands.
           </p>
         </div>
-        <div class="hero-stats" aria-label="Homework statistics">
+        <div class="hero-stats" data-i18n-aria-label="dashboard.stats_aria" aria-label="Homework statistics">
           <div class="stat-card">
             <span id="stat-total">0</span>
-            <small>Total</small>
+            <small data-i18n="dashboard.stat_total">Total</small>
           </div>
           <div class="stat-card">
             <span id="stat-ready">0</span>
-            <small>Ready</small>
+            <small data-i18n="dashboard.stat_ready">Ready</small>
           </div>
           <div class="stat-card">
             <span id="stat-draft">0</span>
-            <small>Drafts</small>
+            <small data-i18n="dashboard.stat_drafts">Drafts</small>
           </div>
         </div>
       </section>
 
-      <section class="toolbar glass-card" aria-label="Library filters">
+      <section class="toolbar glass-card" data-i18n-aria-label="dashboard.toolbar_aria" aria-label="Library filters">
         <label class="search-box">
           <span aria-hidden="true">⌕</span>
-          <input id="search-input" type="search" placeholder="Search by title, subject, ID..." autocomplete="off" />
+          <input id="search-input" type="search" data-i18n-placeholder="dashboard.search_placeholder" placeholder="Search by title, subject, ID…" autocomplete="off" />
         </label>
 
         <div class="filter-row">
           <label>
-            <span>Subject</span>
+            <span data-i18n="common.subject">Subject</span>
             <select id="subject-filter">
-              <option value="all">All subjects</option>
+              <option value="all" data-i18n="dashboard.all_subjects">All subjects</option>
             </select>
           </label>
 
           <label>
-            <span>Status</span>
+            <span data-i18n="common.status">Status</span>
             <select id="status-filter">
-              <option value="all">All statuses</option>
-              <option value="draft">Draft</option>
-              <option value="generating">Generating</option>
-              <option value="ready">Ready</option>
-              <option value="error">Error</option>
+              <option value="all" data-i18n="dashboard.all_statuses">All statuses</option>
+              <option value="draft" data-i18n="common.draft">Draft</option>
+              <option value="generating" data-i18n="common.generating">Generating</option>
+              <option value="ready" data-i18n="common.ready">Ready</option>
+              <option value="error" data-i18n="common.error">Error</option>
             </select>
           </label>
 
           <label>
-            <span>Mode</span>
+            <span data-i18n="common.mode">Mode</span>
             <select id="mode-filter">
-              <option value="all">All modes</option>
-              <option value="easy">Easy</option>
-              <option value="hard">Hard</option>
+              <option value="all" data-i18n="dashboard.all_modes">All modes</option>
+              <option value="easy" data-i18n="common.easy">Easy</option>
+              <option value="hard" data-i18n="common.hard">Hard</option>
             </select>
           </label>
         </div>
@@ -106,37 +106,37 @@
       <section class="library-section" aria-labelledby="library-title">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Library</p>
-            <h2 id="library-title">Homeworks</h2>
+            <p class="eyebrow" data-i18n="dashboard.lib_eyebrow">Library</p>
+            <h2 id="library-title" data-i18n="dashboard.lib_h2">Homeworks</h2>
           </div>
-          <div class="library-tabs" role="tablist" aria-label="Library view">
+          <div class="library-tabs" role="tablist" data-i18n-aria-label="dashboard.tabs_aria" aria-label="Library view">
             <button class="library-tab is-active" id="tab-library" role="tab" type="button" aria-selected="true">
-              Library <span class="tab-count" id="tab-count-library">0</span>
+              <span data-i18n="dashboard.tab_library">Library</span> <span class="tab-count" id="tab-count-library">0</span>
             </button>
             <button class="library-tab" id="tab-trash" role="tab" type="button" aria-selected="false">
-              Trash <span class="tab-count" id="tab-count-trash">0</span>
+              <span data-i18n="dashboard.tab_trash">Trash</span> <span class="tab-count" id="tab-count-trash">0</span>
             </button>
           </div>
-          <button class="btn btn-ghost" id="refresh-btn" type="button">Refresh</button>
+          <button class="btn btn-ghost" id="refresh-btn" type="button" data-i18n="common.refresh">Refresh</button>
         </div>
 
         <div class="loading-state glass-card" id="loading-state">
           <div class="spinner" aria-hidden="true"></div>
-          <p>Loading homework library...</p>
+          <p data-i18n="dashboard.loading_library">Loading homework library…</p>
         </div>
 
         <div class="error-state glass-card hidden" id="error-state">
           <div class="empty-orb" aria-hidden="true">⚠</div>
-          <h3 id="error-state-title">Could not reach the server</h3>
-          <p id="error-state-message">Check your connection and try again.</p>
-          <button class="btn btn-primary" id="retry-btn" type="button">Retry</button>
+          <h3 id="error-state-title" data-i18n="common.could_not_reach_server">Could not reach the server</h3>
+          <p id="error-state-message" data-i18n="common.check_connection">Check your connection and try again.</p>
+          <button class="btn btn-primary" id="retry-btn" type="button" data-i18n="common.retry">Retry</button>
         </div>
 
         <div class="empty-state glass-card hidden" id="empty-state">
           <div class="empty-orb" aria-hidden="true">📚</div>
-          <h3>No homework yet</h3>
-          <p>Create your first NETS homework to begin the builder flow.</p>
-          <button class="btn btn-primary" id="empty-new-btn" type="button">Create homework</button>
+          <h3 data-i18n="dashboard.empty_h3">No homework yet</h3>
+          <p data-i18n="dashboard.empty_text">Create your first NETS homework to begin the builder flow.</p>
+          <button class="btn btn-primary" id="empty-new-btn" type="button" data-i18n="dashboard.empty_btn">Create homework</button>
         </div>
 
         <div class="homework-grid" id="homework-grid" aria-live="polite"></div>
@@ -149,48 +149,48 @@
     <form class="modal-card glass-card" id="create-form" method="dialog">
       <div class="modal-header">
         <div>
-          <p class="eyebrow">New record</p>
-          <h2 id="create-modal-title">Create Homework</h2>
+          <p class="eyebrow" data-i18n="dashboard.modal_eyebrow_new">New record</p>
+          <h2 id="create-modal-title" data-i18n="dashboard.modal_create_h2">Create Homework</h2>
         </div>
-        <button class="icon-btn" id="close-create-modal" type="button" aria-label="Close modal">×</button>
+        <button class="icon-btn" id="close-create-modal" type="button" data-i18n-aria-label="dashboard.close_modal_aria" aria-label="Close modal">×</button>
       </div>
 
       <div class="form-grid">
         <label class="field full-span">
-          <span>Title</span>
-          <input id="homework-title" name="title" type="text" placeholder="Masalan: Kvadrat tenglama" required />
+          <span data-i18n="common.title">Title</span>
+          <input id="homework-title" name="title" type="text" data-i18n-placeholder="dashboard.title_placeholder" placeholder="For example: Quadratic equations" required />
         </label>
 
         <label class="field">
-          <span>Subject</span>
+          <span data-i18n="common.subject">Subject</span>
           <select id="homework-subject" name="subject" required>
-            <option value="" disabled selected>Select subject</option>
+            <option value="" disabled selected data-i18n="dashboard.select_subject">Select subject</option>
           </select>
         </label>
 
         <label class="field">
-          <span>Grade</span>
+          <span data-i18n="common.grade">Grade</span>
           <select id="homework-grade" name="grade" required disabled>
-            <option value="" disabled selected>Select grade</option>
+            <option value="" disabled selected data-i18n="dashboard.select_grade">Select grade</option>
           </select>
         </label>
 
         <label class="field">
-          <span>Mode</span>
+          <span data-i18n="common.mode">Mode</span>
           <select id="homework-mode" name="mode" required>
-            <option value="easy">Easy</option>
-            <option value="hard">Hard</option>
+            <option value="easy" data-i18n="common.easy">Easy</option>
+            <option value="hard" data-i18n="common.hard">Hard</option>
           </select>
         </label>
 
-        <div class="form-note full-span" id="mode-note">
+        <div class="form-note full-span" id="mode-note" data-i18n="dashboard.mode_note_default">
           Choose a subject to see available grades and mode rules.
         </div>
       </div>
 
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="cancel-create" type="button">Cancel</button>
-        <button class="btn btn-primary" id="submit-create" type="submit">Create and open</button>
+        <button class="btn btn-ghost" id="cancel-create" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn btn-primary" id="submit-create" type="submit" data-i18n="dashboard.create_and_open">Create and open</button>
       </div>
     </form>
   </dialog>
@@ -199,18 +199,18 @@
     <div class="modal-card glass-card">
       <div class="modal-header">
         <div>
-          <p class="eyebrow">Version history</p>
-          <h2 id="versions-modal-title">Snapshots</h2>
+          <p class="eyebrow" data-i18n="dashboard.versions_eyebrow">Version history</p>
+          <h2 id="versions-modal-title" data-i18n="dashboard.versions_h2">Snapshots</h2>
         </div>
-        <button class="icon-btn" id="close-versions-modal" type="button" aria-label="Close versions modal">×</button>
+        <button class="icon-btn" id="close-versions-modal" type="button" data-i18n-aria-label="dashboard.close_versions_aria" aria-label="Close versions modal">×</button>
       </div>
 
-      <p class="muted-text" id="versions-subtitle">Loading versions...</p>
+      <p class="muted-text" id="versions-subtitle" data-i18n="dashboard.versions_loading">Loading versions…</p>
 
       <div class="versions-list" id="versions-list" aria-label="Version snapshots"></div>
 
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="close-versions-btn" type="button">Close</button>
+        <button class="btn btn-ghost" id="close-versions-btn" type="button" data-i18n="common.close">Close</button>
       </div>
     </div>
   </dialog>

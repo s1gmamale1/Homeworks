@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NETS Builder · Library</title>
+  <title data-i18n="library.page_title">NETS Builder · Library</title>
   <link rel="stylesheet" href="/css/app.css?v=__VERSION__" />
   <link rel="stylesheet" href="/css/library.css?v=__VERSION__" />
   <script src="/js/theme.js?v=__VERSION__"></script>
@@ -15,18 +15,18 @@
       <div class="brand-block">
         <div class="brand-mark" aria-hidden="true">N</div>
         <div>
-          <p class="eyebrow">NETS Homework Builder</p>
-          <h1>Browse Library</h1>
+          <p class="eyebrow" data-i18n="common.brand_eyebrow">NETS Homework Builder</p>
+          <h1 data-i18n="library.h1">Browse Library</h1>
         </div>
       </div>
 
       <nav class="topbar-nav" aria-label="Site navigation">
-        <a class="btn btn-ghost" href="/index.html">Dashboard</a>
-        <a class="btn btn-ghost is-active" href="/library.html" aria-current="page">Library</a>
+        <a class="btn btn-ghost" href="/index.html" data-i18n="common.dashboard">Dashboard</a>
+        <a class="btn btn-ghost is-active" href="/library.html" aria-current="page" data-i18n="common.library">Library</a>
       </nav>
 
       <div class="topbar-actions">
-        <div class="lang-switch" role="group" aria-label="Language">
+        <div class="lang-switch" role="group" data-i18n-aria-label="common.lang_aria" aria-label="Language">
           <button type="button" class="lang-pill" data-lang="uz">UZ</button>
           <button type="button" class="lang-pill" data-lang="ru">RU</button>
           <button type="button" class="lang-pill" data-lang="en">EN</button>
@@ -40,32 +40,32 @@
       <section class="toolbar glass-card lib-toolbar" aria-label="Library filters">
         <label class="search-box lib-search">
           <span aria-hidden="true">⌕</span>
-          <input id="lib-search" type="search" placeholder="Search by title or chapter..." autocomplete="off" />
+          <input id="lib-search" type="search" data-i18n-placeholder="library.search_placeholder" placeholder="Search by title or chapter…" autocomplete="off" />
         </label>
 
         <div class="filter-row">
           <label>
-            <span>Subject</span>
+            <span data-i18n="common.subject">Subject</span>
             <select id="lib-subject">
-              <option value="">All subjects</option>
+              <option value="" data-i18n="library.all_subjects">All subjects</option>
             </select>
           </label>
 
           <label>
-            <span>Grade</span>
+            <span data-i18n="common.grade">Grade</span>
             <select id="lib-grade">
-              <option value="">All grades</option>
+              <option value="" data-i18n="library.all_grades">All grades</option>
             </select>
           </label>
 
           <label>
-            <span>Mode</span>
+            <span data-i18n="common.mode">Mode</span>
             <select id="lib-mode">
-              <option value="">All modes</option>
+              <option value="" data-i18n="library.all_modes">All modes</option>
             </select>
           </label>
 
-          <button class="btn btn-ghost" id="lib-clear-btn" type="button">Clear</button>
+          <button class="btn btn-ghost" id="lib-clear-btn" type="button" data-i18n="library.clear">Clear</button>
         </div>
       </section>
 
@@ -73,30 +73,30 @@
       <section class="library-section" aria-labelledby="lib-heading">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Results</p>
-            <h2 id="lib-heading">Homeworks <span class="tab-count" id="lib-count"></span></h2>
+            <p class="eyebrow" data-i18n="library.results_eyebrow">Results</p>
+            <h2 id="lib-heading"><span data-i18n="library.h2">Homeworks</span> <span class="tab-count" id="lib-count"></span></h2>
           </div>
         </div>
 
         <!-- Loading -->
         <div class="loading-state glass-card" id="lib-loading">
           <div class="spinner" aria-hidden="true"></div>
-          <p>Loading library...</p>
+          <p data-i18n="library.loading">Loading library…</p>
         </div>
 
         <!-- Error -->
         <div class="error-state glass-card hidden" id="lib-error">
           <div class="empty-orb" aria-hidden="true">⚠</div>
-          <h3>Could not reach the server</h3>
-          <p id="lib-error-msg">Check your connection and try again.</p>
-          <button class="btn btn-primary" id="lib-retry-btn" type="button">Retry</button>
+          <h3 data-i18n="common.could_not_reach_server">Could not reach the server</h3>
+          <p id="lib-error-msg" data-i18n="common.check_connection">Check your connection and try again.</p>
+          <button class="btn btn-primary" id="lib-retry-btn" type="button" data-i18n="common.retry">Retry</button>
         </div>
 
         <!-- Empty state -->
         <div class="empty-state glass-card hidden" id="lib-empty">
           <div class="empty-orb" aria-hidden="true">📚</div>
-          <h3>No homeworks found</h3>
-          <p>Try adjusting your filters or search query.</p>
+          <h3 data-i18n="library.empty_h3">No homeworks found</h3>
+          <p data-i18n="library.empty_text">Try adjusting your filters or search query.</p>
         </div>
 
         <!-- Card grid -->
@@ -104,9 +104,9 @@
 
         <!-- Pagination -->
         <div class="lib-pagination hidden" id="lib-pagination">
-          <button class="btn btn-ghost" id="lib-prev-btn" type="button" disabled>Previous</button>
+          <button class="btn btn-ghost" id="lib-prev-btn" type="button" disabled data-i18n="library.previous">Previous</button>
           <span id="lib-page-label" class="muted-text"></span>
-          <button class="btn btn-ghost" id="lib-next-btn" type="button">Next</button>
+          <button class="btn btn-ghost" id="lib-next-btn" type="button" data-i18n="library.next">Next</button>
         </div>
       </section>
     </main>

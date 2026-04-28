@@ -33,6 +33,14 @@
   function show(el)  { el.classList.remove("hidden"); }
   function hide(el)  { el.classList.add("hidden"); }
 
+  // i18n helper — falls back to the literal string if i18n hasn't loaded yet.
+  function t(key, fallback) {
+    if (window.i18n && typeof window.i18n.t === "function") {
+      return window.i18n.t(key, fallback);
+    }
+    return fallback != null ? fallback : key;
+  }
+
   function buildApiUrl(offset) {
     const params = new URLSearchParams();
     const subject = subjectSel.value;
@@ -79,7 +87,7 @@
       </div>
       <div class="lib-card-meta">
         ${hw.subject ? `<span class="lib-card-pill">${escHtml(hw.subject)}</span>` : ""}
-        ${hw.grade   ? `<span class="lib-card-pill grade">Grade ${escHtml(String(hw.grade))}</span>` : ""}
+        ${hw.grade   ? `<span class="lib-card-pill grade">${escHtml(t("common.grade"))} ${escHtml(String(hw.grade))}</span>` : ""}
       </div>
       ${chapter ? `<p class="lib-card-chapter">${escHtml(chapter)}</p>` : ""}
       <time class="lib-card-time" datetime="${escAttr(hw.updated_at || "")}">${formatDate(hw.updated_at)}</time>
@@ -131,13 +139,13 @@
 
       if (totalPages > 1) {
         show(paginationEl);
-        pageLabelEl.textContent = `Page ${currentPage} of ${totalPages}`;
+        pageLabelEl.textContent = `${currentPage} / ${totalPages}`;
         prevBtn.disabled = currentPage <= 1;
         nextBtn.disabled = currentPage >= totalPages;
       }
     } catch (err) {
       hide(loadingEl);
-      errorMsgEl.textContent = err.message || "Request failed.";
+      errorMsgEl.textContent = err.message || t("common.check_connection");
       show(errorEl);
     }
   }
@@ -157,7 +165,7 @@
       (facets.grades || []).forEach(g => {
         const opt = document.createElement("option");
         opt.value       = g;
-        opt.textContent = `Grade ${g}`;
+        opt.textContent = `${t("common.grade")} ${g}`;
         gradeSel.appendChild(opt);
       });
 
@@ -206,5 +214,12 @@
   });
 
   // ── Boot ────────────────────────────────────────────────────────────────────
+  // Re-render dynamic cards/pagination on language switch — static [data-i18n]
+  // attrs are auto-applied by i18n.js, but the card body and pagination labels
+  // are built in JS and need a manual repaint.
+  if (window.i18n && typeof window.i18n.onChange === "function") {
+    window.i18n.onChange(() => loadPage(currentOffset));
+  }
+
   loadFacets().then(() => loadPage(0));
 })();

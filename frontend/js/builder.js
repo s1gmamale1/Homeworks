@@ -176,6 +176,14 @@
     return document.getElementById(id);
   }
 
+  // i18n helper — falls back to the literal string if i18n hasn't loaded yet.
+  function t(key, fallback) {
+    if (window.i18n && typeof window.i18n.t === "function") {
+      return window.i18n.t(key, fallback);
+    }
+    return fallback != null ? fallback : key;
+  }
+
   function cacheElements() {
     Object.assign(els, {
       sidebarTitle: $("sidebar-title"),
@@ -296,7 +304,7 @@
     if (!textEl) return;
 
     if (state === "saving") {
-      textEl.textContent = "Saving...";
+      textEl.textContent = t("builder.saving");
     } else if (state === "saved") {
       lastSavedAt = Date.now();
       if (relativeTicker) window.clearInterval(relativeTicker);
@@ -307,16 +315,16 @@
     } else if (state === "error") {
       const attempt = (extra && extra.attempt) || 1;
       const max = (extra && extra.maxAttempts) || 5;
-      textEl.textContent = `⚠ Save failed — retrying (${attempt}/${max})`;
+      textEl.textContent = `${t("builder.save_failed_retry")} (${attempt}/${max})`;
     } else if (state === "offline") {
-      textEl.textContent = "⚠ Offline — changes queued";
+      textEl.textContent = t("builder.offline_queued");
     } else {
       // "idle" — cleanest neutral state before first save.
       if (relativeTicker) {
         window.clearInterval(relativeTicker);
         relativeTicker = null;
       }
-      textEl.textContent = window.BUILDER_STATE?.dirty ? "Unsaved" : "Idle";
+      textEl.textContent = window.BUILDER_STATE?.dirty ? t("builder.unsaved") : t("builder.idle");
     }
   }
 
@@ -325,10 +333,10 @@
     const el = document.querySelector("#save-indicator .save-text");
     if (!el) return;
     const secs = Math.floor((Date.now() - lastSavedAt) / 1000);
-    if (secs < 5) el.textContent = "Saved";
-    else if (secs < 60) el.textContent = `Saved ${secs}s ago`;
-    else if (secs < 3600) el.textContent = `Saved ${Math.floor(secs / 60)}m ago`;
-    else el.textContent = `Saved ${Math.floor(secs / 3600)}h ago`;
+    if (secs < 5) el.textContent = t("builder.saved");
+    else if (secs < 60) el.textContent = `${t("builder.saved")} · ${secs}s`;
+    else if (secs < 3600) el.textContent = `${t("builder.saved")} · ${Math.floor(secs / 60)}m`;
+    else el.textContent = `${t("builder.saved")} · ${Math.floor(secs / 3600)}h`;
   }
 
   function scheduleRetry() {
@@ -352,8 +360,7 @@
     const banner = document.createElement("div");
     banner.id = "save-failed-banner";
     banner.className = "save-banner-error";
-    banner.textContent =
-      "⚠ Cannot save — check connection. Changes kept in memory — do NOT close this tab.";
+    banner.textContent = t("builder.save_banner_error");
     document.body.appendChild(banner);
   }
 
@@ -408,16 +415,23 @@
     const subject = getSubjectLabel(homework.subject);
     const status = homework.status || "draft";
 
-    els.sidebarTitle.textContent = homework.title || "Untitled homework";
-    els.builderTitle.textContent = homework.title || "Untitled homework";
-    els.builderSubtitle.textContent = `${subject} · ${homework.grade}-sinf · ${titleCase(homework.mode)}`;
+    const fallbackTitle = t("builder.untitled");
+    els.sidebarTitle.textContent = homework.title || fallbackTitle;
+    els.builderTitle.textContent = homework.title || fallbackTitle;
+    const modeLabel =
+      homework.mode === "easy" ? t("common.easy")
+      : homework.mode === "hard" ? t("common.hard")
+      : titleCase(homework.mode);
+    els.builderSubtitle.textContent = `${subject} · ${homework.grade}-sinf · ${modeLabel}`;
 
+    const statusKey = `common.${status}`;
+    const statusLabel = t(statusKey, titleCase(status));
     els.sidebarMeta.innerHTML = `
       <span class="status-pill" data-status="${escapeHtml(status)}">
         <span class="status-dot ${escapeHtml(status)}"></span>
-        ${escapeHtml(titleCase(status))}
+        ${escapeHtml(statusLabel)}
       </span>
-      <span class="mode-pill">${escapeHtml(titleCase(homework.mode))}</span>
+      <span class="mode-pill">${escapeHtml(modeLabel)}</span>
       <span class="grade-pill">${escapeHtml(homework.grade)}-sinf</span>
     `;
   }
@@ -502,7 +516,8 @@
       content.reflection = nextData || null;
     } else {
       const phaseNames = getPhaseNames();
-      showToast("Not saved", `${phaseNames[phase] || PHASE_NAMES[phase] || phase} is not contract-backed yet.`, "warning");
+      const name = phaseNames[phase] || PHASE_NAMES[phase] || phase;
+      showToast(t("builder.toast_not_saved"), `${name} — ${t("builder.no_contract_data")}`, "warning");
       return;
     }
 
@@ -511,20 +526,18 @@
 
   function renderPlaceholderEditor(phase) {
     const data = getPhaseData(phase);
-    const dataPreview = data === null ? "No contract-backed data key for this phase yet." : JSON.stringify(data, null, 2);
+    const dataPreview = data === null ? t("builder.no_contract_data") : JSON.stringify(data, null, 2);
     const phaseNames = getPhaseNames();
 
     els.editorRoot.innerHTML = `
       <div class="editor-card">
         <div class="editor-header">
           <div>
-            <p class="eyebrow">Wave 1 stub</p>
+            <p class="eyebrow">${escapeHtml(t("builder.wave1_stub_eyebrow"))}</p>
             <h3>${escapeHtml(phaseNames[phase] || PHASE_NAMES[phase] || titleCase(phase))}</h3>
           </div>
         </div>
-        <p class="muted-text">
-          Editor module for this phase will plug in here during Wave 2. Current data shape is shown below for contract checking.
-        </p>
+        <p class="muted-text">${escapeHtml(t("builder.wave1_stub_text"))}</p>
         <pre class="json-preview">${escapeHtml(dataPreview)}</pre>
       </div>
     `;
@@ -537,7 +550,7 @@
     const editorKey = PHASE_EDITOR_KEYS[phase];
     const editor = window.Editors?.[editorKey];
 
-    els.activePhaseKicker.textContent = "Active phase";
+    els.activePhaseKicker.textContent = t("builder.active_phase_eyebrow");
     els.activePhaseTitle.textContent = phaseName;
     if (els.addItemBtn) els.addItemBtn.hidden = true;
 
@@ -564,7 +577,7 @@
 
   function markDirty() {
     window.BUILDER_STATE.dirty = true;
-    setSaveState("Unsaved changes", "dirty");
+    setSaveState(t("builder.unsaved_changes"), "dirty");
 
     // Show "Saving..." in the top-bar indicator as soon as changes land — the
     // actual PUT happens after the 500ms debounce in saveNow().
@@ -584,12 +597,12 @@
     // If the browser says we're offline, don't even try — keep dirty, wait for "online".
     if (isOffline) {
       updateSaveState("offline");
-      setSaveState("Offline — queued", "dirty");
+      setSaveState(t("builder.offline_short"), "dirty");
       return;
     }
 
     window.clearTimeout(autosaveTimer);
-    setSaveState("Saving...", "dirty");
+    setSaveState(t("builder.saving"), "dirty");
     updateSaveState("saving");
 
     try {
@@ -615,17 +628,17 @@
         retryTimer = null;
       }
 
-      setSaveState("Saved", "saved");
+      setSaveState(t("builder.saved"), "saved");
       updateSaveState("saved");
       renderMeta();
       refreshPreview();
     } catch (error) {
-      setSaveState("Save failed", "error");
+      setSaveState(t("builder.save_failed"), "error");
       updateSaveState("error", {
         attempt: retryCount + 1,
         maxAttempts: RETRY_DELAYS.length,
       });
-      showToast("Autosave failed", error.message, "error");
+      showToast(t("builder.toast_autosave_failed"), error.message, "error");
       scheduleRetry();
       throw error;
     }
@@ -644,7 +657,7 @@
     previewVisible = !previewVisible;
     els.previewPanel.classList.toggle("hidden", !previewVisible);
     els.builderContent.style.gridTemplateColumns = previewVisible ? "" : "1fr";
-    els.togglePreviewBtn.textContent = previewVisible ? "Hide preview" : "Show preview";
+    els.togglePreviewBtn.textContent = previewVisible ? t("builder.hide_preview") : t("builder.show_preview");
     els.togglePreviewBtn.setAttribute("aria-pressed", String(previewVisible));
 
     if (previewVisible) refreshPreview();
@@ -657,15 +670,15 @@
       els.editorRoot.innerHTML = `
         <div class="empty-state glass-card">
           <div class="empty-orb" aria-hidden="true">⚠️</div>
-          <h3>No homework ID</h3>
-          <p>Open a homework from the dashboard so the builder receives ?id=HW-...</p>
-          <a class="btn btn-primary" href="/index.html">Back to dashboard</a>
+          <h3>${escapeHtml(t("builder.no_homework_id_h3"))}</h3>
+          <p>${escapeHtml(t("builder.no_homework_id_text"))}</p>
+          <a class="btn btn-primary" href="/index.html">${escapeHtml(t("builder.back_to_dashboard"))}</a>
         </div>
       `;
       return;
     }
 
-    setSaveState("Loading...", "");
+    setSaveState(t("common.loading"), "");
 
     try {
       const homework = await API.getHomework(id);
@@ -675,21 +688,21 @@
       window.BUILDER_STATE.activePhase = getPipeline()[0] || "preview";
       window.BUILDER_STATE.dirty = false;
 
-      setSaveState("Loaded", "saved");
+      setSaveState(t("builder.loaded"), "saved");
       updateSaveState("saved");
       renderAll();
     } catch (error) {
       els.editorRoot.innerHTML = `
         <div class="empty-state glass-card">
           <div class="empty-orb" aria-hidden="true">🧯</div>
-          <h3>Could not load homework</h3>
+          <h3>${escapeHtml(t("builder.could_not_load_h3"))}</h3>
           <p>${escapeHtml(error.message)}</p>
-          <a class="btn btn-primary" href="/index.html">Back to dashboard</a>
+          <a class="btn btn-primary" href="/index.html">${escapeHtml(t("builder.back_to_dashboard"))}</a>
         </div>
       `;
-      setSaveState("Load failed", "error");
+      setSaveState(t("builder.load_failed"), "error");
       updateSaveState("error", { attempt: 1, maxAttempts: RETRY_DELAYS.length });
-      showToast("Load failed", error.message, "error");
+      showToast(t("builder.load_failed"), error.message, "error");
     }
   }
 
@@ -748,7 +761,7 @@
     if (!homework || loadingTemplate) return;
 
     loadingTemplate = true;
-    setSaveState("Loading template...", "dirty");
+    setSaveState(t("builder.loading_template"), "dirty");
 
     els.fixtureList.querySelectorAll("button").forEach((button) => {
       button.disabled = true;
@@ -765,11 +778,11 @@
       renderAll();
       await saveNow();
 
-      showToast("Template loaded", `${name}.json was applied and saved.`, "success");
+      showToast(t("builder.toast_template_loaded"), `${name}.json`, "success");
       closeTemplateModal(true);
     } catch (error) {
-      setSaveState("Template load failed", "error");
-      showToast("Template load failed", error.message, "error");
+      setSaveState(t("builder.template_load_failed"), "error");
+      showToast(t("builder.template_load_failed"), error.message, "error");
     } finally {
       loadingTemplate = false;
       els.fixtureList.querySelectorAll("button").forEach((button) => {
@@ -784,7 +797,7 @@
     const subject = hw.subject || "math-algebra";
     const grade = hw.grade || 8;
     const baseBtn = els.testTutorBtn;
-    if (baseBtn) { baseBtn.disabled = true; baseBtn.textContent = "Testing..."; }
+    if (baseBtn) { baseBtn.disabled = true; baseBtn.textContent = t("builder.testing"); }
 
     async function postJSON(path, body) {
       const t0 = performance.now();
@@ -808,12 +821,12 @@
       const statusRes = await fetch("/api/ai/status");
       const status = await statusRes.json();
       showToast(
-        "AI backend",
+        t("builder.toast_ai_backend"),
         `${status.backend || "?"} · ${status.model_fast || ""}${status.project ? " · " + status.project : ""}`,
         status.backend === "none" ? "error" : "success",
       );
     } catch (e) {
-      showToast("AI status failed", String(e), "error");
+      showToast(t("builder.toast_ai_status_failed"), String(e), "error");
     }
 
     // 1) check-answer
@@ -870,7 +883,7 @@
       r4.ok ? "success" : "error",
     );
 
-    if (baseBtn) { baseBtn.disabled = false; baseBtn.textContent = "Test Tutor"; }
+    if (baseBtn) { baseBtn.disabled = false; baseBtn.textContent = t("builder.test_tutor"); }
   }
 
   function bindEvents() {
@@ -917,7 +930,7 @@
     window.addEventListener("offline", () => {
       isOffline = true;
       updateSaveState("offline");
-      setSaveState("Offline — queued", "dirty");
+      setSaveState(t("builder.offline_short"), "dirty");
     });
 
     window.addEventListener("online", () => {
@@ -980,7 +993,7 @@
     }
     // Derive a short label from the target button text ("Add panel" -> "Panel").
     const raw = (target.textContent || "").trim();
-    const short = raw.replace(/^add\s*/i, "").trim() || "Item";
+    const short = raw.replace(/^add\s*/i, "").trim() || t("builder.fab_add");
     const labelEl = fab.querySelector(".fab-label");
     if (labelEl) labelEl.textContent = short;
     fab.hidden = false;
@@ -1016,6 +1029,29 @@
     setupFab();
     // Seed the save indicator so it isn't blank on first paint.
     updateSaveState("idle");
+
+    // Re-render dynamic content on language switch — static [data-i18n] attrs
+    // are handled by i18n.js automatically, but the toggle-preview button text,
+    // save indicator, and meta pills need a manual repaint.
+    if (window.i18n && typeof window.i18n.onChange === "function") {
+      window.i18n.onChange(() => {
+        if (els.togglePreviewBtn) {
+          els.togglePreviewBtn.textContent = previewVisible
+            ? t("builder.hide_preview")
+            : t("builder.show_preview");
+        }
+        // Refresh the indicator with the current state in the new language.
+        const indicator = document.getElementById("save-indicator");
+        const cur = (indicator && indicator.dataset.state) || "idle";
+        updateSaveState(cur);
+        if (window.BUILDER_STATE && window.BUILDER_STATE.homework) {
+          renderMeta();
+          renderActiveEditor();
+        }
+        syncFab();
+      });
+    }
+
     await loadSubjectsMeta();
     loadHomework();
   }
