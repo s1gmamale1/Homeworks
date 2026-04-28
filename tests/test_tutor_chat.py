@@ -632,3 +632,38 @@ def test_tutor_chat_truncates_long_screen_context(mock_generate, client):
     assert len(injected) <= 2000, (
         f"PREVIEW_CONTEXT section is {len(injected)} chars, expected ≤ 2000"
     )
+
+
+# ---------------------------------------------------------------------------
+# 13. Wave K — system prompt locks in the Opus 4.7 tone keywords
+# ---------------------------------------------------------------------------
+
+
+def test_tutor_assistant_prompt_locks_in_tone_rules():
+    """The tutor-assistant.md system prompt MUST contain the Wave K tone
+    keywords so the live tutor speaks expert-confident + brief + register-
+    mirroring instead of formal-professor mode.
+
+    This is a content-lock test: if someone deletes the new tone section in a
+    later refactor, this fails loudly so the voice doesn't silently regress.
+    """
+    from server.config import PROMPTS_DIR
+
+    prompt_path = PROMPTS_DIR / "runtime" / "tutor-assistant.md"
+    assert prompt_path.exists(), f"tutor-assistant.md not found at {prompt_path}"
+    text = prompt_path.read_text(encoding="utf-8")
+
+    required_markers = [
+        "Expert-confident",       # core voice descriptor
+        "1-2 sentences",          # brevity rule
+        "Mirror",                 # register mirroring (matches both "Mirror" and "Mirrors")
+        "tushuntir batafsil",     # explicit "expand" trigger phrase in Uzbek
+        "DO / DON",               # tone examples block (DO / DON'T)
+        "Slur",                   # slur handling section header
+        "naughty",                # tone descriptor for callout style
+        "back-prompt",            # soft follow-up rule
+        "{PHASE}",                # variable references block present
+        "{STUDENT_MESSAGE}",      # variable references block present
+    ]
+    missing = [m for m in required_markers if m not in text]
+    assert not missing, f"Wave K tone markers missing from tutor-assistant.md: {missing}"
