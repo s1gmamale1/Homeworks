@@ -70,35 +70,36 @@ app.include_router(homework_page_router)
 app.include_router(ai_router, prefix="/api")
 app.include_router(library_router, prefix="/api")
 
-def _render_html_with_version(html_path: str) -> str:
-    """Read HTML file and substitute __VERSION__ with git short SHA."""
+_FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+
+# Route → filename map. Single source of truth for the dashboard chrome
+# pages. To add a new page, add a row here — the route + cache-bust
+# substitution come for free.
+_HTML_PAGES: dict[str, str] = {
+    "/":              "index.html",
+    "/index.html":    "index.html",
+    "/builder.html":  "builder.html",
+    "/library.html":  "library.html",
+}
+
+def _render_html_with_version(filename: str) -> str:
+    """Read frontend/{filename} and substitute __VERSION__ with git short SHA."""
+    html_path = os.path.join(_FRONTEND_DIR, filename)
     with open(html_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    return content.replace("__VERSION__", VERSION)
+        return f.read().replace("__VERSION__", VERSION)
 
-@app.get("/")
-async def get_index():
-    """Serve index.html with cache-busting version."""
-    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "index.html")
-    return HTMLResponse(_render_html_with_version(html_path))
 
-@app.get("/index.html")
-async def get_index_explicit():
-    """Serve /index.html (explicit path) with cache-busting version."""
-    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "index.html")
-    return HTMLResponse(_render_html_with_version(html_path))
+def _make_html_handler(filename: str):
+    """Closure factory — binds `filename` per route so each registered
+    handler reads its own page (avoids the late-binding-in-loop pitfall)."""
+    async def _handler():
+        return HTMLResponse(_render_html_with_version(filename))
+    _handler.__name__ = f"get_{filename.replace('.', '_')}"
+    return _handler
 
-@app.get("/builder.html")
-async def get_builder():
-    """Serve builder.html with cache-busting version."""
-    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "builder.html")
-    return HTMLResponse(_render_html_with_version(html_path))
 
-@app.get("/library.html")
-async def get_library():
-    """Serve library.html with cache-busting version."""
-    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "library.html")
-    return HTMLResponse(_render_html_with_version(html_path))
+for _route, _filename in _HTML_PAGES.items():
+    app.get(_route)(_make_html_handler(_filename))
 
 # Runtime static mount — serves /static/runtime/runtime.js from server/template/
 # MUST come before the `/` catch-all mount below (FastAPI evaluates mounts in order).
