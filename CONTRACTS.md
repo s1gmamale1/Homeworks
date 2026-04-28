@@ -42,7 +42,7 @@ The single source of truth for a homework's content. Stored as JSON in SQLite `h
     }
   ],
   "flashcards": [
-    { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD" }
+    { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "optional", "media": { "type": "svg|image", "html": "svg only", "src": "image only", "alt": "image only" } }
   ],
   "memory_sprint": [
     {

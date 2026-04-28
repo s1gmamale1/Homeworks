@@ -33,6 +33,8 @@ All cards in Uzbek. "Siz" if referenced.
 - Evolution chain (e.g., mulk → davlat → xalq for evolving meaning)
 - Etymology link (e.g., Qarshi ← qarsh)
 
+**Media:** Aim to include a small topic-related visual on every card: figure silhouette, map/place marker, timeline/date hook, coin/object, dynasty branch, or memory-palace station. Prefer inline SVG under 200×150px. If a card truly has no honest visual, omit `media`.
+
 **Saroy bekati (optional Memory Palace station tag):** When the card's content maps to a station in the Preview's Memory Palace, tag as `N — PLACE NAME`. Skip for abstract frameworks that aren't location-bound.
 
 Include a **Sana qarmogʻi (date hook)** inline with the Xotira tasviri when a figure or reform is tied to a specific year. Embed dates in figure cards; do NOT create standalone date cards.
@@ -92,6 +94,7 @@ Include a **Sana qarmogʻi (date hook)** inline with the Xotira tasviri when a f
 - **Front = name / term only.** No context, no question, no partial sentence.
 - **Back = definition + key facts only.** NO practice problems, NO questions, NO scenarios, NO "try this," NO explanatory paragraphs.
 - **Every card MUST have a Xotira tasviri.** No naked definitions.
+- Put the Xotira tasviri text in `hint`; put the picture/diagram in `media` when possible.
 - **Saroy bekati is optional** — include only when card content maps to a Preview palace station.
 - **Dates inside figure cards** via Sana qarmogʻi. No standalone date cards.
 - **Textbook fidelity** — every fact from the source lesson. If it isn't in the textbook, it isn't on a card.
@@ -107,6 +110,6 @@ Include a **Sana qarmogʻi (date hook)** inline with the Xotira tasviri when a f
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD" }
+  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "Xotira tasviri / optional mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```

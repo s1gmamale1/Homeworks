@@ -36,6 +36,25 @@
     --status-error: #FF3B30;
 }
 
+[data-theme="dark"] {
+    --bg: #0f172a;
+    --surface: rgba(15, 23, 42, 0.78);
+    --surface-elevated: rgba(15, 23, 42, 0.94);
+    --text: #e5e7eb;
+    --text-muted: #94a3b8;
+    --text-subtle: #64748b;
+    --accent: #0A84FF;
+    --accent-hover: #60a5fa;
+    --accent-glow: rgba(10, 132, 255, 0.38);
+    --accent-light: rgba(10, 132, 255, 0.14);
+    --border: rgba(148, 163, 184, 0.22);
+    --border-light: rgba(148, 163, 184, 0.12);
+    --line: rgba(148, 163, 184, 0.18);
+    --shadow-low: 0 1px 4px rgba(0, 0, 0, 0.24);
+    --shadow-mid: 0 8px 24px rgba(0, 0, 0, 0.38);
+    --shadow-card: 0 20px 48px rgba(0, 0, 0, 0.48);
+}
+
 /* -------- Reset & Base -------- */
 *,
 *::before,
@@ -64,6 +83,14 @@ body {
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme="dark"] body {
+    background-image:
+        radial-gradient(circle at 0% 0%, rgba(10, 132, 255, 0.14), transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(28, 160, 149, 0.10), transparent 45%),
+        radial-gradient(circle at 100% 100%, rgba(200, 151, 56, 0.10), transparent 45%),
+        linear-gradient(180deg, #0f172a 0%, #111827 100%);
 }
 
 a {
@@ -1583,7 +1610,7 @@ textarea:disabled {
 .rich-editor {
   min-height: 200px;
   padding: 20px 24px;
-  background: white;
+  background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-top: 0;
   border-radius: 0 0 12px 12px;
@@ -1805,7 +1832,7 @@ textarea:disabled {
 .rich-field {
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -1829,7 +1856,8 @@ textarea:disabled {
 .rich-field .js-rich-mini {
   min-height: 90px;
   padding: 10px 14px;
-  background: white;
+  background: var(--surface-elevated);
+  color: var(--text);
   font-size: 14px;
   line-height: 1.55;
   outline: none;
@@ -1899,31 +1927,53 @@ textarea:disabled {
 }
 
 /* ============================================================
-   Flashcard editor — each card styled like a physical index card
+   Flashcard editor — warm educational palette, matches the runtime
+   player. Cream surface in light, dark navy in dark. Turquoise
+   cluster badge, gold accents. Soft rounded, subtle shadow,
+   thin colored border. No heavy decorations.
    ============================================================ */
 .flashcard-builder-card {
-  --fc-bar: #007aff;
+  --fc-bar: #1ca095;            /* turquoise — replaces old per-cluster blue */
+  --fc-cream: #fdf8eb;
+  --fc-cream-soft: #f5edd5;
+  --fc-navy: #142847;
+  --fc-navy-soft: #1d3258;
+  --fc-ink: #1a2840;
+  --fc-ink-dark: #e9eef7;
+  --fc-turquoise: #1ca095;
+  --fc-gold: #c89738;
+  --fc-card-border: rgba(28, 160, 149, 0.30);
+
   position: relative;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 20px;
+  background: var(--fc-cream);
+  border: 1px solid var(--fc-card-border);
+  border-radius: 18px;
   max-width: 640px;
   margin: 20px auto;
-  padding: 28px 28px 22px;
+  padding: 22px 24px 22px;
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 18px 40px -24px rgba(15, 23, 42, 0.22);
+    0 1px 3px rgba(20, 40, 71, 0.06),
+    0 12px 32px -16px rgba(20, 40, 71, 0.20);
   overflow: hidden;
+  color: var(--fc-ink);
 }
+[data-theme="dark"] .flashcard-builder-card {
+  background: var(--fc-navy);
+  color: var(--fc-ink-dark);
+  --fc-card-border: rgba(28, 160, 149, 0.40);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.30),
+    0 16px 36px -18px rgba(0, 0, 0, 0.55);
+}
+/* Top hairline accent — gold, thin, replaces the old 6px bar */
 .flashcard-builder-card::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: var(--fc-bar);
-  border-radius: 20px 20px 0 0;
+  left: 12%;
+  right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--fc-gold) 50%, transparent 100%);
 }
 
 .flashcard-builder-card .fc-card-head {
@@ -1946,6 +1996,9 @@ textarea:disabled {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
+  /* Turquoise badge per spec — overrides the per-cluster bg/text the JS sets. */
+  background: rgba(28, 160, 149, 0.14) !important;
+  color: var(--fc-turquoise) !important;
 }
 .flashcard-builder-card .fc-card-head .js-remove-card {
   margin-left: 8px;
@@ -1954,13 +2007,16 @@ textarea:disabled {
   color: #c0392b;
 }
 
-/* Media zone at top of card */
+/* Media zone at top of card — soft cream-tinted dashed frame */
 .flashcard-builder-card .fc-media-zone {
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--fc-card-border);
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 18px;
-  background: rgba(15, 23, 42, 0.015);
+  background: var(--fc-cream-soft);
+}
+[data-theme="dark"] .flashcard-builder-card .fc-media-zone {
+  background: var(--fc-navy-soft);
 }
 .flashcard-builder-card .fc-media-toolbar {
   display: flex;
@@ -2000,8 +2056,11 @@ textarea:disabled {
   justify-content: center;
   align-items: center;
   padding: 6px;
-  background: #fff;
+  background: var(--fc-cream);
   border-radius: 10px;
+}
+[data-theme="dark"] .flashcard-builder-card .fc-media-preview {
+  background: var(--fc-navy-soft);
 }
 .flashcard-builder-card .fc-media-preview img {
   max-width: 100%;
@@ -2025,7 +2084,7 @@ textarea:disabled {
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--fc-bar);
+  color: var(--fc-gold);
   font-weight: 700;
   margin-bottom: 6px;
 }
@@ -2092,7 +2151,7 @@ textarea:disabled {
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface-elevated);
   color: var(--text);
   outline: none;
   box-sizing: border-box;
@@ -2517,7 +2576,7 @@ body:has(.preview-panel:not([hidden])) .fab-add {
 }
 .gate-quote-mode-btn.is-active {
   color: var(--accent);
-  background: white;
+  background: var(--surface-elevated);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
@@ -2620,7 +2679,7 @@ body:has(.preview-panel:not([hidden])) .fab-add {
   max-height: 86vh;
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--surface-elevated);
   border-radius: 16px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   overflow: hidden;
@@ -2674,7 +2733,7 @@ body:has(.preview-panel:not([hidden])) .fab-add {
   text-align: left;
   padding: 12px 14px;
   margin-bottom: 6px;
-  background: white;
+  background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: 10px;
   cursor: pointer;

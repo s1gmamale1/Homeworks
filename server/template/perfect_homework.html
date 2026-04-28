@@ -8,6 +8,8 @@
         :root {
             --bg: #f5f5f7;
             --surface: rgba(255, 255, 255, 0.72);
+            --surface-strong: rgba(255, 255, 255, 0.92);
+            --surface-border: rgba(255, 255, 255, 0.5);
             --text: #1d1d1f;
             --text-muted: #86868b;
             --accent: #007AFF;
@@ -90,7 +92,7 @@
         h2 { font-size: 20px; line-height: 1.35; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 16px; color: var(--accent); }
         p { font-size: 16px; line-height: 1.5; font-weight: 400; margin-bottom: 16px; color: var(--text); }
         .caption { font-size: 13px; line-height: 1.4; font-weight: 500; letter-spacing: 0.07em; color: var(--text-muted); text-align: center; }
-        
+
         code, pre {
             font-family: "SF Mono", "SFMono-Regular", Menlo, monospace;
             background: rgba(239, 248, 255, 0.95);
@@ -162,49 +164,84 @@
         }
 
         .fc-scene {
-            width: min(96vw, 620px);
+            width: min(96vw, 680px);
             height: 82vh;
-            perspective: 1400px;
+            perspective: 1500px;
             position: relative;
             overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            --fc-mirror-main-bg: linear-gradient(180deg, rgba(253, 248, 235, 0.82), rgba(245, 237, 213, 0.20));
+            --fc-mirror-main-border: rgba(28, 160, 149, 0.22);
+            --fc-mirror-side-alpha: 0.46;
         }
 
         .fc-ring {
             position: relative;
-            width: 100%;
-            height: 100%;
+            z-index: 2;
+            width: min(94vw, 660px);
+            height: min(70vh, 520px);
             display: flex;
             align-items: center;
             justify-content: center;
+            transform-style: preserve-3d;
+            transform-origin: center center;
+        }
+
+        .fc-scene.is-rotating-left .fc-ring {
+            animation: fc-carousel-left 520ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .fc-scene.is-rotating-right .fc-ring {
+            animation: fc-carousel-right 520ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .fc-side {
             position: absolute;
             top: 50%;
-            width: min(52vw, 340px);
-            height: min(44vh, 276px);
-            min-height: 220px;
-            transform: translateY(-50%) scale(0.76);
-            border-radius: 24px;
+            left: 50%;
+            width: clamp(180px, 44vw, 300px);
+            height: min(42vh, 260px);
+            min-height: 200px;
+            border-radius: 20px;
             background: linear-gradient(135deg, var(--fc-side-from, var(--fc-names-from)), var(--fc-side-to, var(--fc-names-to)));
-            border: 1px solid rgba(255,255,255,0.18);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
-            opacity: 0.45;
-            filter: saturate(0.75) brightness(0.9);
+            border: 1px solid rgba(255,255,255,0.22);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.22);
+            opacity: 0.58;
+            filter: saturate(0.82) brightness(0.92);
             overflow: hidden;
-            pointer-events: none;
-            animation: fc-orbit 7s linear infinite;
+            pointer-events: auto;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease, filter 220ms ease, box-shadow 220ms ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .fc-side.left {
-            left: 0;
-            transform: translate(14%, -50%) scale(0.76);
+            transform: translate(-122%, -50%) rotateY(28deg) translateZ(-120px) scale(0.78);
         }
 
         .fc-side.right {
-            right: 0;
-            transform: translate(-14%, -50%) scale(0.76);
-            animation-direction: reverse;
+            transform: translate(22%, -50%) rotateY(-28deg) translateZ(-120px) scale(0.78);
+        }
+
+        .fc-side:hover,
+        .fc-side:focus-visible {
+            opacity: 0.78;
+            filter: saturate(1) brightness(1);
+            box-shadow: 0 22px 44px rgba(0,0,0,0.26);
+            outline: none;
+        }
+
+        .fc-side.left:hover,
+        .fc-side.left:focus-visible {
+            transform: translate(-124%, -50%) rotateY(22deg) translateZ(-80px) scale(0.82);
+        }
+
+        .fc-side.right:hover,
+        .fc-side.right:focus-visible {
+            transform: translate(24%, -50%) rotateY(-22deg) translateZ(-80px) scale(0.82);
         }
 
         .fc-side::before {
@@ -213,6 +250,80 @@
             inset: 0;
             background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.14), transparent 60%);
             pointer-events: none;
+        }
+
+        .fc-mirror {
+            position: absolute;
+            z-index: 1;
+            left: 50%;
+            bottom: 4vh;
+            width: min(88vw, 560px);
+            height: 98px;
+            transform: translateX(-50%) perspective(650px) rotateX(62deg);
+            transform-origin: center top;
+            pointer-events: none;
+            opacity: 0.38;
+            filter: blur(0.4px);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0.28) 54%, transparent 100%);
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0.28) 54%, transparent 100%);
+        }
+
+        .fc-mirror-card {
+            position: absolute;
+            top: 8px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--fc-side-from, var(--fc-names-from)), var(--fc-side-to, var(--fc-names-to)));
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 18px 38px rgba(20, 40, 71, 0.22);
+        }
+
+        .fc-mirror-main {
+            left: 50%;
+            width: min(48vw, 260px);
+            height: 72px;
+            transform: translateX(-50%);
+            opacity: 0.72;
+            background: var(--fc-mirror-main-bg);
+            border-color: var(--fc-mirror-main-border);
+        }
+
+        .fc-mirror-main.has-media {
+            box-shadow: 0 18px 38px rgba(28, 160, 149, 0.18), inset 0 0 28px rgba(255,255,255,0.10);
+        }
+
+        .fc-mirror-prev {
+            left: 6%;
+            width: min(38vw, 210px);
+            height: 58px;
+            transform: skewX(-12deg) scale(0.82);
+            opacity: var(--fc-mirror-side-alpha);
+        }
+
+        .fc-mirror-next {
+            right: 6%;
+            width: min(38vw, 210px);
+            height: 58px;
+            transform: skewX(12deg) scale(0.82);
+            opacity: var(--fc-mirror-side-alpha);
+        }
+
+        .fc-mirror::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+            width: 88%;
+            height: 52px;
+            transform: translateX(-50%);
+            background: radial-gradient(ellipse at center, rgba(20, 40, 71, 0.18), transparent 68%);
+        }
+
+        .fc-scene.is-rotating-left .fc-mirror-card {
+            animation: fc-mirror-left 520ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .fc-scene.is-rotating-right .fc-mirror-card {
+            animation: fc-mirror-right 520ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .fc-side-content {
@@ -256,225 +367,279 @@
             color: rgba(255,255,255,0.45);
         }
 
-        @keyframes fc-orbit {
-            0% { margin-top: 0; }
-            25% { margin-top: -10px; }
-            50% { margin-top: 0; }
-            75% { margin-top: 10px; }
-            100% { margin-top: 0; }
+        @keyframes fc-carousel-left {
+            0% { transform: rotateY(0deg) translateX(0); }
+            45% { transform: rotateY(-8deg) translateX(-18px); }
+            100% { transform: rotateY(0deg) translateX(0); }
+        }
+
+        @keyframes fc-carousel-right {
+            0% { transform: rotateY(0deg) translateX(0); }
+            45% { transform: rotateY(8deg) translateX(18px); }
+            100% { transform: rotateY(0deg) translateX(0); }
+        }
+
+        @keyframes fc-mirror-left {
+            0% { transform: translateX(0) scale(1); }
+            45% { transform: translateX(-26px) scale(0.96); }
+            100% { transform: translateX(0) scale(1); }
+        }
+
+        @keyframes fc-mirror-right {
+            0% { transform: translateX(0) scale(1); }
+            45% { transform: translateX(26px) scale(0.96); }
+            100% { transform: translateX(0) scale(1); }
+        }
+
+        /* ── FLASHCARD: warm educational palette ─────────────────
+           Cream surface in light theme, dark navy in dark theme.
+           Turquoise = cluster badge. Gold = small accents.
+           Soft rounded corners, subtle shadow, thin colored border.
+           Per spec: simple, clean, modern. No heavy decorations. */
+        .fc-scene {
+            --fc-cream:        #fdf8eb;     /* warm cream paper */
+            --fc-cream-soft:   #f5edd5;     /* subtle inner tint */
+            --fc-navy:         #142847;     /* dark navy card surface */
+            --fc-navy-soft:    #1d3258;
+            --fc-ink:          #1a2840;     /* dark text on cream */
+            --fc-ink-muted:    #6e7a8d;
+            --fc-ink-dark:     #e9eef7;     /* light text on navy */
+            --fc-ink-dark-muted: #93a0b8;
+            --fc-turquoise:    #1ca095;     /* badges + buttons */
+            --fc-turquoise-soft: rgba(28, 160, 149, 0.14);
+            --fc-gold:         #c89738;     /* small accents */
+            --fc-gold-soft:    rgba(200, 151, 56, 0.16);
+            --fc-names-from:    #0A84FF;
+            --fc-names-to:      #0066CC;
+            --fc-formulas-from: #BF5AF2;
+            --fc-formulas-to:   #7D3AC1;
+            --fc-decisions-from:#30D158;
+            --fc-decisions-to:  #188F3E;
+            --fc-insights-from: #FF9F0A;
+            --fc-insights-to:   #B66A00;
+            --fc-card-border:  rgba(28, 160, 149, 0.30);
+            --fc-card-shadow:  0 1px 3px rgba(20, 40, 71, 0.06),
+                               0 12px 32px -16px rgba(20, 40, 71, 0.20);
+        }
+        [data-theme="dark"] .fc-mirror {
+            opacity: 0.32;
+        }
+
+        [data-theme="dark"] .fc-scene {
+            --fc-mirror-main-bg: linear-gradient(180deg, rgba(20, 40, 71, 0.86), rgba(29, 50, 88, 0.22));
+            --fc-mirror-main-border: rgba(28, 160, 149, 0.24);
+            --fc-mirror-side-alpha: 0.28;
+        }
+
+        [data-theme="dark"] .fc-mirror::after {
+            background: radial-gradient(ellipse at center, rgba(12, 24, 42, 0.58), transparent 70%);
+        }
+        [data-theme="dark"] .fc-scene {
+            --fc-card-border:  rgba(28, 160, 149, 0.38);
+            --fc-card-shadow:  0 1px 3px rgba(0, 0, 0, 0.30),
+                               0 16px 36px -18px rgba(0, 0, 0, 0.55);
         }
 
         .fc-inner {
-            width: min(72vw, 460px);
-            height: min(48vh, 300px);
-            min-height: 240px;
+            width: clamp(280px, 86vw, 380px);
+            height: min(68vh, 430px);
+            min-height: 340px;
+            display: grid;
+            grid-template-areas: 'stack';
             position: relative;
             transform-style: preserve-3d;
             transition: transform 500ms cubic-bezier(0.4, 0.0, 0.2, 1);
-            border-radius: 20px;
             z-index: 2;
         }
+        .fc-inner.flipped { transform: rotateY(180deg); }
 
-        .fc-inner.flipped {
-            transform: rotateY(180deg);
+        /* Tap pop — subtle shadow swell on tap. Avoid transform here because
+           the back face already uses rotateY(180deg). */
+        .fc-inner.tap-pop .fc-face {
+            animation: fcTapPop 280ms ease-out;
         }
-
-        /* ── CLUSTER GRADIENT PALETTES ─────────────────────────── */
-        :root {
-            --fc-names-from:    #007AFF;
-            --fc-names-to:      #0a5fd4;
-            --fc-formulas-from: #6B21A8;
-            --fc-formulas-to:   #4338CA;
-            --fc-decisions-from:#059669;
-            --fc-decisions-to:  #0369A1;
-            --fc-insights-from: #D97706;
-            --fc-insights-to:   #B45309;
+        @keyframes fcTapPop {
+            0%   { box-shadow: var(--fc-card-shadow); }
+            50%  { box-shadow: 0 2px 6px rgba(20, 40, 71, 0.10), 0 18px 38px -16px rgba(20, 40, 71, 0.28); }
+            100% { box-shadow: var(--fc-card-shadow); }
         }
 
         .fc-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+            grid-area: stack;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            border-radius: 24px;
+            background: var(--fc-cream);
+            border: 1px solid var(--fc-card-border);
+            border-radius: 18px;
+            box-shadow: var(--fc-card-shadow);
+            padding: 20px 22px 22px;
             display: flex;
             flex-direction: column;
-            padding: 24px 20px;
+            gap: 14px;
             overflow: hidden;
+            color: var(--fc-ink);
+            position: relative;
         }
-
-        /* FRONT — colored gradient */
-        .fc-face.fc-front {
-            background: linear-gradient(135deg, var(--fc-front-from, var(--fc-names-from)), var(--fc-front-to, var(--fc-names-to)));
-            box-shadow: 0 12px 40px rgba(0,0,0,0.22);
-            justify-content: space-between;
+        [data-theme="dark"] .fc-face {
+            background: var(--fc-navy);
+            color: var(--fc-ink-dark);
         }
-
         .fc-face.fc-back {
             transform: rotateY(180deg);
-            background: rgba(255, 255, 255, 0.97);
-            border: 1px solid rgba(255,255,255,0.5);
-            box-shadow: var(--shadow-low), var(--shadow-card);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .fc-face.fc-back::-webkit-scrollbar { display: none; }
-        .fc-face.fc-back { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* CLUSTER BADGE */
-        .fc-cluster-badge {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            flex-shrink: 0;
-        }
-        .fc-front .fc-cluster-badge { color: rgba(255,255,255,0.65); }
-        .fc-back  .fc-cluster-badge {
-            color: var(--accent);
-            margin-bottom: 12px;
-        }
-
-        /* TERM AREA */
-        .fc-term-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            gap: 12px;
-        }
-
-        .fc-term {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            color: #ffffff;
-            line-height: 1.25;
-        }
-
-        /* Dedicated front-face media slot (structured card.media). */
-        .fc-front-media {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .fc-front-media:empty { display: none; }
-        .fc-front-media img,
-        .fc-front-media svg,
-        .fc-term img,
-        .fc-term svg {
-            max-width: 90%;
-            max-height: 160px;
-            height: auto;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .fc-formula {
-            font-family: "SF Mono", "SFMono-Regular", Menlo, monospace;
-            font-size: 16px;
-            color: rgba(255,255,255,0.92);
-            background: rgba(255,255,255,0.15);
-            padding: 8px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.25);
-        }
-
-        /* TAP TO FLIP hint — bottom of front */
-        .fc-hint {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
-            text-align: center;
-            flex-shrink: 0;
-            transition: opacity 400ms ease;
-        }
-
-        .fc-counter {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 8px;
-            flex-shrink: 0;
-        }
-        .fc-front .fc-counter { color: rgba(255,255,255,0.55); margin-top: 0; }
-
-        /* BACK BODY */
-        .fc-back-body {
-            flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
-            min-height: 0;
+        }
+        .fc-face.fc-back::-webkit-scrollbar { display: none; }
+        .fc-face.fc-back { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* TOP ROW — turquoise badge (cluster) on the left, gold counter
+           on the right. Both pill-shaped, both small. */
+        .fc-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .fc-cluster-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: var(--fc-turquoise-soft);
+            color: var(--fc-turquoise);
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+        .fc-counter {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--fc-gold);
+            font-variant-numeric: tabular-nums;
         }
 
-        .fc-back-body::-webkit-scrollbar { display: none; }
-        .fc-back-body { -ms-overflow-style: none; scrollbar-width: none; }
+        /* PHOTO / ICON — top of front, soft frame */
+        .fc-photo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--fc-cream-soft);
+            border: 1px solid var(--fc-card-border);
+            border-radius: 12px;
+            padding: 14px;
+            min-height: 110px;
+        }
+        [data-theme="dark"] .fc-photo {
+            background: var(--fc-navy-soft);
+        }
+        .fc-photo:empty { display: none; }
+        .fc-photo img, .fc-photo svg {
+            max-width: 100%;
+            max-height: 200px;
+            height: auto;
+            object-fit: contain;
+        }
 
+        /* TERM (Main title on the front) */
+        .fc-term {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.3;
+            color: var(--fc-ink);
+            text-align: center;
+            padding: 4px 0;
+        }
+        [data-theme="dark"] .fc-term { color: var(--fc-ink-dark); }
+        .fc-inner.no-image .fc-term {
+            font-size: 28px;
+            padding: 28px 0 20px;
+        }
+        .fc-term img, .fc-term svg {
+            max-width: 100%; max-height: 70px; vertical-align: middle;
+        }
+
+        /* FORMULA box (sub-line under the title on the front) */
+        .fc-formula {
+            font-family: "SF Mono", "SFMono-Regular", Menlo, monospace;
+            font-size: 14px;
+            color: var(--fc-ink);
+            background: var(--fc-gold-soft);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(200, 151, 56, 0.30);
+            align-self: center;
+        }
+        [data-theme="dark"] .fc-formula { color: var(--fc-ink-dark); }
+
+        .fc-tap-hint {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--fc-ink-muted);
+            text-align: center;
+            transition: opacity 400ms ease;
+            margin-top: auto;
+        }
+        [data-theme="dark"] .fc-tap-hint { color: var(--fc-ink-dark-muted); }
+
+        /* DEFINITION — back-side meaning text */
         .fc-definition {
             font-size: 15px;
             line-height: 1.6;
-            color: var(--text);
-            margin-bottom: 12px;
+            color: var(--fc-ink);
+            flex: 1;
         }
-
-        .fc-bullets {
+        [data-theme="dark"] .fc-definition { color: var(--fc-ink-dark); }
+        .fc-definition img, .fc-definition svg {
+            max-width: 100%; max-height: 140px; display: block;
+            margin: 8px auto; object-fit: contain;
+        }
+        .fc-definition b, .fc-definition strong { font-weight: 700; }
+        .fc-definition ul {
             padding-left: 18px;
-            margin-bottom: 12px;
+            margin-top: 10px;
         }
-
-        .fc-bullets li {
-            font-size: 14px;
-            line-height: 1.5;
+        .fc-definition li {
             margin-bottom: 6px;
-            color: var(--text);
         }
 
-        .fc-hook {
-            background: rgba(0, 122, 255, 0.07);
-            border-left: 3px solid var(--accent);
-            border-radius: 0 12px 12px 0;
-            padding: 12px 14px;
-            font-style: italic;
+        /* TIP / EXAMPLE pill — back-side, gold accent (small accent per spec) */
+        .fc-tip-pill {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px 10px 14px;
+            background: var(--fc-gold-soft);
+            border-left: 3px solid var(--fc-gold);
+            border-radius: 0 10px 10px 0;
             font-size: 13px;
-            color: var(--text-muted);
+            line-height: 1.55;
+            color: var(--fc-ink);
             margin-top: 8px;
+            flex-shrink: 0;
         }
-
-        /* User hint shown BELOW the flashcard scene (not inside the back face) */
-        .fc-user-hint {
-            max-width: min(72vw, 460px);
-            margin: 20px auto 0;
-            text-align: center;
-            font-size: 13px;
-            font-style: italic;
-            color: var(--text-muted);
-            line-height: 1.5;
-            padding: 0 12px;
+        [data-theme="dark"] .fc-tip-pill { color: var(--fc-ink-dark); }
+        .fc-tip-pill.is-empty { display: none; }
+        .fc-tip-icon {
+            flex: 0 0 auto;
+            font-size: 14px;
+            line-height: 1.2;
+            margin-top: 1px;
         }
-
-        /* Media inside flashcard back — fit within card */
-        .fc-definition img,
-        .fc-definition svg,
-        .fc-definition .fc-media img,
-        .fc-definition .fc-media svg {
-            max-width: 100%;
-            max-height: 180px;
-            height: auto;
-            width: auto;
-            display: block;
-            margin: 0 auto 12px;
-            object-fit: contain;
+        .fc-tip-text {
+            flex: 1;
         }
-        .fc-media { text-align: center; margin-bottom: 10px; }
+        .fc-tip-text strong {
+            color: var(--fc-gold);
+            font-weight: 700;
+            margin-right: 4px;
+        }
 
         @media (max-width: 640px) {
             .fc-scene {
@@ -490,17 +655,29 @@
             }
 
             .fc-side.left {
-                transform: translate(0, -50%) scale(0.76);
+                transform: translate(-108%, -50%) rotateY(24deg) translateZ(-90px) scale(0.72);
             }
 
             .fc-side.right {
-                transform: translate(0, -50%) scale(0.76);
+                transform: translate(8%, -50%) rotateY(-24deg) translateZ(-90px) scale(0.72);
+            }
+
+            .fc-mirror {
+                bottom: 3vh;
+                height: 82px;
+            }
+
+            .fc-mirror-prev,
+            .fc-mirror-next {
+                width: min(34vw, 150px);
             }
 
             .fc-inner {
-                width: min(82vw, 340px);
-                height: min(44vh, 260px);
-                min-height: 210px;
+                /* Mobile keeps the same Polaroid aspect; tighten height to fit
+                   short viewports without breaking the 60/40 photo/strip ratio. */
+                width: min(82vw, 320px);
+                height: min(68vh, 420px);
+                min-height: 340px;
             }
 
             .fc-side-term {
@@ -589,7 +766,7 @@
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             border-radius: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--surface-border);
             box-shadow: var(--shadow-low), var(--shadow-card);
             padding: 24px 20px;
             width: 92vw;
@@ -609,7 +786,7 @@
             height: 82vh;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--surface-border);
             box-shadow: var(--shadow-low), var(--shadow-card);
         }
 
@@ -2650,7 +2827,9 @@
         /* ── Wave J: Dark-mode theme overrides ──────────────────── */
         [data-theme="dark"] {
             --bg: #0f172a;
-            --surface: rgba(30, 41, 59, 0.72);
+            --surface: rgba(15, 23, 42, 0.78);
+            --surface-strong: rgba(15, 23, 42, 0.94);
+            --surface-border: rgba(148, 163, 184, 0.22);
             --text: #e5e7eb;
             --text-muted: #94a3b8;
             --accent: #007AFF;
@@ -2667,6 +2846,45 @@
                 radial-gradient(circle at 85% 18%, rgba(0, 122, 255, 0.08), transparent 26%),
                 radial-gradient(circle at 50% 88%, rgba(0, 122, 255, 0.10), transparent 34%),
                 linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        }
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .panel-card,
+        [data-theme="dark"] .break-card,
+        [data-theme="dark"] .final-card,
+        [data-theme="dark"] .screen-wave2-card,
+        [data-theme="dark"] .screen-reading-passage,
+        [data-theme="dark"] .screen-reading-checkpoint,
+        [data-theme="dark"] .screen-cons-mnemonic,
+        [data-theme="dark"] .screen-cons-answer,
+        [data-theme="dark"] .screen-reflection-summary,
+        [data-theme="dark"] .screen-reflection-question,
+        [data-theme="dark"] .screen-reflection-spaced-rep {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] code,
+        [data-theme="dark"] pre {
+            background: rgba(15, 23, 42, 0.88);
+            color: #bfdbfe;
+            border-color: rgba(96, 165, 250, 0.28);
+        }
+        [data-theme="dark"] blockquote {
+            background: rgba(30, 41, 59, 0.84);
+            color: #cbd5e1;
+            border-left-color: var(--accent);
+        }
+        [data-theme="dark"] .state-start,
+        [data-theme="dark"] .state-pill {
+            box-shadow: 0 6px 24px rgba(0,122,255,0.42);
+        }
+        [data-theme="dark"] .fc-side {
+            opacity: 0.34;
+            filter: saturate(0.9) brightness(0.72);
+            border-color: rgba(148, 163, 184, 0.20);
+            box-shadow: 0 16px 34px rgba(0,0,0,0.42);
+        }
+        [data-theme="dark"] .geo-shape {
+            opacity: 0.26;
         }
         [data-theme="dark"] #nets-tutor-panel {
             background: rgba(15, 23, 42, 0.97);
@@ -2877,11 +3095,11 @@
             </div>
         </div>
 
-        <!-- Stage 3 — Flashcards -->
+        <!-- Stage 3 - Flashcards -->
         <div id="screen-3" class="screen">
             <div class="fc-scene">
                 <div class="fc-ring">
-                    <div class="fc-side left" id="fc-prev-card">
+                    <div class="fc-side left" id="fc-prev-card" role="button" tabindex="0" aria-label="Oldingi flashcard">
                         <div class="fc-side-content">
                             <div class="fc-side-label">Oldingi karta</div>
                             <div class="fc-side-term" id="fc-prev-term"></div>
@@ -2891,26 +3109,28 @@
                     </div>
                     <div class="fc-inner" id="fc-inner">
                         <div class="fc-face fc-front" id="fc-front">
-                            <div class="fc-cluster-badge" id="fc-badge"></div>
-                            <div class="fc-term-area">
-                                <div class="fc-front-media" id="fc-front-media"></div>
-                                <div class="fc-term" id="fc-term"></div>
-                                <div class="fc-formula" id="fc-formula" style="display:none;"></div>
+                            <div class="fc-top">
+                                <div class="fc-cluster-chip" id="fc-badge"></div>
+                                <div class="fc-counter" id="fc-counter-front"></div>
                             </div>
-                            <div class="fc-hint" id="fc-hint">Aylantirish uchun bosing</div>
-                            <div class="fc-counter" id="fc-counter-front"></div>
+                            <div class="fc-photo" id="fc-photo"></div>
+                            <div class="fc-term" id="fc-term"></div>
+                            <div class="fc-formula" id="fc-formula" style="display:none;"></div>
+                            <div class="fc-tap-hint" id="fc-hint">Aylantirish uchun bosing</div>
                         </div>
                         <div class="fc-face fc-back" id="fc-back">
-                            <div class="fc-cluster-badge" id="fc-badge-back"></div>
-                            <div class="fc-back-body">
-                                <div class="fc-definition" id="fc-definition"></div>
-                                <ul class="fc-bullets" id="fc-bullets" style="display:none;"></ul>
-                                <div class="fc-hook" id="fc-hook"></div>
+                            <div class="fc-top">
+                                <div class="fc-cluster-chip" id="fc-badge-back"></div>
+                                <div class="fc-counter" id="fc-counter-back"></div>
                             </div>
-                            <div class="fc-counter" id="fc-counter-back"></div>
+                            <div class="fc-definition" id="fc-definition"></div>
+                            <div class="fc-tip-pill is-empty" id="fc-tip">
+                                <span class="fc-tip-icon">!</span>
+                                <span class="fc-tip-text" id="fc-tip-text"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="fc-side right" id="fc-next-card">
+                    <div class="fc-side right" id="fc-next-card" role="button" tabindex="0" aria-label="Keyingi flashcard">
                         <div class="fc-side-content">
                             <div class="fc-side-label">Keyingi karta</div>
                             <div class="fc-side-term" id="fc-next-term"></div>
@@ -2919,10 +3139,13 @@
                         </div>
                     </div>
                 </div>
+                <div class="fc-mirror" aria-hidden="true">
+                    <div class="fc-mirror-card fc-mirror-prev" id="fc-mirror-prev"></div>
+                    <div class="fc-mirror-card fc-mirror-main" id="fc-mirror-main"></div>
+                    <div class="fc-mirror-card fc-mirror-next" id="fc-mirror-next"></div>
+                </div>
             </div>
-            <div class="fc-user-hint" id="fc-user-hint" style="display:none;"></div>
         </div>
-
         <div id="screen-break" class="screen">
             <div class="card break-card">
                 <div class="break-text">Yaxshi uka, keep poing</div>
@@ -3554,7 +3777,7 @@
             document.querySelectorAll('.ms-option-btn').forEach((b, i) => {
                 b.addEventListener('click', () => msHandleAnswer(i));
             });
-            
+
             // UNIFIED POINTER SWIPE — touch + mouse, skip on long edge drag
             const SKIP_SHOW = 100;
             const SKIP_GO   = 210;
@@ -3831,7 +4054,7 @@
             const cap = document.querySelector('.caption');
             if(h1) h1.style.opacity = '0';
             if(cap) cap.style.opacity = '0';
-            
+
             btn.classList.remove('state-start');
             btn.classList.add('state-line');
             setTimeout(() => {
@@ -3933,20 +4156,20 @@
             const panel = PANELS[state.panelIndex];
             const titleEl = document.getElementById('panel-title');
             if (titleEl) titleEl.innerText = panel.title;
-            
+
             const container = document.getElementById('panel-content');
             const dots = document.getElementById('panel-dots');
             if (!container || !dots) return;
 
             container.innerHTML = '';
             dots.innerHTML = '';
-            
+
             panel.pages.forEach((page, i) => {
                 const pageEl = document.createElement('div');
                 pageEl.className = `page ${i === state.pageIndex ? 'active' : ''}`;
                 if (i < state.pageIndex) pageEl.style.transform = 'translateX(-100%)';
                 if (i > state.pageIndex) pageEl.style.transform = 'translateX(100%)';
-                
+
                 page.blocks.forEach((block, bi) => {
                     let el;
                     if (block.type === 'h2') el = document.createElement('h2');
@@ -3993,7 +4216,7 @@
                     if (block.text && !['code','quote','callout','diagram','image','svg'].includes(block.type)) el.innerHTML = block.text;
                     el.classList.add('bubbly');
                     pageEl.appendChild(el);
-                    
+
                     if (i === state.pageIndex) {
                         setTimeout(() => el.classList.add('show'), bi * 100 + 150);
                     } else {
@@ -4001,13 +4224,13 @@
                     }
                 });
                 container.appendChild(pageEl);
-                
+
                 const dot = document.createElement('div');
                 dot.className = `dot ${i === state.pageIndex ? 'active' : ''}`;
                 dot.onclick = () => { if (!state.isAnimating && i !== state.pageIndex) switchPage(i); };
                 dots.appendChild(dot);
             });
-            
+
             container.scrollTop = 0;
             updatePanelButton();
         }
@@ -4086,51 +4309,89 @@
                 state.hintShown = false;
                 renderFlashcard(false);
                 document.getElementById('fc-inner').addEventListener('click', handleCardTap);
+                setupFlashcardCarouselControls();
                 document.getElementById('screen-3').classList.add('active');
                 setTimeout(() => { state.isAnimating = false; }, 500);
             }, 450);
         }
 
+        // Per-cluster colors. Drives both the chip and the aurora bloom
+        // via the --fc-cluster CSS variable. Aurora tints derive from this
+        // via color-mix() so we get matching low-opacity glows for free.
+        const FC_CLUSTER_DOT = {
+            'QOIDA':        '#0A84FF',  // rule    → blue
+            'MISOL':        '#30D158',  // example → green
+            'TAHLIL':       '#BF5AF2',  // analysis → purple
+            'METOD':        '#FF9F0A',  // method  → orange
+            // Legacy English names from older homeworks.
+            'NAMES':        '#0A84FF',
+            'FORMULAS':     '#BF5AF2',
+            'DECISIONS':    '#30D158',
+            'KEY INSIGHTS': '#FF9F0A',
+        };
+        // Legacy gradient palette — preserved as no-ops so old call sites
+        // (side cards) stay valid until the side-card UI is also redesigned.
         const FC_CLUSTER_COLORS = {
+            'QOIDA':        ['var(--fc-names-from)',    'var(--fc-names-to)'],
+            'MISOL':        ['var(--fc-decisions-from)','var(--fc-decisions-to)'],
+            'TAHLIL':       ['var(--fc-formulas-from)', 'var(--fc-formulas-to)'],
+            'METOD':        ['var(--fc-insights-from)', 'var(--fc-insights-to)'],
             'NAMES':        ['var(--fc-names-from)',    'var(--fc-names-to)'],
             'FORMULAS':     ['var(--fc-formulas-from)', 'var(--fc-formulas-to)'],
             'DECISIONS':    ['var(--fc-decisions-from)','var(--fc-decisions-to)'],
             'KEY INSIGHTS': ['var(--fc-insights-from)', 'var(--fc-insights-to)'],
         };
-        function fcApplyClusterGradient(cluster, frontEl) {
-            const [from, to] = FC_CLUSTER_COLORS[cluster] || FC_CLUSTER_COLORS['NAMES'];
-            frontEl.style.setProperty('--fc-front-from', from);
-            frontEl.style.setProperty('--fc-front-to', to);
+        function fcApplyClusterDot(cluster, innerEl) {
+            // Sets --fc-cluster on the .fc-inner wrapper. Both faces and
+            // every aurora-derived token inherit, giving the whole card
+            // a coherent cluster-color glow.
+            const color = FC_CLUSTER_DOT[String(cluster || '').toUpperCase()] || '#0A84FF';
+            innerEl.style.setProperty('--fc-cluster', color);
         }
         function fcApplySideGradient(cluster, sideEl) {
-            const [from, to] = FC_CLUSTER_COLORS[cluster] || FC_CLUSTER_COLORS['NAMES'];
+            const [from, to] = FC_CLUSTER_COLORS[cluster] || FC_CLUSTER_COLORS['QOIDA'];
             sideEl.style.setProperty('--fc-side-from', from);
             sideEl.style.setProperty('--fc-side-to', to);
+        }
+        function fcApplyMainMirror(card, mirrorEl) {
+            if (!mirrorEl) return;
+            const hasMedia = !!(card && card.front && card.front.media);
+            mirrorEl.classList.toggle('has-media', hasMedia);
         }
 
         function renderFlashcard(showYakunlash) {
             const card = FLASHCARDS[state.cardIndex];
             const total = FLASHCARDS.length;
             const n = state.cardIndex + 1;
-            const clusterLabel = card.cluster + ' · KARTA ' + n + ' / ' + total;
+            const clusterName = String(card.cluster || '').toLowerCase();
 
-            document.getElementById('fc-badge').textContent = clusterLabel;
-            document.getElementById('fc-badge-back').textContent = clusterLabel;
+            // Top row: cluster name (lowercase, muted) — same on both faces.
+            document.getElementById('fc-badge').textContent = clusterName;
+            document.getElementById('fc-badge-back').textContent = clusterName;
 
-            // Apply cluster gradient to front face
-            const frontFace = document.getElementById('fc-front');
-            if (frontFace) fcApplyClusterGradient(card.cluster, frontFace);
-            // Structured front media (dedicated slot above the term).
-            const frontMediaEl = document.getElementById('fc-front-media');
-            if (frontMediaEl) frontMediaEl.innerHTML = (card.front && card.front.media) || '';
-            // innerHTML — term may contain inline <img>/<svg> embedded via the
-            // builder's RichField toolbar. term_html keeps those; term is the
-            // plain-text fallback.
-            document.getElementById('fc-term').innerHTML =
-                (card.front && (card.front.term_html || card.front.term)) || '';
+            // Apply cluster dot color to the inner wrapper (cascades to both faces).
+            const fcInner = document.getElementById('fc-inner');
+            fcApplyClusterDot(card.cluster, fcInner);
+
+            // Photo zone — shows ONLY structured card.front.media. Inline images
+            // embedded in term_html stay inside the strip-term (sized small).
+            const photoEl = document.getElementById('fc-photo');
+            const mediaHtml = (card.front && card.front.media) ? String(card.front.media) : '';
+            if (photoEl) photoEl.innerHTML = mediaHtml;
+
+            // Term inside the frosted glass strip. innerHTML preserves any
+            // inline <img>/<svg> the builder's RichField may have embedded.
+            const termHtml = (card.front && (card.front.term_html || card.front.term)) || '';
+            document.getElementById('fc-term').innerHTML = termHtml;
+
+            // No-image variant: photo zone empty AND term has no inline media →
+            // collapse photo zone, term scales up.
+            const termHasInlineMedia = /<(img|svg)\b/i.test(termHtml);
+            const hasAnyVisual = !!mediaHtml || termHasInlineMedia;
+            fcInner.classList.toggle('no-image', !hasAnyVisual);
 
             const formulaEl = document.getElementById('fc-formula');
-            if (card.front.formula) {
+            if (card.front && card.front.formula) {
                 formulaEl.textContent = card.front.formula;
                 formulaEl.style.display = '';
             } else {
@@ -4139,29 +4400,31 @@
 
             const defEl = document.getElementById('fc-definition');
             // innerHTML — back-of-card definition may contain inline images/SVGs/bold/italic.
-            defEl.innerHTML = card.back.definition || '';
-
-            const bulletsEl = document.getElementById('fc-bullets');
-            if (card.back.bullets && card.back.bullets.length) {
-                bulletsEl.innerHTML = '';
-                card.back.bullets.forEach(b => { const li = document.createElement('li'); li.textContent = b; bulletsEl.appendChild(li); });
-                bulletsEl.style.display = '';
-            } else {
-                bulletsEl.style.display = 'none';
+            defEl.innerHTML = (card.back && card.back.definition) || '';
+            if (card.back && Array.isArray(card.back.bullets) && card.back.bullets.length) {
+                const ul = document.createElement('ul');
+                card.back.bullets.forEach(bullet => {
+                    const li = document.createElement('li');
+                    li.textContent = bullet;
+                    ul.appendChild(li);
+                });
+                defEl.appendChild(ul);
             }
 
-            // Hide the in-card hook; render the user's hint BELOW the card scene.
-            const hookEl = document.getElementById('fc-hook');
-            if (hookEl) { hookEl.textContent = ''; hookEl.style.display = 'none'; }
-            const userHintEl = document.getElementById('fc-user-hint');
-            if (userHintEl) {
-                const hookText = (card.back && card.back.hook) ? String(card.back.hook).trim() : '';
+            // First-class Tip pill — shows the author's hint inline on the back.
+            // No external below-the-card slot anymore.
+            const tipEl = document.getElementById('fc-tip');
+            const tipTextEl = document.getElementById('fc-tip-text');
+            const hookText = (card.back && card.back.hook) ? String(card.back.hook).trim() : '';
+            if (tipEl && tipTextEl) {
                 if (hookText) {
-                    userHintEl.textContent = hookText;
-                    userHintEl.style.display = '';
+                    // innerHTML — author hints may contain inline <strong>/<i>/<br>
+                    // for emphasis (same trust model as back.definition above).
+                    tipTextEl.innerHTML = hookText;
+                    tipEl.classList.remove('is-empty');
                 } else {
-                    userHintEl.textContent = '';
-                    userHintEl.style.display = 'none';
+                    tipTextEl.textContent = '';
+                    tipEl.classList.add('is-empty');
                 }
             }
 
@@ -4170,7 +4433,6 @@
             document.getElementById('fc-counter-back').textContent = counterText;
             renderFlashcardSides();
 
-            const fcInner = document.getElementById('fc-inner');
             fcInner.style.transition = 'none';
             fcInner.classList.remove('flipped');
             state.cardFlipped = false;
@@ -4196,10 +4458,17 @@
             return (idx + total) % total;
         }
 
+        function fcStripHtml(value) {
+            const el = document.createElement('div');
+            el.innerHTML = String(value || '');
+            return (el.textContent || '').trim();
+        }
+
         function setSideCardContent(prefix, card, index, total) {
-            document.getElementById(prefix + '-term').textContent = card.front.term;
+            document.getElementById(prefix + '-term').textContent =
+                (card.front && (card.front.term || fcStripHtml(card.front.term_html || ''))) || '';
             const formulaEl = document.getElementById(prefix + '-formula');
-            if (card.front.formula) {
+            if (card.front && card.front.formula) {
                 formulaEl.textContent = card.front.formula;
                 formulaEl.style.display = '';
             } else {
@@ -4210,16 +4479,53 @@
 
         function renderFlashcardSides() {
             const total = FLASHCARDS.length;
+            const currentCard = FLASHCARDS[state.cardIndex];
             const prevIndex = getWrappedCardIndex(state.cardIndex - 1);
             const nextIndex = getWrappedCardIndex(state.cardIndex + 1);
             setSideCardContent('fc-prev', FLASHCARDS[prevIndex], prevIndex, total);
             setSideCardContent('fc-next', FLASHCARDS[nextIndex], nextIndex, total);
             const prevEl = document.getElementById('fc-prev-card');
             const nextEl = document.getElementById('fc-next-card');
+            const prevMirror = document.getElementById('fc-mirror-prev');
+            const mainMirror = document.getElementById('fc-mirror-main');
+            const nextMirror = document.getElementById('fc-mirror-next');
             if (prevEl) fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevEl);
             if (nextEl) fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextEl);
+            if (prevMirror) fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevMirror);
+            fcApplyMainMirror(currentCard, mainMirror);
+            if (nextMirror) fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextMirror);
         }
 
+        function setupFlashcardCarouselControls() {
+            const prevEl = document.getElementById('fc-prev-card');
+            const nextEl = document.getElementById('fc-next-card');
+            const rotateToPrev = () => {
+                if (state.stage !== 3 || state.isAnimating) return;
+                switchCard(getWrappedCardIndex(state.cardIndex - 1), -1);
+            };
+            const rotateToNext = () => {
+                if (state.stage !== 3 || state.isAnimating) return;
+                switchCard(getWrappedCardIndex(state.cardIndex + 1), 1);
+            };
+            if (prevEl) {
+                prevEl.onclick = rotateToPrev;
+                prevEl.onkeydown = (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        rotateToPrev();
+                    }
+                };
+            }
+            if (nextEl) {
+                nextEl.onclick = rotateToNext;
+                nextEl.onkeydown = (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        rotateToNext();
+                    }
+                };
+            }
+        }
         function handleCardTap(e) {
             if (state.stage !== 3) return;
             if (state.isAnimating) return;
@@ -4232,6 +4538,12 @@
             }
 
             const fcInner = document.getElementById('fc-inner');
+            // Tap-pop micro-interaction — a 280ms shadow swell on the leading face.
+            // We force-restart the animation so consecutive taps each pop.
+            fcInner.classList.remove('tap-pop');
+            void fcInner.offsetWidth;
+            fcInner.classList.add('tap-pop');
+
             fcInner.style.transition = 'transform 500ms cubic-bezier(0.4, 0.0, 0.2, 1)';
             state.cardFlipped = !state.cardFlipped;
             fcInner.classList.toggle('flipped', state.cardFlipped);
@@ -4241,6 +4553,12 @@
 
         function switchCard(newIdx, dir) {
             state.isAnimating = true;
+            const scene = document.querySelector('.fc-scene');
+            if (scene) {
+                scene.classList.remove('is-rotating-left', 'is-rotating-right');
+                void scene.offsetWidth;
+                scene.classList.add(dir > 0 ? 'is-rotating-left' : 'is-rotating-right');
+            }
             const fcInner = document.getElementById('fc-inner');
             fcInner.removeEventListener('click', handleCardTap);
 
@@ -4273,6 +4591,7 @@
                     fcInner.style.filter = '';
                     fcInner.style.opacity = '';
                     fcInner.addEventListener('click', handleCardTap, { once: false });
+                    if (scene) scene.classList.remove('is-rotating-left', 'is-rotating-right');
                     state.isAnimating = false;
                 }, 380);
             }, 360);
@@ -4623,7 +4942,7 @@
                 card.classList.add('bounce');
                 setTimeout(() => card.classList.remove('bounce'), 450);
             }
-            
+
             const content = document.getElementById('panel-content');
             if (content) {
                 content.style.transition = 'all 400ms ease-in';
@@ -4631,7 +4950,7 @@
                 content.style.filter = 'blur(15px)';
                 content.style.opacity = '0';
             }
-            
+
             setTimeout(() => {
                 state.panelIndex++;
                 state.pageIndex = 0;
@@ -4658,7 +4977,7 @@
                 card.classList.add('bounce');
                 setTimeout(() => card.classList.remove('bounce'), 450);
             }
-            
+
             const content = document.getElementById('panel-content');
             if (content) {
                 content.style.transition = 'all 400ms ease-in';
@@ -4666,7 +4985,7 @@
                 content.style.filter = 'blur(15px)';
                 content.style.opacity = '0';
             }
-            
+
             setTimeout(() => {
                 state.panelIndex--;
                 state.pageIndex = PANELS[state.panelIndex].pages.length - 1;

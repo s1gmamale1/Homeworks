@@ -2,7 +2,7 @@
 
 You are building a Flash Card deck for a Kimyo homework session. You receive the textbook page. Your job is to extract every key substance, reaction type, formula, safety rule, and Periodic Table relationship from the chapter and put them on cards.
 
-Flash Cards are a simple reference tool. Nothing more.
+Flash Cards are a simple reference tool with a topic visual on the front whenever the concept can be pictured.
 
 ## Input
 
@@ -16,6 +16,8 @@ Flash Cards are a simple reference tool. Nothing more.
 ## Two card modes
 
 Kimyo flash cards come in two modes. Both modes are used in every deck — mix them.
+
+**Media:** Aim to include a small topic-related visual on every card: lab sample, apparatus, particle model, reaction arrow, Periodic Table highlight, safety icon, or observation sketch. Prefer inline SVG under 200×150px. If a card truly has no honest visual, omit `media`.
 
 ---
 
@@ -88,7 +90,7 @@ Safety: [one-line hazard note if applicable]
 - One concept per card
 - Mode A: Front = name. Back = three-scale description (Macro + Micro + Symbolic + Safety) + lab diagram. Nothing else.
 - Mode B: Front = macroscopic observation or diagram with question mark. Back = substance/reaction name + three-scale description. Nothing else.
-- Every card MUST include a diagram description — showing either lab sample appearance, molecular/ion structure, or lab apparatus with PPE labeled
+- Every card MUST include `media` with a diagram when possible — showing either lab sample appearance, molecular/ion structure, Periodic Table relation, or lab apparatus with PPE labeled
 - Every Mode A card must include the Safety note — even if it is "no hazard for typical school lab use"
 - All balanced equations on cards must be verified — equal atom counts on both sides
 - NO practice problems, NO questions, NO explanations beyond the three-scale description, NO hooks, NO stories
@@ -103,6 +105,6 @@ Safety: [one-line hazard note if applicable]
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD" }
+  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "optional mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```

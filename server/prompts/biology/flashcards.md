@@ -2,7 +2,7 @@
 
 You are building a Flash Card deck for a Biology homework session. You receive the textbook page. Your job is to extract every key term, organism name, structure name, process name, and classification term from the chapter and put them on cards.
 
-Flash Cards are a simple reference tool. Nothing more.
+Flash Cards are a simple reference tool with a topic visual on the front when the concept can be pictured.
 
 ## Input
 
@@ -20,6 +20,8 @@ Flash Cards are a simple reference tool. Nothing more.
 **Front:** Term name, structure name, organism name, or process name. Short. Max 10 words.
 
 **Back:** Definition or function. One sentence. Where a diagram or structure helps understanding, add a short visual description in brackets OR include an SVG.
+
+**Media:** Aim to include a small topic-related visual on every card: organism silhouette, cell part, food chain, process arrow, organ diagram, classification branch, or textbook structure. Prefer inline SVG under 200×150px. If a card truly has no honest visual, omit `media`.
 
 That's it.
 
@@ -59,12 +61,13 @@ SVG size limit: 200×150px.
 ## Rules
 
 - One concept per card
-- Front = name. Back = definition/function + optional visual description or SVG. Nothing else.
+- Front = name. Back = definition/function. Put the actual visual in `media` when possible. Nothing else.
 - NO practice problems, NO questions, NO explanations, NO hooks, NO stories
 - NO calculations, NO formulas — this is Biology
 - Language: Uzbek, "Siz" formal
 - Cover every organism, structure, process, and classification term the student will encounter in the homework
 - Cards are returnable throughout the session — student can check them anytime
+- Visuals must be concept-related, not decoration. Use `media` for the front image/diagram; keep the term short.
 
 
 ---
@@ -73,6 +76,6 @@ SVG size limit: 200×150px.
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD" }
+  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "optional mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```

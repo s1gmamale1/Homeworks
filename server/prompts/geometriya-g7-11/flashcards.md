@@ -2,7 +2,7 @@
 
 You are building a Flash Card deck for a Geometry homework session. You receive the textbook page. Your job is to extract every key term, theorem, and formula from the chapter and put them on cards.
 
-Flash Cards are a simple reference tool. Nothing more.
+Flash Cards are a simple reference tool with a diagram on the front whenever the concept can be recognized visually.
 
 ## Input
 
@@ -13,7 +13,7 @@ Flash Cards are a simple reference tool. Nothing more.
 
 - G7-9: **8-12 cards**
 
-> **SVG Rule:** Every diagram on a flash card (both Mode A and Mode B) must be actual SVG code — not a bracket description alone. Use `instruction.md` → SVG Output Rule for templates and mark syntax. Mode B front cards show the diagram with an orange `?` on the unknown element.
+> **SVG Rule:** Every diagram on a flash card (both Mode A and Mode B) must be actual SVG code in `media` — not a bracket description alone. Use `instruction.md` → SVG Output Rule for templates and mark syntax. Mode B front cards show the diagram with an orange `?` on the unknown element.
 
 ## Two card modes
 
@@ -26,6 +26,8 @@ Geometry flash cards come in two modes. Both modes are used in every deck — mi
 **Front:** Term name or theorem name. Short. Max 10 words.
 
 **Back:** Definition or theorem statement. One line. Then the diagram in brackets using the Visual Layer notation standard.
+
+**Media:** Put the actual geometry diagram in `media` as inline SVG under 200×150px. Aim for every card to have media. The front `term` stays short; the visual lives in `media`.
 
 > **Front:** To'g'ri burchak (∠ = 90°)
 > **Back:** 90° ga teng burchak. [Diagram: rays BA and BC, square corner symbol at vertex B]
@@ -63,9 +65,9 @@ Geometry flash cards come in two modes. Both modes are used in every deck — mi
 ## Rules
 
 - One concept per card
-- Mode A: Front = name. Back = definition + diagram (Visual Layer notation). Nothing else.
-- Mode B: Front = diagram with question mark on the unknown. Back = theorem/term name + definition. Nothing else.
-- Every card MUST include a diagram description using the Visual Layer notation standard — no text-only geometry cards
+- Mode A: Front = name. Back = definition. Media = diagram SVG. Nothing else.
+- Mode B: Front = short prompt like "Diagramni taning". Media = diagram SVG with question mark on the unknown. Back = theorem/term name + definition. Nothing else.
+- Every card MUST include `media` with an SVG diagram — no text-only geometry cards
 - Diagram marks: tick marks for equal sides, arc marks for equal angles, square corners for right angles, arrows for parallel lines, color codes (blue=given, orange=to prove)
 - NO practice problems, NO questions, NO explanations, NO hooks, NO stories
 - Language: Uzbek, "Siz" formal
@@ -79,6 +81,6 @@ Geometry flash cards come in two modes. Both modes are used in every deck — mi
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD" }
+  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "optional mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```

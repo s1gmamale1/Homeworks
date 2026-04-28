@@ -82,15 +82,17 @@
   }
 
   function clusterAccent(cluster) {
+    // Palette mirrors the runtime FC_CLUSTER_DOT in perfect_homework.html
+    // so the builder card and the live card glow with the same color.
     switch (cluster) {
       case "QOIDA":
-        return { bg: "rgba(0, 122, 255, 0.12)", bar: "#007aff", text: "#004fb3" };
+        return { bg: "rgba(10, 132, 255, 0.12)", bar: "#0A84FF", text: "#0040b3" };
       case "MISOL":
-        return { bg: "rgba(52, 199, 89, 0.12)", bar: "#34c759", text: "#1b7a34" };
+        return { bg: "rgba(48, 209, 88, 0.12)", bar: "#30D158", text: "#1b7a34" };
       case "TAHLIL":
-        return { bg: "rgba(175, 82, 222, 0.12)", bar: "#af52de", text: "#7028a6" };
+        return { bg: "rgba(191, 90, 242, 0.12)", bar: "#BF5AF2", text: "#7028a6" };
       case "METOD":
-        return { bg: "rgba(255, 149, 0, 0.12)", bar: "#ff9500", text: "#a65f00" };
+        return { bg: "rgba(255, 159, 10, 0.12)", bar: "#FF9F0A", text: "#a65f00" };
       default:
         return { bg: "rgba(0, 0, 0, 0.06)", bar: "#8e8e93", text: "#3a3a3c" };
     }
