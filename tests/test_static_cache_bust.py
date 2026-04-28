@@ -61,3 +61,48 @@ def test_version_query_is_not_dev_placeholder(client):
 
     # Should contain actual version query params (e.g., ?v=abc1234 or ?v=dev)
     assert re.search(r'\?v=\w+', body), "No version query params found in HTML"
+
+
+# ──────────────────────────────────────────────────────────────────
+# Footgun guard: catch ANY new <script>/<link> tag added without
+# the cache-bust suffix, not just /js/ and /css/ paths.
+#
+# Sigma flagged this in the PR #31 review: PR #32 added
+# <script src="/js/editors/games/puzzle-lock.js"> with no ?v= and
+# the existing /js-only regex wouldn't have caught a future tag
+# under a different path. This stricter check fails on ANY
+# internal asset reference missing ?v=.
+# ──────────────────────────────────────────────────────────────────
+
+_INTERNAL_ASSET_RE = re.compile(
+    r"""<(?:script|link)[^>]+(?:src|href)=["']([^"']+)["']""",
+    re.IGNORECASE,
+)
+
+
+def _internal_asset_refs(body: str) -> list[str]:
+    """Return all <script src=...> / <link href=...> values that point at
+    same-origin assets (skip http(s)://, data:, mailto:, fragment-only refs)."""
+    refs = _INTERNAL_ASSET_RE.findall(body)
+    return [
+        r for r in refs
+        if not r.startswith(("http://", "https://", "data:", "mailto:", "//", "#"))
+    ]
+
+
+@pytest.mark.parametrize("path", ["/", "/builder.html", "/library.html"])
+def test_no_internal_script_or_link_tag_skips_cache_bust(client, path):
+    """Strict variant: every same-origin <script src=> / <link href=> on
+    every dashboard page must carry ?v=<sha>. Catches the footgun where a
+    future PR adds a new tag under any path (not just /js/ or /css/) and
+    forgets the suffix."""
+    r = client.get(path)
+    assert r.status_code == 200
+    refs = _internal_asset_refs(r.text)
+    assert refs, f"no internal asset refs found in {path}"
+    for ref in refs:
+        assert "?v=" in ref, (
+            f"missing cache-bust on {path}: {ref}\n"
+            f"add ?v=__VERSION__ to the tag, e.g. "
+            f'<script src="{ref}?v=__VERSION__">'
+        )
