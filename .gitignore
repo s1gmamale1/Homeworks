@@ -35,6 +35,10 @@ Thumbs.db
 .idea/
 *.swp
 
+# Windows installers / binaries (don't belong in source control)
+*.msi
+*.exe
+
 # Obsidian vault (local layout, not for the repo)
 .obsidian/
 notes/
