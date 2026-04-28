@@ -147,6 +147,11 @@ async def check_answer(
     )
 
     prompt = _load_runtime_prompt("answer-checker")
+    # Caller can request 2-axis Anchored Mastery Rubric scoring by setting
+    # answer_spec.amr=true (or implicitly via type="semantic" — open-ended
+    # responses always benefit from AMR). The prompt has an opt-in section
+    # that emits axis_1/axis_2 when amr_mode is true in the input payload.
+    amr_requested = bool(answer_spec.get("amr")) or answer_spec.get("type") == "semantic"
     payload = {
         "question": question,
         "student_answer": student_answer,
@@ -155,14 +160,22 @@ async def check_answer(
         "grade": grade,
         "tier": tier,
         "context": context or "",
+        "amr_mode": amr_requested,
     }
     schema = {
         "correct": "bool",
         "score": "float between 0 and 1",
         "feedback": "Uzbek string, formal Siz, 1-2 sentences",
         "matched_expected": "string or null",
-        "confidence": "float between 0 and 1"
+        "confidence": "float between 0 and 1",
     }
+    if amr_requested:
+        schema.update({
+            "axis_1": "integer 1..4 (Concept Identification)",
+            "axis_2": "integer 1..4 (Process Integrity)",
+            "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+            "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
+        })
     ai_response = await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
         schema_hint=schema,
@@ -193,7 +206,13 @@ async def check_answer(
                 "source": "ai_unsure",
                 "needs_review": True
             }
-            
+
+        # Preserve AMR axes from the AI response on the low-confidence path so
+        # the scorecard still gets axis data even when the verdict is unsure.
+        for k in ("axis_1", "axis_2", "axis_1_label", "axis_2_label"):
+            if k in ai_response:
+                res[k] = ai_response[k]
+
         await db.add_to_review_queue(question_id, student_answer, answer_spec, ai_response)
         return res
 

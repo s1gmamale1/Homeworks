@@ -2232,6 +2232,110 @@
             color: var(--accent);
         }
 
+        /* ── Results / AMR Scorecard ──────────────────────────────── */
+        .screen-results-card { padding: 24px 22px; }
+        .screen-results-caption { letter-spacing: 1.5px; }
+        .screen-results-band {
+            display: inline-block;
+            margin: 8px 0 12px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .screen-results-band.band-mastered   { background: rgba(34,197,94,0.18);  color: #86efac; border: 1px solid rgba(34,197,94,0.45); }
+        .screen-results-band.band-proficient { background: rgba(59,130,246,0.18); color: #93c5fd; border: 1px solid rgba(59,130,246,0.45); }
+        .screen-results-band.band-apprentice { background: rgba(234,179,8,0.18);  color: #fde68a; border: 1px solid rgba(234,179,8,0.45); }
+        .screen-results-band.band-novice     { background: rgba(239,68,68,0.18);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
+        .screen-results-headline {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--text);
+        }
+        .screen-results-phases {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .results-phase-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(99,184,255,0.07);
+            border: 1px solid rgba(99,184,255,0.2);
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .results-phase-row .results-phase-name { color: var(--text-dim); }
+        .results-phase-row .results-phase-score { font-weight: 700; color: var(--accent); }
+        .screen-results-amr {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            background: rgba(168,85,247,0.07);
+            border: 1px solid rgba(168,85,247,0.25);
+            border-radius: 12px;
+        }
+        .results-amr-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(216,180,254,0.95);
+            margin-bottom: 10px;
+            letter-spacing: 0.4px;
+        }
+        .results-amr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .results-amr-axis {
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+        }
+        .results-amr-axis-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .results-amr-axis-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .results-amr-axis-band {
+            font-size: 11px;
+            color: rgba(216,180,254,0.85);
+            margin-top: 2px;
+        }
+        .screen-results-mastery {
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text-dim);
+            padding: 12px 14px;
+            background: rgba(34,197,94,0.05);
+            border-left: 3px solid rgba(34,197,94,0.45);
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+        .screen-results-closing {
+            font-size: 13px;
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+            margin-top: 8px;
+        }
+        @media (max-width: 600px) {
+            .screen-results-phases { grid-template-columns: 1fr; }
+            .results-amr-grid { grid-template-columns: 1fr; }
+        }
+
         /* ── Wave F2: Persistent AI Tutor Widget ────────────────── */
         #nets-ai-tutor {
             position: fixed;
@@ -2919,6 +3023,19 @@
             </div>
         </div>
 
+        <!-- Stage 9 — Results / AMR Scorecard -->
+        <div id="screen-results" class="screen">
+            <div class="card panel-card screen-results-card">
+                <div class="caption screen-results-caption">Yakuniy Hisobot · AMR</div>
+                <div class="screen-results-band" id="results-band"></div>
+                <div class="screen-results-headline" id="results-headline"></div>
+                <div class="screen-results-phases" id="results-phases"></div>
+                <div class="screen-results-amr" id="results-amr"></div>
+                <div class="screen-results-mastery" id="results-mastery"></div>
+                <div class="screen-results-closing" id="results-closing"></div>
+            </div>
+        </div>
+
         <!-- The Morphing Button -->
         <div id="action-button" class="state-start">
             <span class="btn-text">Vazifani boshlash</span>
@@ -3411,16 +3528,24 @@
                     startFinalBoss();
                 } else {
                     // Wave 2: Reflection sits after Boss before finish (auto-skip if empty).
-                    const finishUp = () => {
-                        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    // After Reflection (or directly after Boss when Reflection is empty),
+                    // we always show the AMR Results scorecard as the final stage.
+                    const showResultsThenFinish = () => {
+                        if (typeof showResultsScreen === 'function') {
+                            showResultsScreen();
+                        } else {
+                            // Defensive — if for any reason showResultsScreen wasn't
+                            // injected, fall through to plain finish.
+                            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                        }
                         btn.classList.remove('pulse', 'state-pill');
                         btn.classList.add('state-line');
                         if (btnText) btnText.style.opacity = '0';
                     };
                     if (typeof showReflectionScreen === 'function' && reflectionHasContent()) {
-                        showReflectionScreen(finishUp);
+                        showReflectionScreen(showResultsThenFinish);
                     } else {
-                        finishUp();
+                        showResultsThenFinish();
                     }
                 }
             }
@@ -4115,6 +4240,14 @@
             const item = MS_QUESTIONS[msState.index];
             const localCorrect = selectedIndex === item.correct;
             if (localCorrect) msState.score++;
+            // Log Memory Sprint result for end-of-session AMR scorecard.
+            // Closed multiple-choice — score-only, no AI axes.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'memory-sprint', id: 'ms-' + (msState.index + 1),
+                    correct: localCorrect, score: localCorrect ? 1 : 0,
+                });
+            }
 
             const optBtns = document.querySelectorAll('.ms-option-btn');
             optBtns.forEach((b, i) => {
@@ -4590,6 +4723,17 @@
                 if (item.tier === 'hard') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'easy';
             }
+            // Log AQ result for the end-of-session AMR scorecard.
+            // AQ items are closed-form numeric, so no AMR axes — score-only.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'adaptive-quiz',
+                    id: item.id || ('aq-' + (aq.shown + 1)),
+                    tier: item.tier,
+                    correct: isCorrect,
+                    score: isCorrect ? 1 : 0,
+                });
+            }
             gbSetButtonNext('Keyingi savol');
         }
 
@@ -4712,7 +4856,8 @@
                             type: 'semantic',
                             expected: expected,
                             canonical_display: expected,
-                            allow_ai_fallback: true
+                            allow_ai_fallback: true,
+                            amr: true
                         },
                         allow_ai_fallback: true,
                         subject: (window.NETS_CTX && NETS_CTX.subject) || 'geometriya-g7-11',
@@ -4748,15 +4893,33 @@
             if (checkingBubble && checkingBubble.parentNode) checkingBubble.parentNode.removeChild(checkingBubble);
             if (ta) ta.disabled = false;
             const ok = !!result.correct;
+            // Log the result for the end-of-session AMR scorecard. We log
+            // ONCE per chain (not per sub-level) so the report mirrors the
+            // five sentence-fill prompts the student saw, with the axis
+            // values from the level-1 attempt that resolved the chain.
+            if (window.__sessionLog && (ok || wc.retries >= 1)) {
+                window.__sessionLog.push({
+                    phase: 'sentence-fill',
+                    id: 'wc-' + (wc.chainIdx + 1),
+                    correct: ok,
+                    score: typeof result.score === 'number' ? result.score : (ok ? 1 : 0),
+                    axis_1: result.axis_1 || (ok ? 4 : 1),
+                    axis_2: result.axis_2 || (ok ? 4 : 1),
+                    first_try: ok && wc.retries === 0,
+                    feedback: result.feedback || '',
+                });
+            }
             if (ok) {
                 wc.retries = 0;
                 if (reprompt) reprompt.className = 'gb-wc-reprompt';
                 // Surface the AI's positive feedback if provided.
                 if (result.feedback && result.source === 'ai') gbWCAppendProbe('✓ ' + result.feedback);
-                wc.levelIdx++;
-                gbWCUpdateHeader();
-                if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                // First-try correct OR any-try correct: skip remaining hint
+                // levels in this chain and jump straight to the invariant
+                // (which advances to the next sentence-fill prompt). The old
+                // flow forced the student through 3 sub-levels even after a
+                // correct first-try answer.
+                gbWCShowInvariant(chain);
             } else {
                 wc.retries++;
                 // Surface the AI hint if any so the student knows what's missing.
@@ -4765,10 +4928,10 @@
                     wc.retries = 0;
                     if (reprompt) reprompt.className = 'gb-wc-reprompt';
                     gbWCAppendProbe("To'g'ri javob: " + level.expect);
-                    wc.levelIdx++;
-                    gbWCUpdateHeader();
-                    if (wc.levelIdx >= chain.chain.length) gbWCShowInvariant(chain);
-                    else { gbWCAppendProbe(chain.chain[wc.levelIdx].probe); gbSetButtonForWC(); }
+                    // After 2 wrong tries, reveal the answer and advance to
+                    // the next chain — same skip behavior as a correct
+                    // answer, but with the answer surfaced first.
+                    gbWCShowInvariant(chain);
                 } else {
                     if (reprompt) reprompt.classList.add('show');
                     gbSetButtonForWC();
@@ -4924,6 +5087,14 @@
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.classList.add('show');
             gbState.subGame = 3;
+            // Log Tile Match phase outcome — pure self-grade, all 6 pairs
+            // matched = 100% for the AMR scorecard.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'tile-match', id: 'tm-all',
+                    correct: true, score: 1,
+                });
+            }
             gbSetButtonNext('Keyingi bosqich');
         }
 
@@ -5218,6 +5389,14 @@ Prezident ertaga hisobot kutmoqda.`,
                     stage6State.correct[idx] = true;
                     stage6State.submitted[idx] = true;
                     rlSetFeedback(fbId, 'rl-correct', '✓ To\'g\'ri! ' + (q.type === 'text-with-capture' ? q.expectedWork : ''));
+                    if (window.__sessionLog) {
+                        window.__sessionLog.push({
+                            phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
+                            correct: true, score: 1,
+                            // Closed text/numeric — no AI axes; treat as Mastered both axes.
+                            axis_1: 4, axis_2: 4, first_try: true,
+                        });
+                    }
                     rlMorphButton('Keyingi savol');
                 } else {
                     stage6State.attempts[idx]++;
@@ -5312,6 +5491,16 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.submitted[ticket.qIndex] = true;
                 fbEl.className = 'rl-feedback rl-correct';
                 fbEl.innerHTML = '✓ ' + (response || 'To\'g\'ri!') + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                if (window.__sessionLog) {
+                    const q = RL_SCENARIO.questions[ticket.qIndex];
+                    const ax1 = (detail && detail.axis_1) || 3;
+                    const ax2 = (detail && detail.axis_2) || 3;
+                    window.__sessionLog.push({
+                        phase: 'real-life', id: (q && q.id) || ('rl-' + (ticket.qIndex + 1)),
+                        correct: true, score: typeof (detail && detail.score) === 'number' ? detail.score : 1,
+                        axis_1: ax1, axis_2: ax2, first_try: false,
+                    });
+                }
                 rlMorphButton('Keyingi savol');
             } else if (response) {
                 // Replace generic "wrong" text with AI feedback. Preserve current
@@ -5687,7 +5876,7 @@ Prezident ertaga hisobot kutmoqda.`,
         let bossPendingAi = null;
 
         function bossApplyCorrect(q, fbEl, opts) {
-            // opts: { aiGraded: bool, message: string|null }
+            // opts: { aiGraded: bool, message: string|null, axis_1?, axis_2? }
             bossState.correct++;
             bossState.combo++;
             const doubled = bossState.combo >= 3;
@@ -5703,6 +5892,19 @@ Prezident ertaga hisobot kutmoqda.`,
                 } else {
                     fbEl.textContent = baseMsg;
                 }
+            }
+            // Log boss attack outcome for the AMR scorecard. Closed numeric
+            // boss items (Q1, Q2) have no AI axes — treat as Mastered both
+            // axes since damage was dealt. AI-graded items use returned axes.
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                    correct: true, score: 1,
+                    axis_1: (opts && opts.axis_1) || 4,
+                    axis_2: (opts && opts.axis_2) || 4,
+                    first_try: !(opts && opts.aiGraded),  // local match = first try
+                    damage: dmg,
+                });
             }
             if (bossState.hp <= 0) { setTimeout(() => bossEnd(true), 900); }
         }
@@ -5790,12 +5992,27 @@ Prezident ertaga hisobot kutmoqda.`,
             const aiCorrect = result.correct === true && (typeof result.score !== 'number' || result.score > 0.8);
             if (aiCorrect) {
                 const q = BOSS_QUESTIONS[bossState.qIndex];
-                bossApplyCorrect(q, fb, { aiGraded: true });
+                bossApplyCorrect(q, fb, {
+                    aiGraded: true,
+                    axis_1: result.axis_1, axis_2: result.axis_2,
+                });
             } else {
                 if (fb) {
                     fb.className = 'boss-feedback wrong';
                     const aiMsg = result.boss_response || result.feedback || '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
                     fb.innerHTML = aiMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                }
+                // Log incorrect boss attack so it appears on the AMR card
+                // with low axes — the student loses 0 HP but their attempt
+                // still informs the rubric.
+                if (window.__sessionLog) {
+                    const q = BOSS_QUESTIONS[bossState.qIndex];
+                    window.__sessionLog.push({
+                        phase: 'final-boss', id: q.id || ('boss-' + (bossState.qIndex + 1)),
+                        correct: false, score: typeof result.score === 'number' ? result.score : 0,
+                        axis_1: result.axis_1 || 1, axis_2: result.axis_2 || 1,
+                        first_try: false, damage: 0,
+                    });
                 }
             }
             bossPendingAi = null;
@@ -6171,6 +6388,224 @@ Prezident ertaga hisobot kutmoqda.`,
                 onContinue();
             };
             btn.addEventListener('click', handler, true);
+        }
+
+        /* ── Stage 9 · AMR Results Scorecard ──────────────────────────
+           Aggregates window.__sessionLog (populated live by AQ, MS, TM,
+           SF, RL, Boss handlers) into:
+             - per-phase tally (X/N items correct)
+             - per-phase mean axis_1 / axis_2 for items that recorded axes
+             - overall mastery band based on combined axis means
+           See standards/framework/AMR-GRADING-SYSTEM.md and
+           standards/framework/GRADING.md for the rubric definitions.
+        */
+
+        // Initialize the session log as early as the script runs so
+        // every phase's grading handler can write to it without checking.
+        if (!window.__sessionLog) window.__sessionLog = [];
+
+        // Phase ordering for the scorecard rows.
+        const RESULTS_PHASE_ORDER = [
+            { key: 'memory-sprint', label: 'Memory Sprint',  total: () => (typeof MS_QUESTIONS !== 'undefined' ? MS_QUESTIONS.length : 0) },
+            { key: 'adaptive-quiz', label: 'Adaptive Quiz',  total: () => 5 },
+            { key: 'tile-match',    label: 'Tile Match',     total: () => 1, isPhaseLevel: true },
+            { key: 'sentence-fill', label: 'Sentence Fill',  total: () => (typeof GB_WHY_CHAIN !== 'undefined' ? GB_WHY_CHAIN.length : 0) },
+            { key: 'real-life',     label: 'Real-Life',      total: () => (typeof RL_SCENARIO !== 'undefined' && RL_SCENARIO.questions ? RL_SCENARIO.questions.length : 0) },
+            { key: 'final-boss',    label: 'Final Boss',     total: () => (typeof BOSS_QUESTIONS !== 'undefined' ? BOSS_QUESTIONS.length : 0) },
+        ];
+
+        function _amrBandFor(score) {
+            // score is a 1-4 mean. Map to AMR band labels per GRADING.md §rubric.
+            if (score >= 3.5) return { name: 'Mastered',   key: 'mastered'   };
+            if (score >= 2.5) return { name: 'Proficient', key: 'proficient' };
+            if (score >= 1.5) return { name: 'Apprentice', key: 'apprentice' };
+            return                       { name: 'Novice',     key: 'novice'     };
+        }
+
+        function _amrAggregate(log) {
+            // Per-phase tally + axis means. Skip duplicate ids per phase
+            // (we only keep the LAST entry — captures a student's final
+            // answer on a given item).
+            const byPhase = {};
+            const seen = new Set();
+            // Walk in reverse so we keep the latest entry per (phase,id).
+            for (let i = log.length - 1; i >= 0; i--) {
+                const e = log[i];
+                const key = e.phase + '::' + e.id;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                if (!byPhase[e.phase]) byPhase[e.phase] = [];
+                byPhase[e.phase].unshift(e);  // unshift to preserve forward order
+            }
+
+            const phaseStats = RESULTS_PHASE_ORDER.map(p => {
+                const items = byPhase[p.key] || [];
+                const total = p.total();
+                const correct = items.filter(x => x.correct).length;
+                // Items that have axis values (came from AI semantic grading).
+                const axed = items.filter(x => typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number');
+                let axis_1_mean = null, axis_2_mean = null;
+                if (axed.length) {
+                    axis_1_mean = axed.reduce((s, x) => s + x.axis_1, 0) / axed.length;
+                    axis_2_mean = axed.reduce((s, x) => s + x.axis_2, 0) / axed.length;
+                }
+                return {
+                    key: p.key, label: p.label, isPhaseLevel: !!p.isPhaseLevel,
+                    correct, total, items_logged: items.length,
+                    axis_1_mean, axis_2_mean,
+                };
+            });
+
+            // Overall AMR axes — pool every axed item across all phases.
+            const allAxed = [];
+            Object.keys(byPhase).forEach(k => {
+                byPhase[k].forEach(x => {
+                    if (typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number') allAxed.push(x);
+                });
+            });
+            let overall_axis_1 = null, overall_axis_2 = null, overall_score = null, overall_band = null;
+            if (allAxed.length) {
+                overall_axis_1 = allAxed.reduce((s, x) => s + x.axis_1, 0) / allAxed.length;
+                overall_axis_2 = allAxed.reduce((s, x) => s + x.axis_2, 0) / allAxed.length;
+                // item_score = ((a1 + a2) / 2) × 25 per GRADING.md
+                overall_score = ((overall_axis_1 + overall_axis_2) / 2) * 25;
+                overall_band = _amrBandFor((overall_axis_1 + overall_axis_2) / 2);
+            }
+
+            // Overall closed-form tally too — sum correct / sum total across
+            // all phases that produced log entries.
+            let totalCorrect = 0, totalItems = 0;
+            phaseStats.forEach(p => {
+                if (p.isPhaseLevel) {
+                    if (p.correct) { totalCorrect += p.total; totalItems += p.total; }
+                    else totalItems += p.total;
+                } else {
+                    totalCorrect += p.correct;
+                    totalItems += p.total;
+                }
+            });
+
+            return {
+                phaseStats,
+                allAxed,
+                overall_axis_1, overall_axis_2, overall_score, overall_band,
+                totalCorrect, totalItems,
+                hasAxes: allAxed.length > 0,
+            };
+        }
+
+        function _renderAxisCard(label, mean) {
+            if (mean == null) {
+                return `<div class="results-amr-axis">
+                  <div class="results-amr-axis-label">${label}</div>
+                  <div class="results-amr-axis-value">—</div>
+                  <div class="results-amr-axis-band">no AI-graded items</div>
+                </div>`;
+            }
+            const band = _amrBandFor(mean);
+            return `<div class="results-amr-axis">
+              <div class="results-amr-axis-label">${label}</div>
+              <div class="results-amr-axis-value">${mean.toFixed(2)} / 4</div>
+              <div class="results-amr-axis-band">${band.name}</div>
+            </div>`;
+        }
+
+        function showResultsScreen() {
+            const log  = window.__sessionLog || [];
+            const agg  = _amrAggregate(log);
+            // Activate the screen
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const sr = document.getElementById('screen-results');
+            if (sr) sr.classList.add('active');
+            setStage(8);
+
+            // Headline + band
+            const overallPct = agg.totalItems > 0 ? Math.round(100 * agg.totalCorrect / agg.totalItems) : 0;
+            const headline = document.getElementById('results-headline');
+            const bandEl   = document.getElementById('results-band');
+            if (agg.hasAxes && agg.overall_band) {
+                if (bandEl) {
+                    bandEl.textContent = agg.overall_band.name;
+                    bandEl.className = 'screen-results-band band-' + agg.overall_band.key;
+                }
+            } else if (bandEl) {
+                // No AI-graded items — derive band from raw % via the same thresholds.
+                const pseudo = overallPct / 25;  // 0–4 scale
+                const band = _amrBandFor(pseudo);
+                bandEl.textContent = band.name;
+                bandEl.className = 'screen-results-band band-' + band.key;
+            }
+            if (headline) {
+                const itemScore = agg.hasAxes ? Math.round(agg.overall_score) : overallPct;
+                headline.innerHTML = `Sizning umumiy natijangiz: <strong>${itemScore}%</strong>`
+                                   + ` &nbsp;<span style="opacity:0.6;font-weight:400">(${agg.totalCorrect} / ${agg.totalItems} to'g'ri)</span>`;
+            }
+
+            // Per-phase rows
+            const phasesEl = document.getElementById('results-phases');
+            if (phasesEl) {
+                phasesEl.innerHTML = agg.phaseStats.map(p => {
+                    const score = p.isPhaseLevel
+                        ? (p.correct ? 'Tamomlandi' : 'Bajarilmadi')
+                        : `${p.correct} / ${p.total}`;
+                    const axisStr = (p.axis_1_mean != null)
+                        ? ` · A1=${p.axis_1_mean.toFixed(1)} A2=${p.axis_2_mean.toFixed(1)}`
+                        : '';
+                    return `<div class="results-phase-row">
+                      <span class="results-phase-name">${p.label}${axisStr}</span>
+                      <span class="results-phase-score">${score}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            // AMR axis breakdown
+            const amrEl = document.getElementById('results-amr');
+            if (amrEl) {
+                if (agg.hasAxes) {
+                    amrEl.innerHTML = `
+                      <div class="results-amr-title">AMR — 2-axis Anchored Mastery Rubric</div>
+                      <div class="results-amr-grid">
+                        ${_renderAxisCard('Axis 1 — Concept Identification', agg.overall_axis_1)}
+                        ${_renderAxisCard('Axis 2 — Process Integrity',      agg.overall_axis_2)}
+                      </div>`;
+                } else {
+                    amrEl.innerHTML = `
+                      <div class="results-amr-title">AMR — 2-axis rubric</div>
+                      <div style="font-size:13px;color:var(--text-dim);">
+                        Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat
+                        yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill,
+                        Real-Life Q5, Boss Q3-Q5) AI orqali 2-axis bo'yicha baholanadi.
+                      </div>`;
+                }
+            }
+
+            // Mastery promotion note (per GRADING.md §6)
+            const masteryEl = document.getElementById('results-mastery');
+            if (masteryEl) {
+                if (agg.hasAxes && agg.overall_band) {
+                    const tipByBand = {
+                        mastered:   "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
+                        proficient: "Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.",
+                        apprentice: "Haqida o'ylash kerak. Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
+                        novice:     "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
+                    };
+                    masteryEl.textContent = tipByBand[agg.overall_band.key] || '';
+                } else {
+                    masteryEl.textContent = "Yopiq-format javoblar tahlilingiz: " + overallPct + "%. Ochiq topshiriqlarda AMR baholash to'liq amal qiladi.";
+                }
+            }
+
+            const closingEl = document.getElementById('results-closing');
+            if (closingEl) {
+                closingEl.textContent = "Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.";
+            }
+
+            // Final button — reset to "done" state
+            btn.classList.remove('pulse','state-pill');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
+            // Expose the aggregate for tests / future export.
+            window.__sessionAggregate = agg;
         }
     </script>
 
