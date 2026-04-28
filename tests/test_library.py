@@ -19,12 +19,14 @@ import pytest
 def _wipe_homeworks() -> None:
     """Hard-delete all homework rows so each test starts from a clean slate.
 
-    Uses the same DB the TestClient app is bound to (the path the conftest
-    fixture set in NETS_DB_PATH before importing the app).
+    Uses the same DB the TestClient app is bound to. We read DB_PATH from
+    server.config (the already-resolved Path object) rather than re-reading
+    os.environ so this stays consistent regardless of module-import order.
     """
     import aiosqlite
+    from server.config import DB_PATH
 
-    db_path = os.environ["NETS_DB_PATH"]
+    db_path = str(DB_PATH)
 
     async def _do() -> None:
         async with aiosqlite.connect(db_path) as db:

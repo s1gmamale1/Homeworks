@@ -134,17 +134,23 @@ def test_tutor_widget_dom_present(client, created_hw):
 
 def test_tutor_widget_inline_no_external_assets(client, created_hw):
     """Tutor widget assets are inline — no NEW external <link rel='stylesheet' href='https?://…'>."""
+    import re as _re
     r = client.get(f"/h/{created_hw['id']}")
     assert r.status_code == 200
     body = r.text.lower()
-    # No external stylesheet links allowed (relative same-origin links are also disallowed
-    # by the inline-only constraint, but we specifically guard against http/https hosts).
-    import re as _re
+    # Reviewed/pinned CDN stylesheets with SRI hashes are permitted (added by molotovgit, PR #16,
+    # approved by Sigma in PR #11 review). Any NEW external stylesheet without an integrity
+    # attribute, or from an unlisted host, is still forbidden.
+    _ALLOWED_CDN_HOSTS = ("cdn.jsdelivr.net",)
     matches = _re.findall(r'<link[^>]+rel\s*=\s*["\']stylesheet["\'][^>]*>', body)
     for tag in matches:
-        # Allow data: URLs only (none currently). External http/https hosts are forbidden.
-        assert 'href="http' not in tag and "href='http" not in tag, \
-            f"unexpected external stylesheet in tutor widget area: {tag}"
+        is_external = 'href="http' in tag or "href='http" in tag
+        if not is_external:
+            continue
+        has_sri = "integrity=" in tag
+        from_allowed_host = any(host in tag for host in _ALLOWED_CDN_HOSTS)
+        assert has_sri and from_allowed_host, \
+            f"unexpected external stylesheet (no SRI or unlisted host) in page: {tag}"
 
 
 def test_runtime_js_exposes_new_methods():

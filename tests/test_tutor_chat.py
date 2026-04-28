@@ -35,9 +35,8 @@ import pytest
 
 
 def _db_path() -> str:
-    path = os.environ.get("NETS_DB_PATH", "")
-    assert path, "NETS_DB_PATH must be set by the conftest.py client fixture"
-    return path
+    from server.config import DB_PATH
+    return str(DB_PATH)
 
 
 def _wipe_tutor_tables() -> None:
