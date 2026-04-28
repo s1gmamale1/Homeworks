@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response, HTMLResponse
 from contextlib import asynccontextmanager
 import os
 import base64
+import subprocess
 
 from server.routes.meta import router as meta_router
 from server.routes.homework import router as hw_router
@@ -13,6 +14,21 @@ from server.routes.ai import router as ai_router
 from server.routes.library import router as library_router
 from server import db
 from server.config import BASE_DIR
+
+# Compute git short SHA for cache-busting static assets
+def _compute_version() -> str:
+    """Return git short SHA or fallback to 'dev' if unavailable."""
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        ).stdout.strip() or "dev"
+    except Exception:
+        return "dev"
+
+VERSION = _compute_version()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,6 +69,36 @@ app.include_router(hw_router, prefix="/api")
 app.include_router(homework_page_router)
 app.include_router(ai_router, prefix="/api")
 app.include_router(library_router, prefix="/api")
+
+def _render_html_with_version(html_path: str) -> str:
+    """Read HTML file and substitute __VERSION__ with git short SHA."""
+    with open(html_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return content.replace("__VERSION__", VERSION)
+
+@app.get("/")
+async def get_index():
+    """Serve index.html with cache-busting version."""
+    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "index.html")
+    return HTMLResponse(_render_html_with_version(html_path))
+
+@app.get("/index.html")
+async def get_index_explicit():
+    """Serve /index.html (explicit path) with cache-busting version."""
+    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "index.html")
+    return HTMLResponse(_render_html_with_version(html_path))
+
+@app.get("/builder.html")
+async def get_builder():
+    """Serve builder.html with cache-busting version."""
+    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "builder.html")
+    return HTMLResponse(_render_html_with_version(html_path))
+
+@app.get("/library.html")
+async def get_library():
+    """Serve library.html with cache-busting version."""
+    html_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "library.html")
+    return HTMLResponse(_render_html_with_version(html_path))
 
 # Runtime static mount — serves /static/runtime/runtime.js from server/template/
 # MUST come before the `/` catch-all mount below (FastAPI evaluates mounts in order).
