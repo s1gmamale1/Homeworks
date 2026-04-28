@@ -2,10 +2,11 @@ import json
 import re
 import sys
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from .. import db
 from ..config import FIXTURES_DIR
+from ..services import quotes as quotes_service
 from ..services.gemini import ACTIVE_BACKEND
 from ..services.routing import (
     ALWAYS_HARD,
@@ -128,6 +129,72 @@ async def list_fixtures() -> dict:
 
     results.sort(key=lambda x: (x["subject"], x["grade"] or 0))
     return {"fixtures": results}
+
+
+@router.get("/quotes")
+async def list_quotes(
+    q: str | None = Query(None, description="Substring search over text + author"),
+    type: str | None = Query(None, description="fact | quote"),
+    origin: str | None = Query(None, description="National | Global"),
+    category: str | None = None,
+    author: str | None = None,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+) -> dict:
+    """Searchable view over the gate-quote library.
+
+    Used by the builder's quote-picker modal. Returns matching items plus
+    facets so the UI can populate its filter selects from one round-trip.
+    """
+    library = quotes_service.all_quotes()
+
+    needle = (q or "").strip().casefold()
+    items = []
+    for entry in library:
+        if type and str(entry.get("type", "")).casefold() != type.casefold():
+            continue
+        if origin and str(entry.get("origin", "")).casefold() != origin.casefold():
+            continue
+        if category and str(entry.get("category", "")).casefold() != category.casefold():
+            continue
+        if author and str(entry.get("author", "")).casefold() != author.casefold():
+            continue
+        if needle:
+            haystack = (
+                str(entry.get("text", "")).casefold()
+                + "\n"
+                + str(entry.get("author", "")).casefold()
+            )
+            if needle not in haystack:
+                continue
+        items.append(entry)
+
+    total = len(items)
+    paged = items[offset : offset + limit]
+
+    # Facets are computed against the full library, not the current filter, so
+    # the user can always see every available value to pivot to.
+    def _facet(field: str) -> list[str]:
+        seen: dict[str, int] = {}
+        for entry in library:
+            val = str(entry.get(field, "")).strip()
+            if not val:
+                continue
+            seen[val] = seen.get(val, 0) + 1
+        return sorted(seen.keys())
+
+    return {
+        "items": paged,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "facets": {
+            "types": _facet("type"),
+            "origins": _facet("origin"),
+            "categories": _facet("category"),
+            "authors": _facet("author"),
+        },
+    }
 
 
 @router.get("/fixtures/{name}")

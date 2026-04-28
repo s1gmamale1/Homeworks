@@ -8,6 +8,7 @@ import json
 import re
 
 from ..config import TEMPLATE_PATH
+from . import quotes as quotes_service
 
 # Read template ONCE at module load (not per request)
 with open(TEMPLATE_PATH, "r", encoding="utf-8") as _f:
@@ -256,16 +257,16 @@ def inject(
         data = content_json.get(key, [])
         if data is None:
             data = []
-        # Shape adapter: template expects quotes as [{t, a}] objects.
-        # If content_json has plain strings, wrap them into {t: str, a: ""}.
-        # If empty, inject a single placeholder so runQuoteSequence doesn't crash.
+        # Gate quote: pick exactly one quote per inject call. Source is the new
+        # `gate_quote` envelope ({mode, pinned_id?, custom?}); falls back to the
+        # legacy `quotes` array for in-flight rows. The selector applies the
+        # 55/45 origin + 70/30 type rule for `mode: auto`. Wrapped in a length-1
+        # array so the template's `QUOTES[0]` indexing keeps working.
         if key == "quotes":
-            data = [
-                q if isinstance(q, dict) else {"t": str(q), "a": ""}
-                for q in data
-            ]
-            if not data:
-                data = [{"t": "Bilim — aql va sabrning mevasidir.", "a": ""}]
+            envelope = content_json.get("gate_quote")
+            if envelope is None:
+                envelope = content_json.get("quotes")
+            data = [quotes_service.select(envelope)]
 
         # Shape adapter: Memory Sprint editor emits type codes MC|TF|YNNG, but the
         # template renders item.type directly as a human label in "Savol X / Y · {type}".

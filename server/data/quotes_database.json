@@ -1,0 +1,4802 @@
+[
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistondagi Muruntov oltin koni dunyodagi eng yirik ochiq oltin koni hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 1
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston oltin qazib olish hajmi bo‘yicha dunyoda yetakchi o‘rinlardan birini egallaydi.",
+        "category": "General",
+        "origin": "National",
+        "id": 2
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda yetishtiriladigan paxta tolasi o‘zining pishiqligi va uzunligi bilan jahon bozorida yuqori baholanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 3
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — dunyodagi eng toza va sifatli oltin ishlab chiqaruvchi davlatlardan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 4
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mamlakatimiz global paxta eksporti bo‘yicha dunyoning kuchli beshligiga kiradi.",
+        "category": "General",
+        "origin": "National",
+        "id": 5
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Muruntov konidan olinadigan oltinning tozalik darajasi jahon standartlaridan ham yuqoridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 6
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyodagi eng yirik oltin zaxiralariga ega davlatdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 7
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning zaminimizda dunyodagi eng yirik tabiiy gaz va uran zaxiralari mavjud.",
+        "category": "General",
+        "origin": "National",
+        "id": 8
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston ipak yetishtirish bo‘yicha dunyoda uchinchi o‘rinni egallaydi.",
+        "category": "General",
+        "origin": "National",
+        "id": 9
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyoshli o‘lkamizda yetishtiriladigan mevalar o‘zining tabiiy shirinligi bo‘yicha dunyoda tengsizdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 10
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston global oltin bozorining eng ishonchli va barqaror hamkorlaridan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 11
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning \"oq oltini\" — paxtasi dunyo to‘qimachilik sanoatining muhim xomashyosidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 12
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston paxta tolasini qayta ishlash bo‘yicha mintaqada mutlaq yetakchilik qilmoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 13
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mamlakatimizda dunyodagi eng yirik volfram va molibden konlari joylashgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 14
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning oltin-valyuta zaxiralari yildan-yilga barqaror o‘sib bormoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 15
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Navoiy kon-metallurgiya kombinati dunyodagi eng ilg‘or texnologiyalarga ega korxonalardan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 16
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston paxta terish mashinalari ishlab chiqarish bo‘yicha mintaqada birinchidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 17
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda yetishtiriladigan qovunlarning 160 dan ortiq turi mavjud bo‘lib, ular dunyoda eng shirin hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 18
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston jahon bozoriga eng ko‘p mayiz va quritilgan mevalar yetkazib beruvchi davlatlardan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 19
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning zaminimizda olingan oltin dunyo birjalarida eng yuqori \"Good Delivery\" maqomiga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 20
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda avtomobil ishlab chiqaruvchi eng yirik davlatdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 21
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda ishlab chiqarilgan qishloq xo‘jaligi texnikalari qo‘shni davlatlarda juda xaridorgir.",
+        "category": "General",
+        "origin": "National",
+        "id": 22
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — mintaqadagi eng yirik elektr energiyasi ishlab chiqaruvchi va eksport qiluvchi davlat.",
+        "category": "General",
+        "origin": "National",
+        "id": 23
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning \"Navoiy\" erkin iqtisodiy zonasi mintaqadagi eng yirik logistika xablaridan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 24
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston global energiya xavfsizligini ta'minlashda muhim rol o‘ynaydigan strategik hamkor.",
+        "category": "General",
+        "origin": "National",
+        "id": 25
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning ipak matolari jahon moda uylari tomonidan yuksak san'at asari sifatida e'tirof etiladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 26
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston oziq-ovqat xavfsizligi bo‘yicha mintaqada eng barqaror ko‘rsatkichlarga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 27
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mamlakatimizda yetishtiriladigan anorlar o‘zining shifobaxsh xususiyatlari bilan dunyoga mashhur.",
+        "category": "General",
+        "origin": "National",
+        "id": 28
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston zaminidagi boy qazilma boyliklar yurtimizning porloq kelajagi garovidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 29
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning oltin konlarimiz nafaqat hajmi, balki qazib olish texnologiyasi bilan ham dunyoni hayratga soladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 30
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyodagi eng yirik to‘qimachilik va tikuvchilik sanoati markazidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 31
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda ishlab chiqarilgan oziq-ovqat mahsulotlari dunyoning 80 dan ortiq davlatiga eksport qilinadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 32
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — global miqyosda o‘zining iqtisodiy salohiyatini jadal namoyon etayotgan shijoatli davlat.",
+        "category": "General",
+        "origin": "National",
+        "id": 33
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosi — Markaziy Osiyodagi eng birinchi va eng go‘zal yer osti transport tizimidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 34
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib yuqori tezlikda harakatlanuvchi \"Afrosiyob\" poezdlarini ishga tushirgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 35
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosining \"Alisher Navoiy\" bekati dunyodagi eng go‘zal metro bekatlaridan biri deb tan olingan.",
+        "category": "General",
+        "origin": "National",
+        "id": 36
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Afrosiyob\" poezdlari o‘zining xavfsizligi va qulayligi bilan jahon standartlariga to‘liq javob beradi.",
+        "category": "General",
+        "origin": "National",
+        "id": 37
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib o‘z sun'iy yo‘ldoshiga ega bo‘lish sari dadil qadamlar tashlamoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 38
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosi nafaqat transport, balki haqiqiy san'at va me'morchilik muzeyidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 39
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mintaqadagi ilk avtomobil zavodi aynan O‘zbekistonda, Asaka shahrida barpo etilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 40
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib raqamli televideniyega to‘liq o‘tgan davlatdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 41
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent teleminorasi mintaqadagi eng baland va noyob muhandislik inshootlaridan biri hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 42
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib IT-parklar tarmog‘ini keng ko‘lamda rivojlantira boshladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 43
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent xalqaro aeroporti mintaqadagi eng zamonaviy va yirik havo darvozalaridan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 44
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib elektron hukumat tizimini muvaffaqiyatli joriy etgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 45
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning \"Afrosiyob\" poezdimiz Toshkent va Samarqand o‘rtasidagi masofani atigi 2 soatda bosib o‘tadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 46
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosining barcha bekatlari o‘ziga xos dizayn va tarixiy mavzularga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 47
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib \"aqlli shahar\" (Smart City) loyihalarini amalga oshirishga kirishdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 48
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosi zilzilaga chidamliligi bo‘yicha dunyodagi eng xavfsiz metrolardan biri sanaladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 49
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib qayta tiklanuvchi energiya manbalari to‘g‘risida qonun qabul qilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 50
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning tezyurar poezdlarimiz sayyohlarga yurtimiz go‘zalligini qisqa vaqtda ko‘rish imkonini beradi.",
+        "category": "General",
+        "origin": "National",
+        "id": 51
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosi yozning issiq kunlarida eng salqin va shinam transport vositasi hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 52
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib 5G texnologiyasini sinovdan o‘tkazgan va joriy etishni boshlagan.",
+        "category": "General",
+        "origin": "National",
+        "id": 53
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosining har bir bekati o‘zbek xalqining boy madaniyati va an'analarini tarannum etadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 54
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib kiberxavfsizlik markazini tashkil etgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 55
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning \"Afrosiyob\" poezdlarimiz Ispaniyaning \"Talgo\" kompaniyasi bilan hamkorlikda yaratilgan mo‘jizadir.",
+        "category": "General",
+        "origin": "National",
+        "id": 56
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosining yer usti yo‘nalishlari shahrimizga o‘zgacha zamonaviy chiroy bag‘ishlab turibdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 57
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib quyosh fotoelektr stansiyalarini sanoat miqyosida ishga tushirdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 58
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosida sayohat qilish — bu o‘zbek me'morchiligi tarixiga sayohat qilish demakdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 59
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib \"Bir million dasturchi\" loyihasini muvaffaqiyatli amalga oshirdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 60
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning tezyurar poezdlarimiz har bir yo‘lovchiga yuksak darajadagi servis va xizmat ko‘rsatadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 61
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosi dunyodagi eng toza va tartibli metrolar reytingida doimo yuqori o‘rinlarda turadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 62
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston mintaqada birinchi bo‘lib sun'iy intellekt strategiyasini qabul qilgan davlatdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 63
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Toshkent metrosining \"Kosmonavtlar\" bekati o‘zining betakror dizayni bilan butun dunyoga mashhur.",
+        "category": "General",
+        "origin": "National",
+        "id": 64
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston Markaziy Osiyoda birinchi bo‘lib innovatsion rivojlanish vazirligini tashkil etgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 65
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning transport tizimimiz yurtimizning jadal taraqqiyoti va zamonaviy qiyofasining yorqin timsolidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 66
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning milliy taomi — Palov UNESCO Insoniyatning nomoddiy madaniy merosi ro‘yxatiga kiritilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 67
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Samarqand shahri \"Madaniyatlar chorrahasi\" sifatida UNESCO butunjahon merosi ob'ekti hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 68
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buxoroning tarixiy markazi o‘zining 2500 yillik me'moriy obidalari bilan UNESCO himoyasidadir.",
+        "category": "General",
+        "origin": "National",
+        "id": 69
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xivadagi \"Ichan-Qal'a\" Markaziy Osiyodagi birinchi UNESCO ob'ekti sifatida tan olingan.",
+        "category": "General",
+        "origin": "National",
+        "id": 70
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning Atlas va Adras matolari UNESCO tomonidan insoniyat durdonasi deb e'tirof etilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 71
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Shahrisabzning tarixiy markazi va undagi Oqsaroy qoldiqlari UNESCO merosi ro‘yxatidan munosib o‘rin olgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 72
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning jo‘shqin va sehrli \"Lazgi\" raqsi UNESCO tomonidan himoyaga olingan.",
+        "category": "General",
+        "origin": "National",
+        "id": 73
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Boysun madaniy muhiti — insoniyatning eng qadimgi va boy an'analarini asrab kelayotgan UNESCO durdonasidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 74
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Marg‘ilon ipakchilik markazi o‘zining asriy an'analari bilan UNESCO e'tirofiga sazovor bo‘lgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 75
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning \"Baxshichilik\" san'ati jahon madaniyatining ajralmas qismi sifatida UNESCO ro‘yxatiga kiritilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 76
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Samarqanddagi Registon maydoni dunyodagi eng muhtasham va go‘zal maydonlardan biri hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 77
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buxorodagi Minorai Kalon asrlar davomida o‘zining ulug‘vorligini saqlab kelayotgan me'moriy mo‘jizadir.",
+        "category": "General",
+        "origin": "National",
+        "id": 78
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xivadagi \"Kalta Minor\" o‘zining betakror koshinlari va ranglari bilan sayyohlarni hayratga soladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 79
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — UNESCO ro‘yxatidagi ob'ektlar soni bo‘yicha mintaqada yetakchi o‘rinni egallaydi.",
+        "category": "General",
+        "origin": "National",
+        "id": 80
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning milliy taomlarimiz nafaqat mazali, balki xalqimizning mehmondo‘stlik va saxovat timsolidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 81
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbek atlasining yorqin ranglari va naqshlari tabiat go‘zalligini o‘zida mujassam etgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 82
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Samarqand ipak qog‘ozi o‘zining ming yillik chidamliligi bilan UNESCO e'tiboriga tushgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 83
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buxoro zardo‘zlik san'ati — o‘zbek hunarmandlarining nafis didi va yuksak mahorati namunasidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 84
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning \"Askia\" payrov san'ati UNESCO tomonidan qadrlanadigan noyob og‘zaki merosdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 85
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning milliy liboslarimiz bugun dunyo moda podiumlarida nafislik timsoli sifatida namoyon bo‘lmoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 86
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Samarqanddagi Shohi Zinda majmuasi — \"jonli tarix\" va koshinkorlik san'atining cho‘qqisidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 87
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buxorodagi Labi Hovuz majmuasi qadimiy shaharning eng fayzli va osoyishta maskanlaridan biri sanaladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 88
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xivadagi xon saroylari o‘zining yog‘och o‘ymakorligi va naqshlari bilan kishini lol qoldiradi.",
+        "category": "General",
+        "origin": "National",
+        "id": 89
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning har bir viloyati o‘ziga xos UNESCO ob'ektlari va madaniy boyliklariga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 90
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Milliy g‘ururimiz bo‘lgan palovning 100 dan ortiq turi mavjud bo‘lib, har biri betakror ta'mga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 91
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning \"Navro‘z\" bayrami UNESCO tomonidan umuminsoniy qadriyat sifatida tan olingan.",
+        "category": "General",
+        "origin": "National",
+        "id": 92
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning milliy hunarmandchiligimiz ota-bobolarimizdan qolgan bebaho boylik va merosdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 93
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning qadimiy shaharlari — Buyuk Ipak yo‘lining yuragi va madaniyat o‘chog‘i bo‘lgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 94
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Rishton kulolchilik san'ati o‘zining moviy ranglari bilan UNESCO ko‘rgazmalarini bezab turibdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 95
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — dunyo madaniyati rivojiga ulkan hissa qo‘shgan va uni asrab kelayotgan muqaddas zamin.",
+        "category": "General",
+        "origin": "National",
+        "id": 96
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning madaniy merosimiz — kelajak avlodlar uchun ilhom manbai va milliy o‘zligimiz timsolidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 97
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Samarqand, Buxoro va Xiva — har bir inson umrida bir bor ko‘rishi kerak bo‘lgan afsonaviy shaharlar.",
+        "category": "General",
+        "origin": "National",
+        "id": 98
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning UNESCO ro‘yxatiga kiritilgan har bir ob'ekti jahon sivilizatsiyasining ajralmas bo‘lagidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 99
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Algebra fanining asoschisi buyuk bobomiz Muhammad al-Xorazmiy aynan O‘zbekiston zaminida tug‘ilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 100
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Tibbiyot ilmining sultoni Ibn Sino (Avitsenna) o‘zining \"Tib qonunlari\" asari bilan dunyo tibbiyotiga asos solgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 101
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Abu Rayhon Beruni yuzlab yillar avval Yerning aylana o‘lchamini aniq hisoblab bergan buyuk qomusiy olimdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 102
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mirzo Ulug‘bek barpo etgan rasadxona va uning \"Ziji jadidi Ko‘ragoniy\" asari astronomiya fanida inqilob qilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 103
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — ilm-fan va ma'rifat markazi bo‘lgan birinchi va ikkinchi Renessans beshigidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 104
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Al-Xorazmiy tomonidan fanga kiritilgan \"algoritm\" atamasi bugungi raqamli dunyoning asosini tashkil etadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 105
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ibn Sinoning asarlari Yevropa universitetlarida 600 yil davomida asosiy darslik sifatida o‘qitilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 106
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buyuk mutafakkir Alisher Navoiy turkiy tilning naqadar boy va go‘zal ekanligini butun dunyoga isbotlagan.",
+        "category": "General",
+        "origin": "National",
+        "id": 107
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Imom Buxoriy to‘plagan hadislar islom olamida Qur'oni Karimdan keyingi eng ishonchli manba hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 108
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Abu Nasr Forobiy \"Sharq Arastusi\" nomi bilan dunyo falsafasiga ulkan hissa qo‘shgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 109
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston zaminida shakllangan ilm-fan an'analari bugungi kunda ham dunyo olimlarini hayratga solmoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 110
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Al-Xorazmiy nol raqamini va o‘nlik sanoq tizimini takomillashtirib, zamonaviy matematikaga asos solgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 111
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ibn Sinoning jarrohlik va psixologiya sohasidagi kashfiyotlari bugun ham o‘z ahamiyatini yo‘qotmagan.",
+        "category": "General",
+        "origin": "National",
+        "id": 112
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mirzo Ulug‘bek 1018 ta yulduzning joylashuvini aniq belgilab bergan dunyodagi eng kuchli astronom bo‘lgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 113
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Beruniy Amerika qit'asi mavjudligini Kolumbdan necha asr avval ilmiy asoslab bergan geniy olimdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 114
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston yoshlari bugun o‘z ajdodlariga munosib bo‘lib, xalqaro fan olimpiadalarida g‘olib bo‘lmoqdalar.",
+        "category": "General",
+        "origin": "National",
+        "id": 115
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ahmad al-Farg‘oniy yaratgan \"Nilometr\" qurilmasi suv sathini o‘lchashda yuzlab yillar xizmat qilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 116
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mahmud Qoshg‘ariy birinchi bo‘lib turkiy tillarning qiyosiy lug‘atini tuzgan buyuk tilshunos olimdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 117
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston zaminida tug‘ilgan olimlarning asarlari jahon kutubxonalarining eng nodir durdonalari sanaladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 118
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning yurtimiz — ilm-fanga intilish va ma'rifatni qadrlash xalqimizning qon-qoniga singib ketgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 119
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Al-Xorazmiyning \"Al-jabr\" asari algebra faniga nom bergan va hisob-kitobni osonlashtirgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 120
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ibn Sinoning dori-darmonlar tayyorlash usullari zamonaviy farmatsevtikaning poydevori hisoblanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 121
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Mirzo Ulug‘bek madrasasida o‘z davrining eng ilg‘or va aniq fanlari chuqur o‘rgatilgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 122
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonlik olimlar bugun ham koinot tadqiqotlari va nanotexnologiyalar sohasida yutuqlarga erishmoqdalar.",
+        "category": "General",
+        "origin": "National",
+        "id": 123
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning intellektual salohiyatimiz — yurtimizning eng katta boyligi va kelajak garovidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 124
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — dunyoga eng ko‘p mutafakkir va olimlarni yetkazib bergan muqaddas va tabarruk zamin.",
+        "category": "General",
+        "origin": "National",
+        "id": 125
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ajdodlarimizning kashfiyotlari insoniyat taraqqiyotini bir necha asrga ilgarilatib yuborgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 126
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — yilning 300 dan ortiq kunida quyosh nur sochib turadigan porloq va nurli o‘lkadir.",
+        "category": "General",
+        "origin": "National",
+        "id": 127
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning Chotqol tog‘larida tabiatning eng nodir mo‘jizasi — mag‘rur Qor qoploni yashaydi.",
+        "category": "General",
+        "origin": "National",
+        "id": 128
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning Zomin tog‘lari o‘zining shifobaxsh havosi bilan \"Markaziy Osiyo Shveytsariyasi\" deb ataladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 129
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda 3700 dan ortiq o‘simlik turi mavjud bo‘lib, ularning ko‘pchiligi faqat bizning zaminimizda o‘sadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 130
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning Hisor tog‘larida Markaziy Osiyodagi eng baland sharsharalardan biri joylashgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 131
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning cho‘llarimizda dunyodagi eng noyob jonivorlardan biri — sayg‘oqlar erkin hayot kechiradi.",
+        "category": "General",
+        "origin": "National",
+        "id": 132
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning Quyoshli o‘lkasi har bir meva va sabzavotga betakror ta'm va vitaminlar baxsh etadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 133
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Chotqol davlat biosfera qo‘riqxonasi UNESCO tomonidan dunyo ahamiyatiga molik hudud deb tan olingan.",
+        "category": "General",
+        "origin": "National",
+        "id": 134
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning musaffo osmoni yulduzlarni kuzatish va astronomik tadqiqotlar uchun eng qulay maskandir.",
+        "category": "General",
+        "origin": "National",
+        "id": 135
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning daryolari — Amudaryo va Sirdaryo qadimiy sivilizatsiyalarning hayot manbai bo‘lib kelgan.",
+        "category": "General",
+        "origin": "National",
+        "id": 136
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston tog‘larida kamdan-kam uchraydigan shifobaxsh giyohlar va tabiiy minerallar juda ko‘p.",
+        "category": "General",
+        "origin": "National",
+        "id": 137
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning tabiatimiz har faslda o‘zgacha go‘zallik kasb etadi: bahorda lolaqizg‘aldoqlar, qishda esa oppoq qor.",
+        "category": "General",
+        "origin": "National",
+        "id": 138
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning xushmanzara adirlari va bog‘lari sayyohlar uchun eng tinch va osoyishta dam olish maskanidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 139
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda tabiatni asrash va ekologiyani yaxshilash maqsadida \"Yashil makon\" umummilliy loyihasi amalga oshirilmoqda.",
+        "category": "General",
+        "origin": "National",
+        "id": 140
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning ko‘llari — Aydarkul va Chorvoq suvi o‘zining moviy rangi va musaffoligi bilan ajralib turadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 141
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning zaminimizda dunyodagi eng qadimgi daraxtlardan biri — 2000 yillik chinorlar hamon yashnab turibdi.",
+        "category": "General",
+        "origin": "National",
+        "id": 142
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston tabiati — bu cheksiz kengliklar, yuksak tog‘lar va jannatmonand bog‘larning uyg‘unligidir.",
+        "category": "General",
+        "origin": "National",
+        "id": 143
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning har bir burchagida tabiatning bizga in'om etgan bebaho tuhfalaridan bahramand bo‘lish mumkin.",
+        "category": "General",
+        "origin": "National",
+        "id": 144
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — har bir inson qalbini o‘zining tabiiy go‘zalligi va harorati bilan zabt etadigan sehrli yurt.",
+        "category": "General",
+        "origin": "National",
+        "id": 145
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyoshli zaminimizda pishgan qovun va tarvuzlarning hidi uzoq-uzoqlardan odamni chorlaydi.",
+        "category": "General",
+        "origin": "National",
+        "id": 146
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekistonning har bir tongi musaffo havo va qushlarning xonishi bilan nurli va quvnoq boshlanadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 147
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning tog‘larimizdagi archazorlar havoni tozalash va salomatlikni tiklashda mo‘jizaviy kuchga ega.",
+        "category": "General",
+        "origin": "National",
+        "id": 148
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — tabiatni sevuvchi va uni asrab-avaylaydigan samimiy va saxovatli insonlar diyori.",
+        "category": "General",
+        "origin": "National",
+        "id": 149
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning zaminimizda har bir o‘simlik va har bir toshda ota-bobolarimizning duosi va mehri seziladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 150
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — Markaziy Osiyodagi eng yosh va shijoatli aholiga ega bo‘lgan umidbaxsh davlatdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 151
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizda har bir mehmonni \"aziz mehmonsiz\" deya samimiy tabassum va issiq non bilan kutib olishadi.",
+        "category": "General",
+        "origin": "National",
+        "id": 152
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — tinchlik va totuvlik hukm suradigan, 130 dan ortiq millat vakillari ahil yashaydigan maskan.",
+        "category": "General",
+        "origin": "National",
+        "id": 153
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning xalqimiz o‘zining mehmondo‘stligi va ochiqko‘ngilligi bilan dunyoda eng olijanob xalqlardan biridir.",
+        "category": "General",
+        "origin": "National",
+        "id": 154
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — har bir yosh o‘z iste'dodini namoyon etishi uchun keng imkoniyatlar yaratilgan yurt.",
+        "category": "General",
+        "origin": "National",
+        "id": 155
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning har bir viloyati o‘zining betakror an'analari, shevasi va milliy taomlari bilan boydir.",
+        "category": "General",
+        "origin": "National",
+        "id": 156
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — qadimiy tarixni zamonaviy taraqqiyot bilan oqilona birlashtira olgan muvaffaqiyatli davlat.",
+        "category": "General",
+        "origin": "National",
+        "id": 157
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning milliy qadriyatlarimiz — oilaga hurmat, kattaga e'tibor va kichikka izzat har bir xonadonda ustuvordir.",
+        "category": "General",
+        "origin": "National",
+        "id": 158
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — dunyo hamjamiyatida o‘zining munosib o‘rniga va nufuziga ega bo‘lgan tashabbuskor mamlakat.",
+        "category": "General",
+        "origin": "National",
+        "id": 159
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning yurtimizda har bir inson baxtli va farovon yashashi uchun islohotlar inson qadrini yuksaltirishga xizmat qiladi.",
+        "category": "General",
+        "origin": "National",
+        "id": 160
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — sening g‘ururing, sening faxring va sening buyuk kelajaging poydevori bo‘lgan Vatan!",
+        "category": "General",
+        "origin": "National",
+        "id": 161
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yurtimizning musaffo osmoni va tinch hayoti biz uchun eng katta baxt va ilohiy ne'matdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 162
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — har bir vatandoshimizning orzulari ushaladigan va baxti butun bo‘ladigan saxovatli o‘lka.",
+        "category": "General",
+        "origin": "National",
+        "id": 163
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bizning birligimiz va hamjihatligimiz — Yangi O‘zbekistonni bunyod etishdagi eng katta kuchimizdir.",
+        "category": "General",
+        "origin": "National",
+        "id": 164
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O‘zbekiston — dunyoga nur taratuvchi, hamisha navqiron va doimo porloq kelajak sari intiluvchi jannatmonand yurt!",
+        "category": "General",
+        "origin": "National",
+        "id": 165
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yangi O‘zbekiston ostonasi maktabdan boshlanadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 166
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ta’lim va tarbiya – bizning hayot-mamot masalamiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 167
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ilm bor joyda taraqqiyot bo‘ladi, yuksak madaniyat bo‘ladi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 168
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Maktab – bu faqat bilim maskani emas, u barchamiz uchun yuksak ma’naviyat beshigidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 169
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz ta’lim tizimini tubdan isloh qilmasdan turib, ko‘zlangan maqsadlarimizga erisha olmaymiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 170
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Bilim – bu hech kim tortib ololmaydigan yagona boylikdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 171
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Farzandlarimiz bizdan ko‘ra bilimli, kuchli va albatta baxtli bo‘lishlari shart.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 172
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ta’limga tikilgan sarmoya – kelajakka tikilgan sarmoyadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 173
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Bog‘cha tarbiyasi – bu inson kamolotining poydevori.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 174
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ma’rifatli jamiyatni faqat bilimli insonlar qura oladi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 175
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Maktab o‘quvchisi nafaqat fanlarni, balki hayotni ham o‘rganishi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 176
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ta’lim sifati – mamlakatning xalqaro maydondagi nufuzini belgilaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 177
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Bizga faqat diplomli mutaxassis emas, bilimli va tafakkurli insonlar kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 178
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Tarbiya qancha mukammal bo‘lsa, xalq shuncha baxtli yashaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 179
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ilm-fan – taraqqiyotning lokomotividir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 180
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlar – bizning eng katta boyligimiz, bebaho xazinamiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 181
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Har bir yoshning taqdiri – Vatan taqdiridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 182
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlarimizning ko‘zidagi shijoatni ko‘rib, kelajagimizga ishonchim ortadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 183
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz yoshlarga sharoit yaratib berishimiz kerak, natijani esa ular o‘zlari ko‘rsatishadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 184
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlar – Uchinchi Renessansning asosiy poydevori va bunyodkorlaridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 185
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Vatanparvarlik – bu faqat so‘zda emas, amalda, bilimda va mehnatda namoyon bo‘lishi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 186
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlaringshabbusi – islohotlarimizning drayveridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 187
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Hech bir yosh e’tibordan chetda qolmasligi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 188
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlarimiz zamonaviy texnologiyalarni mukammal egallashlari shart.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 189
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Sizlarning intilishingiz – O‘zbekistonning yangi qiyofasini yaratadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 190
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlik – bu imkoniyatlar davri, uni ilm olishga sarflang.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 191
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz yoshlarga baliq emas, qarmoq berishimiz, ularni tadbirkorlikka o‘rgatishimiz kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 192
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlar ittifoqi – yoshlarning chinakam suyanchi va tayanchi bo‘lishi lozim.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 193
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘z kelajagini Vatan taqdiri bilan bog‘lagan yoshlar hech qachon kam bo‘lmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 194
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yoshlarning orzulari – davlatimizning ustuvor maqsadlaridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 195
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘qituvchi qadri baland bo‘lmagan yurtda hech qachon rivojlanish bo‘lmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 196
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Muallim – jamiyatning eng mo‘’tabar va hurmatli insonidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 197
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘qituvchining obro‘si – bu Prezidentning obro‘si, butun millatning obro‘sidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 198
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz o‘qituvchini moddiy va ma’naviy qo‘llab-quvvatlashni davom ettiramiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 199
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Maktab direktori – bu islohotlarning joylardagi asosiy vakilidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 200
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘qituvchi faqat dars beruvchi emas, u yoshlar qalbi va ongining me’moridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 201
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Zamonamiz qahramoni – bu fidoyi o‘qituvchidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 202
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘qituvchining erkinligi – ta’lim sifating kafolatidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 203
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ustozga ehtirom – kelajakka ehtiromdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 204
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘qituvchi o‘z ustida ishlashdan to‘xtasa, ta’lim ham to‘xtaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 205
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Kitob o‘qigan bola dunyoni boshqaradi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 206
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Kitobxonlik – ma’naviy kamolot kalitidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 207
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Kitob do‘st bo‘lsa, jaholatga o‘rin qolmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 208
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Har bir xonadonda kutubxona bo‘lishi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 209
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ma’naviyat – eng kuchli va eng o‘tkir qurolimizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 210
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "O‘z tarixini bilmagan yoshlarning kelajagi bo‘lmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 211
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Milliy qadriyatlarimiz – bizning o‘zligimizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 212
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "San’at va madaniyat yoshlarning dunyoqarashini boyitadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 213
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ona tilimiz – millatimizning ruhidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 214
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Ma’rifatli inson yomonlikka qo‘l urmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 215
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Bizning maqsadimiz – O‘zbekistonni dunyoning rivojlangan davlatlari qatoriga olib chiqish.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 216
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Raqamli iqtisodiyotni faqat bilimli yoshlar bilan qura olamiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 217
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Innovatsiya – bu kelajak sari tashlangan dadil qadamdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 218
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz yoshlarimizni dunyo bilan raqobat qila oladigan darajada tarbiyalashimiz kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 219
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Har bir islohotimizning markazida inson va uning manfaatlari turadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 220
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Vatanimizning ertangi kuni siz yoshlarning qo‘lingizda.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 221
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Bilim va tajriba – eng katta sarmoyadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 222
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Biz yoshlarga ishonamiz va ularga suyanamiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 223
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "Yangi O‘zbekistonကို birgalikda, yuksak marralar bilan quramiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 224
+    },
+    {
+        "type": "quote",
+        "author": "Shavkat Mirziyoyev",
+        "text": "To‘xtab qolishga haqqimiz yo‘q, faqat oldinga intilishimiz kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 225
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Vatan ostonadan boshlanadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 226
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "O'zbekiston — kelajagi buyuk davlat.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 227
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Bizdan ozod va obod Vatan qolsin.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 228
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Vatan bittadir, u ham bo'lsa O'zbekistondir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 229
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Milliy g'oya — xalqni birlashtiruvchi, uni buyuk maqsadlar sari yetaklovchi kuchdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 230
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Farzandlarimiz bizdan ko'ra kuchli, bilimli, dono va albatta baxtli bo'lishlari shart.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 231
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Mustaqillik — eng oliy ne'mat, uni asrab-avaylash har birimizning muqaddas burchimizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 232
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Vatanparvarlik — bu faqat so'z emas, balki amaliy ish, ona yurtga bo'lgan cheksiz muhabbatdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 233
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "O'zligini anglagan xalqni hech kim yenga olmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 234
+    },
+    {
+        "type": "quote",
+        "author": "Islom Karimov",
+        "text": "Tinchlik va barqarorlik — taraqqiyotning eng muhim garovidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 235
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Kuch — adolatdadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 236
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Azm-u jazm bilan ish tutgan kishi har qanday to'siqni yengib o'tadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 237
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Vatanimning har bir qarich yeri men uchun muqaddas va azizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 238
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Yuz ming otliq askar qila olmagan ishni bir to'g'ri tadbir bilan bitirish mumkin.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 239
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Davlat ishlarining to'qqiz ulushi kengash, tadbir va mashvarat, qolgan bir ulushi esa qilich bilan amalga oshiriladi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 240
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Adolat va insof bilan ish yuritgan podshohning davlati uzoq yashaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 241
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Yaxshi odam yurtiga foyda keltirur, yomon odam esa faqat o'zini o'ylar.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 242
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Birlashgan o'zar, birlashmagan to'zar.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 243
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Vatan himoyasi — har bir o'g'lonning muqaddas burchidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 244
+    },
+    {
+        "type": "quote",
+        "author": "Amir Temur",
+        "text": "Mening kuchim — xalqimning birligi va menga bo'lgan ishonchidadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 245
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Vatan himoyasi — nafaqat jismoniy kuch, balki yuksak ma'naviyat va sadoqatdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 246
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Ozodlik — insonning eng katta boyligi, uni asrash har birimizning vazifamizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 247
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Vatan ozodligi uchun kurashish — har bir o'g'lonning muqaddas burchidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 248
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Vatan tuprog'ining har bir zarrasida ajdodlarimizning shonli tarixi yashirin.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 249
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Qo'rqoqlik bilan o'tgan umr — umr emas, xorlikdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 250
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Vatan — bu bizning nomusimiz, g'ururimiz va ota-onamizdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 251
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Dushman qanchalik ko'p va kuchli bo'lmasin, haqiqat va Vatan ishqi biz tomonda.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 252
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Vatanparvarlik — ona tuproqni har qanday yovdan ko'z qorachig'idek asrashdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 253
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Bizning ruhimizni hech qanday zanjir bilan bog'lab bo'lmaydi, chunki u ozodlikka tashna.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 254
+    },
+    {
+        "type": "quote",
+        "author": "Jaloliddin Manguberdi",
+        "text": "Haqiqiy qahramonlik — Vatan ravnaqi uchun bilim va shijoat bilan mehnat qilishdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 255
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "O'z erkinligini qadrlagan xalqni hech qachon mag'lub etib bo'lmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 256
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Biz tinchlikni sevamiz, lekin erkinligimiz uchun mardlarcha kurashishdan qaytmaymiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 257
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Ayol kishi ham Vatan himoyasida erkaklar bilan teng tura olishini isbotlaymiz.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 258
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Vatan — bu bizning uyimiz, uni asrash har bir farzandning vazifasidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 259
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Bizning kuchimiz — adolatda va o'z haq-huquqimizni himoya qilishimizdadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 260
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Ozodlik — hayotning o'zidan ham qimmatliroq ne'matdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 261
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Farzandlarimiz qul bo'lib emas, ozod yurtning erkin egalari bo'lib ulg'ayishi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 262
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Vatanparvarlik — bu ona suti bilan qonga kirgan muqaddas tuyg'udir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 263
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Bizning kuchimiz — birligimizda va ona zaminimizga bo'lgan cheksiz muhabbatimizdadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 264
+    },
+    {
+        "type": "quote",
+        "author": "Tomiris",
+        "text": "Ayol — jamiyatning ustuni, uning bilimli va jasur bo'lishi kelajak poydevoridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 265
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Ilm — o‘rganish bilan, amal — qilish bilan.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 266
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Baxtning asosi — bilim va ezgu axloqdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 267
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Bilim — qalbning chirog‘i, u insonni zulmatdan nurga olib chiqadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 268
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Tajriba — barcha bilimlarning onasi va eng ishonchli ustozdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 269
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Haqiqatni izlash — insonning eng oliy burchidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 270
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Aql — insonning eng katta boyligi, bilimsizlik esa eng og‘ir kambag‘allikdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 271
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Kitob — eng yaxshi suhbatdosh, u senga xiyonat qilmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 272
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Dunyoni bilishni istasang, avval o‘zligingni angla.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 273
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Bilimsizlik — barcha kasalliklar va yomonliklarning ildizidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 274
+    },
+    {
+        "type": "quote",
+        "author": "Abu Ali ibn Sina",
+        "text": "Ilm — inson ruhining ozuqasi va kamolot kalitidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 275
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Ilm — insonni jaholat botqog‘idan qutqaruvchi yagona kuchdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 276
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Haqiqatni aytish va uni izlashdan qo‘rqmaslik — chinakam olimning sifatidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 277
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Har bir narsaning sababini izlash — kashfiyot의 kalitidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 278
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Bilim — cheksiz ummon, inson undan qancha ko‘p ichsa, shuncha chanqog‘i ortadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 279
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Vaqtni ilmga sarflash — inson hayotidagi eng foydali sarmoyadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 280
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Turli xalqlarning ilmini o‘rganish — dunyoqarashni kengaytiradi va adovatni yo‘qotadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 281
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Kuzatish va tajriba — tabiat sirlarini ochishning asosiy yo‘lidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 282
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Ilm — insoniyatning umumiy mulki, u chegara bilmaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 283
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Yolg‘on — ilmning dushmani, haqiqat esa uning poydevoridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 284
+    },
+    {
+        "type": "quote",
+        "author": "Abu Rayhan al-Biruni",
+        "text": "Olimning qalami — uning eng o‘tkir qurolidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 285
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Tartib va mantiq — ilmning poydevoridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 286
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Sonlar — koinot၏ tili, ularni tushungan kishi borliqni tushunadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 287
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Murakkab masalalarni soddalashtirish — buyuk aqlning belgisidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 288
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Bilim — amaliyotda qo‘llanilmasa, u shunchaki yukdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 289
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Aniq hisob-kitob — xatolardan asrovchi eng ishonchli qalqondir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 290
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Yangi yo‘llarni izlashdan va yangilik yaratishdan to‘xtama.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 291
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Ilm — zulmatdagi nur kabi yo‘lingni yoritadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 292
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Mantiqiy fikrlash — insonni to‘g‘ri qaror qabul qilishga o‘rgatadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 293
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Har bir mushkul masalaning yechimi ilmda yashiringan.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 294
+    },
+    {
+        "type": "quote",
+        "author": "Muhammad al-Khwarizmi",
+        "text": "Bilim insonni yuksaltiradi va unga haqiqiy erkinlik beradi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 295
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Baxtga erishish uchun inson avvalo ilm va ma’rifatni egallashi lozim.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 296
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Insonning kamoloti — uning aqliy va axloqiy yetukligidadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 297
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Falsafa — barcha ilmlarning onasi, u borliqнинг mohiyatini ochadi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 298
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Jamiyatni ilm va adolat bilan boshqargan rahbar — haqiqiy rahbardir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 299
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Aql — insonni yuksaltiruvchi va uni ulug‘lovchi bebaho ne’matdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 300
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Bilim — ruhning ozuqasi, usiz ruh so‘nib boradi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 301
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Ustozsiz ilm o‘rganish — qorong‘u uyda yo‘l izlash kabidir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 302
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Haqiqiy olim — kamtar bo‘ladi, chunki u bilganlari bilmaganlari oldida dengizdan tomchi ekanini anglaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 303
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Ezgulik va bilim — bir-biri bilan chambarchas bog‘liqdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 304
+    },
+    {
+        "type": "quote",
+        "author": "Al-Farabi",
+        "text": "Ilm — insonni nafaqat aqlli, balki fazilatli ham qilishi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 305
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Ilmga intilish — inson kamolotining poydevoridir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 306
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Dinlar bulutlar kabi tarqalib ketadi, saltanatlar yo'q bo'ladi, ammo ilm ishlari abadiy qoladi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 307
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Ishga yarab qolsa ishing bir muddat, yana oshirmoqqa aylagil shiddat.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 308
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Insoniyat aqli kashf etgan fanlar ichida eng sharaflisi astronomiyadir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 309
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Adolat bilan ish yuritgan hukmdor xalqning hurmatiga sazovor bo'lur.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 310
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Kitob — tafakkur xazinasi, uni e'zozlamoq lozim.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 311
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Haqiqiy olim o'z ilmining poyasini bilishi va uni asrashi kerak.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 312
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Vaqtni g'animat bilib, uni ilm va ma'rifatga sarf eting.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 313
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Yulduzlar ilmi insonni koinotning buyukligini anglashga chorlaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 314
+    },
+    {
+        "type": "quote",
+        "author": "Mirzo Ulugbek",
+        "text": "Ustozga bo'lgan hurmat — ilmga bo'lgan hurmatdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 315
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Har kimki vafo qilsa, vafo topqusidur, har kimki jafo qilsa, jafo topqusidur.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 316
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Davlat uchun ko'ngilni zor etma, izzat uchun o'zingni xor etma.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 317
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Yaxshi kishi ko'rmag'ay yomonlig' hargiz, har kimki yomon bo'lsa, jazo topqusidur.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 318
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Shafqatsiz kishi azobga loyiqdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 319
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Yaxshi kishilarni Yaratgan yaxshi do'stlar bilan siylaydi.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 320
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Ko'pchilik bahodirlar o'z jahllari va qo'rquvlaridan ustun kela olmaydilar.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 321
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Adolat o'rnatishda insonlarning qarashlariga chuqur hurmatda bo'l.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 322
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Davlatga yetib, mehnat elini unutma.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 323
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Tiling bilan ko'nglingni bir tut.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 324
+    },
+    {
+        "type": "quote",
+        "author": "Zahiriddin Muhammad Babur",
+        "text": "Vatan ishqidan bo'lak ishq yo'qdir.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 325
+    },
+    {
+        "type": "quote",
+        "author": "Alisher Navoi",
+        "text": "Olim kerakki, o'z ilmining poya va miqdorini asragay, gavharni imtihon uchun toshga urmagay.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 326
+    },
+    {
+        "type": "quote",
+        "author": "Alisher Navoi",
+        "text": "Bilmaganin so'rab o'rgangan — olim, orlanib so'ramagan — o'ziga zolim.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 327
+    },
+    {
+        "type": "quote",
+        "author": "Alisher Navoi",
+        "text": "Oz-oz o'rganib dono bo'lur, qatra-qatra yig'ilib daryo bo'lur.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 328
+    },
+    {
+        "type": "quote",
+        "author": "Alisher Navoi",
+        "text": "Sihhat tilasang — ko'p yema, izzat tilasang — ko'p dema.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 329
+    },
+    {
+        "type": "quote",
+        "author": "Alisher Navoi",
+        "text": "Odam borki, odamlarning naqshidur, odam borki, hayvon undan yaxshidur.",
+        "category": "Motivation",
+        "origin": "National",
+        "id": 330
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yorug'lik tezligi sekundiga qariyb 300 000 kilometrni tashkil etadi, bu Quyoshdan Yergacha bo'lgan masofani 8 daqiqada bosib o'tish demakdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 331
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson tanasidagi barcha qon tomirlarining umumiy uzunligi qariyb 100 000 kilometr bo'lib, bu Yer sharini ikki yarim marta aylantirib chiqishga yetadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 332
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng baland daraxt — Sekvoya bo'lib, u 115 metrdan baland bo'lishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 333
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Asalari bir kilogramm asal yig'ish uchun taxminan 2 millionta gulga qo'nib chiqishi kerak.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 334
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Saturn sayyorasining zichligi shunchalik pastki, agar uni suvga solish imkoni bo'lsa, u suv yuzida suzib yurgan bo'lardi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 335
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng kichik qush — Hummingbird (kolibri) bo'lib, uning vazni atigi 2 grammga yaqin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 336
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson DNKsi zanjiri to'liq yozilsa, uning uzunligi Quyosh tizimidan tashqariga chiqib ketishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 337
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yer yuzidagi barcha qum zarralari sonidan ko'ra koinotdagi yulduzlar soni ko'proqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 338
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Muzlagan suv (muz) oddiy suvdan ko'ra 9 foizga ko'proq hajm egallaydi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 339
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Moviy kitning yuragi o'rtacha bir kichik avtomobil hajmidadek keladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 340
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Chaqmoq chaqqanda havo harorati 30 000 darajagacha qiziydi, bu Quyosh sirtidan 5 marta issiqroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 341
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson miyasida taxminan 86 milliard neyron mavjud bo'lib, u eng murakkab kompyuterdan ham kuchliroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 342
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Suv ham qattiq, ham suyuq, ham gaz holatida bir vaqtning o'zida bo'la oladi (bu \"uchlik nuqtasi\" deyiladi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 343
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Koinotda hech qanday tovush eshitilmaydi, chunki u yerda havo (vakuumni to'ldiruvchi muhit) yo'q.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 344
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng og'ir elementlardan biri — Osmiy bo'lib, uning bir kichik bo'lagi ham juda og'ir keladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 345
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Tipratikanlar suvda suza oladi va ularning ignalari o'zgartirilgan tuklardir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 346
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Venasayyorasida bir kun uning bir yilidan uzoqroq davom etadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 347
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning barmoq izlari kabi tili ham o'ziga xos va takrorlanmasdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 348
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qadimgi tirik organizm — \"Pando\" nomli klonal koloniyali daraxtlar bo'lib, ularning yoshi 80 000 yildan oshadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 349
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyosh tizimidagi eng baland tog' — Marsdagi Olimp tog'i bo'lib, u Everestdan 3 marta balandroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 350
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Olmos dunyodagi eng qattiq tabiiy modda bo'lib, uni faqat boshqa olmos bilan kesish mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 351
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson tanasining 60-70 foizi suvdan tashkil topgan.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 352
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ba'zi akulalar 400 yildan ortiq yashashi mumkin (masalan, Grenlandiya akulasi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 353
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng katta cho'l — Antarktida cho'li (muz cho'li) hisoblanadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 354
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bir tomchi suvda millionlab bakteriyalar va mikroskopik organizmlar mavjud bo'lishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 355
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Pluton sayyorasi AQSHning maydonidan ham kichikroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 356
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng tezkor hayvon — Gepard bo'lib, u soatiga 110-120 km tezlikka chiqa oladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 357
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O'rgimchak to'ri o'z qalinligidagi po'latdan 5 marta mustahkamroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 358
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson o'pkalari yoyib chiqilsa, u bir tennis korti maydonini qoplaydi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 359
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yer yuzidagi kislorodning yarmini okeandagi planktonlar ishlab chiqaradi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 360
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyosh yorug'ligi Yerga yetib kelishi uchun taxminan 8 daqiqa 20 soniya vaqt ketadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 361
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Chivinlar dunyodagi eng xavfli jonivor hisoblanadi, chunki ular turli kasalliklar orqali ko'p odamlar o'limiga sabab bo'ladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 362
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Gravitatsiya Yerning hamma qismida bir xil emas, ba'zi joylarda u biroz zaifroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 363
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning skeleti har 10 yilda to'liq yangilanadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 364
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Koinot har soniyada kengayib bormoqda, bu \"Katta portlash\" nazariyasi bilan bog'liq.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 365
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fil dunyodagi sakray olmaydigan yagona sutemizuvchi hayvondir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 366
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bir yilda dunyo bo'ylab 1 milliondan ortiq zilzilalar sodir bo'ladi, lekin biz ularning ko'pini sezmaymiz.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 367
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Metallarning ayrim turlari kosmosda bir-biriga tegsa, ular payvandlanib qoladi (sovuq payvandlash).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 368
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson ko'zi 10 millionga yaqin rangni ajrata oladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 369
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sayyoramizdagi barcha tillalar to'plansa, u atigi ikki yarimta olimpik basseynga sig'adi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 370
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Kapalaklar ta'mni oyoqlari orqali sezadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 371
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yerning o'z o'qi atrofida aylanishi asta-sekin sekinlashmoqda (har yuz yilda kunlar 1,7 millisekundga uzayadi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 372
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning burni 1 trillion xil hidni ajrata olish qobiliyatiga ega.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 373
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng chuqur joy — Mariana botig'i bo'lib, uning chuqurligi qariyb 11 000 metrdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 374
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Oydagi izlar millionlab yillar davomida saqlanib qoladi, chunki u yerda shamol va suv yo'q.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 375
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi yozuv turi — Shumer mixxatidir (miloddan avvalgi 3500-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 376
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Misr piramidalari qurilganida ularning usti oppoq ohaktosh bilan qoplangan bo'lib, u quyoshda yaltiragan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 377
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi bosma kitob \"Brilliant sutra\" deb atalgan va u Xitoyda 868-yilda nashr etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 378
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Leonardo da Vinchi nafaqat rassom, balki vertolyot va tankning ilk chizmalarini chizgan muhandis ham bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 379
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi avtomobil 1886-yilda Karl Bens tomonidan ixtiro qilingan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 380
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Amerika qit'asi ilk bor Vikinglar tomonidan Kolumbdan 500 yil avval kashf etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 381
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi telefon qo'ng'irog'i 1876-yilda Aleksandr Bell tomonidan amalga oshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 382
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Rim imperiyasi o'z davrida dunyo aholisining qariyb 20-25 foizini boshqargan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 383
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qadimgi uzluksiz universitet — Marokashdagi \"Al-Karauin\" universiteti bo'lib, u 859-yilda tashkil topgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 384
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Birinchi jahon urushi davrida chivinlarning o'rni sifatida \"o'rgatilgan kabutarlar\" xabarlarni tashish uchun ishlatilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 385
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi kompyuter \"ENIAC\" deb nomlangan va u bir butun xonani egallagan (vazni 30 tonna).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 386
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Napoleon Bonapart aslida juda past bo'lmagan, u o'sha davr uchun o'rtacha bo'yli (168-170 sm) kishi edi.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 387
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng uzoq davom etgan urush (Yuz yillik urush) aslida 116 yil davom etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 388
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buyuk Britaniya imperiyasi o'zining eng cho'qqisida dunyo quruqligining qariyb to'rtdan bir qismini egallagan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 389
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Birinchi jahon urushi 1918-yil 11-noyabrda rasman tugatilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 390
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi internet tarmog'i \"ARPANET\" deb nomlangan (1969-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 391
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Yunonistonda olimpiada o'yinlari miloddan avvalgi 776-yilda boshlangan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 392
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fransuz inqilobi (1789-yil) inson huquqlari va demokratiya rivojlanishiga ulkan hissa qo'shgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 393
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi parovoz 1804-yilda Richard Trevitik tomonidan yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 394
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ikkinchi jahon urushida 70-80 milliondan ortiq odam halok bo'lgan, bu insoniyat tarixidagi eng katta fojiadir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 395
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi aviatsiya parvozi 1903-yilda Rayt birodarlari tomonidan amalga oshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 396
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Misr fir'avni Tutanxamunning qabri 1922-yilda butunligicha topilgan eng mashhur arxeologik kashfiyotdir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 397
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi plastik material — Bakelit 1907-yilda yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 398
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sovet Ittifoqi 1957-yilda dunyodagi birinchi sun'iy yo'ldoshni (\"Sputnik-1\") koinotga uchirgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 399
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi ayol fazogir Valentina Tereshkova bo'lib, u 1963-yilda koinotga uchgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 400
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Magna Charta (Buyuk Ozodlik Hartiyasi) 1215-yilda imzolangan va u zamonaviy huquq tizimining asosi sanaladi.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 401
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi fotografiya 1826-yilda Jozef Neps tomonidan olingan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 402
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inka imperiyasi Janubiy Amerikada yozuv tizimisiz ulkan yo'llar va shaharlar (Machu Pichu) barpo etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 403
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi muzey 1683-yilda Oksfordda (Eshmolin muzeyi) ochilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 404
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Amerika Qo'shma Shtatlari 1776-yil 4-iyulda mustaqillik deklaratsiyasini imzolagan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 405
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi elektr lampochkasi Tomas Edison tomonidan ommaviylashtirilgan (1879-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 406
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xitoy devori bir vaqtda emas, balki asrlar davomida turli sulolalar tomonidan qurilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 407
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi radio signali 1895-yilda Markoni va Popov tomonidan kashf etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 408
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Maya madaniyati astronomiya va matematika sohasida nol tushunchasidan foydalangan noyob sivilizatsiyadir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 409
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi animatsion film 1908-yilda Fransiyada yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 410
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sovuq urush (1947-1991) davrida AQSH va SSSR o'rtasida koinotni zabt etish poygasi bo'lib o'tgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 411
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi bank — \"Banca Monte dei Paschi di Siena\" 1472-yilda tashkil topgan va u hali ham ishlamoqda.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 412
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Berlindevori 1989-yilda yiqitilishi Germaniyaning birlashishiga va sotsialistik tizimning tugashiga turtki bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 413
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi atom bombasi 1945-yilda \"Manxetten loyihasi\" doirasida sinovdan o'tkazilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 414
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Martin Lyuter Kingning \"Menda orzu bor\" (I have a dream) nutqi 1963-yilda irqiy kamsitishga qarshi ramz bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 415
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi Nobel mukofoti 1901-yilda topshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 416
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fransuz imperatori Napoleon bir yil davomida Elba oroliga surgun qilingan, lekin u yerda hukmdorlik qilishni davom ettirgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 417
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi kosmonaut Yuriy Gagarin 1961-yil 12-aprelda \"Vostok-1\" kemasida koinotni zabt etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 418
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Vikinglar o'z davrida nafaqat jangchi, balki mohir dengizchi va savdogarlar bo'lishgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 419
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi metro 1863-yilda Londonda ishga tushirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 420
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Iqtisodiyot\" so'zi yunoncha \"Oikonomos\" so'zidan kelib chiqqan bo'lib, \"ro'zg'orni boshqarish\" degan ma'noni anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 421
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Adam Smit 1776-yilda \"Xalqlar boyligi\" asarini yozgan va u zamonaviy iqtisodiyotning asoschisi hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 422
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik iqtisodiyot (YaIM bo'yicha) AQSH bo'lib, u dunyo YaIMining qariyb 24 foizini tashkil etadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 423
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xarid qobiliyati pariteti (PPP) bo'yicha Xitoy dunyodagi eng yirik iqtisodiyotdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 424
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyoda ilk bor qog'oz pullar 7-asrda Xitoyda (Tan sulolasi davrida) paydo bo'lgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 425
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Inflyatsiya\" tushunchasi narxlarning o'sishi va pulning qadrsizlanishini anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 426
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qimmat valyuta 2024-yil holatiga ko'ra Quvayt dinori (KWD) hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 427
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik birja — Nyu-York fond birjasi (NYSE) bo'lib, uning kapitalizatsiyasi 25 trillion dollardan oshadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 428
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bitkoin 2009-yilda Satoshi Nakamoto tomonidan yaratilgan dunyodagi birinchi kriptovalyutadir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 429
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Yalpi ichki mahsulot\" (YaIM) mamlakatda bir yil davomida ishlab chiqarilgan barcha yakuniy tovarlar va xizmatlar qiymatidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 430
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng boy insonlar (Forbes reytingi) o'z boyliklarining katta qismini aktsiyalar va investitsiyalar ko'rinishida saqlaydi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 431
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Talab va taklif\" qonuni iqtisodiyotning eng asosiy prinsipidir: taklif kamayib, talab ortsa, narx ko'tariladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 432
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p oltin zaxirasiga ega davlat AQSH bo'lib, u 8133 tonnadan ortiq oltinga ega.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 433
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Brend\" so'zi qadimda chorva mollarini ajratish uchun qo'yilgan \"tamg'a\" (brand) so'zidan kelib chiqqan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 434
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik chakana savdo tarmog'i (daromad bo'yicha) \"Walmart\" hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 435
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Globalizatsiya\" davlatlar o'rtasidagi iqtisodiy, madaniy va texnologik integratsiyani anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 436
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi birinchi ko'p millatli korporatsiya — \"Gollandiya Sharqiy Hindiston kompaniyasi\" (VOC) bo'lgan (1602-yil).",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 437
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Mikroiqtisodiyot\" alohida shaxslar va firmalar qarorlarini, \"Makroiqtisodiyot\" esa butun mamlakat iqtisodiyotini o'rganadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 438
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyo aholisining qariyb 10 foizi o'ta qashshoqlik darajasida (kuniga 2,15 dollardan kam) yashaydi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 439
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Katta yettilik\" (G7) dunyodagi eng rivojlangan 7 ta sanoatlashgan davlatlar guruhidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 440
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p neft ishlab chiqaruvchi davlatlar orasida AQSH, Saudiya Arabistoni va Rossiya yetakchilik qiladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 441
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Monopoliya\" bozorda faqat bitta sotuvchining bo'lishi va uning narxni belgilashini anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 442
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik kema tashuvchi kompaniya \"MSC\" (Mediterranean Shipping Company) hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 443
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Venchur kapitali\" yangi va yuqori xavfli startap loyihalariga tikiladigan sarmoyadir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 444
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi aktsiyadorlik jamiyati 17-asrda Gollandiyada paydo bo'lgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 445
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Deflyatsiya\" narxlarning tushishi va pulning qadrining oshishini anglatadi (bu ham iqtisodiyot uchun zararli bo'lishi mumkin).",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 446
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik qarz oluvchi davlat (umumiy miqdor bo'yicha) AQSHdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 447
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Diversifikatsiya\" investitsiyalarni turli sohalarga bo'lish orqali xavfni kamaytirishdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 448
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik oziq-ovqat kompaniyasi (daromad bo'yicha) \"Nestle\" hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 449
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Fiskal siyosat\" davlatning soliqlar va xarajatlar orqali iqtisodiyotga ta'sir o'tkazishidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 450
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyo bo'ylab har yili trillionlab dollar qiymatdagi tovarlar dengiz yo'li orqali tashiladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 451
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Oportunitiv xarajat\" (imkoniyat boy berilgan xarajat) — biron bir qarorni qabul qilishda rad etilgan eng yaxshi alternativa qiymatidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 452
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik texnologiya kompaniyasi (kapitalizatsiya bo'yicha) ko'pincha \"Apple\" yoki \"Microsoft\" bo'ladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 453
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Raqobat\" iste'molchilar uchun sifatning oshishi va narxlarning pasayishiga xizmat qiladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 454
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik e-tijorat kompaniyasi — \"Amazon\" va \"Alibaba\" guruhlari hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 455
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Markaziy bank\" mamlakatning pul-kredit siyosatini boshqaruvchi asosiy organ (masalan, O'zbekiston Respublikasi Markaziy Banki).",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 456
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p ishchi kuchi qishloq xo'jaligi va xizmat ko'rsatish sohalarida banddir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 457
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Erkin savdo\" davlatlar o'rtasida boj va to'siqlarsiz savdo qilishni anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 458
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi kredit kartasi \"Diners Club\" tomonidan 1950-yilda chiqarilgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 459
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Eksport\" mamlakatdan tashqariga tovar sotish, \"Import\" esa tashqaridan tovar sotib olishdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 460
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p kofe ishlab chiqaruvchi davlat Braziliya hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 461
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Yevro\" (Euro) valyutasi 1999-yilda virtual, 2002-yilda esa jismoniy muomalaga kiritilgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 462
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik turizm daromadiga ega davlat ko'pincha AQSH yoki Fransiya bo'ladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 463
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Startap\" (Startup) — yangi biznes modeli yoki innovatsion texnologiyaga asoslangan yosh kompaniya.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 464
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Iqtisodiy o'sish insonlar hayot darajasini yaxshilash va qashshoqlikni kamaytirishning eng asosiy omilidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 465
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yorug'lik tezligi sekundiga qariyb 300 000 kilometrni tashkil etadi, bu Quyoshdan Yergacha bo'lgan masofani 8 daqiqada bosib o'tish demakdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 466
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson tanasidagi barcha qon tomirlarining umumiy uzunligi qariyb 100 000 kilometr bo'lib, bu Yer sharini ikki yarim marta aylantirib chiqishga yetadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 467
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng baland daraxt — Sekvoya bo'lib, u 115 metrdan baland bo'lishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 468
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Asalari bir kilogramm asal yig'ish uchun taxminan 2 millionta gulga qo'nib chiqishi kerak.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 469
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Saturn sayyorasining zichligi shunchalik pastki, agar uni suvga solish imkoni bo'lsa, u suv yuzida suzib yurgan bo'lardi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 470
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng kichik qush — Hummingbird (kolibri) bo'lib, uning vazni atigi 2 grammga yaqin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 471
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson DNKsi zanjiri to'liq yozilsa, uning uzunligi Quyosh tizimidan tashqariga chiqib ketishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 472
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yer yuzidagi barcha qum zarralari sonidan ko'ra koinotdagi yulduzlar soni ko'proqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 473
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Muzlagan suv (muz) oddiy suvdan ko'ra 9 foizga ko'proq hajm egallaydi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 474
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Moviy kitning yuragi o'rtacha bir kichik avtomobil hajmidadek keladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 475
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Chaqmoq chaqqanda havo harorati 30 000 darajagacha qiziydi, bu Quyosh sirtidan 5 marta issiqroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 476
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson miyasida taxminan 86 milliard neyron mavjud bo'lib, u eng murakkab kompyuterdan ham kuchliroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 477
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Suv ham qattiq, ham suyuq, ham gaz holatida bir vaqtning o'zida bo'la oladi (bu \"uchlik nuqtasi\" deyiladi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 478
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Koinotda hech qanday tovush eshitilmaydi, chunki u yerda havo (vakuumni to'ldiruvchi muhit) yo'q.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 479
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng og'ir elementlardan biri — Osmiy bo'lib, uning bir kichik bo'lagi ham juda og'ir keladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 480
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Tipratikanlar suvda suza oladi va ularning ignalari o'zgartirilgan tuklardir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 481
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Venasayyorasida bir kun uning bir yilidan uzoqroq davom etadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 482
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning barmoq izlari kabi tili ham o'ziga xos va takrorlanmasdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 483
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qadimgi tirik organizm — \"Pando\" nomli klonal koloniyali daraxtlar bo'lib, ularning yoshi 80 000 yildan oshadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 484
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyosh tizimidagi eng baland tog' — Marsdagi Olimp tog'i bo'lib, u Everestdan 3 marta balandroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 485
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Olmos dunyodagi eng qattiq tabiiy modda bo'lib, uni faqat boshqa olmos bilan kesish mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 486
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson tanasining 60-70 foizi suvdan tashkil topgan.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 487
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ba'zi akulalar 400 yildan ortiq yashashi mumkin (masalan, Grenlandiya akulasi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 488
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng katta cho'l — Antarktida cho'li (muz cho'li) hisoblanadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 489
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bir tomchi suvda millionlab bakteriyalar va mikroskopik organizmlar mavjud bo'lishi mumkin.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 490
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Pluton sayyorasi AQSHning maydonidan ham kichikroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 491
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng tezkor hayvon — Gepard bo'lib, u soatiga 110-120 km tezlikka chiqa oladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 492
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "O'rgimchak to'ri o'z qalinligidagi po'latdan 5 marta mustahkamroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 493
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson o'pkalari yoyib chiqilsa, u bir tennis korti maydonini qoplaydi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 494
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yer yuzidagi kislorodning yarmini okeandagi planktonlar ishlab chiqaradi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 495
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Quyosh yorug'ligi Yerga yetib kelishi uchun taxminan 8 daqiqa 20 soniya vaqt ketadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 496
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Chivinlar dunyodagi eng xavfli jonivor hisoblanadi, chunki ular turli kasalliklar orqali ko'p odamlar o'limiga sabab bo'ladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 497
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Gravitatsiya Yerning hamma qismida bir xil emas, ba'zi joylarda u biroz zaifroqdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 498
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning skeleti har 10 yilda to'liq yangilanadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 499
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Koinot har soniyada kengayib bormoqda, bu \"Katta portlash\" nazariyasi bilan bog'liq.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 500
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fil dunyodagi sakray olmaydigan yagona sutemizuvchi hayvondir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 501
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bir yilda dunyo bo'ylab 1 milliondan ortiq zilzilalar sodir bo'ladi, lekin biz ularning ko'pini sezmaymiz.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 502
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Metallarning ayrim turlari kosmosda bir-biriga tegsa, ular payvandlanib qoladi (sovuq payvandlash).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 503
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inson ko'zi 10 millionga yaqin rangni ajrata oladi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 504
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sayyoramizdagi barcha tillalar to'plansa, u atigi ikki yarimta olimpik basseynga sig'adi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 505
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Kapalaklar ta'mni oyoqlari orqali sezadi.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 506
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Yerning o'z o'qi atrofida aylanishi asta-sekin sekinlashmoqda (har yuz yilda kunlar 1,7 millisekundga uzayadi).",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 507
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Insonning burni 1 trillion xil hidni ajrata olish qobiliyatiga ega.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 508
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng chuqur joy — Mariana botig'i bo'lib, uning chuqurligi qariyb 11 000 metrdir.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 509
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Oydagi izlar millionlab yillar davomida saqlanib qoladi, chunki u yerda shamol va suv yo'q.",
+        "category": "Ilm-fan va Tabiat",
+        "origin": "Global",
+        "id": 510
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi yozuv turi — Shumer mixxatidir (miloddan avvalgi 3500-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 511
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Misr piramidalari qurilganida ularning usti oppoq ohaktosh bilan qoplangan bo'lib, u quyoshda yaltiragan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 512
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi bosma kitob \"Brilliant sutra\" deb atalgan va u Xitoyda 868-yilda nashr etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 513
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Leonardo da Vinchi nafaqat rassom, balki vertolyot va tankning ilk chizmalarini chizgan muhandis ham bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 514
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi avtomobil 1886-yilda Karl Bens tomonidan ixtiro qilingan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 515
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Amerika qit'asi ilk bor Vikinglar tomonidan Kolumbdan 500 yil avval kashf etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 516
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi telefon qo'ng'irog'i 1876-yilda Aleksandr Bell tomonidan amalga oshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 517
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Rim imperiyasi o'z davrida dunyo aholisining qariyb 20-25 foizini boshqargan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 518
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qadimgi uzluksiz universitet — Marokashdagi \"Al-Karauin\" universiteti bo'lib, u 859-yilda tashkil topgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 519
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Birinchi jahon urushi davrida chivinlarning o'rni sifatida \"o'rgatilgan kabutarlar\" xabarlarni tashish uchun ishlatilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 520
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi kompyuter \"ENIAC\" deb nomlangan va u bir butun xonani egallagan (vazni 30 tonna).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 521
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Napoleon Bonapart aslida juda past bo'lmagan, u o'sha davr uchun o'rtacha bo'yli (168-170 sm) kishi edi.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 522
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng uzoq davom etgan urush (Yuz yillik urush) aslida 116 yil davom etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 523
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Buyuk Britaniya imperiyasi o'zining eng cho'qqisida dunyo quruqligining qariyb to'rtdan bir qismini egallagan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 524
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Birinchi jahon urushi 1918-yil 11-noyabrda rasman tugatilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 525
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi internet tarmog'i \"ARPANET\" deb nomlangan (1969-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 526
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Yunonistonda olimpiada o'yinlari miloddan avvalgi 776-yilda boshlangan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 527
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fransuz inqilobi (1789-yil) inson huquqlari va demokratiya rivojlanishiga ulkan hissa qo'shgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 528
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi parovoz 1804-yilda Richard Trevitik tomonidan yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 529
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Ikkinchi jahon urushida 70-80 milliondan ortiq odam halok bo'lgan, bu insoniyat tarixidagi eng katta fojiadir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 530
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi aviatsiya parvozi 1903-yilda Rayt birodarlari tomonidan amalga oshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 531
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Misr fir'avni Tutanxamunning qabri 1922-yilda butunligicha topilgan eng mashhur arxeologik kashfiyotdir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 532
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi plastik material — Bakelit 1907-yilda yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 533
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sovet Ittifoqi 1957-yilda dunyodagi birinchi sun'iy yo'ldoshni (\"Sputnik-1\") koinotga uchirgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 534
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi ayol fazogir Valentina Tereshkova bo'lib, u 1963-yilda koinotga uchgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 535
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Magna Charta (Buyuk Ozodlik Hartiyasi) 1215-yilda imzolangan va u zamonaviy huquq tizimining asosi sanaladi.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 536
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi fotografiya 1826-yilda Jozef Neps tomonidan olingan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 537
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Inka imperiyasi Janubiy Amerikada yozuv tizimisiz ulkan yo'llar va shaharlar (Machu Pichu) barpo etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 538
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi muzey 1683-yilda Oksfordda (Eshmolin muzeyi) ochilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 539
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Amerika Qo'shma Shtatlari 1776-yil 4-iyulda mustaqillik deklaratsiyasini imzolagan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 540
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi elektr lampochkasi Tomas Edison tomonidan ommaviylashtirilgan (1879-yil).",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 541
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xitoy devori bir vaqtda emas, balki asrlar davomida turli sulolalar tomonidan qurilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 542
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi radio signali 1895-yilda Markoni va Popov tomonidan kashf etilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 543
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Qadimgi Maya madaniyati astronomiya va matematika sohasida nol tushunchasidan foydalangan noyob sivilizatsiyadir.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 544
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi animatsion film 1908-yilda Fransiyada yaratilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 545
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Sovuq urush (1947-1991) davrida AQSH va SSSR o'rtasida koinotni zabt etish poygasi bo'lib o'tgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 546
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi bank — \"Banca Monte dei Paschi di Siena\" 1472-yilda tashkil topgan va u hali ham ishlamoqda.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 547
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Berlindevori 1989-yilda yiqitilishi Germaniyaning birlashishiga va sotsialistik tizimning tugashiga turtki bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 548
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi atom bombasi 1945-yilda \"Manxetten loyihasi\" doirasida sinovdan o'tkazilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 549
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Martin Lyuter Kingning \"Menda orzu bor\" (I have a dream) nutqi 1963-yilda irqiy kamsitishga qarshi ramz bo'lgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 550
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi Nobel mukofoti 1901-yilda topshirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 551
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Fransuz imperatori Napoleon bir yil davomida Elba oroliga surgun qilingan, lekin u yerda hukmdorlik qilishni davom ettirgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 552
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi kosmonaut Yuriy Gagarin 1961-yil 12-aprelda \"Vostok-1\" kemasida koinotni zabt etgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 553
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Vikinglar o'z davrida nafaqat jangchi, balki mohir dengizchi va savdogarlar bo'lishgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 554
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi metro 1863-yilda Londonda ishga tushirilgan.",
+        "category": "Tarix va Kashfiyotlar",
+        "origin": "Global",
+        "id": 555
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Iqtisodiyot\" so'zi yunoncha \"Oikonomos\" so'zidan kelib chiqqan bo'lib, \"ro'zg'orni boshqarish\" degan ma'noni anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 556
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Adam Smit 1776-yilda \"Xalqlar boyligi\" asarini yozgan va u zamonaviy iqtisodiyotning asoschisi hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 557
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik iqtisodiyot (YaIM bo'yicha) AQSH bo'lib, u dunyo YaIMining qariyb 24 foizini tashkil etadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 558
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Xarid qobiliyati pariteti (PPP) bo'yicha Xitoy dunyodagi eng yirik iqtisodiyotdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 559
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyoda ilk bor qog'oz pullar 7-asrda Xitoyda (Tan sulolasi davrida) paydo bo'lgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 560
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Inflyatsiya\" tushunchasi narxlarning o'sishi va pulning qadrsizlanishini anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 561
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng qimmat valyuta 2024-yil holatiga ko'ra Quvayt dinori (KWD) hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 562
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik birja — Nyu-York fond birjasi (NYSE) bo'lib, uning kapitalizatsiyasi 25 trillion dollardan oshadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 563
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Bitkoin 2009-yilda Satoshi Nakamoto tomonidan yaratilgan dunyodagi birinchi kriptovalyutadir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 564
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Yalpi ichki mahsulot\" (YaIM) mamlakatda bir yil davomida ishlab chiqarilgan barcha yakuniy tovarlar va xizmatlar qiymatidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 565
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng boy insonlar (Forbes reytingi) o'z boyliklarining katta qismini aktsiyalar va investitsiyalar ko'rinishida saqlaydi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 566
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Talab va taklif\" qonuni iqtisodiyotning eng asosiy prinsipidir: taklif kamayib, talab ortsa, narx ko'tariladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 567
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p oltin zaxirasiga ega davlat AQSH bo'lib, u 8133 tonnadan ortiq oltinga ega.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 568
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Brend\" so'zi qadimda chorva mollarini ajratish uchun qo'yilgan \"tamg'a\" (brand) so'zidan kelib chiqqan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 569
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik chakana savdo tarmog'i (daromad bo'yicha) \"Walmart\" hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 570
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Globalizatsiya\" davlatlar o'rtasidagi iqtisodiy, madaniy va texnologik integratsiyani anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 571
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi birinchi ko'p millatli korporatsiya — \"Gollandiya Sharqiy Hindiston kompaniyasi\" (VOC) bo'lgan (1602-yil).",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 572
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Mikroiqtisodiyot\" alohida shaxslar va firmalar qarorlarini, \"Makroiqtisodiyot\" esa butun mamlakat iqtisodiyotini o'rganadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 573
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyo aholisining qariyb 10 foizi o'ta qashshoqlik darajasida (kuniga 2,15 dollardan kam) yashaydi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 574
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Katta yettilik\" (G7) dunyodagi eng rivojlangan 7 ta sanoatlashgan davlatlar guruhidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 575
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng ko'p neft ishlab chiqaruvchi davlatlar orasida AQSH, Saudiya Arabistoni va Rossiya yetakchilik qiladi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 576
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Monopoliya\" bozorda faqat bitta sotuvchining bo'lishi va uning narxni belgilashini anglatadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 577
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik kema tashuvchi kompaniya \"MSC\" (Mediterranean Shipping Company) hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 578
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Venchur kapitali\" yangi va yuqori xavfli startap loyihalariga tikiladigan sarmoyadir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 579
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng birinchi aktsiyadorlik jamiyati 17-asrda Gollandiyada paydo bo'lgan.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 580
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Deflyatsiya\" narxlarning tushishi va pulning qadrining oshishini anglatadi (bu ham iqtisodiyot uchun zararli bo'lishi mumkin).",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 581
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik qarz oluvchi davlat (umumiy miqdor bo'yicha) AQSHdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 582
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Diversifikatsiya\" investitsiyalarni turli sohalarga bo'lish orqali xavfni kamaytirishdir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 583
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "Dunyodagi eng yirik oziq-ovqat kompaniyasi (daromad bo'yicha) \"Nestle\" hisoblanadi.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 584
+    },
+    {
+        "type": "fact",
+        "author": "Bilarmidingiz?",
+        "text": "\"Fiskal siyosat\" davlatning soliqlar va xarajatlar orqali iqtisodiyotga ta'sir o'tkazishidir.",
+        "category": "Iqtisodiyot va Moliya",
+        "origin": "Global",
+        "id": 585
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Miya — bu uxlab yotgan gigant, uni uyg'otishning kaliti esa bilimdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 586
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Qanday o'rganishni o'rganish — bu hayotdagi eng muhim mahoratdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 587
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Sizning miyangiz — bu cheksiz imkoniyatlar dunyosi, undan foydalanishni to'xtatmang.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 588
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Xotira — bu mushak kabidir, uni mashq qildirsangiz, u yanada kuchayadi.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 589
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Xaritalash (Mind Mapping) — bu fikrlaringizni tartibga solishning eng tabiy yo'lidir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 590
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Ijodkorlik — bu shunchaki yangi bog'liqliklarni topishdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 591
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Har bir inson daho bo'lib tug'iladi, faqat buni kashf etish kerak.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 592
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Bilim — bu kuch, lekin uni qanday qo'llashni bilish — bu donolikdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 593
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "Miyangizni tushunish — o'zingizni tushunish demakdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 594
+    },
+    {
+        "type": "quote",
+        "author": "Tony Buzan",
+        "text": "O'qish — bu sarguzasht, har bir sahifa yangi dunyoni ochadi.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 595
+    },
+    {
+        "type": "quote",
+        "author": "Adam Smith",
+        "text": "Insonning o'z mehnati — uning barcha boyliklarining poydevoridir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 596
+    },
+    {
+        "type": "quote",
+        "author": "Adam Smith",
+        "text": "Tejamkorlik va mehnatsevarlik — farovonlikning ikki asosiy ustunidir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 597
+    },
+    {
+        "type": "quote",
+        "author": "Adam Smith",
+        "text": "Raqobat — bu sifatni oshiruvchi va narxni adolatli qiluvchi kuchdir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 598
+    },
+    {
+        "type": "quote",
+        "author": "Adam Smith",
+        "text": "Jamiyat boyligi — undagi har bir insonning unumli mehnatiga bog'liq.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 599
+    },
+    {
+        "type": "quote",
+        "author": "Adam Smith",
+        "text": "O'z ustida ishlash — iqtisodiy erkinlikning birinchi qadamidir.",
+        "category": "Motivation",
+        "origin": "Global",
+        "id": 600
+    }
+]

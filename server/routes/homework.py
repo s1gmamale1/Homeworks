@@ -63,7 +63,8 @@ async def create_homework(hw: HomeworkCreate):
 
     empty_scaffold = {
       "meta": { "title": hw.title, "subject_display": hw.subject, "section": "", "cefr_level": "" },
-      "quotes": [], "panels": [], "flashcards": [], "memory_sprint": [],
+      "gate_quote": { "mode": "auto" },
+      "panels": [], "flashcards": [], "memory_sprint": [],
       "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [],
       "real_life": None, "boss_questions": [], "reflection": None
     }

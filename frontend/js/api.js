@@ -238,6 +238,31 @@
       return this.getHomeworks().then((r) => r.items);
     },
 
+    /**
+     * Searchable view over the gate-quote library.
+     * @param {Object} params
+     * @param {string} [params.q]        - Substring search over text + author
+     * @param {string} [params.type]     - "fact" | "quote"
+     * @param {string} [params.origin]   - "National" | "Global"
+     * @param {string} [params.category]
+     * @param {string} [params.author]
+     * @param {number} [params.limit]    - default 50, max 200
+     * @param {number} [params.offset]   - default 0
+     * @returns {Promise<{items: Array, total: number, limit: number, offset: number, facets: Object}>}
+     */
+    getQuotes(params = {}) {
+      const qs = new URLSearchParams();
+      if (params.q)        qs.set("q", params.q);
+      if (params.type)     qs.set("type", params.type);
+      if (params.origin)   qs.set("origin", params.origin);
+      if (params.category) qs.set("category", params.category);
+      if (params.author)   qs.set("author", params.author);
+      if (params.limit  != null) qs.set("limit",  String(params.limit));
+      if (params.offset != null) qs.set("offset", String(params.offset));
+      const suffix = qs.toString() ? `?${qs.toString()}` : "";
+      return request(`/api/quotes${suffix}`);
+    },
+
     createHomework({ title, subject, grade, mode }) {
       return request("/api/homeworks", {
         method: "POST",

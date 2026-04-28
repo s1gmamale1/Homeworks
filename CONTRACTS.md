@@ -18,7 +18,12 @@ The single source of truth for a homework's content. Stored as JSON in SQLite `h
     "section": "22-§",
     "cefr_level": "B1"
   },
-  "quotes": ["string", "..."],
+  "gate_quote": {
+    "mode": "auto",
+    "pinned_id": null,
+    "pinned_preview": null,
+    "custom": null
+  },
   "panels": [
     {
       "id": 1,
@@ -293,7 +298,7 @@ All responses JSON unless noted. All errors return `{ "error": "message", "code"
 ```json
 {
   "meta": { "title": "...", "subject_display": "...", "section": "", "cefr_level": "" },
-  "quotes": [], "panels": [], "flashcards": [], "memory_sprint": [],
+  "gate_quote": { "mode": "auto" }, "panels": [], "flashcards": [], "memory_sprint": [],
   "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [],
   "real_life": null, "boss_questions": [], "reflection": null
 }
@@ -348,7 +353,7 @@ Frontend uses `EventSource` to consume. Each `phase` event with `status: "done"`
 | JS Constant | `content_json` key | Type |
 |-------------|-------------------|------|
 | `PANELS` | `panels` | array |
-| `QUOTES` | `quotes` | array |
+| `QUOTES` | `gate_quote` (legacy `quotes`) | array (length 1, server-selected) |
 | `FLASHCARDS` | `flashcards` | array |
 | `MS_QUESTIONS` | `memory_sprint` | array |
 | `GB_ADAPTIVE_QUIZ` | `gb_adaptive_quiz` | array |
@@ -370,6 +375,36 @@ CAPTION_PATTERN = r'<div class="caption">.*?</div>'
 ```
 
 Injection produces replacement: `const {NAME} = {json.dumps(data, ensure_ascii=False)};`
+
+### 5.1 Gate Quote selector (Phase 0-A)
+
+The `QUOTES` constant is special: it is always a length-1 array, populated by the
+server-side selector at inject time, not stored in `content_json`.
+
+**Library:** `server/data/quotes_database.json` — 600 entries copied from the NETS
+framework repo (`Homework_Engine_Platform/standards/system/narrative/quotes_database.json`,
+Cheeks branch). Each entry: `{id, type, author, text, category, origin}`.
+
+**Author input:** `content_json.gate_quote = {mode, pinned_id?, pinned_preview?, custom?}`
+
+| `mode` | Behaviour at inject time |
+|--------|--------------------------|
+| `"auto"` (default) | Selector picks one entry applying **55% National / 45% Global** origin and **70% fact / 30% quote** type, uniform within bucket. Fresh pick on every render. |
+| `"pinned"` | Selector looks up `pinned_id` in the library and returns it. Unknown id → falls back to auto. `pinned_preview` is a builder-side cache for displaying the pinned card without a round-trip — the selector ignores it. |
+| `"custom"` | Selector returns `custom = {text, author}` verbatim. |
+
+**Legacy migration:** `content_json.quotes` (array of strings or `{t,a}` objects) is
+auto-migrated by `server.services.quotes.migrate_legacy()` — first non-empty entry
+becomes a `custom` quote. Empty/missing → `{mode: "auto"}`. Saves go through
+`gate_quote` going forward; the old `quotes` key is still read as a fallback.
+
+**Runtime contract:** the array element is `{t, a, origin, type, id?, category?}`.
+The template uses `t`/`a` for text + author and `origin`/`type` for the visual chip
+and icon. Skip lock is fixed at 5s in `runQuoteSequence`.
+
+**API:** `GET /api/quotes?q=&type=&origin=&category=&author=&limit=&offset=` returns
+`{items, total, limit, offset, facets: {types, origins, categories, authors}}`.
+Used by the builder's quote picker modal (`frontend/js/editors/_quote-picker.js`).
 
 ---
 

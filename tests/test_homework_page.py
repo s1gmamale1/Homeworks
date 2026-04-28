@@ -147,6 +147,114 @@ def test_tutor_widget_inline_no_external_assets(client, created_hw):
             f"unexpected external stylesheet in tutor widget area: {tag}"
 
 
+# ──────────────────────────────────────────────────────────────────
+# Phase 0-A — gate quote (curated library + skip lock)
+# ──────────────────────────────────────────────────────────────────
+
+
+def test_h_route_renders_single_gate_quote(client, created_hw):
+    """The runtime template now ships with a single-element QUOTES array
+    (server-side selector picks one per inject) and an author chip."""
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    # Single quote injected — array literal contains exactly one object.
+    import re as _re
+    match = _re.search(r"const QUOTES\s*=\s*(\[[\s\S]*?\]);", body)
+    assert match, "QUOTES array not found in rendered HTML"
+    arr_literal = match.group(1)
+    # Only one object in the array (one closing brace immediately before the closing bracket).
+    assert arr_literal.count("{") == 1, f"expected exactly 1 quote, got literal: {arr_literal[:200]}"
+    # Author chip CSS class is in the template.
+    assert "quote-author-chip" in body
+    # Skip lock ring CSS is in the template.
+    assert "skip-lock-ring" in body
+
+
+def test_h_route_renders_pinned_quote(client):
+    """Author pinned a specific id; runtime renders that text. POST creates
+    the row with an empty scaffold; PUT installs the gate_quote envelope."""
+    from server.services import quotes as quotes_service
+
+    library = quotes_service.all_quotes()
+    target = library[0]
+
+    create = client.post("/api/homeworks", json={
+        "title": "Pinned-quote smoke",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+    })
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    update = client.put(f"/api/homeworks/{hw_id}", json={
+        "content_json": {
+            "meta": {"title": "Pinned-quote smoke"},
+            "panels": [],
+            "flashcards": [],
+            "boss_questions": [],
+            "memory_sprint": [],
+            "gate_quote": {"mode": "pinned", "pinned_id": target["id"]},
+        },
+    })
+    assert update.status_code == 200, update.text
+
+    r = client.get(f"/h/{hw_id}")
+    assert r.status_code == 200
+    # The pinned quote's text must appear in the QUOTES array literal.
+    body = r.text
+    import re as _re, json as _json
+    match = _re.search(r"const QUOTES\s*=\s*(\[[\s\S]*?\]);", body)
+    assert match, "QUOTES array not found"
+    arr = _json.loads(match.group(1))
+    assert len(arr) == 1
+    assert arr[0]["t"] == target["text"]
+    assert arr[0]["a"] == target["author"]
+
+
+def test_h_route_legacy_quotes_array_migrates_to_custom(client):
+    """Old homeworks with `content_json.quotes = ['...']` still render — the
+    selector treats the first non-empty entry as a custom override."""
+    create = client.post("/api/homeworks", json={
+        "title": "Legacy-quotes smoke",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+    })
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    update = client.put(f"/api/homeworks/{hw_id}", json={
+        "content_json": {
+            "meta": {"title": "Legacy-quotes smoke"},
+            "panels": [],
+            "flashcards": [],
+            "boss_questions": [],
+            "memory_sprint": [],
+            "quotes": ["Eski iqtibos matni"],
+        },
+    })
+    assert update.status_code == 200, update.text
+
+    r = client.get(f"/h/{hw_id}")
+    assert r.status_code == 200
+    assert "Eski iqtibos matni" in r.text
+
+
+def test_quotes_api_endpoint_returns_facets(client):
+    """GET /api/quotes serves the searchable library used by the picker."""
+    r = client.get("/api/quotes?limit=5")
+    assert r.status_code == 200
+    body = r.json()
+    assert "items" in body
+    assert "total" in body
+    assert "facets" in body
+    assert isinstance(body["facets"]["types"], list)
+    assert isinstance(body["facets"]["origins"], list)
+    assert "fact" in body["facets"]["types"] or "quote" in body["facets"]["types"]
+
+
 def test_runtime_js_exposes_new_methods():
     """server/template/runtime.js must expose tutorChat, tutorHistory, bossPlan."""
     import os

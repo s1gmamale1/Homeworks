@@ -779,7 +779,7 @@
 
         /* QUOTES */
         #quote-container {
-            min-height: 160px;
+            min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -795,6 +795,71 @@
             font-style: italic;
             line-height: 1.6;
             color: #356891;
+        }
+        .quote-type-icon {
+            display: inline-block;
+            margin-right: 6px;
+            font-size: 16px;
+            opacity: 0.85;
+        }
+        .quote-author-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            padding: 5px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            font-style: normal;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(0, 122, 255, 0.10);
+            color: var(--accent);
+            border: 1px solid rgba(0, 122, 255, 0.22);
+        }
+        .quote-author-chip--global {
+            background: rgba(0, 153, 102, 0.10);
+            color: #00744f;
+            border-color: rgba(0, 153, 102, 0.22);
+        }
+        .quote-author-chip-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.7;
+        }
+
+        /* 5-second skip-lock ring overlaid on .state-line button */
+        .skip-lock-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 22px;
+            height: 22px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0.85;
+        }
+        .skip-lock-ring circle {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 2;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .skip-lock-ring .skip-track {
+            opacity: 0.18;
+        }
+        .skip-lock-ring .skip-progress {
+            stroke-dasharray: 56.5;
+            stroke-dashoffset: 56.5;
+            animation: skipLockFill 5s linear forwards;
+        }
+        @keyframes skipLockFill {
+            to { stroke-dashoffset: 0; }
         }
 
         /* PAGINATION */
@@ -3006,12 +3071,12 @@
             }
         ];
 
-        const QUOTES = [
-            { t: "\"Bilim — eng qudratli quroldir. Uni sen dunyoni o'zgartirish uchun ishlatishing mumkin.\"", a: "Nelson Mandela" },
-            { t: "\"Kim bilimni izlasa, jannat yo'lini topadi.\"", a: "Imom Buxoriy" },
-            { t: "\"O'qish — odamning ikkinchi qanoti.\"", a: "Abdulla Avloniy" },
-            { t: "\"Matematika — bu aqlning musiqasi.\"", a: "James Joseph Sylvester" }
-        ];
+        // QUOTES is replaced by server/services/injector.py at render time with
+        // exactly one entry produced by server/services/quotes.py (a deterministic
+        // pick from server/data/quotes_database.json applying the 55/45 + 70/30 rule
+        // for `mode: auto`, or the author's pinned/custom override). The empty
+        // default below is only ever seen if injection is bypassed during dev.
+        const QUOTES = [];
 
         const FLASHCARDS = [
             {
@@ -3434,18 +3499,66 @@
             const container = document.getElementById('quote-container');
             if (!container) return;
             const presets = ['anim-quote-in-up', 'anim-quote-in-scale', 'anim-quote-in-left'];
-            const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            // QUOTES is always length-1 (server-side selector picks one per inject).
+            const q = QUOTES[0] || { t: "", a: "", origin: "National", type: "fact" };
+            const isGlobal = q.origin === 'Global';
+            const icon = q.type === 'quote' ? '❝' : '💡';
+
             const item = document.createElement('div');
             item.className = 'quote-item';
-            item.innerHTML = `<div>${q.t}</div><div class="caption" style="margin-top:16px; color: var(--accent);">— ${q.a}</div>`;
+
+            // Quote line — span+icon prefix, then the quote text as a text node
+            // (no innerHTML interpolation, immune to XSS regardless of source).
+            const textLine = document.createElement('div');
+            const iconNode = document.createElement('span');
+            iconNode.className = 'quote-type-icon';
+            iconNode.textContent = icon;
+            textLine.appendChild(iconNode);
+            textLine.appendChild(document.createTextNode(q.t || ''));
+
+            // Author chip — origin-tinted pill with a dot + author name.
+            const chipLine = document.createElement('div');
+            const chip = document.createElement('span');
+            chip.className = isGlobal ? 'quote-author-chip quote-author-chip--global' : 'quote-author-chip';
+            const dot = document.createElement('span');
+            dot.className = 'quote-author-chip-dot';
+            const authorNode = document.createElement('span');
+            authorNode.textContent = q.a || '';
+            chip.appendChild(dot);
+            chip.appendChild(authorNode);
+            chipLine.appendChild(chip);
+
+            item.appendChild(textLine);
+            item.appendChild(chipLine);
+
             const preset = presets[Math.floor(Math.random() * presets.length)];
             container.appendChild(item);
             void item.offsetHeight;
             item.classList.add(preset);
+            // 5-second skip lock — show a progress ring on the locked .state-line button.
+            mountSkipLockRing();
             setTimeout(morphToContinue, 5000);
         }
 
+        function mountSkipLockRing() {
+            if (!btn || btn.querySelector('.skip-lock-ring')) return;
+            const NS = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('class', 'skip-lock-ring');
+            svg.setAttribute('viewBox', '0 0 22 22');
+            const track = document.createElementNS(NS, 'circle');
+            track.setAttribute('class', 'skip-track');
+            track.setAttribute('cx', '11'); track.setAttribute('cy', '11'); track.setAttribute('r', '9');
+            const progress = document.createElementNS(NS, 'circle');
+            progress.setAttribute('class', 'skip-progress');
+            progress.setAttribute('cx', '11'); progress.setAttribute('cy', '11'); progress.setAttribute('r', '9');
+            svg.appendChild(track); svg.appendChild(progress);
+            btn.appendChild(svg);
+        }
+
         function morphToContinue() {
+            const ring = btn && btn.querySelector('.skip-lock-ring');
+            if (ring) ring.remove();
             btn.classList.remove('state-line');
             btn.classList.add('state-pill');
             if (btnText) {

@@ -1,7 +1,11 @@
 // frontend/js/editors/preview.js
 // Preview editor: WYSIWYG Word-style rich text per page.
-// Edits content_json.meta, content_json.panels, and content_json.quotes.
+// Edits content_json.meta, content_json.panels, and content_json.gate_quote.
 // Data shape out: panels[].pages[].blocks[] with types p|h2|quote|ol|ul|code|image|svg.
+//
+// Gate quote schema: { mode: "auto" | "pinned" | "custom", pinned_id?: number,
+// pinned_preview?: {text, author, origin, type}, custom?: {text, author} }.
+// Legacy `content_json.quotes` (array of strings or {t,a}) is migrated on read.
 
 (function () {
   "use strict";
@@ -270,6 +274,46 @@
     return { type, text: String(block.text ?? "") };
   }
 
+  function normalizeGateQuote(value, legacyQuotes) {
+    // New shape passthrough.
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const mode = value.mode === "pinned" || value.mode === "custom" ? value.mode : "auto";
+      const out = { mode };
+      if (mode === "pinned") {
+        out.pinned_id = value.pinned_id != null ? Number(value.pinned_id) : null;
+        if (value.pinned_preview && typeof value.pinned_preview === "object") {
+          out.pinned_preview = {
+            text: String(value.pinned_preview.text || ""),
+            author: String(value.pinned_preview.author || ""),
+            origin: String(value.pinned_preview.origin || "National"),
+            type: String(value.pinned_preview.type || "fact"),
+          };
+        }
+      }
+      if (mode === "custom") {
+        const c = value.custom || {};
+        out.custom = {
+          text: String(c.text || ""),
+          author: String(c.author || ""),
+        };
+      }
+      return out;
+    }
+    // Legacy: content_json.quotes was an array of strings or {t,a}.
+    const arr = asArray(legacyQuotes);
+    for (const entry of arr) {
+      if (typeof entry === "string" && entry.trim()) {
+        return { mode: "custom", custom: { text: entry.trim(), author: "" } };
+      }
+      if (entry && typeof entry === "object") {
+        const text = String(entry.t || entry.text || "").trim();
+        const author = String(entry.a || entry.author || "").trim();
+        if (text) return { mode: "custom", custom: { text, author } };
+      }
+    }
+    return { mode: "auto" };
+  }
+
   function normalizeData(data) {
     const safe = data && typeof data === "object" ? clone(data) : {};
     safe.meta = {
@@ -278,7 +322,11 @@
       section: safe.meta?.section || "",
       cefr_level: safe.meta?.cefr_level || "",
     };
-    safe.quotes = asArray(safe.quotes).map((q) => String(q ?? ""));
+    safe.gate_quote = normalizeGateQuote(safe.gate_quote, safe.quotes);
+    // Drop the legacy key from the editor's working state — saves go through
+    // gate_quote going forward. The injector falls back to `quotes` for any
+    // already-saved homework that hasn't been edited yet.
+    delete safe.quotes;
     safe.panels = asArray(safe.panels).map((panel, index) => ({
       id: Number(panel?.id || index + 1),
       title: panel?.title || `PANEL ${index + 1}`,
@@ -443,19 +491,84 @@
 
   // ---------- rendering ----------
 
-  function renderQuotes(quotes) {
-    if (!quotes.length) {
-      return `<div class="empty-mini"><p>No quotes yet. Add one for the intro quote carousel.</p></div>`;
+  function originLabelUz(origin) {
+    return origin === "Global" ? "Global" : "Milliy";
+  }
+
+  function renderGateQuoteSlot(gq) {
+    const mode = gq.mode || "auto";
+    const tab = (id, label) => `
+      <button class="gate-quote-mode-btn js-gq-mode${mode === id ? " is-active" : ""}" type="button" data-gq-mode="${id}">
+        ${label}
+      </button>
+    `;
+
+    let body = "";
+    if (mode === "auto") {
+      body = `
+        <div class="gate-quote-body gate-quote-body--auto">
+          <p class="muted-text">
+            Har safar talaba homeworkni ochganda kutubxonadan bitta iqtibos avtomatik tanlanadi.
+            Tarqatish: <b>55%</b> Milliy / <b>45%</b> Global · <b>70%</b> Bilarmidingiz fakti / <b>30%</b> hikmat iqtibosi.
+          </p>
+          <p class="muted-text" style="margin-top:8px;">600-iqtibosli kutubxona — Mirziyoyev, Karimov, Amir Temur, Ibn Sino, al-Khwarizmi, Ulug'bek, Bobur, Tony Buzan va boshqalar.</p>
+        </div>
+      `;
+    } else if (mode === "pinned") {
+      const pid = gq.pinned_id;
+      const preview = gq.pinned_preview || null;
+      if (preview && preview.text) {
+        const originClass =
+          preview.origin === "Global" ? "quote-chip-origin-global" : "quote-chip-origin-national";
+        body = `
+          <div class="gate-quote-body gate-quote-body--pinned">
+            <div class="quote-card-preview">
+              <div class="quote-card-preview-text">${escapeHtml(preview.text)}</div>
+              <div class="quote-card-preview-meta">
+                <span class="quote-card-preview-author">— ${escapeHtml(preview.author || "")}</span>
+                <span class="quote-picker-chip ${originClass}">${escapeHtml(originLabelUz(preview.origin))}</span>
+                ${pid != null ? `<span class="quote-picker-chip">#${escapeHtml(pid)}</span>` : ""}
+              </div>
+            </div>
+            <div class="inline-actions">
+              <button class="btn btn-ghost js-gq-pick" type="button">Boshqasini tanlash…</button>
+              <button class="btn btn-ghost js-gq-clear" type="button">Avtomatga qaytish</button>
+            </div>
+          </div>
+        `;
+      } else {
+        body = `
+          <div class="gate-quote-body gate-quote-body--pinned-empty">
+            <p class="muted-text">Hech narsa biriktirilmagan. Kutubxonadan iqtibos tanlang.</p>
+            <button class="btn btn-primary js-gq-pick" type="button">Kutubxonani ochish</button>
+          </div>
+        `;
+      }
+    } else {
+      // custom
+      const c = gq.custom || { text: "", author: "" };
+      body = `
+        <div class="gate-quote-body gate-quote-body--custom">
+          <label class="field">
+            <span>Iqtibos matni</span>
+            <textarea class="js-gq-custom-text form-input" rows="3" placeholder="Iqtibos matnini yozing">${escapeHtml(c.text)}</textarea>
+          </label>
+          <label class="field">
+            <span>Muallif (ixtiyoriy)</span>
+            <input class="js-gq-custom-author form-input" type="text" value="${escapeHtml(c.author)}" placeholder="Muallif ismi" />
+          </label>
+        </div>
+      `;
     }
-    return quotes
-      .map(
-        (quote, index) => `
-          <div class="quote-row" data-quote-index="${index}">
-            <input class="js-quote-input" type="text" value="${escapeHtml(quote)}" placeholder="Quote text" />
-            <button class="icon-btn js-remove-quote" type="button" title="Remove quote">×</button>
-          </div>`
-      )
-      .join("");
+
+    return `
+      <div class="gate-quote-modes" role="tablist">
+        ${tab("auto", "Avtomatik")}
+        ${tab("pinned", "Kutubxonadan")}
+        ${tab("custom", "Maxsus")}
+      </div>
+      ${body}
+    `;
   }
 
   function renderToolbar() {
@@ -782,15 +895,14 @@
             </div>
           </section>
 
-          <section class="editor-card">
+          <section class="editor-card gate-quote-slot">
             <div class="editor-header">
               <div>
-                <p class="eyebrow">Quotes</p>
-                <h3>${state.quotes.length} quote${state.quotes.length === 1 ? "" : "s"}</h3>
+                <p class="eyebrow">Phase 0-A · Gate Quote</p>
+                <h3>Ochilish iqtibosi</h3>
               </div>
-              <button class="btn btn-ghost js-add-quote" type="button">Add quote</button>
             </div>
-            <div class="quote-list">${renderQuotes(state.quotes)}</div>
+            ${renderGateQuoteSlot(state.gate_quote)}
           </section>
 
           <section class="editor-card">
@@ -1074,9 +1186,15 @@
         emit();
         return;
       }
-      if (target.matches(".js-quote-input")) {
-        const qi = Number(target.closest("[data-quote-index]")?.dataset.quoteIndex);
-        state.quotes[qi] = target.value;
+      if (target.matches(".js-gq-custom-text")) {
+        if (!state.gate_quote.custom) state.gate_quote.custom = { text: "", author: "" };
+        state.gate_quote.custom.text = target.value;
+        emit();
+        return;
+      }
+      if (target.matches(".js-gq-custom-author")) {
+        if (!state.gate_quote.custom) state.gate_quote.custom = { text: "", author: "" };
+        state.gate_quote.custom.author = target.value;
         emit();
         return;
       }
@@ -1158,15 +1276,43 @@
         return;
       }
 
-      if (target.closest(".js-add-quote")) {
-        state.quotes.push("");
-        emit();
-        repaint();
+      const modeBtn = target.closest(".js-gq-mode");
+      if (modeBtn) {
+        const next = modeBtn.dataset.gqMode || "auto";
+        if (state.gate_quote.mode !== next) {
+          state.gate_quote.mode = next;
+          if (next === "custom" && !state.gate_quote.custom) {
+            state.gate_quote.custom = { text: "", author: "" };
+          }
+          emit();
+          repaint();
+        }
         return;
       }
-      if (target.closest(".js-remove-quote")) {
-        const qi = Number(target.closest("[data-quote-index]")?.dataset.quoteIndex);
-        state.quotes.splice(qi, 1);
+      if (target.closest(".js-gq-pick")) {
+        if (!window.QuotePicker) return;
+        const currentPin = state.gate_quote.mode === "pinned" ? state.gate_quote.pinned_id : null;
+        window.QuotePicker.open({
+          pinnedId: currentPin,
+          onPick: (entry) => {
+            state.gate_quote = {
+              mode: "pinned",
+              pinned_id: Number(entry.id),
+              pinned_preview: {
+                text: String(entry.text || ""),
+                author: String(entry.author || ""),
+                origin: String(entry.origin || "National"),
+                type: String(entry.type || "fact"),
+              },
+            };
+            emit();
+            repaint();
+          },
+        });
+        return;
+      }
+      if (target.closest(".js-gq-clear")) {
+        state.gate_quote = { mode: "auto" };
         emit();
         repaint();
         return;

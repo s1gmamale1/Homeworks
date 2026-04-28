@@ -46,9 +46,14 @@ node_modules/
 
 # Generated / runtime
 data/
+# But DO commit the bundled gate-quote library shipped under server/data/
+!server/data/
+!server/data/**
 
 # Test artifacts
 tests/last_run_report.json
+# Local replay fixtures pulled from prod — never commit prod content
+tests/fixtures/prod_replay/
 
 # Scratch / reference snippets
 ref_*.txt
