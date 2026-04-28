@@ -3724,6 +3724,371 @@
     </div>
 
     <script>
+        // ── Wave I3: top-level runtime i18n ────────────────────────────────
+        // Lookups: RT('reading.next_question'), RT('cons.title_default'), etc.
+        // Same lang resolution as the tutor widget at line ~8086 (NETS_CTX.lang
+        // -> <html lang> -> 'en'). Declared OUTSIDE the tutor IIFE so every
+        // phase scope (reading/consolidation/MS/AQ/WC/MM/PL/MB/RL/boss/results)
+        // can read it. Adding a key? Group by phase prefix and keep all three
+        // languages in sync — Russian translations follow the natural-register
+        // rules per Wave I3 spec, NOT calques.
+        const RUNTIME_LABELS = {
+            uz: {
+                // skip overlay
+                'skip.label':            "⏭ Fazani o'tkazib yuborish",
+                // shared button labels
+                'btn.continue':          'Davom etish',
+                'btn.next':              'Keyingi',
+                'btn.next_panel':        'Keyingi panel',
+                'btn.finish':            'Yakunlash',
+                'btn.start':             'Boshlash',
+                'btn.confirm':           'Tasdiqlash',
+                'btn.check_answer':      'Javobni tekshirish',
+                'btn.submit_answer':     'Javob berish',
+                'btn.next_question':     'Keyingi savol',
+                'btn.next_stage':        'Keyingi bosqich',
+                'btn.next_game':         "Keyingi o'yin",
+                'btn.next_chain':        'Keyingi zanjir',
+                'btn.next_box':          'Keyingi quti',
+                'btn.complete':          'Tugatish',
+                'btn.retry':             'Qayta urinish',
+                'btn.game_break':        "O'yin tanaffusi",
+                'btn.submit_response':   'Javobni yuborish',
+                // verdicts (shared)
+                'verdict.correct':       "✓ To'g'ri!",
+                'verdict.wrong':         "✗ Noto'g'ri.",
+                'verdict.right_answer':  "To'g'ri javob:",
+                // reading
+                'reading.title_default': "O'qish",
+                'reading.placeholder':   'Javobingizni yozing...',
+                'reading.check':         'Tekshirish',
+                'reading.next_question': 'Keyingi savol',
+                'reading.correct':       "✓ To'g'ri!",
+                'reading.wrong':         "✗ Noto'g'ri.",
+                'reading.right_answer':  "To'g'ri javob:",
+                'reading.ai_correct_default': "To'g'ri!",
+                // consolidation
+                'cons.title_default':    'Mustahkamlash',
+                'cons.expected_prefix':  'Kutilayotgan javob: ',
+                'cons.show_answer':      "Javobni ko'rsatish",
+                // memory sprint
+                'ms.question_prefix':    'Savol',
+                'ms.score_great':        'Ajoyib. Xotira sprint ritmini ushladingiz va asosiy terminlarni tez esladingiz.',
+                'ms.score_meh':          "Hali emas. Lekin sprint ishladi, endi qaysi joylar qayta ko'rishni talab qilishini bilasiz.",
+                // adaptive quiz
+                'aq.question_of':        'Savol',
+                'aq.upload_solution':    RT('aq.upload_solution'),
+                'aq.solution_uploaded':  '📷 Sizning yechimingiz yuklandi',
+                'aq.upload_first':       RT('aq.upload_first'),
+                'aq.correct_prefix':     "To'g'ri! ",
+                'aq.wrong_prefix':       "Noto'g'ri. To'g'ri javob: ",
+                // why-chain (sentence fill)
+                'wc.chain_label':        'Zanjir',
+                'wc.level_label':        'Daraja',
+                'wc.checking':           'Tekshirilmoqda…',
+                'wc.right_answer':       "To'g'ri javob: ",
+                // tile match
+                'tm.pairs_status':       'Juftlarni toping:',
+                // puzzle lock
+                'pl.fit_status':         'Mos joyga:',
+                'pl.no_question':        '(savol berilmagan)',
+                // mystery box
+                'mb.boxes_status':       'Qutilar:',
+                'mb.right_category':     "To'g'ri toifa!",
+                'mb.actually_prefix':    'Aslida bu — ',
+                'mb.outcome_correct':    "To'g'ri javob — toifa va yechim mos!",
+                'mb.outcome_part_ans':   "Yechim to'g'ri, lekin toifa noto'g'ri edi.",
+                'mb.outcome_part_cat':   "Toifa to'g'ri, lekin yechim noto'g'ri. Aslida: ",
+                'mb.outcome_wrong':      "Yechim ham, toifa ham noto'g'ri. Aslida: ",
+                // real-life
+                'rl.task_badge':         'VAZIFA',
+                'rl.question_of':        'Savol',
+                'rl.textarea_placeholder': 'Tahlil yozing (kamida 20 belgi)...',
+                'rl.upload_solution':    '📷 Yechimni yuklash',
+                'rl.solution_uploaded':  '✓ Yechimingiz yuklandi',
+                'rl.upload_required':    '📷 Iltimos, yechimingiz rasmini ham yuklang.',
+                'rl.enter_answer':       'Javob kiriting.',
+                'rl.correct_prefix':     "✓ To'g'ri! ",
+                'rl.fill_all_fields':    "Barcha maydonlarni to'ldiring.",
+                'rl.all_correct':        "✓ Barcha maydonlar to'g'ri!",
+                'rl.field_hint':         "💡 Bir yoki bir nechta maydon noto'g'ri. Qayta tekshiring.",
+                'rl.right_answers':      "✗ To'g'ri javoblar: ",
+                'rl.min_chars':          'Iltimos, kamida 20 belgili tahlil yozing.',
+                'rl.analysis_received':  '✓ Tahlilingiz qabul qilindi. AI baho beryapti...',
+                'rl.ai_analyzing':       '✗ AI tahlil qilmoqda...',
+                'rl.correct_count':      "To'g'ri javoblar:",
+                'rl.uploaded_count':     'Yuklangan yechimlar:',
+                // boss
+                'boss.question_of':      'Savol',
+                'boss.correct_hp':       "✓ To'g'ri! −",
+                'boss.combo_hp':         '🔥 COMBO ×2! −',
+                'boss.wrong_ai':         "✗ Noto'g'ri. AI tahlil qilmoqda...",
+                'boss.wrong_next':       "✗ Noto'g'ri. Keyingi savolga o'ting.",
+                'boss.combo_x2':         '🔥 Combo ×2!',
+                'boss.combo_streak':     'ketma-ket',
+                'boss.victory_correct':  "To'g'ri:",
+                'boss.victory_hints':    'Maslahat:',
+                'boss.victory_hints_unit': 'ta',
+                'boss.victory_damage':   'Boss zarari:',
+                'boss.victory_finish':   '§22 Yakunlash',
+                'boss.defeat_hp':        'Boss qolgan HP:',
+                'boss.defeat_correct':   "To'g'ri:",
+                'boss.defeat_tip':       "Zaif savollarni qayta ko'rib chiqing va qayta urinib ko'ring.",
+                // results
+                'res.headline_prefix':   'Sizning umumiy natijangiz:',
+                'res.correct_suffix':    "to'g'ri",
+                'res.phase_done':        'Tamomlandi',
+                'res.phase_undone':      'Bajarilmadi',
+                'res.amr_title':         'AMR — 2-axis Anchored Mastery Rubric',
+                'res.amr_title_short':   'AMR — 2-axis rubric',
+                'res.amr_no_ai':         "Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill, Real-Life Q5, Boss Q3-Q5) AI orqali 2-axis bo'yicha baholanadi.",
+                'res.amr_axis1':         'Axis 1 — Concept Identification',
+                'res.amr_axis2':         'Axis 2 — Process Integrity',
+                'res.amr_no_items':      'no AI-graded items',
+                'res.tip_mastered':      "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
+                'res.tip_proficient':    'Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.',
+                'res.tip_apprentice':    "Haqida o'ylash kerak. Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
+                'res.tip_novice':        "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
+                'res.closed_format':     "Yopiq-format javoblar tahlilingiz: ",
+                'res.closing':           'Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.',
+                // misc
+                'gb.break_done':         "O'yin tanaffusi tugadi!",
+            },
+            ru: {
+                'skip.label':            '⏭ Пропустить фазу',
+                'btn.continue':          'Продолжить',
+                'btn.next':              'Дальше',
+                'btn.next_panel':        'Следующая панель',
+                'btn.finish':            'Завершить',
+                'btn.start':             'Начать',
+                'btn.confirm':           'Подтвердить',
+                'btn.check_answer':      'Проверить ответ',
+                'btn.submit_answer':     'Ответить',
+                'btn.next_question':     'Следующий вопрос',
+                'btn.next_stage':        'Следующий этап',
+                'btn.next_game':         'Следующая игра',
+                'btn.next_chain':        'Следующая цепочка',
+                'btn.next_box':          'Следующая коробка',
+                'btn.complete':          'Завершить',
+                'btn.retry':             'Попробовать снова',
+                'btn.game_break':        'Игровой перерыв',
+                'btn.submit_response':   'Отправить ответ',
+                'verdict.correct':       '✓ Верно!',
+                'verdict.wrong':         '✗ Неверно.',
+                'verdict.right_answer':  'Правильный ответ:',
+                'reading.title_default': 'Чтение',
+                'reading.placeholder':   'Введите ваш ответ...',
+                'reading.check':         'Проверить',
+                'reading.next_question': 'Следующий вопрос',
+                'reading.correct':       '✓ Верно!',
+                'reading.wrong':         '✗ Неверно.',
+                'reading.right_answer':  'Правильный ответ:',
+                'reading.ai_correct_default': 'Верно!',
+                'cons.title_default':    'Закрепление',
+                'cons.expected_prefix':  'Ожидаемый ответ: ',
+                'cons.show_answer':      'Показать ответ',
+                'ms.question_prefix':    'Вопрос',
+                'ms.score_great':        'Отлично. Вы поймали ритм спринта и быстро вспомнили ключевые термины.',
+                'ms.score_meh':          'Пока нет. Но спринт сработал — теперь вы знаете, какие места нужно повторить.',
+                'aq.question_of':        'Вопрос',
+                'aq.upload_solution':    'Загрузите решение (📷)',
+                'aq.solution_uploaded':  '📷 Ваше решение загружено',
+                'aq.upload_first':       'Сначала загрузите решение!',
+                'aq.correct_prefix':     'Верно! ',
+                'aq.wrong_prefix':       'Неверно. Правильный ответ: ',
+                'wc.chain_label':        'Цепочка',
+                'wc.level_label':        'Уровень',
+                'wc.checking':           'Проверяем…',
+                'wc.right_answer':       'Правильный ответ: ',
+                'tm.pairs_status':       'Найдите пары:',
+                'pl.fit_status':         'На своих местах:',
+                'pl.no_question':        '(вопрос не задан)',
+                'mb.boxes_status':       'Коробки:',
+                'mb.right_category':     'Категория верна!',
+                'mb.actually_prefix':    'На самом деле — ',
+                'mb.outcome_correct':    'Верно — категория и решение совпадают!',
+                'mb.outcome_part_ans':   'Решение верное, но категория ошибочна.',
+                'mb.outcome_part_cat':   'Категория верная, но решение ошибочно. На самом деле: ',
+                'mb.outcome_wrong':      'И решение, и категория неверны. На самом деле: ',
+                'rl.task_badge':         'ЗАДАНИЕ',
+                'rl.question_of':        'Вопрос',
+                'rl.textarea_placeholder': 'Напишите анализ (минимум 20 символов)...',
+                'rl.upload_solution':    '📷 Загрузить решение',
+                'rl.solution_uploaded':  '✓ Решение загружено',
+                'rl.upload_required':    '📷 Пожалуйста, загрузите фото вашего решения.',
+                'rl.enter_answer':       'Введите ответ.',
+                'rl.correct_prefix':     '✓ Верно! ',
+                'rl.fill_all_fields':    'Заполните все поля.',
+                'rl.all_correct':        '✓ Все поля верны!',
+                'rl.field_hint':         '💡 Одно или несколько полей неверны. Проверьте ещё раз.',
+                'rl.right_answers':      '✗ Правильные ответы: ',
+                'rl.min_chars':          'Пожалуйста, напишите анализ минимум на 20 символов.',
+                'rl.analysis_received':  '✓ Ваш анализ принят. AI проверяет...',
+                'rl.ai_analyzing':       '✗ AI анализирует...',
+                'rl.correct_count':      'Правильных ответов:',
+                'rl.uploaded_count':     'Загруженных решений:',
+                'boss.question_of':      'Вопрос',
+                'boss.correct_hp':       '✓ Верно! −',
+                'boss.combo_hp':         '🔥 КОМБО ×2! −',
+                'boss.wrong_ai':         '✗ Неверно. AI анализирует...',
+                'boss.wrong_next':       '✗ Неверно. Переходите к следующему вопросу.',
+                'boss.combo_x2':         '🔥 Комбо ×2!',
+                'boss.combo_streak':     'подряд',
+                'boss.victory_correct':  'Верно:',
+                'boss.victory_hints':    'Подсказок:',
+                'boss.victory_hints_unit': 'шт',
+                'boss.victory_damage':   'Урон по боссу:',
+                'boss.victory_finish':   '§22 Завершить',
+                'boss.defeat_hp':        'У босса осталось HP:',
+                'boss.defeat_correct':   'Верно:',
+                'boss.defeat_tip':       'Пересмотрите слабые вопросы и попробуйте снова.',
+                'res.headline_prefix':   'Ваш общий результат:',
+                'res.correct_suffix':    'верно',
+                'res.phase_done':        'Завершено',
+                'res.phase_undone':      'Не выполнено',
+                'res.amr_title':         'AMR — двухосевая шкала мастерства',
+                'res.amr_title_short':   'AMR — 2-осевая шкала',
+                'res.amr_no_ai':         'В этой сессии ни один ответ не оценивался AI (только закрытые форматы). Открытые ответы (Sentence Fill, Real-Life Q5, Boss Q3-Q5) оцениваются AI по двум осям.',
+                'res.amr_axis1':         'Ось 1 — Идентификация концепта',
+                'res.amr_axis2':         'Ось 2 — Корректность процесса',
+                'res.amr_no_items':      'нет ответов с AI-оценкой',
+                'res.tip_mastered':      'Отлично! Вы полностью освоили тему. К окну продвижения мастерства добавлен 1 балл (из 3).',
+                'res.tip_proficient':    'Хорошо. Вы можете работать самостоятельно. Ещё 1-2 сессии — и достигнете уровня Mastered.',
+                'res.tip_apprentice':    'Есть над чем подумать. В назывании концепта или показе шагов есть пробелы — в следующих упражнениях расписывайте процесс письменно.',
+                'res.tip_novice':        'Перепройдите тему. Перечитайте Hint Ladder и Flash Cards, затем попробуйте снова.',
+                'res.closed_format':     'Анализ закрытых ответов: ',
+                'res.closing':           'Отчёт сохранён. Следующее повторение через 1 день.',
+                'gb.break_done':         'Игровой перерыв окончен!',
+            },
+            en: {
+                'skip.label':            '⏭ Skip phase',
+                'btn.continue':          'Continue',
+                'btn.next':              'Next',
+                'btn.next_panel':        'Next panel',
+                'btn.finish':            'Finish',
+                'btn.start':             'Start',
+                'btn.confirm':           'Confirm',
+                'btn.check_answer':      'Check answer',
+                'btn.submit_answer':     'Submit',
+                'btn.next_question':     'Next question',
+                'btn.next_stage':        'Next stage',
+                'btn.next_game':         'Next game',
+                'btn.next_chain':        'Next chain',
+                'btn.next_box':          'Next box',
+                'btn.complete':          'Complete',
+                'btn.retry':             'Try again',
+                'btn.game_break':        'Game break',
+                'btn.submit_response':   'Submit answer',
+                'verdict.correct':       '✓ Correct!',
+                'verdict.wrong':         '✗ Wrong.',
+                'verdict.right_answer':  'Correct answer:',
+                'reading.title_default': 'Reading',
+                'reading.placeholder':   'Type your answer...',
+                'reading.check':         'Check',
+                'reading.next_question': 'Next question',
+                'reading.correct':       '✓ Correct!',
+                'reading.wrong':         '✗ Wrong.',
+                'reading.right_answer':  'Correct answer:',
+                'reading.ai_correct_default': 'Correct!',
+                'cons.title_default':    'Consolidation',
+                'cons.expected_prefix':  'Expected answer: ',
+                'cons.show_answer':      'Show answer',
+                'ms.question_prefix':    'Q',
+                'ms.score_great':        'Great. You caught the sprint rhythm and recalled the key terms fast.',
+                'ms.score_meh':          'Not yet. But the sprint worked — now you know what needs another pass.',
+                'aq.question_of':        'Q',
+                'aq.upload_solution':    'Upload your solution (📷)',
+                'aq.solution_uploaded':  '📷 Your solution is uploaded',
+                'aq.upload_first':       'Upload your solution first!',
+                'aq.correct_prefix':     'Correct! ',
+                'aq.wrong_prefix':       'Wrong. Correct answer: ',
+                'wc.chain_label':        'Chain',
+                'wc.level_label':        'Level',
+                'wc.checking':           'Checking…',
+                'wc.right_answer':       'Correct answer: ',
+                'tm.pairs_status':       'Find pairs:',
+                'pl.fit_status':         'In place:',
+                'pl.no_question':        '(no question)',
+                'mb.boxes_status':       'Boxes:',
+                'mb.right_category':     'Right category!',
+                'mb.actually_prefix':    "It's actually — ",
+                'mb.outcome_correct':    'Correct — category and answer match!',
+                'mb.outcome_part_ans':   'Answer is right, but category is wrong.',
+                'mb.outcome_part_cat':   "Category is right, but answer is wrong. It's actually: ",
+                'mb.outcome_wrong':      "Both answer and category wrong. It's actually: ",
+                'rl.task_badge':         'TASK',
+                'rl.question_of':        'Q',
+                'rl.textarea_placeholder': 'Write your analysis (at least 20 characters)...',
+                'rl.upload_solution':    '📷 Upload solution',
+                'rl.solution_uploaded':  '✓ Solution uploaded',
+                'rl.upload_required':    '📷 Please also upload a photo of your solution.',
+                'rl.enter_answer':       'Enter an answer.',
+                'rl.correct_prefix':     '✓ Correct! ',
+                'rl.fill_all_fields':    'Fill in all fields.',
+                'rl.all_correct':        '✓ All fields correct!',
+                'rl.field_hint':         '💡 One or more fields are wrong. Check again.',
+                'rl.right_answers':      '✗ Correct answers: ',
+                'rl.min_chars':          'Please write at least 20 characters.',
+                'rl.analysis_received':  '✓ Analysis received. AI is grading...',
+                'rl.ai_analyzing':       '✗ AI analyzing...',
+                'rl.correct_count':      'Correct answers:',
+                'rl.uploaded_count':     'Uploads:',
+                'boss.question_of':      'Q',
+                'boss.correct_hp':       '✓ Correct! −',
+                'boss.combo_hp':         '🔥 COMBO ×2! −',
+                'boss.wrong_ai':         '✗ Wrong. AI analyzing...',
+                'boss.wrong_next':       '✗ Wrong. Move to the next question.',
+                'boss.combo_x2':         '🔥 Combo ×2!',
+                'boss.combo_streak':     'in a row',
+                'boss.victory_correct':  'Correct:',
+                'boss.victory_hints':    'Hints used:',
+                'boss.victory_hints_unit': '',
+                'boss.victory_damage':   'Boss damage dealt:',
+                'boss.victory_finish':   '§22 Finish',
+                'boss.defeat_hp':        'Boss HP remaining:',
+                'boss.defeat_correct':   'Correct:',
+                'boss.defeat_tip':       'Review the weak questions and try again.',
+                'res.headline_prefix':   'Your overall score:',
+                'res.correct_suffix':    'correct',
+                'res.phase_done':        'Done',
+                'res.phase_undone':      'Not done',
+                'res.amr_title':         'AMR — 2-axis Anchored Mastery Rubric',
+                'res.amr_title_short':   'AMR — 2-axis rubric',
+                'res.amr_no_ai':         'No answer was AI-graded this session (closed-format only). Open-ended responses (Sentence Fill, Real-Life Q5, Boss Q3-Q5) get 2-axis AI grading.',
+                'res.amr_axis1':         'Axis 1 — Concept Identification',
+                'res.amr_axis2':         'Axis 2 — Process Integrity',
+                'res.amr_no_items':      'no AI-graded items',
+                'res.tip_mastered':      'Excellent! You have mastered this topic. +1 point added to the mastery promotion window (out of 3).',
+                'res.tip_proficient':    'Good. You can work independently. Another 1-2 sessions and you reach Mastered.',
+                'res.tip_apprentice':    'Worth a re-look. There are gaps in naming the concept or showing the steps — write the process out next time.',
+                'res.tip_novice':        'Revisit the topic. Re-read the Hint Ladder and Flash Cards, then try again.',
+                'res.closed_format':     'Closed-format analysis: ',
+                'res.closing':           'Report saved. Next review in 1 day.',
+                'gb.break_done':         'Game break finished!',
+            },
+        };
+
+        function _runtimeDetectLang() {
+            const ctx = window.NETS_CTX || {};
+            const raw = (ctx.lang || document.documentElement.lang || 'en').toLowerCase().slice(0, 2);
+            return RUNTIME_LABELS[raw] ? raw : 'en';
+        }
+
+        function RT(key) {
+            const lang = _runtimeDetectLang();
+            const tbl = RUNTIME_LABELS[lang] || RUNTIME_LABELS.en;
+            return tbl[key] || RUNTIME_LABELS.en[key] || RUNTIME_LABELS.uz[key] || key;
+        }
+        // Expose globally so the tutor IIFE (and any future scope) can read it.
+        window.RT = RT;
+        window.RUNTIME_LABELS = RUNTIME_LABELS;
+
+        // Localize the static skip-pill markup once the DOM is ready.
+        document.addEventListener('DOMContentLoaded', function () {
+            const sp = document.getElementById('skip-pill');
+            if (sp) sp.textContent = RT('skip.label');
+        });
+
         const PANELS = [
             {
                 id: 1,
@@ -4414,7 +4779,7 @@
             btn.classList.remove('state-line');
             btn.classList.add('state-pill');
             if (btnText) {
-                setBtnText("Davom etish");
+                setBtnText(RT('btn.continue'));
             }
             btn.classList.add('pulse');
         }
@@ -4522,7 +4887,7 @@
             btn.classList.remove('state-pill', 'pulse', 'state-line');
             if (isLast) {
                 btn.classList.add('state-pill', 'pulse');
-                setBtnText('Keyingi panel');
+                setBtnText(RT('btn.next_panel'));
             } else {
                 btn.classList.add('state-line');
                 if (btnText) btnText.style.opacity = '0';
@@ -4566,7 +4931,7 @@
                 setTimeout(() => {
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill');
-                    setBtnText('Keyingi');
+                    setBtnText(RT('btn.next'));
                     btn.classList.add('pulse');
                     state.isAnimating = false;
                 }, 1500);
@@ -4728,7 +5093,7 @@
             if (showYakunlash) {
                 btn.classList.remove('state-line');
                 btn.classList.add('state-pill');
-                setBtnText('Yakunlash');
+                setBtnText(RT('btn.finish'));
                 btn.classList.add('pulse');
             }
 
@@ -5018,7 +5383,7 @@
             const titleEl = document.getElementById('ms-question-title');
             const subtitleEl = document.getElementById('ms-question-subtitle');
             const explainerEl = document.getElementById('ms-question-explainer');
-            if (stepEl) stepEl.textContent = 'Savol ' + (index + 1) + ' / ' + MS_QUESTIONS.length + ' \u00b7 ' + item.type;
+            if (stepEl) stepEl.textContent = RT('ms.question_prefix') + ' ' + (index + 1) + ' / ' + MS_QUESTIONS.length + ' \u00b7 ' + item.type;
             if (tagsEl) tagsEl.textContent = item.tags;
             // innerHTML \u2014 prompt/explain may contain inline images/SVGs/bold/italic.
             if (titleEl) titleEl.innerHTML = item.prompt || '';
@@ -5161,12 +5526,12 @@
             const copyEl = document.getElementById('ms-result-copy');
             if (scoreEl) scoreEl.textContent = msState.score + ' / ' + MS_QUESTIONS.length;
             if (copyEl) copyEl.textContent = msState.score >= 5
-                ? 'Ajoyib. Xotira sprint ritmini ushladingiz va asosiy terminlarni tez esladingiz.'
-                : 'Hali emas. Lekin sprint ishladi, endi qaysi joylar qayta ko\u02bcrishni talab qilishini bilasiz.';
+                ? RT('ms.score_great')
+                : RT('ms.score_meh');
 
             btn.classList.remove('state-line');
             btn.classList.add('state-pill', 'pulse');
-            setBtnText('O\u02bcyin tanaffusi');
+            setBtnText(RT('btn.game_break'));
             setStage(4.5);
             msState.isAnimating = false;
         }
@@ -5464,21 +5829,21 @@
         function gbSetButtonForAQ() {
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-pill');
-            setBtnText('Javobni tekshirish');
+            setBtnText(RT('btn.check_answer'));
             btn.classList.add('pulse');
         }
 
         function gbSetButtonForWC() {
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-pill');
-            setBtnText('Javob berish');
+            setBtnText(RT('btn.submit_answer'));
             btn.classList.add('pulse');
         }
 
         function gbSetButtonNext(text) {
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-pill');
-            setBtnText(text || 'Keyingi');
+            setBtnText(text || RT('btn.next'));
             btn.classList.add('pulse');
         }
 
@@ -5573,7 +5938,7 @@
             aq.captureOk = !item.capture;
             aq.answered = false;
             const counter = document.getElementById('gb-aq-counter');
-            if (counter) counter.textContent = 'Savol ' + (aq.shown + 1) + ' / 5';
+            if (counter) counter.textContent = RT('aq.question_of') + ' ' + (aq.shown + 1) + ' / 5';
             const tierEl = document.getElementById('gb-aq-tier');
             if (tierEl) { tierEl.textContent = item.tier.toUpperCase(); tierEl.className = 'gb-aq-tier ' + item.tier; }
             const qEl = document.getElementById('gb-aq-question');
@@ -5586,7 +5951,7 @@
             const capBtn = document.getElementById('gb-aq-capture-btn');
             if (capBtn) { capBtn.classList.remove('confirmed'); capBtn.style.display = item.capture ? '' : 'none'; }
             const capStatus = document.getElementById('gb-aq-capture-status');
-            if (capStatus) { capStatus.style.display = item.capture ? '' : 'none'; capStatus.textContent = 'Yechimingizni yuklang (\uD83D\uDCF7)'; capStatus.className = 'gb-aq-capture-status'; capStatus.style.color = ''; }
+            if (capStatus) { capStatus.style.display = item.capture ? '' : 'none'; capStatus.textContent = RT('aq.upload_solution'); capStatus.className = 'gb-aq-capture-status'; capStatus.style.color = ''; }
             const fb = document.getElementById('gb-aq-feedback');
             if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
             gbSetButtonForAQ();
@@ -5598,7 +5963,7 @@
             const capBtn = document.getElementById('gb-aq-capture-btn');
             if (capBtn) capBtn.classList.add('confirmed');
             const capStatus = document.getElementById('gb-aq-capture-status');
-            if (capStatus) { capStatus.textContent = '\uD83D\uDCF7 Sizning yechimingiz yuklandi'; capStatus.className = 'gb-aq-capture-status ok'; }
+            if (capStatus) { capStatus.textContent = RT('aq.solution_uploaded'); capStatus.className = 'gb-aq-capture-status ok'; }
         }
 
         function gbAQAction() {
@@ -5608,8 +5973,8 @@
                 const capStatus = document.getElementById('gb-aq-capture-status');
                 if (capStatus) {
                     capStatus.style.color = '#d9534f';
-                    capStatus.textContent = 'Avval yechimingizni yuklang!';
-                    setTimeout(() => { capStatus.style.color = ''; capStatus.textContent = 'Yechimingizni yuklang (\uD83D\uDCF7)'; }, 1500);
+                    capStatus.textContent = RT('aq.upload_first');
+                    setTimeout(() => { capStatus.style.color = ''; capStatus.textContent = RT('aq.upload_solution'); }, 1500);
                 }
                 return;
             }
@@ -5640,11 +6005,11 @@
             const displayAnswer = acceptList.length ? acceptList[0] : (item.answer || '');
             if (isCorrect) {
                 aq.correct++;
-                if (fb) { fb.className = 'gb-aq-feedback correct'; fb.textContent = "To'g'ri! " + item.work; }
+                if (fb) { fb.className = 'gb-aq-feedback correct'; fb.textContent = RT('aq.correct_prefix') + item.work; }
                 if (item.tier === 'easy') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'hard';
             } else {
-                if (fb) { fb.className = 'gb-aq-feedback wrong'; fb.textContent = "Noto'g'ri. To'g'ri javob: " + displayAnswer + '. ' + item.work; }
+                if (fb) { fb.className = 'gb-aq-feedback wrong'; fb.textContent = RT('aq.wrong_prefix') + displayAnswer + '. ' + item.work; }
                 if (item.tier === 'hard') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'easy';
             }
@@ -5659,7 +6024,7 @@
                     score: isCorrect ? 1 : 0,
                 });
             }
-            gbSetButtonNext('Keyingi savol');
+            gbSetButtonNext(RT('btn.next_question'));
         }
 
         function gbAQFinish() {
@@ -5698,7 +6063,7 @@
                 else if (i - 1 === wc.levelIdx) d.classList.add('active');
             }
             const lbl = document.getElementById('gb-wc-chain-label');
-            if (lbl) lbl.textContent = 'Zanjir ' + (wc.chainIdx+1) + ' / 3 \u00b7 Daraja ' + (wc.levelIdx+1) + ' / 3';
+            if (lbl) lbl.textContent = RT('wc.chain_label') + ' ' + (wc.chainIdx+1) + ' / 3 \u00b7 ' + RT('wc.level_label') + ' ' + (wc.levelIdx+1) + ' / 3';
         }
 
         function gbWCAppendProbe(text) {
@@ -5777,7 +6142,7 @@
             // Show "checking" indicator while AI grades.
             const checkingBubble = document.createElement('div');
             checkingBubble.className = 'gb-wc-bubble-ai gb-wc-bubble-checking';
-            checkingBubble.innerHTML = '<em>Tekshirilmoqda…</em>';
+            checkingBubble.innerHTML = '<em>' + RT('wc.checking') + '</em>';
             const conv = document.getElementById('gb-wc-conv');
             if (conv) conv.appendChild(checkingBubble);
             const result = await gbWCAIGrade(level.probe, answer, level.expect);
@@ -5818,7 +6183,7 @@
                 if (wc.retries >= 2) {
                     wc.retries = 0;
                     if (reprompt) reprompt.className = 'gb-wc-reprompt';
-                    gbWCAppendProbe("To'g'ri javob: " + level.expect);
+                    gbWCAppendProbe(RT('wc.right_answer') + level.expect);
                     // After 2 wrong tries, reveal the answer and advance to
                     // the next chain — same skip behavior as a correct
                     // answer, but with the answer surfaced first.
@@ -5837,11 +6202,7 @@
             if (inv) inv.classList.add('show');
             const ta = document.getElementById('gb-wc-textarea');
             if (ta) ta.style.display = 'none';
-            gbSetButtonNext(
-                gbState.wc.chainIdx < GB_WHY_CHAIN.length - 1
-                    ? 'Keyingi zanjir'
-                    : (gbIsLastGame(1) ? 'Keyingi bosqich' : "Keyingi o'yin")
-            );
+            gbSetButtonNext(gbState.wc.chainIdx < GB_WHY_CHAIN.length - 1 ? RT('btn.next_chain') : (gbIsLastGame(1) ? RT('btn.next_stage') : RT('btn.next_game')));
         }
 
         function gbWCNextChain() {
@@ -5915,7 +6276,7 @@
 
         function gbMMUpdateStatus() {
             const st = document.getElementById('gb-mm-status');
-            if (st) st.textContent = 'Juftlarni toping: ' + gbState.mm.matched + ' / ' + (gbState.mm.total || GB_MEMORY_MATCH.length);
+            if (st) st.textContent = RT('tm.pairs_status') + ' ' + gbState.mm.matched + ' / ' + (gbState.mm.total || GB_MEMORY_MATCH.length);
         }
 
         function gbMMSelectLeft(pairId, el) {
@@ -5985,7 +6346,7 @@
                 });
             }
             // Registry decides next game on click; we just label the button.
-            gbSetButtonNext(gbIsLastGame(2) ? 'Keyingi bosqich' : "Keyingi o'yin");
+            gbSetButtonNext(gbIsLastGame(2) ? RT('btn.next_stage') : RT('btn.next_game'));
         }
 
         function gbInitPL() {
@@ -6071,7 +6432,7 @@
 
         function gbPLUpdateStatus() {
             const st = document.getElementById('gb-pl-status');
-            if (st) st.textContent = 'Mos joyga: ' + gbState.pl.correct + ' / ' + gbState.pl.total;
+            if (st) st.textContent = RT('pl.fit_status') + ' ' + gbState.pl.correct + ' / ' + gbState.pl.total;
         }
 
         function gbPLClickTile(idx) {
@@ -6092,13 +6453,13 @@
             const qBox = document.getElementById('gb-pl-question-box');
             const qText = document.getElementById('gb-pl-question');
             const qInput = document.getElementById('gb-pl-input');
-            if (qText) qText.textContent = cell.q || '(savol berilmagan)';
+            if (qText) qText.textContent = cell.q || RT('pl.no_question');
             if (qInput) { qInput.value = ''; qInput.style.borderColor = ''; }
             if (qBox) qBox.classList.add('show');
             gbPLRender();
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-pill');
-            setBtnText('Tasdiqlash');
+            setBtnText(RT('btn.confirm'));
             btn.classList.add('pulse');
             if (qInput) setTimeout(() => qInput.focus(), 50);
         }
@@ -6170,7 +6531,7 @@
                 });
             }
             // Registry decides next game on click; we just label the button.
-            gbSetButtonNext(gbIsLastGame(3) ? 'Keyingi bosqich' : "Keyingi o'yin");
+            gbSetButtonNext(gbIsLastGame(3) ? RT('btn.next_stage') : RT('btn.next_game'));
         }
 
         // ── Mystery Box (sub-game 5) — interleaved category recognition ───
@@ -6224,7 +6585,7 @@
             const opened = mb.opened.filter(s => s !== null).length;
             const total = mb.boxes.length;
             const st = document.getElementById('gb-mb-status');
-            if (st) st.textContent = 'Qutilar: ' + opened + ' / ' + total;
+            if (st) st.textContent = RT('mb.boxes_status') + ' ' + opened + ' / ' + total;
         }
 
         function gbMBRender() {
@@ -6305,7 +6666,7 @@
             }
             const fb = document.getElementById('gb-mb-id-feedback');
             if (fb) {
-                fb.textContent = mb.idCorrect ? "To'g'ri toifa!" : ("Aslida bu — " + (truth || '—'));
+                fb.textContent = mb.idCorrect ? RT('mb.right_category') : (RT('mb.actually_prefix') + (truth || '—'));
                 fb.className = 'gb-mb-feedback ' + (mb.idCorrect ? 'correct' : 'wrong');
             }
             // Advance to solve stage after a brief beat so the student sees the ID feedback.
@@ -6322,7 +6683,7 @@
                 if (sfb) { sfb.textContent = ''; sfb.className = 'gb-mb-feedback'; }
                 if (solveStage) solveStage.classList.add('show');
                 if (input) input.focus();
-                gbSetButtonForMB('Javob berish');
+                gbSetButtonForMB(RT('btn.submit_answer'));
             }, 700);
         }
 
@@ -6346,10 +6707,10 @@
             const sfb = document.getElementById('gb-mb-solve-feedback');
             if (sfb) {
                 let msg;
-                if (outcome === 'correct') msg = "To'g'ri javob — toifa va yechim mos!";
-                else if (outcome === 'partial' && mb.ansCorrect) msg = "Yechim to'g'ri, lekin toifa noto'g'ri edi.";
-                else if (outcome === 'partial') msg = "Toifa to'g'ri, lekin yechim noto'g'ri. Aslida: " + (truth || '—');
-                else msg = "Yechim ham, toifa ham noto'g'ri. Aslida: " + (truth || '—');
+                if (outcome === 'correct') msg = RT('mb.outcome_correct');
+                else if (outcome === 'partial' && mb.ansCorrect) msg = RT('mb.outcome_part_ans');
+                else if (outcome === 'partial') msg = RT('mb.outcome_part_cat') + (truth || '—');
+                else msg = RT('mb.outcome_wrong') + (truth || '—');
                 sfb.textContent = msg;
                 sfb.className = 'gb-mb-feedback ' + outcome;
             }
@@ -6365,7 +6726,7 @@
             gbMBRender();
             gbMBUpdateStatus();
             const remaining = mb.opened.filter(s => s === null).length;
-            gbSetButtonForMB(remaining > 0 ? 'Keyingi quti' : 'Tugatish');
+            gbSetButtonForMB(remaining > 0 ? RT('btn.next_box') : RT('btn.complete'));
         }
 
         function gbMBNextBox() {
@@ -6401,13 +6762,13 @@
                 });
             }
             // Registry decides exit on click; just label the button.
-            gbSetButtonNext(gbIsLastGame(4) ? 'Keyingi bosqich' : "Keyingi o'yin");
+            gbSetButtonNext(RT('btn.next_stage'));
         }
 
         function gbSetButtonForMB(text) {
             btn.classList.remove('pulse','state-pill','state-line');
             btn.classList.add('state-pill');
-            setBtnText(text || 'Davom etish');
+            setBtnText(text || RT('btn.continue'));
             btn.classList.add('pulse');
         }
 
@@ -6436,7 +6797,7 @@
                     const app = document.getElementById('app');
                     const placeholder = document.createElement('div');
                     placeholder.style.cssText = 'position:absolute;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:32px;';
-                    placeholder.innerHTML = "<h2 style='color:var(--accent)'>O'yin tanaffusi tugadi!</h2><p style='margin-top:12px;color:var(--text-muted)'>Next phase pending \u2014 Stage 6 loads here.</p>";
+                    placeholder.innerHTML = "<h2 style='color:var(--accent)'>" + RT('gb.break_done') + "</h2><p style='margin-top:12px;color:var(--text-muted)'>Next phase pending \u2014 Stage 6 loads here.</p>";
                     app.appendChild(placeholder);
                 }
             }, 450);
@@ -6591,14 +6952,14 @@ Prezident ertaga hisobot kutmoqda.`,
                 scroll.appendChild(p);
             }
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'VAZIFA · Yashil Makon loyihasi';
+            if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
         }
 
         function rlRenderQuestion(idx) {
             const q = RL_SCENARIO.questions[idx];
             const total = (RL_SCENARIO.questions || []).length || 6;
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'Savol ' + (idx + 1) + ' / ' + total;
+            if (badge) badge.textContent = RT('rl.question_of') + ' ' + (idx + 1) + ' / ' + total;
 
             const promptEl = document.getElementById('rl-q' + (idx + 1) + '-prompt');
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
@@ -6619,9 +6980,9 @@ Prezident ertaga hisobot kutmoqda.`,
                     wrap.className = 'rl-capture-area rl-capture-area-dyn';
                     wrap.innerHTML =
                         '<button type="button" class="rl-capture-btn" id="rl-q' + (idx + 1) + '-capture-btn">' +
-                        '📷 Yechimni yuklash</button>' +
+                        RT('rl.upload_solution') + '</button>' +
                         '<div class="rl-capture-done" id="rl-q' + (idx + 1) + '-capture-done">' +
-                        '<div class="rl-capture-confirm">✓ Yechimingiz yuklandi</div>' +
+                        '<div class="rl-capture-confirm">' + RT('rl.solution_uploaded') + '</div>' +
                         '<div class="rl-capture-mock-img">📄</div>' +
                         '</div>';
                     // Insert before the feedback element so the capture row
@@ -6659,7 +7020,7 @@ Prezident ertaga hisobot kutmoqda.`,
                     ta = document.createElement('textarea');
                     ta.id = 'rl-q' + (idx + 1) + '-input';
                     ta.className = 'rl-input rl-textarea';
-                    ta.placeholder = 'Tahlil yozing (kamida 20 belgi)...';
+                    ta.placeholder = RT('rl.textarea_placeholder');
                     ta.autocomplete = 'off';
                     ta.spellcheck = false;
                     const fb = qBody && qBody.querySelector('.rl-feedback');
@@ -6713,7 +7074,7 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.qIndex = idx;
             stage6State.screen = 'q' + (idx + 1);
 
-            rlMorphButton('Javobni yuborish');
+            rlMorphButton(RT('btn.submit_response'));
         }
 
         function rlAnimateTransition(fromEl, toEl, onDone) {
@@ -6785,12 +7146,12 @@ Prezident ertaga hisobot kutmoqda.`,
                 // captureDone[idx] populated by rlCapture(idx) on any
                 // dynamically-rendered upload button.
                 if (q.type === 'text-with-capture' && !(stage6State.captureDone && stage6State.captureDone[idx])) {
-                    rlSetFeedback(fbId, 'rl-hint', '📷 Iltimos, yechimingiz rasmini ham yuklang.');
+                    rlSetFeedback(fbId, 'rl-hint', RT('rl.upload_required'));
                     return;
                 }
 
                 if (!val) {
-                    rlSetFeedback(fbId, 'rl-hint', 'Javob kiriting.');
+                    rlSetFeedback(fbId, 'rl-hint', RT('rl.enter_answer'));
                     return;
                 }
 
@@ -6799,7 +7160,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 if (correct) {
                     stage6State.correct[idx] = true;
                     stage6State.submitted[idx] = true;
-                    rlSetFeedback(fbId, 'rl-correct', '✓ To\'g\'ri! ' + (q.type === 'text-with-capture' ? q.expectedWork : ''));
+                    rlSetFeedback(fbId, 'rl-correct', RT('rl.correct_prefix') + (q.type === 'text-with-capture' ? q.expectedWork : ''));
                     if (window.__sessionLog) {
                         window.__sessionLog.push({
                             phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
@@ -6808,7 +7169,7 @@ Prezident ertaga hisobot kutmoqda.`,
                             axis_1: 4, axis_2: 4, first_try: true,
                         });
                     }
-                    rlMorphButton('Keyingi savol');
+                    rlMorphButton(RT('btn.next_question'));
                 } else {
                     stage6State.attempts[idx]++;
                     if (stage6State.attempts[idx] === 1 && q.hint) {
@@ -6819,8 +7180,8 @@ Prezident ertaga hisobot kutmoqda.`,
                         rlDispatchTutorAi(idx, q, val);
                     } else {
                         stage6State.submitted[idx] = true;
-                        rlSetFeedback(fbId, 'rl-wrong', '✗ AI tahlil qilmoqda...');
-                        rlMorphButton('Keyingi savol');
+                        rlSetFeedback(fbId, 'rl-wrong', RT('rl.ai_analyzing'));
+                        rlMorphButton(RT('btn.next_question'));
                         rlDispatchTutorAi(idx, q, val);
                     }
                 }
@@ -6830,7 +7191,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 const inputs = container ? container.querySelectorAll('input') : [];
                 const anyEmpty = Array.from(inputs).some(i => !i.value.trim());
                 if (anyEmpty) {
-                    rlSetFeedback(fbId, 'rl-hint', 'Barcha maydonlarni to\'ldiring.');
+                    rlSetFeedback(fbId, 'rl-hint', RT('rl.fill_all_fields'));
                     return;
                 }
 
@@ -6839,8 +7200,8 @@ Prezident ertaga hisobot kutmoqda.`,
                 if (correct) {
                     stage6State.correct[idx] = true;
                     stage6State.submitted[idx] = true;
-                    rlSetFeedback(fbId, 'rl-correct', '✓ Barcha maydonlar to\'g\'ri!');
-                    rlMorphButton('Keyingi savol');
+                    rlSetFeedback(fbId, 'rl-correct', RT('rl.all_correct'));
+                    rlMorphButton(RT('btn.next_question'));
                 } else {
                     stage6State.attempts[idx]++;
                     const studentMulti = Array.from(inputs).map((inp, ii) => {
@@ -6848,13 +7209,13 @@ Prezident ertaga hisobot kutmoqda.`,
                         return lbl + '=' + (inp.value || '').trim();
                     }).join(' · ');
                     if (stage6State.attempts[idx] === 1) {
-                        rlSetFeedback(fbId, 'rl-hint', '💡 Bir yoki bir nechta maydon noto\'g\'ri. Qayta tekshiring.');
+                        rlSetFeedback(fbId, 'rl-hint', RT('rl.field_hint'));
                         rlDispatchTutorAi(idx, q, studentMulti);
                     } else {
                         stage6State.submitted[idx] = true;
                         const answers = q.fields.map(f => f.label + ': ' + f.acceptable[0]).join(' · ');
-                        rlSetFeedback(fbId, 'rl-wrong', '✗ To\'g\'ri javoblar: ' + answers);
-                        rlMorphButton('Keyingi savol');
+                        rlSetFeedback(fbId, 'rl-wrong', RT('rl.right_answers') + answers);
+                        rlMorphButton(RT('btn.next_question'));
                         rlDispatchTutorAi(idx, q, studentMulti);
                     }
                 }
@@ -6868,12 +7229,12 @@ Prezident ertaga hisobot kutmoqda.`,
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
                 const val = inp ? inp.value.trim() : '';
                 if (val.length < 20) {
-                    rlSetFeedback(fbId, 'rl-hint', 'Iltimos, kamida 20 belgili tahlil yozing.');
+                    rlSetFeedback(fbId, 'rl-hint', RT('rl.min_chars'));
                     return;
                 }
                 stage6State.submitted[idx] = true;
-                rlSetFeedback(fbId, 'rl-open', '✓ Tahlilingiz qabul qilindi. AI baho beryapti...');
-                rlMorphButton('Keyingi savol');
+                rlSetFeedback(fbId, 'rl-open', RT('rl.analysis_received'));
+                rlMorphButton(RT('btn.next_question'));
                 // Open-ended responses ALWAYS get AI grading — the local
                 // checker has no way to evaluate a free-form analysis. The
                 // tutor result listener (further down in the file) updates
@@ -6909,7 +7270,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.correct[ticket.qIndex] = true;
                 stage6State.submitted[ticket.qIndex] = true;
                 fbEl.className = 'rl-feedback rl-correct';
-                fbEl.innerHTML = '✓ ' + (response || 'To\'g\'ri!') + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                fbEl.innerHTML = '✓ ' + (response || RT('reading.ai_correct_default')) + ' <span class="screen-reading-ai-badge">AI baho</span>';
                 if (window.__sessionLog) {
                     const q = RL_SCENARIO.questions[ticket.qIndex];
                     const ax1 = (detail && detail.axis_1) || 3;
@@ -6920,7 +7281,7 @@ Prezident ertaga hisobot kutmoqda.`,
                         axis_1: ax1, axis_2: ax2, first_try: false,
                     });
                 }
-                rlMorphButton('Keyingi savol');
+                rlMorphButton(RT('btn.next_question'));
             } else if (response) {
                 // Replace generic "wrong" text with AI feedback. Preserve current
                 // class (rl-wrong / rl-hint) so the color band stays consistent.
@@ -6948,10 +7309,10 @@ Prezident ertaga hisobot kutmoqda.`,
                 stage6State.screen = 'q' + (nextIdx + 1);
 
                 const badge = document.getElementById('rl-header-badge');
-                if (badge) badge.textContent = 'Savol ' + (nextIdx + 1) + ' / 6';
+                if (badge) badge.textContent = RT('rl.question_of') + ' ' + (nextIdx + 1) + ' / 6';
 
                 rlAnimateTransition(curEl, nextEl, () => {
-                    rlMorphButton('Javobni yuborish');
+                    rlMorphButton(RT('btn.submit_response'));
                     state.isAnimating = false;
                 });
             } else {
@@ -6973,7 +7334,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
             if (banner) { banner.style.animation = 'none'; banner.textContent = RL_SCENARIO.closure.title; void banner.offsetHeight; banner.style.animation = ''; }
             if (msg) { msg.style.animation = 'none'; msg.textContent = RL_SCENARIO.closure.message; void msg.offsetHeight; msg.style.animation = ''; }
-            if (stats) { stats.style.animation = 'none'; stats.textContent = 'To\'g\'ri javoblar: ' + correctCount + ' / 6' + (captureCount > 0 ? ' · Yuklangan yechimlar: ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
+            if (stats) { stats.style.animation = 'none'; stats.textContent = RT('rl.correct_count') + ' ' + correctCount + ' / 6' + (captureCount > 0 ? ' · ' + RT('rl.uploaded_count') + ' ' + captureCount : ''); void stats.offsetHeight; stats.style.animation = ''; }
 
             if (lastQ) lastQ.classList.remove('rl-active');
             const badge = document.getElementById('rl-header-badge');
@@ -6983,7 +7344,7 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.screen = 'closure';
 
             btn.classList.remove('pulse');
-            rlMorphButton('Keyingi bosqich');
+            rlMorphButton(RT('btn.next_stage'));
             btn.classList.add('pulse');
             state.isAnimating = false;
         }
@@ -7038,11 +7399,11 @@ Prezident ertaga hisobot kutmoqda.`,
             if (scroll && !scroll.hasChildNodes()) rlRenderStory();
 
             const badge = document.getElementById('rl-header-badge');
-            if (badge) badge.textContent = 'VAZIFA · Yashil Makon loyihasi';
+            if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
 
             btn.classList.remove('pulse', 'state-line', 'state-start');
             btn.classList.add('state-pill');
-            setBtnText('Boshlash');
+            setBtnText(RT('btn.start'));
             btn.classList.add('pulse');
         }
 
@@ -7245,7 +7606,7 @@ Prezident ertaga hisobot kutmoqda.`,
                     bossRenderQuestion(0);
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
-                    setBtnText('Javobni tekshirish');
+                    setBtnText(RT('btn.check_answer'));
                 }, 520);
             }, 2400);
         }
@@ -7280,7 +7641,7 @@ Prezident ertaga hisobot kutmoqda.`,
             // innerHTML — boss question may contain inline images/SVGs/bold/italic.
             if (el('boss-q-text'))    el('boss-q-text').innerHTML      = q.prompt || '';
             if (el('boss-q-tags'))    el('boss-q-tags').textContent    = '[Bloom: ' + q.bloom + ' | PISA: ' + q.pisa + ']';
-            if (el('boss-q-counter')) el('boss-q-counter').textContent = 'Savol ' + (idx+1) + ' / ' + BOSS_QUESTIONS.length;
+            if (el('boss-q-counter')) el('boss-q-counter').textContent = RT('boss.question_of') + ' ' + (idx+1) + ' / ' + BOSS_QUESTIONS.length;
             const inp = el('boss-input');
             if (inp) { inp.value = ''; inp.disabled = false; inp.style.borderColor = ''; }
             if (el('boss-hint-text')) el('boss-hint-text').textContent = '';
@@ -7306,7 +7667,7 @@ Prezident ertaga hisobot kutmoqda.`,
             bossUpdateCombo();
             if (fbEl) {
                 fbEl.className = 'boss-feedback correct';
-                const baseMsg = doubled ? '🔥 COMBO ×2! −' + dmg + ' HP' : '✓ To\'g\'ri! −' + dmg + ' HP';
+                const baseMsg = doubled ? (RT('boss.combo_hp') + dmg + ' HP') : (RT('boss.correct_hp') + dmg + ' HP');
                 if (opts && opts.aiGraded) {
                     fbEl.innerHTML = baseMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
                 } else {
@@ -7336,7 +7697,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 bossState.qIndex++;
                 if (bossState.qIndex >= BOSS_QUESTIONS.length) { bossEnd(false); return; }
                 bossRenderQuestion(bossState.qIndex);
-                setBtnText('Javobni tekshirish');
+                setBtnText(RT('btn.check_answer'));
                 return;
             }
 
@@ -7359,7 +7720,7 @@ Prezident ertaga hisobot kutmoqda.`,
             } else {
                 bossState.combo = 0;
                 bossUpdateCombo();
-                if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = '✗ Noto\'g\'ri. AI tahlil qilmoqda...'; }
+                if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = RT('boss.wrong_ai'); }
 
                 // Local match said "incorrect" — ask the AI tutor for a nuanced grade.
                 // The runtime.js bridge handles `kind:'boss'` → POST /api/ai/boss-turn
@@ -7381,12 +7742,12 @@ Prezident ertaga hisobot kutmoqda.`,
                         },
                     }}));
                 } catch (e) {
-                    if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = '✗ Noto\'g\'ri. Keyingi savolga o\'ting.'; }
+                    if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = RT('boss.wrong_next'); }
                     bossPendingAi = null;
                 }
             }
 
-            setBtnText('Keyingi savol');
+            setBtnText(RT('btn.next_question'));
         }
 
         // Listen for AI grading results — only act if the answer is still on screen
@@ -7404,7 +7765,7 @@ Prezident ertaga hisobot kutmoqda.`,
             // Graceful degrade — keep local "incorrect" state on _fallback / _error.
             if (result._fallback || result._error || result._offline) {
                 if (fb && fb.classList.contains('wrong')) {
-                    fb.textContent = '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
+                    fb.textContent = RT('boss.wrong_next');
                 }
                 bossPendingAi = null;
                 return;
@@ -7419,7 +7780,7 @@ Prezident ertaga hisobot kutmoqda.`,
             } else {
                 if (fb) {
                     fb.className = 'boss-feedback wrong';
-                    const aiMsg = result.boss_response || result.feedback || '✗ Noto\'g\'ri. Keyingi savolga o\'ting.';
+                    const aiMsg = result.boss_response || result.feedback || RT('boss.wrong_next');
                     fb.innerHTML = aiMsg + ' <span class="screen-reading-ai-badge">AI baho</span>';
                 }
                 // Log incorrect boss attack so it appears on the AMR card
@@ -7469,8 +7830,8 @@ Prezident ertaga hisobot kutmoqda.`,
         function bossUpdateCombo() {
             const el = document.getElementById('boss-combo');
             if (!el) return;
-            if (bossState.combo >= 3)      { el.textContent = '🔥 Combo ×2!'; el.classList.add('active'); }
-            else if (bossState.combo >= 2) { el.textContent = '⚡ ' + bossState.combo + ' ketma-ket'; el.classList.add('active'); }
+            if (bossState.combo >= 3)      { el.textContent = RT('boss.combo_x2'); el.classList.add('active'); }
+            else if (bossState.combo >= 2) { el.textContent = '⚡ ' + bossState.combo + ' ' + RT('boss.combo_streak'); el.classList.add('active'); }
             else                           { el.classList.remove('active'); }
         }
 
@@ -7487,21 +7848,21 @@ Prezident ertaga hisobot kutmoqda.`,
                                 : (bossState.hintsUsed <= 2 && bossState.correct >= 6)  ? '⭐⭐' : '⭐';
                     const stEl = document.getElementById('boss-v-stars'); if (stEl) stEl.textContent = stars;
                     const siEl = document.getElementById('boss-v-stats');
-                    if (siEl) siEl.textContent = 'To\'g\'ri: ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length
-                        + (bossState.hintsUsed > 0 ? ' · Maslahat: ' + bossState.hintsUsed + ' ta' : '')
-                        + ' · Boss zarari: ' + (bossState.maxHp - bossState.hp) + ' HP';
+                    if (siEl) siEl.textContent = RT('boss.victory_correct') + ' ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length
+                        + (bossState.hintsUsed > 0 ? ' · ' + RT('boss.victory_hints') + ' ' + bossState.hintsUsed + (RT('boss.victory_hints_unit') ? (' ' + RT('boss.victory_hints_unit')) : '') : '')
+                        + ' · ' + RT('boss.victory_damage') + ' ' + (bossState.maxHp - bossState.hp) + ' HP';
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
-                    setBtnText('§22 Yakunlash');
+                    setBtnText(RT('boss.victory_finish'));
                 } else {
                     const dEl = document.getElementById('boss-defeat'); if (dEl) dEl.style.display = '';
                     const sbEl = document.getElementById('boss-d-sub');
-                    if (sbEl) sbEl.textContent = 'Boss qolgan HP: ' + bossState.hp + ' · To\'g\'ri: ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length;
+                    if (sbEl) sbEl.textContent = RT('boss.defeat_hp') + ' ' + bossState.hp + ' · ' + RT('boss.defeat_correct') + ' ' + bossState.correct + ' / ' + BOSS_QUESTIONS.length;
                     const tpEl = document.getElementById('boss-d-tip');
-                    if (tpEl) tpEl.textContent = 'Zaif savollarni qayta ko\'rib chiqing va qayta urinib ko\'ring.';
+                    if (tpEl) tpEl.textContent = RT('boss.defeat_tip');
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
-                    setBtnText('Qayta urinish');
+                    setBtnText(RT('btn.retry'));
                 }
                 setStage(7.5);
             }, 440);
@@ -7581,7 +7942,7 @@ Prezident ertaga hisobot kutmoqda.`,
             const titleEl = document.getElementById('reading-title');
             const passageEl = document.getElementById('reading-passage');
             const cpEl = document.getElementById('reading-checkpoints');
-            if (titleEl) titleEl.textContent = (READING.title || "O'qish").toUpperCase();
+            if (titleEl) titleEl.textContent = (READING.title || RT('reading.title_default')).toUpperCase();
             if (passageEl) passageEl.innerHTML = READING.passage || '';
             if (cpEl) {
                 cpEl.innerHTML = '';
@@ -7603,7 +7964,7 @@ Prezident ertaga hisobot kutmoqda.`,
                     input.setAttribute('autocomplete', 'off');
                     input.setAttribute('autocapitalize', 'off');
                     input.setAttribute('spellcheck', 'false');
-                    input.placeholder = 'Javobingizni yozing...';
+                    input.placeholder = RT('reading.placeholder');
                     block.appendChild(input);
 
                     const btnRow = document.createElement('div');
@@ -7612,13 +7973,13 @@ Prezident ertaga hisobot kutmoqda.`,
                     checkBtn.type = 'button';
                     checkBtn.className = 'screen-reading-btn';
                     checkBtn.id = 'reading-cp-check-' + i;
-                    checkBtn.textContent = 'Tekshirish';
+                    checkBtn.textContent = RT('reading.check');
                     btnRow.appendChild(checkBtn);
                     const nextBtn = document.createElement('button');
                     nextBtn.type = 'button';
                     nextBtn.className = 'screen-reading-btn';
                     nextBtn.id = 'reading-cp-next-' + i;
-                    nextBtn.textContent = 'Keyingi savol';
+                    nextBtn.textContent = RT('reading.next_question');
                     nextBtn.style.display = 'none';
                     btnRow.appendChild(nextBtn);
                     block.appendChild(btnRow);
@@ -7648,12 +8009,12 @@ Prezident ertaga hisobot kutmoqda.`,
                         fb.style.display = '';
                         if (localCorrect) {
                             fb.className = 'screen-reading-feedback is-correct';
-                            fb.innerHTML = '✓ To\'g\'ri!' + (cp.fb ? ' <span style="opacity:0.85;">' + cp.fb + '</span>' : '');
+                            fb.innerHTML = RT('reading.correct') + (cp.fb ? ' <span style="opacity:0.85;">' + cp.fb + '</span>' : '');
                         } else {
                             fb.className = 'screen-reading-feedback is-wrong';
-                            const expected = cp.ans ? ('<br><span style="opacity:0.85;">To\'g\'ri javob: ' + cp.ans + '</span>') : '';
+                            const expected = cp.ans ? ('<br><span style="opacity:0.85;">' + RT('reading.right_answer') + ' ' + cp.ans + '</span>') : '';
                             const explain = cp.fb ? ('<br><span style="opacity:0.7;">' + cp.fb + '</span>') : '';
-                            fb.innerHTML = '✗ Noto\'g\'ri.' + expected + explain;
+                            fb.innerHTML = RT('reading.wrong') + expected + explain;
                         }
 
                         // Show "Next checkpoint" button if not last
@@ -7697,7 +8058,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function renderConsolidation() {
             const titleEl = document.getElementById('cons-title');
-            if (titleEl) titleEl.textContent = (CONSOLIDATION.title || "Mustahkamlash").toUpperCase();
+            if (titleEl) titleEl.textContent = (CONSOLIDATION.title || RT('cons.title_default')).toUpperCase();
             const mn = document.getElementById('cons-mnemonic');
             if (mn) mn.innerHTML = CONSOLIDATION.mnemonic || CONSOLIDATION.recap || '';
             const bl = document.getElementById('cons-bullets');
@@ -7718,14 +8079,14 @@ Prezident ertaga hisobot kutmoqda.`,
             if (checkBlock) checkBlock.style.display = hasCheck ? '' : 'none';
             if (cp) cp.innerHTML = CONSOLIDATION.check_prompt || '';
             if (ca) {
-                ca.innerHTML = CONSOLIDATION.check_answer ? ('Kutilayotgan javob: ' + CONSOLIDATION.check_answer) : '';
+                ca.innerHTML = CONSOLIDATION.check_answer ? (RT('cons.expected_prefix') + CONSOLIDATION.check_answer) : '';
                 ca.classList.remove('is-revealed');
             }
             if (toggle) {
                 const hasAnswer = Boolean((CONSOLIDATION.check_answer && String(CONSOLIDATION.check_answer).trim()));
                 toggle.style.display = hasAnswer ? '' : 'none';
                 toggle.disabled = false;
-                toggle.textContent = "Javobni ko'rsatish";
+                toggle.textContent = RT('cons.show_answer');
                 // Bind exactly once per render — clone-replace to drop stale listeners.
                 const fresh = toggle.cloneNode(true);
                 toggle.parentNode.replaceChild(fresh, toggle);
@@ -7764,7 +8125,7 @@ Prezident ertaga hisobot kutmoqda.`,
             renderReading();
             btn.classList.remove('pulse','state-line');
             btn.classList.add('state-pill','pulse');
-            setBtnText('Davom etish');
+            setBtnText(RT('btn.continue'));
             // Single-tap continuation
             const handler = () => {
                 btn.removeEventListener('click', handler, true);
@@ -7783,7 +8144,7 @@ Prezident ertaga hisobot kutmoqda.`,
             renderConsolidation();
             btn.classList.remove('pulse','state-line');
             btn.classList.add('state-pill','pulse');
-            setBtnText('Davom etish');
+            setBtnText(RT('btn.continue'));
             const handler = () => {
                 btn.removeEventListener('click', handler, true);
                 if (sc) sc.classList.remove('active');
@@ -7801,7 +8162,7 @@ Prezident ertaga hisobot kutmoqda.`,
             renderReflection();
             btn.classList.remove('pulse','state-line');
             btn.classList.add('state-pill','pulse');
-            setBtnText('Yakunlash');
+            setBtnText(RT('btn.finish'));
             const handler = () => {
                 btn.removeEventListener('click', handler, true);
                 if (sr) sr.classList.remove('active');
@@ -7919,7 +8280,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 return `<div class="results-amr-axis">
                   <div class="results-amr-axis-label">${label}</div>
                   <div class="results-amr-axis-value">—</div>
-                  <div class="results-amr-axis-band">no AI-graded items</div>
+                  <div class="results-amr-axis-band">${RT('res.amr_no_items')}</div>
                 </div>`;
             }
             const band = _amrBandFor(mean);
@@ -7957,8 +8318,8 @@ Prezident ertaga hisobot kutmoqda.`,
             }
             if (headline) {
                 const itemScore = agg.hasAxes ? Math.round(agg.overall_score) : overallPct;
-                headline.innerHTML = `Sizning umumiy natijangiz: <strong>${itemScore}%</strong>`
-                                   + ` &nbsp;<span style="opacity:0.6;font-weight:400">(${agg.totalCorrect} / ${agg.totalItems} to'g'ri)</span>`;
+                headline.innerHTML = `${RT('res.headline_prefix')} <strong>${itemScore}%</strong>`
+                                   + ` &nbsp;<span style="opacity:0.6;font-weight:400">(${agg.totalCorrect} / ${agg.totalItems} ${RT('res.correct_suffix')})</span>`;
             }
 
             // Per-phase rows
@@ -7966,7 +8327,7 @@ Prezident ertaga hisobot kutmoqda.`,
             if (phasesEl) {
                 phasesEl.innerHTML = agg.phaseStats.map(p => {
                     const score = p.isPhaseLevel
-                        ? (p.correct ? 'Tamomlandi' : 'Bajarilmadi')
+                        ? (p.correct ? RT('res.phase_done') : RT('res.phase_undone'))
                         : `${p.correct} / ${p.total}`;
                     const axisStr = (p.axis_1_mean != null)
                         ? ` · A1=${p.axis_1_mean.toFixed(1)} A2=${p.axis_2_mean.toFixed(1)}`
@@ -7983,18 +8344,16 @@ Prezident ertaga hisobot kutmoqda.`,
             if (amrEl) {
                 if (agg.hasAxes) {
                     amrEl.innerHTML = `
-                      <div class="results-amr-title">AMR — 2-axis Anchored Mastery Rubric</div>
+                      <div class="results-amr-title">${RT('res.amr_title')}</div>
                       <div class="results-amr-grid">
-                        ${_renderAxisCard('Axis 1 — Concept Identification', agg.overall_axis_1)}
-                        ${_renderAxisCard('Axis 2 — Process Integrity',      agg.overall_axis_2)}
+                        ${_renderAxisCard(RT('res.amr_axis1'), agg.overall_axis_1)}
+                        ${_renderAxisCard(RT('res.amr_axis2'), agg.overall_axis_2)}
                       </div>`;
                 } else {
                     amrEl.innerHTML = `
-                      <div class="results-amr-title">AMR — 2-axis rubric</div>
+                      <div class="results-amr-title">${RT('res.amr_title_short')}</div>
                       <div style="font-size:13px;color:var(--text-dim);">
-                        Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat
-                        yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill,
-                        Real-Life Q5, Boss Q3-Q5) AI orqali 2-axis bo'yicha baholanadi.
+                        ${RT('res.amr_no_ai')}
                       </div>`;
                 }
             }
@@ -8004,20 +8363,20 @@ Prezident ertaga hisobot kutmoqda.`,
             if (masteryEl) {
                 if (agg.hasAxes && agg.overall_band) {
                     const tipByBand = {
-                        mastered:   "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
-                        proficient: "Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.",
-                        apprentice: "Haqida o'ylash kerak. Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
-                        novice:     "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
+                        mastered:   RT('res.tip_mastered'),
+                        proficient: RT('res.tip_proficient'),
+                        apprentice: RT('res.tip_apprentice'),
+                        novice:     RT('res.tip_novice'),
                     };
                     masteryEl.textContent = tipByBand[agg.overall_band.key] || '';
                 } else {
-                    masteryEl.textContent = "Yopiq-format javoblar tahlilingiz: " + overallPct + "%. Ochiq topshiriqlarda AMR baholash to'liq amal qiladi.";
+                    masteryEl.textContent = RT('res.closed_format') + overallPct + ".%";
                 }
             }
 
             const closingEl = document.getElementById('results-closing');
             if (closingEl) {
-                closingEl.textContent = "Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.";
+                closingEl.textContent = RT('res.closing');
             }
 
             // Final button — reset to "done" state

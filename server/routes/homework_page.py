@@ -10,7 +10,7 @@ for live editing — keeps the no-cache headers and JSON-style errors so the
 builder behavior is unchanged).
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 from ..db import get_homework
@@ -18,46 +18,82 @@ from ..services.injector import inject
 
 router = APIRouter(tags=["homework_page"])
 
-_404_HTML = """<!DOCTYPE html>
-<html lang="uz">
-<head><meta charset="UTF-8"><title>Topilmadi — NETS</title>
-<style>
-  body{font-family:system-ui,sans-serif;display:flex;align-items:center;
-       justify-content:center;min-height:100vh;margin:0;background:#0f172a;color:#e2e8f0}
-  .box{text-align:center;padding:2rem;max-width:420px}
-  h1{font-size:2.5rem;margin:0 0 .5rem}
-  p{color:#94a3b8;margin:.5rem 0 1.5rem}
-  a{color:#60a5fa;text-decoration:none;font-weight:600}
-  a:hover{text-decoration:underline}
-</style>
-</head>
-<body>
-<div class="box">
-  <h1>404</h1>
-  <p>Bu topshiriq mavjud emas yoki o'chirib tashlangan.</p>
-  <a href="/">&#8592; Asosiy sahifaga qaytish</a>
-</div>
-</body>
-</html>"""
+# Wave I3 — friendly 404/409 pages are now lang-aware. Tuple format:
+# (h1, body, link). Title is derived from the lang too. 'uz' is the default
+# fallback for unknown languages so existing links keep working.
+_FRIENDLY_BODIES: dict[str, dict[int, tuple[str, str, str, str]]] = {
+    "uz": {
+        404: (
+            "Topilmadi — NETS",
+            "404",
+            "Bu topshiriq mavjud emas yoki o'chirib tashlangan.",
+            "← Asosiy sahifaga qaytish",
+        ),
+        409: (
+            "O'chirilgan — NETS",
+            "409",
+            "Bu topshiriq o'chirilgan. Tiklanishi kerak.",
+            "← Asosiy sahifaga qaytish",
+        ),
+    },
+    "ru": {
+        404: (
+            "Не найдено — NETS",
+            "404",
+            "Это задание не существует или было удалено.",
+            "← Вернуться на главную",
+        ),
+        409: (
+            "Удалено — NETS",
+            "409",
+            "Это задание удалено. Его нужно восстановить.",
+            "← Вернуться на главную",
+        ),
+    },
+    "en": {
+        404: (
+            "Not found — NETS",
+            "404",
+            "This homework does not exist or has been deleted.",
+            "← Back to dashboard",
+        ),
+        409: (
+            "Deleted — NETS",
+            "409",
+            "This homework has been deleted. It needs to be restored.",
+            "← Back to dashboard",
+        ),
+    },
+}
 
-_409_HTML = """<!DOCTYPE html>
-<html lang="uz">
-<head><meta charset="UTF-8"><title>O'chirilgan — NETS</title>
+
+def _friendly_page(code: int, lang: str = "uz") -> str:
+    """Return a lang-aware friendly HTML page for 404/409.
+
+    Defaults to 'uz' if the requested lang isn't in the dict — defensive against
+    garbage `?lang=` query params and unexpected DB values.
+    """
+    if lang not in _FRIENDLY_BODIES:
+        lang = "uz"
+    title, h1, body, link = _FRIENDLY_BODIES[lang][code]
+    return f"""<!DOCTYPE html>
+<html lang="{lang}">
+<head><meta charset="UTF-8"><title>{title}</title>
 <style>
-  body{font-family:system-ui,sans-serif;display:flex;align-items:center;
-       justify-content:center;min-height:100vh;margin:0;background:#0f172a;color:#e2e8f0}
-  .box{text-align:center;padding:2rem;max-width:420px}
-  h1{font-size:2.5rem;margin:0 0 .5rem}
-  p{color:#94a3b8;margin:.5rem 0 1.5rem}
-  a{color:#60a5fa;text-decoration:none;font-weight:600}
-  a:hover{text-decoration:underline}
+  body{{font-family:system-ui,sans-serif;display:flex;align-items:center;
+       justify-content:center;min-height:100vh;margin:0;background:#0f172a;color:#e2e8f0}}
+  .box{{text-align:center;padding:2rem;max-width:420px}}
+  h1{{font-size:2.5rem;margin:0 0 .5rem}}
+  p{{color:#94a3b8;margin:.5rem 0 1.5rem}}
+  a{{color:#60a5fa;text-decoration:none;font-weight:600}}
+  a:hover{{text-decoration:underline}}
 </style>
 </head>
 <body>
 <div class="box">
-  <h1>409</h1>
-  <p>Bu topshiriq o'chirilgan. Tiklanishi kerak.</p>
-  <a href="/">&#8592; Asosiy sahifaga qaytish</a>
+  <h1>{h1}</h1>
+  <p>{body}</p>
+  <a href="/">{link}</a>
 </div>
 </body>
 </html>"""
@@ -80,6 +116,10 @@ def render_homework(hw: dict) -> str:
     if chapter:
         summary += f" · {chapter}"
 
+    # Wave I3 — lang resolution falls through three sources (in order):
+    #   1. meta.lang (per-homework runtime override authored in the builder)
+    #   2. hw.language (DB column — Wave I default per homework)
+    #   3. 'uz' (legacy default)
     runtime_ctx = {
         "apiBase": "",  # same-origin
         "subject": hw.get("subject"),
@@ -87,23 +127,38 @@ def render_homework(hw: dict) -> str:
         "homeworkTitle": hw.get("title"),
         "homeworkSummary": summary,
         "hwId": hw.get("id"),
-        "lang": (meta_override.get("lang") or content.get("meta", {}).get("lang") or "uz"),
+        "lang": (
+            meta_override.get("lang")
+            or content.get("meta", {}).get("lang")
+            or hw.get("language")
+            or "uz"
+        ),
     }
     return inject(content, meta_override, runtime_context=runtime_ctx)
 
 
 @router.get("/h/{hw_id}", response_class=HTMLResponse)
-async def homework_page(hw_id: str):
+async def homework_page(hw_id: str, lang: str | None = Query(default=None)):
     """Permanent shareable URL for a finished homework.
 
     Returns the same rendered HTML as /api/homeworks/{hw_id}/preview.
-    Missing homework → friendly 404 HTML. Trashed homework → friendly 409 HTML.
+    Missing homework → friendly 404 HTML (lang-aware via `?lang=` query).
+    Trashed homework → friendly 409 HTML (lang-aware via the homework's own
+    DB language column).
     """
     hw = await get_homework(hw_id)
     if not hw:
-        return HTMLResponse(content=_404_HTML, status_code=404)
+        # No homework → no DB lang available. Use the query param if provided,
+        # else default 'uz'. Garbage values fall back to 'uz' inside _friendly_page.
+        return HTMLResponse(
+            content=_friendly_page(404, lang or "uz"), status_code=404
+        )
     if hw.get("deleted_at"):
-        return HTMLResponse(content=_409_HTML, status_code=409)
+        # Trashed homework — we DO know the language from the DB row.
+        return HTMLResponse(
+            content=_friendly_page(409, hw.get("language") or "uz"),
+            status_code=409,
+        )
     html = render_homework(hw)
     return HTMLResponse(
         content=html,

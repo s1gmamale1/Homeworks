@@ -244,6 +244,19 @@ def inject(
     html = _TEMPLATE
     meta = meta_override or content_json.get("meta") or {}
 
+    # 0. Stamp <html lang> with the resolved runtime language so the runtime
+    # i18n layer (RUNTIME_LABELS / PHASE_LABELS) and any assistive tech
+    # see the correct locale. Falls back to 'uz' if runtime_context omits lang.
+    _lang = (runtime_context.get("lang") if runtime_context else None) or "uz"
+    if not isinstance(_lang, str) or len(_lang) > 8:
+        _lang = "uz"
+    html = re.sub(
+        r'<html\s+lang="[^"]*"',
+        f'<html lang="{_esc(_lang)}"',
+        html,
+        count=1,
+    )
+
     # 1. Replace title h1 (first occurrence only)
     title = meta.get("title", "Homework")
     subject_display = meta.get("subject_display", "")

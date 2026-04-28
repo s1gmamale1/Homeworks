@@ -336,6 +336,189 @@ def test_tutor_avatar_present(client, created_hw):
     assert avatar_pos < badge_pos, "avatar must appear before the phase badge in the header"
 
 
+# ──────────────────────────────────────────────────────────────────
+# Wave I3 — runtime template i18n (RUNTIME_LABELS) + lang-aware
+# friendly 404/409 pages.
+# ──────────────────────────────────────────────────────────────────
+
+
+def test_runtime_template_has_runtime_labels(client, created_hw):
+    """Wave I3: rendered template must declare a top-level RUNTIME_LABELS dict
+    with at least the canonical reading.next_question key."""
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    assert "RUNTIME_LABELS = {" in body, "RUNTIME_LABELS dict missing from template"
+    assert "'reading.next_question'" in body, \
+        "RUNTIME_LABELS must contain canonical 'reading.next_question' key"
+    # All three language blocks must be present.
+    for lang_block in ("uz: {", "ru: {", "en: {"):
+        assert lang_block in body, f"RUNTIME_LABELS missing language block: {lang_block}"
+    # Helper functions are exposed for global use.
+    assert "function RT(" in body
+    assert "window.RT = RT" in body
+
+
+def test_runtime_no_hardcoded_keyingi_savol_outside_labels(client, created_hw):
+    """Wave I3 regression rule: 'Keyingi savol' must appear ONLY inside the
+    RUNTIME_LABELS.uz block — never bare in JS code outside it.
+
+    This prevents future authors from re-introducing the hardcoded string by
+    accident. The rule scans the full rendered page; any match must be within
+    a small radius of 'RUNTIME_LABELS' or the per-language opener so we know
+    it's the dict entry, not stray code.
+    """
+    r = client.get(f"/h/{created_hw['id']}")
+    assert r.status_code == 200
+    body = r.text
+    needle = "Keyingi savol"
+    # We allow the literal in two places:
+    #   1. Inside RUNTIME_LABELS (uz: { ... 'reading.next_question': 'Keyingi savol', ... })
+    #   2. Inside the comment block immediately above RUNTIME_LABELS (placeholder text).
+    # Find the byte ranges for the RUNTIME_LABELS literal.
+    rl_start = body.find("RUNTIME_LABELS = {")
+    assert rl_start >= 0, "RUNTIME_LABELS not declared"
+    # Find matching closing brace by walking depth — string-naive but adequate
+    # for our hand-written dict (we know it has no nested } in keys).
+    depth = 0
+    rl_end = rl_start
+    started = False
+    for i in range(rl_start, len(body)):
+        ch = body[i]
+        if ch == "{":
+            depth += 1
+            started = True
+        elif ch == "}":
+            depth -= 1
+            if started and depth == 0:
+                rl_end = i + 1
+                break
+    assert rl_end > rl_start, "could not find end of RUNTIME_LABELS"
+
+    pos = 0
+    while True:
+        idx = body.find(needle, pos)
+        if idx < 0:
+            break
+        # Must be inside the RUNTIME_LABELS literal — anything else is a
+        # leftover hardcoded string and must be replaced with RT('reading.next_question').
+        assert rl_start <= idx <= rl_end, (
+            f"'Keyingi savol' found outside RUNTIME_LABELS at offset {idx}; "
+            f"replace with RT('reading.next_question'). Surrounding text: "
+            f"{body[max(0, idx - 60):idx + 80]!r}"
+        )
+        pos = idx + len(needle)
+
+
+def test_runtime_template_lang_attr_matches_homework_lang(client):
+    """Wave I3: <html lang="..."> must reflect the homework's resolved language
+    (not the hardcoded 'uz' default).
+
+    We set the language via content_json.meta.lang (the in-flight resolution
+    path used by render_homework). The DB.language column is the long-term
+    Wave I1 source, but this test exercises the runtime side regardless of
+    which lane wires the column.
+    """
+    create = client.post("/api/homeworks", json={
+        "title": "Russian homework",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+    })
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    update = client.put(f"/api/homeworks/{hw_id}", json={
+        "content_json": {
+            "meta": {"title": "Russian homework", "lang": "ru"},
+            "panels": [],
+            "flashcards": [],
+            "boss_questions": [],
+            "memory_sprint": [],
+        },
+    })
+    assert update.status_code == 200, update.text
+
+    r = client.get(f"/h/{hw_id}")
+    assert r.status_code == 200
+    assert '<html lang="ru">' in r.text, \
+        "rendered template must reflect content_json.meta.lang='ru'"
+
+
+def test_friendly_404_page_default_uz(client):
+    """Wave I3: GET /h/<bogus> with no ?lang= → defaults to Uzbek body."""
+    r = client.get("/h/HW-99999999-999")
+    assert r.status_code == 404
+    assert "Bu topshiriq mavjud emas" in r.text
+    assert '<html lang="uz">' in r.text
+
+
+def test_friendly_404_page_lang_param_ru(client):
+    """Wave I3: ?lang=ru on missing homework → Russian friendly page."""
+    r = client.get("/h/HW-99999999-999?lang=ru")
+    assert r.status_code == 404
+    assert "Это задание не существует" in r.text
+    assert '<html lang="ru">' in r.text
+
+
+def test_friendly_404_page_lang_param_en(client):
+    """Wave I3: ?lang=en on missing homework → English friendly page."""
+    r = client.get("/h/HW-99999999-999?lang=en")
+    assert r.status_code == 404
+    assert "This homework does not exist" in r.text
+    assert '<html lang="en">' in r.text
+
+
+def test_friendly_404_page_lang_param_garbage_falls_back_to_uz(client):
+    """Wave I3 defensive: an unknown ?lang=zz must NOT crash; falls back to uz."""
+    r = client.get("/h/HW-99999999-999?lang=zz")
+    assert r.status_code == 404
+    assert "Bu topshiriq mavjud emas" in r.text
+
+
+def test_friendly_409_page_uses_homework_lang(client):
+    """Wave I3: trashed homework's friendly 409 reads the homework's own
+    DB language column (not the request lang).
+
+    Sets the DB column directly via aiosqlite since HomeworkCreate doesn't
+    yet accept `language` (Wave I1 owns adding the field; we read it).
+    """
+    import aiosqlite
+    import asyncio
+    from server.db import connect
+
+    create = client.post("/api/homeworks", json={
+        "title": "Russian, trashed",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+    })
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    # Stamp language='ru' directly on the row — simulates what Wave I1's
+    # builder UI will do once the field is exposed.
+    async def _set_language():
+        db = await connect()
+        try:
+            await db.execute(
+                "UPDATE homeworks SET language = ? WHERE id = ?",
+                ("ru", hw_id),
+            )
+            await db.commit()
+        finally:
+            await db.close()
+    asyncio.run(_set_language())
+
+    delete = client.delete(f"/api/homeworks/{hw_id}")
+    assert delete.status_code in (200, 204), delete.text
+
+    r = client.get(f"/h/{hw_id}")
+    assert r.status_code == 409
+    assert "Это задание удалено" in r.text
+    assert '<html lang="ru">' in r.text
+
+
 # Wave F4 — Stuck? Ask tutor CTA
 # ──────────────────────────────────────────────────────────────────
 
