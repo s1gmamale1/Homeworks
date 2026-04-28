@@ -310,6 +310,8 @@ All responses JSON unless noted. All errors return `{ "error": "message", "code"
 }
 ```
 
+**Phase 3 games are all optional.** All five `gb_*` keys above are independently optional — the injector keeps empty arrays as `[]` and the runtime registry (`gbActiveGameOrder()` in `perfect_homework.html`) skips empty slots. If all five are empty, Stage 5 is skipped entirely and the student goes straight from Reading/Memory Sprint to Real-Life Challenge. **Never re-add placeholder fallbacks for game-break keys** — see `tests/test_optional_games.py` for the regression contract. This rule applies to every new Phase 3 game added in the future.
+
 ### AI Generation
 
 | Method | Path | Request | Response |
