@@ -300,3 +300,71 @@ def test_migrate_memory_sprint_via_migrate_content() -> None:
     assert spec["expected"] == 1
     assert spec["option_count"] == 3
     assert spec["canonical_display"] == "Yo'q"
+
+
+# ---------------------------------------------------------------------------
+# Wave E expansion: real_life and gb_why_chain tests
+# ---------------------------------------------------------------------------
+
+
+def test_migrate_real_life_basic() -> None:
+    """migrate_real_life adds option_index spec to a q-item with options+correct."""
+    item = {
+        "prompt": "Qaysi biri to'g'ri javob?",
+        "options": ["A variant", "B variant", "C variant"],
+        "correct": 2,
+    }
+    changed = m.migrate_real_life(item)
+    assert changed is True
+    spec = item["answer_spec"]
+    assert spec["type"] == "option_index"
+    assert spec["expected"] == 2
+    assert spec["option_count"] == 3
+    assert spec["allow_ai_fallback"] is False
+    assert spec["canonical_display"] == "C variant"
+
+
+def test_migrate_real_life_skips_open_ended() -> None:
+    """migrate_real_life leaves open-ended items (no options) untouched."""
+    item = {
+        "prompt": "DNK tarkibini tushuntiring.",
+        "ans": "adenin, guanin, sitozin, timin",
+        "fb": "To'g'ri.",
+    }
+    changed = m.migrate_real_life(item)
+    assert changed is False
+    assert "answer_spec" not in item
+
+
+def test_migrate_real_life_idempotent() -> None:
+    """Second migrate_real_life call on already-migrated item returns False."""
+    item = {
+        "prompt": "Qaysi organoid fotosintez qiladi?",
+        "options": ["Mitoxondriya", "Xloroplast", "Yadro"],
+        "correct": 1,
+    }
+    assert m.migrate_real_life(item) is True
+    assert m.migrate_real_life(item) is False
+
+
+def test_migrate_gb_why_chain_basic() -> None:
+    """migrate_content routes gb_why_chain items through migrate_option_index."""
+    content = {
+        "boss_questions": [],
+        "gb_adaptive_quiz": [],
+        "memory_sprint": [],
+        "gb_why_chain": [
+            {
+                "q": "Nima uchun bu formula ishlatiladi?",
+                "options": ["Tezlikni topish uchun", "Kuchni topish uchun", "Energiyani topish uchun"],
+                "correct": 1,
+            }
+        ],
+    }
+    mutated = m.migrate_content(content)
+    assert mutated is True
+    spec = content["gb_why_chain"][0]["answer_spec"]
+    assert spec["type"] == "option_index"
+    assert spec["expected"] == 1
+    assert spec["option_count"] == 3
+    assert spec["canonical_display"] == "Kuchni topish uchun"

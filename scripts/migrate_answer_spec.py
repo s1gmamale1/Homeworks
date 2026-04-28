@@ -132,18 +132,18 @@ def infer_spec(old_answers: list[str]) -> dict:
 # ---------------------------------------------------------------------------
 
 
-_QUESTION_BUCKETS = ("boss_questions", "gb_adaptive_quiz", "memory_sprint")
+_QUESTION_BUCKETS = ("boss_questions", "gb_adaptive_quiz", "memory_sprint", "gb_why_chain")
 
 
 # ---------------------------------------------------------------------------
-# Wave E: memory_sprint option_index migration
+# Wave E: option_index migration (memory_sprint, gb_why_chain, real_life)
 # ---------------------------------------------------------------------------
 
 
-def migrate_memory_sprint(item: dict) -> bool:
-    """Augment a single memory_sprint item with an ``answer_spec`` of type
+def migrate_option_index(item: dict) -> bool:
+    """Augment a single question item with an ``answer_spec`` of type
     ``option_index``.  The item must have ``correct`` (int, 0-based) and
-    ``options`` (list).
+    ``options`` (list).  Works for any bucket with this shape.
 
     Returns True if the item was mutated, False if it was already migrated or
     is missing the required fields (idempotent).
@@ -180,6 +180,20 @@ def migrate_memory_sprint(item: dict) -> bool:
 
     item["answer_spec"] = spec
     return True
+
+
+# Backward-compat alias — existing tests and callers may reference this name.
+migrate_memory_sprint = migrate_option_index
+
+
+def migrate_real_life(item: dict) -> bool:
+    """Augment a single real_life q-item with an ``answer_spec`` of type
+    ``option_index`` when it has ``options[]`` + ``correct: int``.
+    Open-ended items (no ``options``) are left untouched.
+
+    Returns True if the item was mutated, False otherwise (idempotent).
+    """
+    return migrate_option_index(item)
 
 
 def _legacy_answers(question: dict) -> list[str]:
@@ -219,20 +233,32 @@ def migrate_content(content: dict) -> bool:
     if not isinstance(content, dict):
         return False
     mutated = False
+
+    # List-style buckets (boss_questions, gb_adaptive_quiz, memory_sprint, gb_why_chain).
     for key in _QUESTION_BUCKETS:
         bucket = content.get(key)
         if not isinstance(bucket, list):
             continue
         for q in bucket:
-            if key == "memory_sprint":
-                # Wave E: memory_sprint items use options[]+correct index, not ans[].
+            if key in ("memory_sprint", "gb_why_chain"):
+                # Wave E: these items use options[]+correct index, not ans[].
                 # Try the option_index migration first; fall through to legacy-ans
                 # migration for the rare items that have both.
-                if migrate_memory_sprint(q):
+                if migrate_option_index(q):
                     mutated = True
                     continue
             if migrate_question(q):
                 mutated = True
+
+    # real_life is a dict of sub-keys (badge, story, q1..q6, endTitle, endSub, …).
+    # Only the q-keys that are dicts with options[]+correct need migration.
+    real_life = content.get("real_life")
+    if isinstance(real_life, dict):
+        for q_item in real_life.values():
+            if isinstance(q_item, dict):
+                if migrate_real_life(q_item):
+                    mutated = True
+
     return mutated
 
 
