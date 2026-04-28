@@ -207,6 +207,10 @@
       return request("/api/health");
     },
 
+    getAiStatus() {
+      return request("/api/ai/status");
+    },
+
     /**
      * Paginated + filtered homework list.
      * @param {Object} params

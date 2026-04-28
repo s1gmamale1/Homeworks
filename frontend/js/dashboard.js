@@ -479,9 +479,22 @@
 
   async function loadHealth() {
     try {
-      const health = await API.getHealth();
-      const geminiText = health.gemini ? "Gemini ready" : "Gemini off";
-      setHealth(health.status === "ok" ? "ok" : "warn", `API ok · ${geminiText}`);
+      const [health, aiStatus] = await Promise.all([
+        API.getHealth(),
+        API.getAiStatus(),
+      ]);
+
+      const PROVIDER_LABEL = {
+        kimi: 'Kimi',
+        vertex: 'Vertex',
+        gemini_api: 'Gemini',
+      };
+
+      const provider = aiStatus?.active_provider || 'none';
+      const label = PROVIDER_LABEL[provider] || 'AI';
+      const aiReady = aiStatus?.ai_ready !== false && provider !== 'none';
+      const statusText = aiReady ? `API ok · ${label} ready` : 'API down · No AI';
+      setHealth(aiReady ? 'ok' : 'error', statusText);
     } catch (error) {
       setHealth("error", "API offline");
     }
