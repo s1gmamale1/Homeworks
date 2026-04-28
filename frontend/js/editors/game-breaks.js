@@ -4,6 +4,7 @@
 // - /js/editors/games/adaptive-quiz.js
 // - /js/editors/games/sentence-fill.js
 // - /js/editors/games/tile-match.js
+// - /js/editors/games/puzzle-lock.js
 
 (function () {
   "use strict";
@@ -32,6 +33,13 @@
       icon: "🧠",
       editor: "tileMatch",
       description: "Concept-definition matching game. Uses [left, right] pairs.",
+    },
+    {
+      id: "puzzle_lock",
+      label: "Puzzle Lock",
+      icon: "🧩",
+      editor: "puzzleLock",
+      description: "Knowledge-gated sliding-tile puzzle. Each tile has content + question + answer. 8 tiles → 3×3, 15 → 4×4.",
     },
   ];
 
@@ -79,6 +87,16 @@
       : [];
   }
 
+  function normalizePuzzleLock(items) {
+    return Array.isArray(items)
+      ? items.map((tile) => ({
+          content: typeof tile?.content === "string" ? tile.content : "",
+          q: typeof tile?.q === "string" ? tile.q : "",
+          a: typeof tile?.a === "string" ? tile.a : "",
+        }))
+      : [];
+  }
+
   function normalize(data) {
     const safe = data && typeof data === "object" ? data : {};
 
@@ -88,6 +106,7 @@
       adaptive_quiz: normalizeAdaptiveQuiz(safe.adaptive_quiz ?? safe.gb_adaptive_quiz),
       why_chain: normalizeSentenceFill(safe.why_chain ?? safe.gb_why_chain),
       memory_match: normalizeTileMatch(safe.memory_match ?? safe.gb_memory_match),
+      puzzle_lock: normalizePuzzleLock(safe.puzzle_lock ?? safe.gb_puzzle_lock),
     };
   }
 
@@ -104,6 +123,7 @@
     if (tabId === "adaptive_quiz") return state.adaptive_quiz;
     if (tabId === "why_chain") return state.why_chain;
     if (tabId === "memory_match") return state.memory_match;
+    if (tabId === "puzzle_lock") return state.puzzle_lock;
     return [];
   }
 
@@ -111,6 +131,7 @@
     if (tabId === "adaptive_quiz") state.adaptive_quiz = normalizeAdaptiveQuiz(value);
     if (tabId === "why_chain") state.why_chain = normalizeSentenceFill(value);
     if (tabId === "memory_match") state.memory_match = normalizeTileMatch(value);
+    if (tabId === "puzzle_lock") state.puzzle_lock = normalizePuzzleLock(value);
   }
 
   function renderTabs(state, activeTab) {
@@ -152,7 +173,7 @@
               </div>
             </div>
             <p class="muted-text">
-              Split by production game: Adaptive Quiz, Sentence Fill, and Tile Match. Each game owns its own JS editor.
+              Split by production game: Adaptive Quiz, Sentence Fill, Tile Match, and Puzzle Lock. Each game owns its own JS editor.
             </p>
           </section>
 

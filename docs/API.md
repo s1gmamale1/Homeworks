@@ -8,7 +8,7 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 
 | Group | Endpoints |
 |-------|-----------|
-| Homework CRUD | POST/GET/PUT/DELETE /api/homeworks, /…/{id}/restore, /…/{id}/permanent, /…/{id}/duplicate |
+| Homework CRUD | POST/GET/PUT/DELETE /api/homeworks, /…/{id}/restore, /…/{id}/permanent, /…/{id}/duplicate, PATCH /…/{id}/content |
 | Versions | GET/GET/POST /api/homeworks/{id}/versions, /…/{id}/versions/{vid}, /…/{id}/versions/{vid}/restore |
 | Render | GET /h/{id} (HTML), GET /api/homeworks/{id}/preview (HTML) |
 | Library | GET /api/library, GET /api/library/facets |
@@ -67,6 +67,26 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 { "title": "string", "content_json": { ... } }
 ```
 All fields optional. `content_json` schema: [CONTRACTS.md §1](../CONTRACTS.md#1-data-model--content_json). Returns unchanged record if no recognised fields.
+
+**`content_json` is fully replaced** — every key you omit gets wiped from the stored blob. Use `PATCH /…/{id}/content` (below) when you only want to update a subset. The builder UI always sends the complete blob.
+
+**200** updated record. **404** `NOT_FOUND`. **409** `TRASHED`.
+
+---
+
+### PATCH /api/homeworks/{hw_id}/content
+
+```json
+{ "content_json": { "gb_puzzle_lock": [{ "content": "1", "q": "...", "a": "..." }] } }
+```
+
+Partial update. Deep-merges the keys you send into the existing `content_json`:
+
+- Top-level keys present in the patch overwrite the same keys in storage.
+- When BOTH sides hold a dict at the same key, the merge recurses (so `{ "meta": { "section": "22" } }` only updates `section`, leaves `title`/`subject_display`/`cefr_level` alone).
+- Arrays are replaced wholesale — no append.
+- `null` sets the key to null (does NOT delete it).
+- Keys you omit are left untouched.
 
 **200** updated record. **404** `NOT_FOUND`. **409** `TRASHED`.
 

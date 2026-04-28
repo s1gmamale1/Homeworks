@@ -92,6 +92,9 @@ The single source of truth for a homework's content. Stored as JSON in SQLite `h
   "gb_memory_match": [
     ["left", "right"]
   ],
+  "gb_puzzle_lock": [
+    { "content": "tile fragment HTML", "q": "question to gate this tile", "a": "accepted answer" }
+  ],
   "real_life": {
     "badge": "VAZIFA · Scenario name",
     "story": "multi-line story text",
@@ -299,7 +302,7 @@ All responses JSON unless noted. All errors return `{ "error": "message", "code"
 {
   "meta": { "title": "...", "subject_display": "...", "section": "", "cefr_level": "" },
   "gate_quote": { "mode": "auto" }, "panels": [], "flashcards": [], "memory_sprint": [],
-  "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [],
+  "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [], "gb_puzzle_lock": [],
   "real_life": null, "boss_questions": [], "reflection": null
 }
 ```
@@ -359,6 +362,7 @@ Frontend uses `EventSource` to consume. Each `phase` event with `status: "done"`
 | `GB_ADAPTIVE_QUIZ` | `gb_adaptive_quiz` | array |
 | `GB_WHY_CHAIN` | `gb_why_chain` | array |
 | `GB_MEMORY_MATCH` | `gb_memory_match` | array |
+| `GB_PUZZLE_LOCK` | `gb_puzzle_lock` | array |
 | `RL_SCENARIO` | `real_life` | object |
 | `BOSS_QUESTIONS` | `boss_questions` | array |
 

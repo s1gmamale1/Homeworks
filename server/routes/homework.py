@@ -18,6 +18,30 @@ class HomeworkUpdate(BaseModel):
     title: Optional[str] = None
     content_json: Optional[Dict[str, Any]] = None
 
+class ContentPatch(BaseModel):
+    content_json: Dict[str, Any]
+
+
+def _deep_merge_content(base: dict, patch: dict) -> dict:
+    """Merge `patch` into `base` and return the result.
+
+    Semantics — designed for safe partial updates of `content_json`:
+    - Top-level keys present in `patch` overwrite the same keys in `base`.
+    - When BOTH sides hold a dict at the same key, recurse (so callers can
+      target nested fields like `meta.section` without rewriting `meta`).
+    - Arrays are replaced wholesale — no append/merge into existing arrays.
+    - `None` in `patch` sets the key to null (does NOT delete it).
+    - Keys absent from `patch` are left untouched in `base`.
+    """
+    out = dict(base) if isinstance(base, dict) else {}
+    for key, value in patch.items():
+        existing = out.get(key)
+        if isinstance(value, dict) and isinstance(existing, dict):
+            out[key] = _deep_merge_content(existing, value)
+        else:
+            out[key] = value
+    return out
+
 @router.get("")
 async def list_homeworks(
     q: Optional[str] = Query(None),
@@ -66,7 +90,7 @@ async def create_homework(hw: HomeworkCreate):
       "meta": { "title": hw.title, "subject_display": hw.subject, "section": "", "cefr_level": "" },
       "gate_quote": { "mode": "auto" },
       "panels": [], "flashcards": [], "memory_sprint": [],
-      "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [],
+      "gb_adaptive_quiz": [], "gb_why_chain": [], "gb_memory_match": [], "gb_puzzle_lock": [],
       "real_life": None, "boss_questions": [], "reflection": None
     }
 
@@ -109,6 +133,26 @@ async def update_homework(hw_id: str, hw_update: HomeworkUpdate):
         return hw
 
     return await db.update_homework(hw_id, updates)
+
+@router.patch("/{hw_id}/content")
+async def patch_homework_content(hw_id: str, body: ContentPatch):
+    """Partial update of `content_json`. Merges the keys you send into the
+    existing blob — keys you omit are left alone. Use this when you only want
+    to update a subset (e.g., adding `gb_puzzle_lock` without resending every
+    other phase). PUT still does a full overwrite.
+    """
+    hw = await db.get_homework(hw_id)
+    if not hw:
+        raise HTTPException(status_code=404, detail={"error": "Not found", "code": "NOT_FOUND"})
+    if hw.get("deleted_at"):
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "Cannot patch a trashed homework. Restore it first.", "code": "TRASHED"},
+        )
+
+    existing = hw.get("content_json") or {}
+    merged = _deep_merge_content(existing, body.content_json)
+    return await db.update_homework(hw_id, {"content_json": merged})
 
 @router.delete("/{hw_id}")
 async def delete_homework(hw_id: str):

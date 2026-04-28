@@ -23,6 +23,7 @@ _ARRAY_CONSTANTS = [
     ("gb_adaptive_quiz", "GB_ADAPTIVE_QUIZ"),
     ("gb_why_chain",     "GB_WHY_CHAIN"),
     ("gb_memory_match",  "GB_MEMORY_MATCH"),
+    ("gb_puzzle_lock",   "GB_PUZZLE_LOCK"),
     ("boss_questions",   "BOSS_QUESTIONS"),
 ]
 
@@ -549,6 +550,24 @@ def inject(
                     "prompt":     item.get("q", ""),
                     "acceptable": [a for a in ans_list if a],
                     "hints":      hint_parts[:3],
+                })
+            data = adapted
+
+        # Shape adapter: Puzzle Lock — contract uses [{content, q, a}] objects.
+        # Template reads same shape. Normalize string fields to be safe and accept
+        # legacy aliases (text→content, question→q, answer→a).
+        if key == "gb_puzzle_lock":
+            adapted = []
+            for tile in data:
+                if not isinstance(tile, dict):
+                    continue
+                content_html = tile.get("content") or tile.get("text") or ""
+                q_text = tile.get("q") or tile.get("question") or ""
+                a_text = tile.get("a") or tile.get("answer") or ""
+                adapted.append({
+                    "content": str(content_html),
+                    "q": str(q_text),
+                    "a": str(a_text),
                 })
             data = adapted
 

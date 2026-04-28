@@ -108,10 +108,10 @@
                         </div>
 
                         <div class="editor-grid">
-                          <label class="field full-span">
+                          <div class="field full-span">
                             <span>Prompt with blank</span>
                             <div class="js-rich-host" data-key="q" data-index="${index}"></div>
-                          </label>
+                          </div>
 
                           <label class="field full-span">
                             <span>Correct answer / invariant</span>

@@ -1694,6 +1694,103 @@
             color: var(--text-muted);
         }
 
+        /* Puzzle Lock — knowledge-gated sliding-tile */
+        .gb-pl-status {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .gb-pl-board {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+        .gb-pl-grid {
+            display: grid;
+            gap: 6px;
+            background: rgba(0,0,0,0.06);
+            padding: 6px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+        }
+        .gb-pl-cell {
+            aspect-ratio: 1 / 1;
+            background: rgba(255,255,255,0.92);
+            border: 1.5px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 6px;
+            font-size: 13px;
+            line-height: 1.25;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            user-select: none;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+            overflow: hidden;
+        }
+        .gb-pl-cell:hover { transform: scale(1.03); border-color: var(--accent); }
+        .gb-pl-cell.empty { background: transparent; border-style: dashed; cursor: default; }
+        .gb-pl-cell.empty:hover { transform: none; }
+        .gb-pl-cell.locked { border-color: #d4af37; background: rgba(212,175,55,0.10); box-shadow: 0 0 0 2px rgba(212,175,55,0.25) inset; }
+        .gb-pl-cell.selected { border-color: var(--accent); background: rgba(99,184,255,0.18); transform: scale(1.05); }
+        .gb-pl-cell.wrong-flash { border-color: #d9534f; background: rgba(217,83,79,0.18); animation: gb-pl-shake 0.5s; }
+        .gb-pl-cell.not-adjacent { border-color: #d9534f; opacity: 0.6; }
+        @keyframes gb-pl-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+        .gb-pl-question-box {
+            background: rgba(99,184,255,0.10);
+            border: 1.5px solid rgba(99,184,255,0.4);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .gb-pl-question-box.show { display: block; }
+        .gb-pl-question {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .gb-pl-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1.5px solid rgba(0,0,0,0.12);
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 160ms ease;
+            -webkit-appearance: none;
+            user-select: text;
+        }
+        .gb-pl-input:focus { border-color: var(--accent); }
+        .gb-pl-win-banner {
+            background: linear-gradient(135deg,rgba(91,184,93,0.18),rgba(212,175,55,0.14));
+            border: 1.5px solid #5bb85d;
+            border-radius: 20px;
+            padding: 20px 22px;
+            text-align: center;
+            display: none;
+            margin-bottom: 14px;
+        }
+        .gb-pl-win-banner.show { display: block; }
+        .gb-pl-win-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d7a2f;
+            margin-bottom: 6px;
+        }
+        .gb-pl-win-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
         /* ── STAGE 6 · REAL-LIFE CHALLENGE ────────────────────────────── */
         #screen-6 {
             text-align: left;
@@ -2978,6 +3075,7 @@
                         <div class="gb-pdot" id="gb-pd-1"></div>
                         <div class="gb-pdot" id="gb-pd-2"></div>
                         <div class="gb-pdot" id="gb-pd-3"></div>
+                        <div class="gb-pdot" id="gb-pd-4" style="display:none"></div>
                     </div>
                     <div class="gb-progress-label" id="gb-plabel">1/3 Adaptive Quiz</div>
                 </div>
@@ -3027,6 +3125,20 @@
                         <div class="gb-mm-win-banner" id="gb-mm-win-banner">
                             <div class="gb-mm-win-text">Barcha juftlar topildi!</div>
                             <div class="gb-mm-win-sub">Ajoyib ish — xotirangiz ishlamoqda!</div>
+                        </div>
+                    </div>
+                    <!-- Sub-game 4: Puzzle Lock (optional — only if GB_PUZZLE_LOCK has items) -->
+                    <div class="gb-game-panel enter-right" id="gb-panel-pl">
+                        <div class="gb-section-title">O'YIN — PUZZLE LOCK</div>
+                        <div class="gb-pl-status" id="gb-pl-status">Mos joyga: 0 / 0</div>
+                        <div class="gb-pl-board"><div class="gb-pl-grid" id="gb-pl-grid"></div></div>
+                        <div class="gb-pl-question-box" id="gb-pl-question-box">
+                            <div class="gb-pl-question" id="gb-pl-question"></div>
+                            <input class="gb-pl-input" id="gb-pl-input" type="text" inputmode="text" placeholder="Javob..." autocomplete="off" autocorrect="off" spellcheck="false" />
+                        </div>
+                        <div class="gb-pl-win-banner" id="gb-pl-win-banner">
+                            <div class="gb-pl-win-text">Boshqotirma yechildi!</div>
+                            <div class="gb-pl-win-sub">Mantiqiy tartiblash — barcha bo'laklar joyiga tushdi.</div>
                         </div>
                     </div>
                 </div>
@@ -4733,11 +4845,14 @@
             {a:'x\u00b2 = d, d < 0',b:"haqiqiy ildiz yo'q",confirmQ:'d manfiy bolsa, nechta haqiqiy ildiz?',correct:"haqiqiy ildiz yo'q"}
         ];
 
+        const GB_PUZZLE_LOCK = [];
+
         let gbState = {
             subGame: 0,
             aq: { shown:0, correct:0, currentItem:null, currentTier:'easy', captureOk:false, answered:false },
             wc: { chainIdx:0, levelIdx:0, retries:0 },
-            mm: { tiles:[], flipped:[], matched:0, pendingPair:null, busy:false }
+            mm: { tiles:[], flipped:[], matched:0, pendingPair:null, busy:false, complete:false },
+            pl: { size:3, cells:[], emptyIdx:0, tiles:[], selected:null, total:0, correct:0, wrongCount:0, complete:false, busy:false }
         };
 
         function startStage5() {
@@ -4760,10 +4875,16 @@
         }
 
         function gbUpdateProgress(idx) {
-            const labels = ['1/3 Adaptive Quiz','2/3 Sentence Fill','3/3 Tile Match'];
+            const hasPL = Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0;
+            const total = hasPL ? 4 : 3;
+            const labels = hasPL
+                ? ['1/4 Adaptive Quiz','2/4 Sentence Fill','3/4 Tile Match','4/4 Puzzle Lock']
+                : ['1/3 Adaptive Quiz','2/3 Sentence Fill','3/3 Tile Match'];
             const label = document.getElementById('gb-plabel');
             if (label) label.textContent = labels[idx] || '';
-            for (let i = 1; i <= 3; i++) {
+            const dot4 = document.getElementById('gb-pd-4');
+            if (dot4) dot4.style.display = hasPL ? '' : 'none';
+            for (let i = 1; i <= total; i++) {
                 const d = document.getElementById('gb-pd-' + i);
                 if (!d) continue;
                 d.className = 'gb-pdot';
@@ -4795,14 +4916,36 @@
 
         function gbHandleAction() {
             if (state.isAnimating) return;
-            if (gbState.subGame === 3) { gbExitToStage6(); return; }
+            if (gbState.subGame === 4) { gbExitToStage6(); return; }
+            if (gbState.subGame === 3) {
+                if (gbState.pl && gbState.pl.complete) { gbExitToStage6(); return; }
+                if (gbState.pl && gbState.pl.selected) { gbPLAction(); return; }
+                return; // PL waiting for tile click
+            }
+            if (gbState.subGame === 2) {
+                if (gbState.mm && gbState.mm.complete) {
+                    // Tile Match finished — advance to Puzzle Lock if items, else exit.
+                    if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0) {
+                        gbState.subGame = 3;
+                        gbInitPL();
+                        gbUpdateProgress(3);
+                        gbTransition('gb-panel-mm', 'gb-panel-pl', () => {
+                            btn.classList.remove('pulse','state-pill','state-line');
+                            btn.classList.add('state-line');
+                            if (btnText) btnText.style.opacity = '0';
+                        });
+                        return;
+                    }
+                    gbExitToStage6(); return; // unreachable — gbMMWin would've set subGame=4
+                }
+                gbMMAction(); return;
+            }
             if (gbState.subGame === 1) {
                 const inv = document.getElementById('gb-wc-invariant');
                 if (inv && inv.classList.contains('show')) { gbWCNextChain(); return; }
                 gbWCAction(); return;
             }
             if (gbState.subGame === 0) { gbAQAction(); return; }
-            if (gbState.subGame === 2) { gbMMAction(); return; }
         }
 
         function gbTransition(fromId, toId, onDone) {
@@ -5306,7 +5449,7 @@
         function gbMMWin() {
             const win = document.getElementById('gb-mm-win-banner');
             if (win) win.classList.add('show');
-            gbState.subGame = 3;
+            gbState.mm.complete = true;
             // Log Tile Match phase outcome — pure self-grade, all 6 pairs
             // matched = 100% for the AMR scorecard.
             if (window.__sessionLog) {
@@ -5315,6 +5458,197 @@
                     correct: true, score: 1,
                 });
             }
+            if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0) {
+                // Stay at subGame=2; user clicks "Keyingi o'yin" → handler transitions to PL.
+                gbSetButtonNext("Keyingi o'yin");
+            } else {
+                gbState.subGame = 4;
+                gbSetButtonNext('Keyingi bosqich');
+            }
+        }
+
+        function gbInitPL() {
+            const pl = gbState.pl;
+            const tileCount = Array.isArray(GB_PUZZLE_LOCK) ? GB_PUZZLE_LOCK.length : 0;
+            // Pick grid size: 4×4 if ≥15 tiles, else 3×3 (uses up to 8 tiles).
+            if (tileCount >= 15) {
+                pl.size = 4;
+                pl.tiles = GB_PUZZLE_LOCK.slice(0, 15);
+            } else {
+                pl.size = 3;
+                pl.tiles = GB_PUZZLE_LOCK.slice(0, 8);
+            }
+            pl.total = pl.tiles.length;
+            pl.correct = 0;
+            pl.wrongCount = 0;
+            pl.complete = false;
+            pl.busy = false;
+            pl.selected = null;
+            pl.cells = new Array(pl.size * pl.size).fill(null);
+            pl.tiles.forEach((tile, pid) => {
+                pl.cells[pid] = { pid: pid, content: tile.content || '', q: tile.q || '', a: tile.a || '' };
+            });
+            pl.emptyIdx = pl.size * pl.size - 1;
+            // Scramble: 200 random valid moves keeps puzzle solvable (parity preserved).
+            for (let i = 0; i < 200; i++) {
+                const ns = gbPLNeighbors(pl.emptyIdx, pl.size);
+                const pick = ns[Math.floor(Math.random() * ns.length)];
+                pl.cells[pl.emptyIdx] = pl.cells[pick];
+                pl.cells[pick] = null;
+                pl.emptyIdx = pick;
+            }
+            gbPLRecountCorrect();
+            const qBox = document.getElementById('gb-pl-question-box');
+            if (qBox) qBox.classList.remove('show');
+            const winBanner = document.getElementById('gb-pl-win-banner');
+            if (winBanner) winBanner.classList.remove('show');
+            gbPLRender();
+            gbPLUpdateStatus();
+        }
+
+        function gbPLNeighbors(idx, size) {
+            const row = Math.floor(idx / size);
+            const col = idx % size;
+            const out = [];
+            if (row > 0) out.push(idx - size);
+            if (row < size - 1) out.push(idx + size);
+            if (col > 0) out.push(idx - 1);
+            if (col < size - 1) out.push(idx + 1);
+            return out;
+        }
+
+        function gbPLRecountCorrect() {
+            const pl = gbState.pl;
+            let correct = 0;
+            pl.cells.forEach((cell, idx) => {
+                if (cell && cell.pid === idx) correct++;
+            });
+            pl.correct = correct;
+        }
+
+        function gbPLRender() {
+            const pl = gbState.pl;
+            const grid = document.getElementById('gb-pl-grid');
+            if (!grid) return;
+            grid.style.gridTemplateColumns = 'repeat(' + pl.size + ', 1fr)';
+            grid.innerHTML = '';
+            pl.cells.forEach((cell, idx) => {
+                const div = document.createElement('div');
+                div.className = 'gb-pl-cell';
+                div.dataset.idx = idx;
+                if (cell === null) {
+                    div.classList.add('empty');
+                } else {
+                    div.innerHTML = cell.content || '';
+                    if (cell.pid === idx) div.classList.add('locked');
+                    if (pl.selected && pl.selected.idx === idx) div.classList.add('selected');
+                    div.addEventListener('click', () => gbPLClickTile(idx));
+                }
+                grid.appendChild(div);
+            });
+        }
+
+        function gbPLUpdateStatus() {
+            const st = document.getElementById('gb-pl-status');
+            if (st) st.textContent = 'Mos joyga: ' + gbState.pl.correct + ' / ' + gbState.pl.total;
+        }
+
+        function gbPLClickTile(idx) {
+            const pl = gbState.pl;
+            if (pl.busy || pl.complete) return;
+            const ns = gbPLNeighbors(pl.emptyIdx, pl.size);
+            if (!ns.includes(idx)) {
+                const flashCell = document.querySelector('#gb-pl-grid [data-idx="' + idx + '"]');
+                if (flashCell) {
+                    flashCell.classList.add('not-adjacent');
+                    setTimeout(() => flashCell.classList.remove('not-adjacent'), 400);
+                }
+                return;
+            }
+            const cell = pl.cells[idx];
+            if (!cell) return;
+            pl.selected = { idx: idx, pid: cell.pid };
+            const qBox = document.getElementById('gb-pl-question-box');
+            const qText = document.getElementById('gb-pl-question');
+            const qInput = document.getElementById('gb-pl-input');
+            if (qText) qText.textContent = cell.q || '(savol berilmagan)';
+            if (qInput) { qInput.value = ''; qInput.style.borderColor = ''; }
+            if (qBox) qBox.classList.add('show');
+            gbPLRender();
+            btn.classList.remove('pulse','state-pill','state-line');
+            btn.classList.add('state-pill');
+            setBtnText('Tasdiqlash');
+            btn.classList.add('pulse');
+            if (qInput) setTimeout(() => qInput.focus(), 50);
+        }
+
+        function gbPLAction() {
+            const pl = gbState.pl;
+            if (pl.complete || !pl.selected) return;
+            const qInput = document.getElementById('gb-pl-input');
+            const userVal = qInput ? qInput.value.trim() : '';
+            if (!userVal) {
+                if (qInput) { qInput.style.borderColor = '#d9534f'; setTimeout(() => { qInput.style.borderColor = ''; }, 1200); }
+                return;
+            }
+            const cell = pl.cells[pl.selected.idx];
+            if (!cell) { pl.selected = null; return; }
+            const norm = function(s) { return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim(); };
+            const userN = norm(userVal);
+            const expectedN = norm(cell.a);
+            const isOk = expectedN.length > 0 && (
+                userN === expectedN ||
+                (expectedN.length > 3 && expectedN.includes(userN)) ||
+                (userN.length > 3 && userN.includes(expectedN))
+            );
+            let wrongFlashIdx = null;
+            if (isOk) {
+                const fromIdx = pl.selected.idx;
+                pl.cells[pl.emptyIdx] = pl.cells[fromIdx];
+                pl.cells[fromIdx] = null;
+                pl.emptyIdx = fromIdx;
+            } else {
+                pl.wrongCount++;
+                const candidates = gbPLNeighbors(pl.emptyIdx, pl.size).filter(n => pl.cells[n] !== null);
+                if (candidates.length) {
+                    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+                    wrongFlashIdx = pl.emptyIdx;
+                    pl.cells[pl.emptyIdx] = pl.cells[pick];
+                    pl.cells[pick] = null;
+                    pl.emptyIdx = pick;
+                }
+            }
+            pl.selected = null;
+            const qBox = document.getElementById('gb-pl-question-box');
+            if (qBox) qBox.classList.remove('show');
+            gbPLRecountCorrect();
+            gbPLRender();
+            gbPLUpdateStatus();
+            if (wrongFlashIdx !== null) {
+                const flashCell = document.querySelector('#gb-pl-grid [data-idx="' + wrongFlashIdx + '"]');
+                if (flashCell) {
+                    flashCell.classList.add('wrong-flash');
+                    setTimeout(() => flashCell.classList.remove('wrong-flash'), 600);
+                }
+            }
+            if (pl.correct >= pl.total) { gbPLWin(); return; }
+            btn.classList.remove('pulse','state-pill','state-line');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
+        }
+
+        function gbPLWin() {
+            const pl = gbState.pl;
+            pl.complete = true;
+            const banner = document.getElementById('gb-pl-win-banner');
+            if (banner) banner.classList.add('show');
+            if (window.__sessionLog) {
+                window.__sessionLog.push({
+                    phase: 'puzzle-lock', id: 'pl-all',
+                    correct: true, score: 1,
+                });
+            }
+            gbState.subGame = 4;
             gbSetButtonNext('Keyingi bosqich');
         }
 

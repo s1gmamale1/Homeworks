@@ -114,6 +114,7 @@
     "gb_adaptive_quiz",
     "gb_why_chain",
     "gb_memory_match",
+    "gb_puzzle_lock",
     "real_life",
     "boss_questions",
     "reflection",
@@ -457,6 +458,7 @@
         adaptive_quiz: clone(content.gb_adaptive_quiz),
         why_chain: clone(content.gb_why_chain),
         memory_match: clone(content.gb_memory_match),
+        puzzle_lock: clone(content.gb_puzzle_lock),
       };
     }
 
@@ -484,6 +486,7 @@
       content.gb_adaptive_quiz = Array.isArray(nextData?.adaptive_quiz) ? nextData.adaptive_quiz : [];
       content.gb_why_chain = Array.isArray(nextData?.why_chain) ? nextData.why_chain : [];
       content.gb_memory_match = Array.isArray(nextData?.memory_match) ? nextData.memory_match : [];
+      content.gb_puzzle_lock = Array.isArray(nextData?.puzzle_lock) ? nextData.puzzle_lock : [];
     } else if (phase === "real_life") {
       content.real_life = nextData || null;
     } else if (phase === "consolidation") {

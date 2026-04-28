@@ -80,15 +80,15 @@
                         </div>
 
                         <div class="editor-grid">
-                          <label class="field">
+                          <div class="field">
                             <span>Left tile</span>
                             <div class="js-rich-host" data-slot="0" data-index="${index}"></div>
-                          </label>
+                          </div>
 
-                          <label class="field">
+                          <div class="field">
                             <span>Right tile</span>
                             <div class="js-rich-host" data-slot="1" data-index="${index}"></div>
-                          </label>
+                          </div>
                         </div>
                       </section>
                     `,
