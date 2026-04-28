@@ -2336,6 +2336,122 @@
             .results-amr-grid { grid-template-columns: 1fr; }
         }
 
+        /* ── Engagement polish (HW-008-style content) ────────────────
+           These classes are author-facing — content can opt in by
+           wrapping prompts in `.rl-hook`, `.boss-opener`, etc. The
+           styling is intentionally subtle so plain prompts (no opt-in)
+           continue to render unchanged. */
+        .rl-hook {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(99, 184, 255, 0.14);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+        .boss-opener {
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
+            border: 1px solid rgba(239, 68, 68, 0.32);
+        }
+        .boss-opener-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: #fca5a5;
+            letter-spacing: 0.3px;
+        }
+        .boss-opener-drama {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .rl-briefing {
+            display: grid;
+            gap: 10px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            background: rgba(99, 184, 255, 0.06);
+            border: 1px solid rgba(99, 184, 255, 0.18);
+            border-radius: 12px;
+        }
+        .rl-briefing-row {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .rl-briefing-label {
+            min-width: 170px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .rl-briefing-value {
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            min-width: 200px;
+        }
+        .rl-narrative {
+            margin-bottom: 14px;
+            line-height: 1.55;
+        }
+        .rl-w5h {
+            margin-bottom: 14px;
+            background: rgba(168, 85, 247, 0.06);
+            border: 1px solid rgba(168, 85, 247, 0.22);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .rl-w5h summary {
+            cursor: pointer;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 14px;
+            list-style: none;
+            user-select: none;
+        }
+        .rl-w5h summary::-webkit-details-marker { display: none; }
+        .rl-w5h summary::before {
+            content: "▸  ";
+            color: rgba(216, 180, 254, 0.8);
+        }
+        .rl-w5h[open] summary::before { content: "▾  "; }
+        .rl-w5h-list {
+            padding: 4px 22px 12px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .rl-w5h-list li { margin-bottom: 4px; }
+        .rl-blueprint {
+            margin-bottom: 14px;
+        }
+        .rl-blueprint-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+            font-size: 14px;
+        }
+        .rl-q-heading {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text);
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(99, 184, 255, 0.15);
+        }
+        .rl-q-stem {
+            line-height: 1.55;
+        }
+        @media (max-width: 600px) {
+            .rl-briefing-label { min-width: auto; }
+        }
+
         /* ── Wave F2: Persistent AI Tutor Widget ────────────────── */
         #nets-ai-tutor {
             position: fixed;
