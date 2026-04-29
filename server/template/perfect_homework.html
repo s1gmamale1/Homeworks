@@ -8676,132 +8676,28 @@ Prezident ertaga hisobot kutmoqda.`,
         }
 
         /* ── Stage 9 · AMR Results Scorecard ──────────────────────────
-           Aggregates window.__sessionLog (populated live by AQ, MS, TM,
-           SF, RL, Boss handlers) into:
-             - per-phase tally (X/N items correct)
-             - per-phase mean axis_1 / axis_2 for items that recorded axes
-             - overall mastery band based on combined axis means
-           See standards/framework/AMR-GRADING-SYSTEM.md and
-           standards/framework/GRADING.md for the rubric definitions.
+           The TEMPLATE NO LONGER COMPUTES THE SCORE. It collects the
+           session log into window.__sessionLog as the student plays,
+           then POSTs the log to /api/grading/aggregate and renders the
+           scorecard from the backend response.
+
+           The grading rules — which phase uses which method, the score
+           formula `((axis_1 + axis_2) / 2) * 25`, band thresholds, the
+           60% conditional-button rule — all live in
+           `server/services/grading.py`. Adding a new game = update the
+           PHASE_METHOD dict there. This template is just a renderer.
+
+           See: D:/Class A Education/standards/framework/GRADING.md
         */
 
         // Initialize the session log as early as the script runs so
         // every phase's grading handler can write to it without checking.
         if (!window.__sessionLog) window.__sessionLog = [];
 
-        // Phase ordering for the scorecard rows.
-        const RESULTS_PHASE_ORDER = [
-            { key: 'memory-sprint', label: 'Memory Sprint',  total: () => (typeof MS_QUESTIONS !== 'undefined' ? MS_QUESTIONS.length : 0) },
-            { key: 'adaptive-quiz', label: 'Adaptive Quiz',  total: () => 5 },
-            { key: 'tile-match',    label: 'Tile Match',     total: () => 1, isPhaseLevel: true },
-            { key: 'sentence-fill', label: 'Sentence Fill',  total: () => (typeof GB_WHY_CHAIN !== 'undefined' ? GB_WHY_CHAIN.length : 0) },
-            { key: 'real-life',     label: 'Real-Life',      total: () => (typeof RL_SCENARIO !== 'undefined' && RL_SCENARIO.questions ? RL_SCENARIO.questions.length : 0) },
-            { key: 'final-boss',    label: 'Final Boss',     total: () => (typeof BOSS_QUESTIONS !== 'undefined' ? BOSS_QUESTIONS.length : 0) },
-        ];
-
-        function _amrBandFor(score) {
-            // score is a 1-4 mean. Map to AMR band labels per GRADING.md §rubric.
-            if (score >= 3.5) return { name: 'Mastered',   key: 'mastered'   };
-            if (score >= 2.5) return { name: 'Proficient', key: 'proficient' };
-            if (score >= 1.5) return { name: 'Apprentice', key: 'apprentice' };
-            return                       { name: 'Novice',     key: 'novice'     };
-        }
-
-        function _amrAggregate(log) {
-            // Per-phase tally + axis means. Skip duplicate ids per phase
-            // (we only keep the LAST entry — captures a student's final
-            // answer on a given item).
-            const byPhase = {};
-            const seen = new Set();
-            // Walk in reverse so we keep the latest entry per (phase,id).
-            for (let i = log.length - 1; i >= 0; i--) {
-                const e = log[i];
-                const key = e.phase + '::' + e.id;
-                if (seen.has(key)) continue;
-                seen.add(key);
-                if (!byPhase[e.phase]) byPhase[e.phase] = [];
-                byPhase[e.phase].unshift(e);  // unshift to preserve forward order
-            }
-
-            const phaseStats = RESULTS_PHASE_ORDER.map(p => {
-                const items = byPhase[p.key] || [];
-                const total = p.total();
-                const correct = items.filter(x => x.correct).length;
-                // Items that have axis values (came from AI semantic grading).
-                const axed = items.filter(x => typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number');
-                let axis_1_mean = null, axis_2_mean = null;
-                if (axed.length) {
-                    axis_1_mean = axed.reduce((s, x) => s + x.axis_1, 0) / axed.length;
-                    axis_2_mean = axed.reduce((s, x) => s + x.axis_2, 0) / axed.length;
-                }
-                return {
-                    key: p.key, label: p.label, isPhaseLevel: !!p.isPhaseLevel,
-                    correct, total, items_logged: items.length,
-                    axis_1_mean, axis_2_mean,
-                };
-            });
-
-            // Overall AMR axes — pool every axed item across all phases.
-            const allAxed = [];
-            Object.keys(byPhase).forEach(k => {
-                byPhase[k].forEach(x => {
-                    if (typeof x.axis_1 === 'number' && typeof x.axis_2 === 'number') allAxed.push(x);
-                });
-            });
-            let overall_axis_1 = null, overall_axis_2 = null, overall_score = null, overall_band = null;
-            if (allAxed.length) {
-                overall_axis_1 = allAxed.reduce((s, x) => s + x.axis_1, 0) / allAxed.length;
-                overall_axis_2 = allAxed.reduce((s, x) => s + x.axis_2, 0) / allAxed.length;
-                // item_score = ((a1 + a2) / 2) × 25 per GRADING.md
-                overall_score = ((overall_axis_1 + overall_axis_2) / 2) * 25;
-                overall_band = _amrBandFor((overall_axis_1 + overall_axis_2) / 2);
-            }
-
-            // Overall closed-form tally too — sum correct / sum total across
-            // all phases that produced log entries.
-            let totalCorrect = 0, totalItems = 0;
-            phaseStats.forEach(p => {
-                if (p.isPhaseLevel) {
-                    if (p.correct) { totalCorrect += p.total; totalItems += p.total; }
-                    else totalItems += p.total;
-                } else {
-                    totalCorrect += p.correct;
-                    totalItems += p.total;
-                }
-            });
-
-            return {
-                phaseStats,
-                allAxed,
-                overall_axis_1, overall_axis_2, overall_score, overall_band,
-                totalCorrect, totalItems,
-                hasAxes: allAxed.length > 0,
-            };
-        }
-
-        // Color rule used everywhere on the scorecard so the whole card
-        // reads as one chart: red <50%, yellow 50–74%, green ≥75%.
-        function _perfFromPct(pct) {
-            if (pct >= 75) return 'perf-good';
-            if (pct >= 50) return 'perf-mid';
-            return 'perf-bad';
-        }
-        // Same idea on the 1–4 axis: ≥3 green, 2–2.99 yellow, <2 red.
-        function _perfFromAxis(mean) {
-            if (mean == null) return 'perf-neutral';
-            if (mean >= 3.0) return 'perf-good';
-            if (mean >= 2.0) return 'perf-mid';
-            return 'perf-bad';
-        }
-        function _axisTagFor(mean) {
-            if (mean == null) return "AI baholangan ochiq javob yo'q";
-            if (mean >= 3.0) return 'Yaxshi daraja';
-            if (mean >= 2.0) return "O'rta daraja";
-            return 'Past daraja';
-        }
-
-        function _renderAxisBar(label, mean) {
-            if (mean == null) {
+        // Render one AMR axis bar from the backend's prepared shape:
+        //   { mean: number|null, perf_class: string, tag: string }
+        function _renderAxisBar(label, axis) {
+            if (!axis || axis.mean == null) {
                 return `<div class="results-axis">
                   <div class="results-axis-label">${label}</div>
                   <div class="results-axis-value">—</div>
@@ -8809,12 +8705,11 @@ Prezident ertaga hisobot kutmoqda.`,
                     <div class="results-axis-bar is-empty"></div>
                     <div class="results-axis-ticks"><span>1</span><span>2</span><span>3</span><span>4</span></div>
                   </div>
-                  <div class="results-axis-tag perf-neutral">${_axisTagFor(null)}</div>
+                  <div class="results-axis-tag perf-neutral">${(axis && axis.tag) || ''}</div>
                 </div>`;
             }
-            // Map mean ∈ [1,4] → x ∈ [0%,100%] along the bar.
+            const mean = Number(axis.mean);
             const x = Math.max(0, Math.min(100, ((mean - 1) / 3) * 100));
-            const cls = _perfFromAxis(mean);
             return `<div class="results-axis">
               <div class="results-axis-label">${label}</div>
               <div class="results-axis-value">${mean.toFixed(2)} / 4</div>
@@ -8823,41 +8718,81 @@ Prezident ertaga hisobot kutmoqda.`,
                 <div class="results-axis-marker" style="left:${x.toFixed(2)}%"></div>
                 <div class="results-axis-ticks"><span>1</span><span>2</span><span>3</span><span>4</span></div>
               </div>
-              <div class="results-axis-tag ${cls}">${_axisTagFor(mean)}</div>
+              <div class="results-axis-tag ${axis.perf_class}">${axis.tag}</div>
             </div>`;
         }
 
-        function showResultsScreen() {
-            const log = window.__sessionLog || [];
-            const agg = _amrAggregate(log);
-            // Activate the screen
+        // Fetch the scorecard payload from the backend.
+        // Falls back to a minimal local synthesis if the network call
+        // fails — the student should never be left without a score —
+        // but the canonical compute path is the server.
+        async function _fetchScorecard(log) {
+            try {
+                const resp = await fetch('/api/grading/aggregate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: log,
+                        homework_id: (window.NETS_CTX && window.NETS_CTX.homework_id) || null,
+                    }),
+                });
+                if (!resp.ok) throw new Error('http ' + resp.status);
+                return await resp.json();
+            } catch (e) {
+                console.warn('[scorecard] backend aggregate failed, using minimal fallback:', e.message);
+                // Minimal fallback — counts correct/total only, no axes.
+                let c = 0, t = 0;
+                for (const x of log) {
+                    if (x && typeof x === 'object') {
+                        t += 1;
+                        if (x.correct) c += 1;
+                    }
+                }
+                const pct = t > 0 ? Math.round(100 * c / t) : 0;
+                const perf_class = pct >= 75 ? 'perf-good' : (pct >= 50 ? 'perf-mid' : 'perf-bad');
+                const action_label = pct >= 60 ? 'Tugatish' : 'Qayta bajarish';
+                const action_kind  = pct >= 60 ? 'finish'    : 'redo';
+                return {
+                    overall_pct: pct, overall_score: null, has_axes: false,
+                    band: { key: 'novice', name: 'Novice' }, perf_class,
+                    overall_axis_1: null, overall_axis_2: null,
+                    phases: [], totals: { correct: c, items: t },
+                    axes: { axis_1: { mean: null, perf_class: 'perf-neutral', tag: '' },
+                            axis_2: { mean: null, perf_class: 'perf-neutral', tag: '' } },
+                    coaching_tip: 'Backend ishlamadi — vaqtinchalik mahalliy hisob.',
+                    action: { kind: action_kind, label: action_label, perf_class: action_kind === 'finish' ? 'is-finish' : 'is-redo' },
+                };
+            }
+        }
+
+        async function showResultsScreen() {
+            // Activate the screen immediately so the student doesn't see a
+            // blank stretch while we wait for the backend.
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sr = document.getElementById('screen-results');
             if (sr) sr.classList.add('active');
             setStage(8);
 
-            // Single headline number that drives the whole color scheme.
-            const overallPct = agg.totalItems > 0 ? Math.round(100 * agg.totalCorrect / agg.totalItems) : 0;
-            const itemScore  = agg.hasAxes ? Math.round(agg.overall_score) : overallPct;
-            const perfClass  = _perfFromPct(itemScore);
-            const perfHex    = perfClass === 'perf-good' ? '#22c55e'
-                             : perfClass === 'perf-mid'  ? '#eab308'
-                             :                             '#ef4444';
+            // Fetch the canonical scorecard from /api/grading/aggregate.
+            const log = window.__sessionLog || [];
+            const card = await _fetchScorecard(log);
 
-            // Band pill — keep the AMR label, recolor with red/yellow/green.
+            const itemScore = Number(card.overall_pct) || 0;
+            const perfHex   = card.perf_class === 'perf-good' ? '#22c55e'
+                            : card.perf_class === 'perf-mid'  ? '#eab308'
+                            :                                   '#ef4444';
+
+            // Band pill — colour driven entirely by backend's perf_class.
             const bandEl = document.getElementById('results-band');
             if (bandEl) {
-                const bandName = (agg.hasAxes && agg.overall_band)
-                    ? agg.overall_band.name
-                    : _amrBandFor(overallPct / 25).name;
-                bandEl.textContent = bandName;
-                bandEl.className = 'screen-results-band ' + perfClass;
+                bandEl.textContent = (card.band && card.band.name) || 'Novice';
+                bandEl.className = 'screen-results-band ' + card.perf_class;
             }
 
-            // Hero — donut gauge with score in the middle.
+            // Hero — donut gauge with the backend-calculated score.
             const headline = document.getElementById('results-headline');
             if (headline) {
-                const C = 2 * Math.PI * 42;             // circumference of r=42 ring
+                const C = 2 * Math.PI * 42;
                 const dashOffset = C * (1 - itemScore / 100);
                 headline.innerHTML = `
                 <div class="screen-results-hero">
@@ -8871,38 +8806,26 @@ Prezident ertaga hisobot kutmoqda.`,
                     </svg>
                     <div class="results-gauge-center">
                       <div class="results-gauge-pct" style="color:${perfHex}">${itemScore}%</div>
-                      <div class="results-gauge-frac">${agg.totalCorrect} / ${agg.totalItems} to'g'ri</div>
+                      <div class="results-gauge-frac">${(card.totals && card.totals.correct) || 0} / ${(card.totals && card.totals.items) || 0} to'g'ri</div>
                     </div>
                   </div>
                 </div>`;
             }
 
-            // Per-phase progress bars.
+            // Per-phase progress bars — built from card.phases.
             const phasesEl = document.getElementById('results-phases');
             if (phasesEl) {
-                const rows = agg.phaseStats.map(p => {
-                    let pct, scoreText, perfCls;
-                    if (p.isPhaseLevel) {
-                        // Tile Match — pass/fail row.
-                        pct = p.correct ? 100 : 0;
-                        scoreText = p.correct ? 'Bajarildi' : '—';
-                        perfCls   = p.correct ? 'perf-good' : 'perf-bad';
-                    } else if (p.total > 0) {
-                        pct = Math.round(100 * p.correct / p.total);
-                        scoreText = p.correct + '/' + p.total;
-                        perfCls = _perfFromPct(pct);
-                    } else {
-                        pct = 0; scoreText = '—'; perfCls = 'perf-neutral';
-                    }
-                    const axisLine = (p.axis_1_mean != null)
+                const phases = card.phases || [];
+                const rows = phases.map(p => {
+                    const axisLine = (typeof p.axis_1_mean === 'number' && typeof p.axis_2_mean === 'number')
                         ? `<small>A1 ${p.axis_1_mean.toFixed(1)} · A2 ${p.axis_2_mean.toFixed(1)}</small>`
                         : '';
                     return `<div class="results-phase-row">
                       <div class="results-phase-name">${p.label}${axisLine}</div>
                       <div class="results-phase-bar-track">
-                        <div class="results-phase-bar-fill ${perfCls}" style="width:${pct}%"></div>
+                        <div class="results-phase-bar-fill ${p.perf_class}" style="width:${p.pct}%"></div>
                       </div>
-                      <div class="results-phase-score ${perfCls}">${scoreText}</div>
+                      <div class="results-phase-score ${p.perf_class}">${p.score_text}</div>
                     </div>`;
                 }).join('');
                 phasesEl.innerHTML =
@@ -8910,15 +8833,15 @@ Prezident ertaga hisobot kutmoqda.`,
                      <div class="results-phase-list">${rows}</div>`;
             }
 
-            // AMR axes — gradient bars with marker triangles.
+            // AMR axes — backend pre-computes mean / perf_class / tag.
             const amrEl = document.getElementById('results-amr');
             if (amrEl) {
-                if (agg.hasAxes) {
+                if (card.has_axes) {
                     amrEl.innerHTML = `
                     <div class="results-section-title">AMR · 2-eksa tahlili</div>
                     <div class="results-amr-grid">
-                      ${_renderAxisBar('1-eksa · Konseptni nomlash',     agg.overall_axis_1)}
-                      ${_renderAxisBar('2-eksa · Bosqichlar izchilligi', agg.overall_axis_2)}
+                      ${_renderAxisBar('1-eksa · Konseptni nomlash',     card.axes && card.axes.axis_1)}
+                      ${_renderAxisBar('2-eksa · Bosqichlar izchilligi', card.axes && card.axes.axis_2)}
                     </div>
                     <div class="results-amr-note">
                       2-eksa baholash <strong>faqat 4-faza Real-Life va 6-faza Final Boss</strong>
@@ -8941,23 +8864,11 @@ Prezident ertaga hisobot kutmoqda.`,
                 }
             }
 
-            // Coaching tip — tinted to match the band.
+            // Coaching tip — text from backend, perf class for the tint.
             const masteryEl = document.getElementById('results-mastery');
             if (masteryEl) {
-                let tip;
-                if (agg.hasAxes && agg.overall_band) {
-                    const tipByBand = {
-                        mastered:   "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
-                        proficient: "Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.",
-                        apprentice: "Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
-                        novice:     "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
-                    };
-                    tip = tipByBand[agg.overall_band.key] || '';
-                } else {
-                    tip = "Yopiq-format javoblar tahlilingiz: " + overallPct + "%. Ochiq topshiriqlarda AMR baholash to'liq amal qiladi.";
-                }
-                masteryEl.textContent = tip;
-                masteryEl.className = 'screen-results-mastery ' + perfClass;
+                masteryEl.textContent = card.coaching_tip || '';
+                masteryEl.className = 'screen-results-mastery ' + card.perf_class;
             }
 
             const closingEl = document.getElementById('results-closing');
@@ -8965,30 +8876,21 @@ Prezident ertaga hisobot kutmoqda.`,
                 closingEl.textContent = RT('res.closing');
             }
 
-            // Footer action button — replaces the old forced-redo on Boss survive.
-            //   itemScore >= 60  → "Tugatish"        (acknowledge done; route to dashboard)
-            //   itemScore <  60  → "Qayta bajarish"  (restart the homework from the top)
-            // The threshold is the same percentage rule used for the perf colors —
-            // 60% sits inside the yellow band so a borderline run still finishes.
+            // Footer action — kind + label + class come from backend.
+            // Per GRADING.md: >= 60% renders Tugatish (finish), < 60% Qayta bajarish (restart).
             const actionsEl = document.getElementById('results-actions');
-            if (actionsEl) {
+            if (actionsEl && card.action) {
                 actionsEl.innerHTML = '';
                 const b = document.createElement('button');
-                b.className = 'results-action-btn ' + (itemScore >= 60 ? 'is-finish' : 'is-redo');
-                b.textContent = (itemScore >= 60) ? 'Tugatish' : 'Qayta bajarish';
-                if (itemScore >= 60) {
-                    b.addEventListener('click', () => {
-                        // Finish: go to the dashboard. Falls back to closing
-                        // the tab if the dashboard isn't reachable.
+                b.className   = 'results-action-btn ' + card.action.perf_class;
+                b.textContent = card.action.label;
+                b.addEventListener('click', () => {
+                    if (card.action.kind === 'finish') {
                         try { window.location.href = '/'; } catch (_) {}
-                    });
-                } else {
-                    b.addEventListener('click', () => {
-                        // Redo: hard reload re-runs the homework from the
-                        // very first phase. Same id, same content.
+                    } else {
                         try { window.location.reload(); } catch (_) {}
-                    });
-                }
+                    }
+                });
                 actionsEl.appendChild(b);
             }
 
@@ -8996,8 +8898,8 @@ Prezident ertaga hisobot kutmoqda.`,
             btn.classList.remove('pulse', 'state-pill');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
-            // Expose the aggregate for tests / future export.
-            window.__sessionAggregate = agg;
+            // Expose the backend's payload for tests / future export.
+            window.__sessionAggregate = card;
         }
     </script>
 
