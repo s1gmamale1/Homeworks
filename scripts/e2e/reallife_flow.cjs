@@ -5,14 +5,15 @@
 //   4. Render Q5 (textarea) → assert textarea element exists.
 //   5. Submit a 30-char analysis → AI dispatch fires.
 const puppeteer = require('puppeteer');
+const { launchOptions } = require('./puppeteer_launcher.cjs');
 const URL = 'http://127.0.0.1:8000/h/HW-20260427-008';
 
 (async () => {
-  const browser = await puppeteer.launch({
+  const browser = await puppeteer.launch(launchOptions({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     defaultViewport: { width: 1280, height: 1000 },
-  });
+  }));
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
   page.on('pageerror', e => console.log('PAGEERROR:', e.message));

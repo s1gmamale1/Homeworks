@@ -12,16 +12,17 @@
 //     node D:/Homeworks/scripts/e2e/amr_results.cjs
 
 const puppeteer = require('puppeteer');
+const { launchOptions } = require('./puppeteer_launcher.cjs');
 const HW_ID = process.env.HW_ID  || 'HW-20260429-001';
 const BASE  = process.env.BASE   || 'http://127.0.0.1:8000';
 const URL_  = `${BASE}/h/${HW_ID}`;
 
 (async () => {
-  const browser = await puppeteer.launch({
+  const browser = await puppeteer.launch(launchOptions({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     defaultViewport: { width: 1280, height: 1000 },
-  });
+  }));
   const page = await browser.newPage();
   page.setDefaultTimeout(60000);
   page.on('pageerror', e => console.log('PAGEERROR:', e.message));

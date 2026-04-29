@@ -2,14 +2,15 @@
 // Programmatically: start AQ → finish AQ → finish SF → win Tile Match
 // → click action button → assert screen-6 (Real-Life) is visible.
 const puppeteer = require('puppeteer');
+const { launchOptions } = require('./puppeteer_launcher.cjs');
 const URL = 'http://127.0.0.1:8000/h/HW-20260427-008';
 
 (async () => {
-  const browser = await puppeteer.launch({
+  const browser = await puppeteer.launch(launchOptions({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     defaultViewport: { width: 1280, height: 900 },
-  });
+  }));
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
   page.on('pageerror', e => console.log('PAGEERROR:', e.message));

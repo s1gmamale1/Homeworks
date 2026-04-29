@@ -6,14 +6,15 @@
 //   - Memory Sprint prompts have no leftover ✓ / option markers in HTML
 //   - Headings (h2) render at appropriate visual weight
 const puppeteer = require('puppeteer');
+const { launchOptions } = require('./puppeteer_launcher.cjs');
 const URL = 'http://127.0.0.1:8000/h/HW-20260427-008';
 
 (async () => {
-  const browser = await puppeteer.launch({
+  const browser = await puppeteer.launch(launchOptions({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     defaultViewport: { width: 1280, height: 900 },
-  });
+  }));
   const page = await browser.newPage();
   page.setDefaultTimeout(20000);
   page.on('pageerror', e => console.log('PAGEERROR:', e.message));
