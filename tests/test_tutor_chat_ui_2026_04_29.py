@@ -137,6 +137,18 @@ def test_panel_has_open_close_transition_props():
     )
 
 
+def test_tutor_panel_keeps_fab_corner_anchor():
+    """The panel is absolutely positioned from the fixed tutor wrapper.
+    A later `position: relative` override lets the panel/FAB drift away
+    from the bottom-right anchor and can make the widget appear in the
+    middle of the screen."""
+    html = _runtime()
+    panel = re.search(r"#nets-tutor-panel\s*\{([^}]+)\}", html)
+    assert panel, "missing #nets-tutor-panel base CSS block"
+    assert "position: absolute" in panel.group(1)
+    assert "#nets-tutor-panel { position: relative; }" not in html
+
+
 def test_panel_respects_prefers_reduced_motion():
     """A11y: users with motion sensitivity see no scale animation."""
     html = _runtime()

@@ -29,6 +29,7 @@ def test_security_headers_on_dashboard_api_and_runtime(client, sample_homework):
         "/library.html",
         "/builder.html",
         "/api/homeworks?limit=1",
+        f"/api/homeworks/{sample_homework['id']}/preview",
         f"/h/{sample_homework['id']}",
     ]
 
@@ -48,7 +49,8 @@ def test_content_security_policy_keeps_required_runtime_sources():
     assert "img-src 'self' data: blob: http: https:" in csp
     assert "font-src 'self' data: https://cdn.jsdelivr.net" in csp
     assert "object-src 'none'" in csp
-    assert "frame-ancestors 'none'" in csp
+    assert "frame-ancestors 'self'" in csp
+    assert SECURITY_HEADERS["X-Frame-Options"] == "SAMEORIGIN"
 
 
 def test_e2e_scripts_use_shared_chrome_launcher():

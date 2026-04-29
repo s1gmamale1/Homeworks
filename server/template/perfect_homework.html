@@ -3834,12 +3834,9 @@
         .nets-tutor-typing-phrase.visible { opacity: 1; }
         .nets-tutor-typing-phrase[hidden] { display: none !important; }
 
-        /* The tutor panel needs `position: relative` so the fail
-           overlay can absolute-position to its bounds. The panel
-           previously didn't set positioning explicitly — most
-           browsers default to static which would let the overlay
-           escape upward. */
-        #nets-tutor-panel { position: relative; }
+        /* The tutor panel is already `position: absolute` above. Keep that
+           anchor so the widget stays attached to the FAB corner; absolute
+           descendants still use the panel as their containing block. */
 
         @media (max-width: 600px) {
             #nets-ai-tutor { right: 12px; bottom: calc(12px + var(--safe-bottom)); }
