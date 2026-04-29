@@ -13,6 +13,7 @@ from server.routes.homework_page import router as homework_page_router
 from server.routes.ai import router as ai_router
 from server.routes.library import router as library_router
 from server.routes.grading import router as grading_router
+from server.routes.notebook import router as notebook_router
 from server import db
 from server.config import BASE_DIR
 
@@ -110,6 +111,7 @@ app.include_router(homework_page_router)
 app.include_router(ai_router, prefix="/api")
 app.include_router(library_router, prefix="/api")
 app.include_router(grading_router, prefix="/api")
+app.include_router(notebook_router, prefix="/api")
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 

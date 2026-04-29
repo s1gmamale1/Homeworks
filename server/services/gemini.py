@@ -92,6 +92,54 @@ def _iter_available_providers(preference: list[str]) -> Iterator[AIProvider]:
             yield provider
 
 
+def _iter_vision_providers(preference: list[str]) -> Iterator[AIProvider]:
+    """Same as _iter_available_providers but only yields vision-capable providers."""
+    for provider in _iter_available_providers(preference):
+        if provider.supports_vision:
+            yield provider
+
+
+async def generate_vision(
+    prompt: str,
+    image_b64: str,
+    mime: str = "image/jpeg",
+    model: Optional[str] = None,
+    json_mode: bool = True,
+    temperature: float = 0.1,
+) -> dict:
+    """Walk vision-capable providers; return first non-error response.
+
+    Returns a normalised envelope::
+
+        { "text": str, "raw": dict, "provider": str, "model": str }
+
+    Raises ``RuntimeError`` when no vision-capable provider is available or
+    all available ones fail.
+    """
+    preference = os.environ.get("AI_BACKEND_PREFERENCE", _DEFAULT_PREFERENCE).split(",")
+    last_error: Optional[BaseException] = None
+    for provider in _iter_vision_providers([p.strip() for p in preference]):
+        try:
+            return await provider.generate_vision_json(  # type: ignore[attr-defined]
+                prompt,
+                image_b64,
+                mime,
+                model=model,
+                temperature=temperature,
+                json_mode=json_mode,
+            )
+        except Exception as exc:
+            last_error = exc
+            _log.warning(
+                "Vision provider %s failed (%s); trying next",
+                provider.name,
+                exc.__class__.__name__,
+                exc_info=True,
+            )
+            continue
+    raise RuntimeError(f"No vision provider available; last error: {last_error}")
+
+
 def __getattr__(name: str):  # noqa: N807
     """Module-level __getattr__ so `gemini.ACTIVE_BACKEND` stays dynamic."""
     if name == "ACTIVE_BACKEND":
