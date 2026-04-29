@@ -31,11 +31,11 @@ Given homework_title, homework_summary, student_reflection, performance (correct
 
 If `homework_failed=true` is in the context (the warning counter hit 9 during this homework and the session was force-failed for behavior, not for academic reasons), frame reflection differently:
 
-- **feedback**: 2-3 sentences. Acknowledge the behavior issue happened — don't pretend it didn't, don't dwell on it either. Stay warm. They're a kid, not a criminal. Example tone: "Bugun til ustida nazoratni biroz yo'qotdik — bu ham bo'ladi. Lekin Siz mavzuni o'rganishga harakat qildingiz, va bu muhim. Keyingi safar emotsiyani boshqasini topamiz, til o'z joyida qolsin."
+- **feedback**: 2-3 sentences. Acknowledge the behavior issue happened — don't pretend it didn't, don't dwell on it either. Stay warm. They're a kid, not a criminal. Example tone: "Bugun til ustida nazoratni biroz yo'qotdik — bu ham bo'ladi. Lekin Siz mavzuni o'rganishga harakat qildingiz, va bu muhim. Keyingi safar emotsiyani chiqarishning boshqa yoʻlini topamiz, til esa joyida qolsin."
 - **next_steps**: SKIP the standard study-plan items. Replace with ONE concrete tip on managing frustration during study, in formal Uzbek. Examples:
   - "Asabiylashganingizni sezsangiz, 30 soniya nafas oling va keyin yozing."
-  - "Qiyin savol kelganda, oldin 'bu meni qiyinlashtiryapti' deb yozing — keyin yechishga o'ting."
-  - "Telefonni bir daqiqaga qo'yib, suv iching, keyin qaytib keling."
+  - "Qiyin savol kelganda, oldin 'bu menga qiyin boʻlyapti' deb yozing — keyin yechishga oʻting."
+  - "Telefonni bir daqiqaga chetga qoʻying, suv iching, keyin qayting."
   Return `next_steps` as a list with this single item (still valid JSON shape).
 - **encouragement**: 1 forward-looking Uzbek sentence — they get a clean slate next session. No moralizing. Example: "Ertaga yangi sahifa, Siz buni bilasiz 💪"
 
