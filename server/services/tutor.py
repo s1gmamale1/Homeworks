@@ -568,6 +568,15 @@ def _build_tutor_chat_prompt(
     persona_traits: Optional[list[str]],
     chat_history: list[dict],
     student_message: str,
+    # Wave J warning fields — optional, defaults preserve backward compat
+    severity: str = "casual_safe",
+    warning_level: int = 0,
+    cumulative_deduction_pct: int = 0,
+    is_big_warning: bool = False,
+    deduction_pct_this: int = 0,
+    behavior_summary: str = "",
+    message_lang: str = "uz",
+    recent_assistant_phrases: Optional[list[str]] = None,
 ) -> str:
     """Assemble the full tutor_chat prompt. Optional sections are omitted when
     their input is empty so the prompt stays tight.
@@ -589,6 +598,24 @@ def _build_tutor_chat_prompt(
         parts.append(f"STUDENT_PROFILE:\n{student_profile}")
     if persona_traits:
         parts.append(f"PERSONA_TRAITS: {', '.join(persona_traits)}")
+    # Wave J — warning context block (omit when severity is clean and no history)
+    if severity not in ("casual_safe",) or warning_level > 0:
+        parts.append(
+            f"WARNING_CONTEXT:\n"
+            f"  severity: {severity}\n"
+            f"  warning_level: {warning_level}/9\n"
+            f"  cumulative_deduction_pct: {cumulative_deduction_pct}%\n"
+            f"  this_event_deduction_pct: {deduction_pct_this}%\n"
+            f"  is_big_warning: {is_big_warning}"
+        )
+    if behavior_summary:
+        parts.append(f"BEHAVIOR_HISTORY:\n{behavior_summary}")
+    if recent_assistant_phrases:
+        parts.append(
+            "RECENT_OPENINGS (you said these recently — DO NOT echo):\n"
+            + "\n".join(f"  - {p}" for p in recent_assistant_phrases)
+        )
+    parts.append(f"MESSAGE_LANG: {message_lang}  # mirror this in your reply")
     parts.append(
         "CHAT_HISTORY:\n" + (_format_history_for_prompt(chat_history) or "(none)")
     )
@@ -603,6 +630,15 @@ async def tutor_chat(
     question_id: Optional[str],
     message: str,
     hw_meta: Optional[dict] = None,
+    # Wave J warning fields
+    severity: str = "casual_safe",
+    warning_level: int = 0,
+    cumulative_deduction_pct: int = 0,
+    is_big_warning: bool = False,
+    deduction_pct_this: int = 0,
+    behavior_summary: str = "",
+    message_lang: str = "uz",
+    recent_assistant_phrases: Optional[list[str]] = None,
 ) -> dict:
     """Live tutor chat — persists the user turn, calls the LLM, persists the
     assistant turn, returns ``{"response": str, "message_id": int}``.
@@ -685,6 +721,14 @@ async def tutor_chat(
         persona_traits=hw_meta.get("persona_traits"),
         chat_history=chat_history,
         student_message=message,
+        severity=severity,
+        warning_level=warning_level,
+        cumulative_deduction_pct=cumulative_deduction_pct,
+        is_big_warning=is_big_warning,
+        deduction_pct_this=deduction_pct_this,
+        behavior_summary=behavior_summary,
+        message_lang=message_lang,
+        recent_assistant_phrases=recent_assistant_phrases,
     )
 
     # Step 6 — call the LLM. Wrap in a try/except so a backend hiccup surfaces

@@ -604,12 +604,12 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
 
     required_markers = [
         "Expert-confident",       # core voice descriptor
-        "1-2 sentences",          # brevity rule
+        "1-3 sentences",          # brevity rule (T3 updated from "1-2" to "1-3")
         "Mirror",                 # register mirroring (matches both "Mirror" and "Mirrors")
         "tushuntir batafsil",     # explicit "expand" trigger phrase in Uzbek
         "DO / DON",               # tone examples block (DO / DON'T)
-        "Slur",                   # slur handling section header
-        "naughty",                # tone descriptor for callout style
+        "severity",               # Wave J warning context field (T3 renamed section)
+        "warning_level",          # Wave J warning level field in prompt
         "back-prompt",            # soft follow-up rule
         "{PHASE}",                # variable references block present
         "{STUDENT_MESSAGE}",      # variable references block present

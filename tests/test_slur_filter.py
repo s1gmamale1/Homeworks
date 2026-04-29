@@ -80,16 +80,14 @@ def test_detect_slurs_word_boundary():
 
 
 def test_callout_for_uses_lang():
+    """callout_for is a DEPRECATED no-op stub (Wave J). It always returns None
+    now that the LLM tutor owns response wording via the warning state machine.
+    """
     from server.services.slur_filter import callout_for
     msg = "U lox!"
-    uz = callout_for(msg, lang="uz")
-    ru = callout_for(msg, lang="ru")
-    en = callout_for(msg, lang="en")
-    assert uz and "darsdamiz" in uz, f"uz callout unexpected: {uz}"
-    assert ru and "уроке" in ru, f"ru callout unexpected: {ru}"
-    assert en and "class" in en, f"en callout unexpected: {en}"
-    # All three must differ
-    assert len({uz, ru, en}) == 3
+    assert callout_for(msg, lang="uz") is None
+    assert callout_for(msg, lang="ru") is None
+    assert callout_for(msg, lang="en") is None
 
 
 # ---------------------------------------------------------------------------
@@ -109,9 +107,15 @@ def test_callout_for_no_slur_returns_none():
 
 
 @patch("server.services.gemini.generate")
-def test_route_prepends_callout(mock_generate, client):
-    """POST /api/ai/tutor/chat with 'U lox!' — mock LLM returns 'X'; assert
-    response body starts with the callout prefix."""
+def test_route_passes_slur_context_to_llm(mock_generate, client):
+    """Wave J: the old callout_for prepend was removed. The route now passes
+    severity/warning_level into the LLM prompt instead of prepending a canned
+    callout. The LLM response is passed through directly (the tutor prompt
+    instructs the model to handle callouts itself).
+
+    This test verifies the route returns 200 with the LLM's response for a
+    message that contains a mild insult, and that no canned prefix is prepended.
+    """
     mock_generate.return_value = "X"
 
     # Create a minimal homework so hw lookup doesn't crash
@@ -128,7 +132,7 @@ def test_route_prepends_callout(mock_generate, client):
     hw_id = create_resp.json()["id"]
 
     payload = {
-        "session_id": "sess-slur-test",
+        "session_id": "sess-slur-test2",
         "hw_id": hw_id,
         "phase": "preview",
         "message": "U lox, javobni bilmayapti.",
@@ -136,11 +140,11 @@ def test_route_prepends_callout(mock_generate, client):
     resp = client.post("/api/ai/tutor/chat", json=payload)
     assert resp.status_code == 200, resp.text
     response_text = resp.json()["response"]
-    # Callout must be prepended; "darsdamiz" is the uz-language marker
-    assert "darsdamiz" in response_text, (
-        f"Expected callout prefix in response, got: {response_text!r}"
+    # The LLM response is passed through; no canned callout prefix.
+    assert response_text == "X", (
+        f"Expected LLM response 'X' to pass through, got: {response_text!r}"
     )
-    # LLM stub output must still be present
-    assert response_text.endswith("X"), (
-        f"LLM response 'X' should follow callout, got: {response_text!r}"
-    )
+    # Warning fields must be present in the response
+    data = resp.json()
+    assert "warning_level" in data
+    assert "homework_failed" in data

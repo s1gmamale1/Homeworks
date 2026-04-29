@@ -25,6 +25,9 @@ class AggregateRequest(BaseModel):
     # to a session without breaking the current contract.
     session_id:  str | None = None
     homework_id: str | None = None
+    # Wave J — warning deductions from the anti-troll state machine.
+    warning_deductions: int = 0
+    homework_failed: bool = False
 
 
 @router.post("/aggregate")
@@ -34,7 +37,11 @@ async def aggregate(req: AggregateRequest) -> dict[str, Any]:
     Pure compute — no DB. The runtime template uses this as a drop-in
     replacement for the old client-side `_amrAggregate` JS function.
     """
-    return grading.aggregate(req.items)
+    return grading.aggregate(
+        req.items,
+        warning_deductions=req.warning_deductions,
+        homework_failed=req.homework_failed,
+    )
 
 
 @router.get("/rubric")

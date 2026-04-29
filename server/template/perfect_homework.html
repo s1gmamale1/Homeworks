@@ -3622,6 +3622,148 @@
             flex-shrink: 0;
         }
 
+        /* ── Wave J / T4: warning chip + banner + fail overlay ──── */
+        .nets-tutor-warning-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 9px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: #fff3cd;     /* yellow — levels 1..6 */
+            color: #6b4500;
+            cursor: help;
+            transition: background 220ms ease, color 220ms ease;
+            margin-left: 6px;
+            line-height: 1;
+            font-family: inherit;
+        }
+        .nets-tutor-warning-chip[hidden] { display: none !important; }
+        .nets-tutor-warning-chip[data-tier="orange"] {
+            background: #ffd270;
+            color: #6b3a00;
+        }
+        .nets-tutor-warning-chip[data-tier="red"] {
+            background: #ff5e5e;
+            color: #fff;
+            border-color: rgba(0,0,0,0.18);
+        }
+        .nets-tutor-warning-icon {
+            font-size: 12px;
+            line-height: 1;
+        }
+        .nets-tutor-warning-count { font-variant-numeric: tabular-nums; }
+
+        .nets-tutor-big-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 10px 12px;
+            margin: 0;
+            background: #fee;
+            color: #a00;
+            border-bottom: 1px solid rgba(170,0,0,0.18);
+            font-size: 12.5px;
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+        .nets-tutor-big-warning[hidden] { display: none !important; }
+        .nets-tutor-big-warning-icon { flex-shrink: 0; }
+        .nets-tutor-big-warning-text { flex: 1 1 auto; font-weight: 600; }
+        .nets-tutor-big-warning-dismiss {
+            background: transparent;
+            border: none;
+            color: #a00;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+        .nets-tutor-big-warning-dismiss:hover { opacity: 0.7; }
+
+        .nets-tutor-fail-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.97);
+            color: var(--text, #1d1d1f);
+            z-index: 10;
+            border-radius: inherit;
+            text-align: center;
+            padding: 24px;
+            animation: nets-tutor-fail-fade 220ms ease;
+        }
+        .nets-tutor-fail-overlay[hidden] { display: none !important; }
+        .nets-tutor-fail-icon {
+            font-size: 44px;
+            line-height: 1;
+        }
+        .nets-tutor-fail-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #c0392b;
+        }
+        .nets-tutor-fail-subtitle {
+            font-size: 13px;
+            color: var(--text-muted, #86868b);
+        }
+        @keyframes nets-tutor-fail-fade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        [data-theme="dark"] .nets-tutor-fail-overlay {
+            background: rgba(15,23,42,0.97);
+            color: #e5e7eb;
+        }
+        [data-theme="dark"] .nets-tutor-warning-chip {
+            background: #4a3a00;
+            color: #ffe6a0;
+            border-color: rgba(255,255,255,0.1);
+        }
+        [data-theme="dark"] .nets-tutor-warning-chip[data-tier="orange"] {
+            background: #6b3a00;
+            color: #ffd270;
+        }
+        [data-theme="dark"] .nets-tutor-warning-chip[data-tier="red"] {
+            background: #8a1f1f;
+            color: #fff;
+        }
+        [data-theme="dark"] .nets-tutor-big-warning {
+            background: rgba(170,0,0,0.18);
+            color: #ffb3b3;
+            border-bottom-color: rgba(255,80,80,0.32);
+        }
+
+        /* Strikethrough rendered by markdown subset */
+        .nets-tutor-msg s { text-decoration: line-through; opacity: 0.78; }
+
+        /* Typing-indicator phrase (shown under the 3 dots) */
+        .nets-tutor-typing-phrase {
+            font-size: 11.5px;
+            color: var(--text-muted, #86868b);
+            margin: -2px 0 4px 42px;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 200ms ease;
+            align-self: flex-start;
+        }
+        .nets-tutor-typing-phrase.visible { opacity: 1; }
+        .nets-tutor-typing-phrase[hidden] { display: none !important; }
+
+        /* The tutor panel needs `position: relative` so the fail
+           overlay can absolute-position to its bounds. The panel
+           previously didn't set positioning explicitly — most
+           browsers default to static which would let the overlay
+           escape upward. */
+        #nets-tutor-panel { position: relative; }
+
         @media (max-width: 600px) {
             #nets-ai-tutor { right: 12px; bottom: calc(12px + var(--safe-bottom)); }
             #nets-tutor-panel {
@@ -9645,13 +9787,23 @@ Prezident ertaga hisobot kutmoqda.`,
         // but the canonical compute path is the server.
         async function _fetchScorecard(log) {
             try {
+                // Wave J / T4: forward homework_failed + warning_deductions
+                // (set by the tutor widget when its state machine triggers).
+                // Backend grading service applies the deduction AFTER AMR
+                // and clamps the final score to 0 when failed.
+                const body = {
+                    items: log,
+                    homework_id: (window.NETS_CTX && window.NETS_CTX.homework_id) || null,
+                };
+                if (window.__homeworkFailed) body.homework_failed = true;
+                if (typeof window.__warningDeductions === 'number'
+                    && window.__warningDeductions > 0) {
+                    body.warning_deductions = window.__warningDeductions;
+                }
                 const resp = await fetch('/api/grading/aggregate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        items: log,
-                        homework_id: (window.NETS_CTX && window.NETS_CTX.homework_id) || null,
-                    }),
+                    body: JSON.stringify(body),
                 });
                 if (!resp.ok) throw new Error('http ' + resp.status);
                 return await resp.json();
@@ -9681,6 +9833,53 @@ Prezident ertaga hisobot kutmoqda.`,
                 };
             }
         }
+
+        // ── Wave J / T4: tutor-failed → jump to reflection ────────
+        // The tutor widget IIFE dispatches `nets:homework-failed` when
+        // its anti-troll state machine reaches level 9. We catch it on
+        // the window, mark the global session state, then jump to the
+        // reflection screen (which then advances to results). The
+        // sessionLog gets a sentinel item so the backend aggregator
+        // can apply the fail flag too — and `_fetchScorecard` reads
+        // `window.__homeworkFailed` directly, so the POST body carries
+        // the flag even if the sentinel is dropped.
+        window.addEventListener('nets:homework-failed', function (ev) {
+            if (window.__homeworkFailed) return;  // idempotent
+            const detail = (ev && ev.detail) || {};
+            const deduction = Number(detail.deduction_pct) || 15;
+            window.__homeworkFailed = true;
+            window.__warningDeductions = deduction;
+            // Best-effort sentinel in the session log so the backend
+            // can audit the failure path even if the global is lost
+            // (e.g., page reload between tutor event and aggregate POST).
+            try {
+                if (window.__sessionLog) {
+                    window.__sessionLog.push({
+                        kind: 'tutor_fail',
+                        reason: detail.reason || 'troll-strikes',
+                        deduction_pct: deduction,
+                        ts: Date.now(),
+                    });
+                }
+            } catch (_) { /* swallow */ }
+            // Jump to reflection. The fail overlay in the tutor sticks
+            // for 2s before this fires (see showFailOverlay setTimeout),
+            // so the student sees the overlay → reflection transition.
+            try {
+                if (typeof showReflectionScreen === 'function'
+                    && typeof reflectionHasContent === 'function'
+                    && reflectionHasContent()) {
+                    showReflectionScreen(function () {
+                        if (typeof showResultsScreen === 'function') {
+                            showResultsScreen();
+                        }
+                    });
+                } else if (typeof showResultsScreen === 'function') {
+                    // No reflection content — go straight to results.
+                    showResultsScreen();
+                }
+            } catch (e) { /* runtime not ready — page may be loading */ }
+        });
 
         async function showResultsScreen() {
             // Activate the screen immediately so the student doesn't see a
@@ -9841,6 +10040,18 @@ Prezident ertaga hisobot kutmoqda.`,
             <header>
                 <span id="nets-tutor-avatar" aria-hidden="true">🎓</span>
                 <span id="nets-tutor-phase-badge" data-phase="preview">Preview — ask me anything</span>
+                <!-- Wave J / T4: warning chip — hidden until backend
+                     reports warning_level >= 1. Tier (yellow/orange/red)
+                     mirrors the state-machine bands; the title attr
+                     shows the per-level breakdown on hover. -->
+                <button id="nets-tutor-warning-chip"
+                        class="nets-tutor-warning-chip"
+                        type="button"
+                        aria-label="Warning level"
+                        hidden>
+                    <span class="nets-tutor-warning-icon" aria-hidden="true">⚠️</span>
+                    <span class="nets-tutor-warning-count">0</span>/9
+                </button>
                 <!-- The page-level navbar theme toggle (frontend/js/theme.js)
                      drives `data-theme` on the document and persists to
                      localStorage; the storage-event listener below picks
@@ -9848,12 +10059,26 @@ Prezident ertaga hisobot kutmoqda.`,
                      theme toggle so there's a single source of truth. -->
                 <button id="nets-tutor-close" type="button" aria-label="Close">×</button>
             </header>
+            <!-- Wave J / T4: big-warning banner. Auto-dismisses after 8s. -->
+            <div id="nets-tutor-big-warning" class="nets-tutor-big-warning" role="alert" aria-live="assertive" hidden>
+                <span class="nets-tutor-big-warning-icon" aria-hidden="true">⚠️</span>
+                <span class="nets-tutor-big-warning-text"></span>
+                <button class="nets-tutor-big-warning-dismiss" type="button" aria-label="Dismiss">×</button>
+            </div>
             <div id="nets-tutor-messages" role="log" aria-live="polite"></div>
             <form id="nets-tutor-input-form">
                 <textarea id="nets-tutor-input" rows="2" placeholder="Type your question…" maxlength="2000"></textarea>
                 <button type="submit" id="nets-tutor-send">Send</button>
             </form>
             <div id="nets-tutor-cap-warning" role="alert" aria-live="assertive" hidden>Session limit reached.</div>
+            <!-- Wave J / T4: fail overlay — covers the panel when
+                 homework_failed=true. After 2s we dispatch the events
+                 that move the runtime into the reflection phase. -->
+            <div id="nets-tutor-fail-overlay" class="nets-tutor-fail-overlay" role="alert" aria-live="assertive" hidden>
+                <div class="nets-tutor-fail-icon" aria-hidden="true">😔</div>
+                <div class="nets-tutor-fail-title"></div>
+                <div class="nets-tutor-fail-subtitle"></div>
+            </div>
         </div>
     </div>
 
@@ -9937,6 +10162,10 @@ Prezident ertaga hisobot kutmoqda.`,
             messageCount: 0,
             isOpen: false,
             isSending: false,
+            // Wave J / T4: warning + fail state (per page-load).
+            homeworkFailed: false,
+            bigWarningDismissed: false,
+            lastTypingIndex: null,
         };
         try { localStorage.setItem('nets_tutor_session', state.sessionId); } catch (e) { /* private mode */ }
 
@@ -9952,6 +10181,16 @@ Prezident ertaga hisobot kutmoqda.`,
         const input     = document.getElementById('nets-tutor-input');
         const sendBtn   = document.getElementById('nets-tutor-send');
         const capEl     = document.getElementById('nets-tutor-cap-warning');
+        // Wave J / T4: warning UI refs. Optional — fall back gracefully
+        // if any are missing (e.g., older cached template).
+        const warningChip   = document.getElementById('nets-tutor-warning-chip');
+        const warningCount  = warningChip && warningChip.querySelector('.nets-tutor-warning-count');
+        const bigWarning    = document.getElementById('nets-tutor-big-warning');
+        const bigWarningTxt = bigWarning && bigWarning.querySelector('.nets-tutor-big-warning-text');
+        const bigWarningX   = bigWarning && bigWarning.querySelector('.nets-tutor-big-warning-dismiss');
+        const failOverlay   = document.getElementById('nets-tutor-fail-overlay');
+        const failTitle     = failOverlay && failOverlay.querySelector('.nets-tutor-fail-title');
+        const failSubtitle  = failOverlay && failOverlay.querySelector('.nets-tutor-fail-subtitle');
 
         if (!root) return;  // safety
 
@@ -9994,7 +10233,13 @@ Prezident ertaga hisobot kutmoqda.`,
             }
         }
 
-        // Inline markdown — bold, italic, code. Token-based to avoid regex pitfalls.
+        // Inline markdown — bold, italic, code, strikethrough. Token-based
+        // to avoid regex pitfalls. Code is highest precedence (so backticks
+        // inside it are literal), then ~~strike~~, then **bold**/*italic*.
+        // Emoji preservation note: we tokenize on ASCII punctuation only —
+        // multibyte emoji codepoints inside a token are copied through via
+        // textContent verbatim, so `**Yaxshi 💯**` renders as
+        // `<strong>Yaxshi 💯</strong>`.
         function appendInline(parent, text) {
             // Split by `code` first (highest precedence), then bold/italic inside.
             const parts = String(text).split(/(`[^`]+`)/g);
@@ -10005,14 +10250,37 @@ Prezident ertaga hisobot kutmoqda.`,
                     code.textContent = part.slice(1, -1);
                     parent.appendChild(code);
                 } else {
-                    appendBoldItalic(parent, part);
+                    appendStrikethrough(parent, part);
                 }
+            }
+        }
+
+        function appendStrikethrough(parent, text) {
+            // Tokenize ~~strike~~ before bold/italic. The character class
+            // [\s\S]+? (non-greedy any-char incl newlines) keeps emojis intact.
+            const re = /~~([\s\S]+?)~~/g;
+            let lastIndex = 0;
+            let m;
+            while ((m = re.exec(text)) !== null) {
+                if (m.index > lastIndex) {
+                    appendBoldItalic(parent, text.slice(lastIndex, m.index));
+                }
+                const s = document.createElement('s');
+                appendBoldItalic(s, m[1]);
+                parent.appendChild(s);
+                lastIndex = re.lastIndex;
+            }
+            if (lastIndex < text.length) {
+                appendBoldItalic(parent, text.slice(lastIndex));
             }
         }
 
         function appendBoldItalic(parent, text) {
             // Tokenize **bold** and *italic*. Greedy on bold first.
-            const re = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+            // Use [\s\S] (incl emoji codepoints) instead of [^*] — the
+            // bare-negated class works fine but [^*]+? is identical and
+            // clearer. Emoji are preserved verbatim via textContent.
+            const re = /(\*\*[^*]+?\*\*|\*[^*\n]+?\*)/g;
             let lastIndex = 0;
             let m;
             while ((m = re.exec(text)) !== null) {
@@ -10054,12 +10322,24 @@ Prezident ertaga hisobot kutmoqda.`,
             el.id = 'nets-tutor-typing-indicator';
             for (let i = 0; i < 3; i++) el.appendChild(document.createElement('span'));
             messages.appendChild(el);
+            // Wave J / T4: rotating thinking phrase under the dots.
+            const phraseEl = document.createElement('div');
+            phraseEl.className = 'nets-tutor-typing-phrase';
+            phraseEl.id = 'nets-tutor-typing-phrase';
+            phraseEl.textContent = pickTypingPhrase();
+            messages.appendChild(phraseEl);
+            // Force a reflow so the fade-in transition fires (CSS opacity 0 → 1).
+            // Reading offsetHeight is the canonical "flush layout" idiom.
+            void phraseEl.offsetHeight;
+            phraseEl.classList.add('visible');
             messages.scrollTop = messages.scrollHeight;
             return el;
         }
         function removeTyping() {
             const el = document.getElementById('nets-tutor-typing-indicator');
             if (el && el.parentNode) el.parentNode.removeChild(el);
+            const ph = document.getElementById('nets-tutor-typing-phrase');
+            if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
         }
 
         // ── Phase badge ─────────────────────────────────────────
@@ -10071,6 +10351,15 @@ Prezident ertaga hisobot kutmoqda.`,
 
         // ── Cap handling ────────────────────────────────────────
         function applyCap() {
+            // Wave J / T4: a homework_failed lock is sticky — the cap
+            // path must not re-enable the input even if messageCount
+            // happens to be under SESSION_CAP.
+            if (state.homeworkFailed) {
+                input.disabled = true;
+                sendBtn.disabled = true;
+                capEl.hidden = true;
+                return;
+            }
             if (state.messageCount >= SESSION_CAP) {
                 input.disabled = true;
                 sendBtn.disabled = true;
@@ -10080,6 +10369,180 @@ Prezident ertaga hisobot kutmoqda.`,
                 sendBtn.disabled = state.isSending;
                 capEl.hidden = true;
             }
+        }
+
+        // ── Wave J / T4: warning chip + banner + fail overlay ──
+        // The state machine (server/services/warnings.py) tells us
+        // the *current* level + cumulative deduction on every reply.
+        // The chip shows running state; the banner only fires on the
+        // single response that triggered level 8 (is_big_warning).
+        // bigWarningDismissed is sticky-per-session-load — once the
+        // student ×s the banner we don't re-show it for the same
+        // page-load even if the level stays at 8.
+        const WARNING_TOOLTIPS = {
+            uz: function (lvl) {
+                if (lvl >= 8) return "So'nggi ogohlantirish — −15% jami. Yana bitta = uy vazifasi failga ketadi.";
+                if (lvl === 7) return "7-strayk — −5% qulflandi. Yana bitta = −10%.";
+                return lvl + " mayda ogohlantirish — −5% gacha yana " + (7 - lvl) + " ta.";
+            },
+            ru: function (lvl) {
+                if (lvl >= 8) return "Последнее предупреждение — −15% всего. Ещё одно = провал.";
+                if (lvl === 7) return "7-й страйк — −5% зафиксировано. Ещё одно = −10%.";
+                return lvl + " мягких предупреждений — до −5% ещё " + (7 - lvl) + ".";
+            },
+            en: function (lvl) {
+                if (lvl >= 8) return "Last chance — −15% total. One more = homework fails.";
+                if (lvl === 7) return "Strike 7 hit — −5% locked. 1 more = −10%.";
+                return lvl + " mild warning" + (lvl === 1 ? "" : "s") + " — " + (7 - lvl) + " more before −5%.";
+            },
+        };
+        const BIG_WARNING_TEXT = {
+            uz: "So'nggi ogohlantirish — yana bitta = uy vazifasi failga ketadi. Hozirgi jarima: −15%",
+            ru: "Последнее предупреждение — ещё одно = провал. Текущий штраф: −15%",
+            en: "Last chance — one more = homework fails. Current penalty: −15%",
+        };
+        const FAIL_LABELS = {
+            uz: { title: "Uy vazifasi tugadi",  subtitle: "Refleksiyaga o'tamiz..." },
+            ru: { title: "Урок не пройден",       subtitle: "Переходим к рефлексии..." },
+            en: { title: "Homework failed",      subtitle: "Skipping to reflection..." },
+        };
+
+        function updateWarningChip(level, cumulativeDeductionPct) {
+            if (!warningChip || !warningCount) return;
+            const lvl = Number(level) || 0;
+            if (lvl <= 0) {
+                warningChip.hidden = true;
+                return;
+            }
+            warningChip.hidden = false;
+            warningCount.textContent = String(lvl);
+            // Tier: 1-6 yellow (default), 7 orange, >=8 red.
+            let tier;
+            if (lvl >= 8)      tier = 'red';
+            else if (lvl >= 7) tier = 'orange';
+            else               tier = 'yellow';
+            warningChip.dataset.tier = tier;
+            const tipFn = WARNING_TOOLTIPS[lang] || WARNING_TOOLTIPS.en;
+            warningChip.title = tipFn(lvl);
+            warningChip.setAttribute('aria-label', tipFn(lvl));
+        }
+
+        let bigWarningTimer = null;
+        function showBigWarningBanner() {
+            if (!bigWarning || !bigWarningTxt) return;
+            if (state.bigWarningDismissed) return;  // sticky for the page-load
+            bigWarningTxt.textContent = BIG_WARNING_TEXT[lang] || BIG_WARNING_TEXT.en;
+            bigWarning.hidden = false;
+            if (bigWarningTimer) clearTimeout(bigWarningTimer);
+            bigWarningTimer = setTimeout(function () {
+                bigWarning.hidden = true;
+            }, 8000);
+        }
+        function dismissBigWarning() {
+            if (!bigWarning) return;
+            bigWarning.hidden = true;
+            state.bigWarningDismissed = true;
+            if (bigWarningTimer) { clearTimeout(bigWarningTimer); bigWarningTimer = null; }
+        }
+        if (bigWarningX) bigWarningX.addEventListener('click', dismissBigWarning);
+
+        function showFailOverlay(cumulativeDeductionPct) {
+            if (state.homeworkFailed) return;  // already triggered
+            state.homeworkFailed = true;
+            // Lock all input.
+            input.disabled = true;
+            sendBtn.disabled = true;
+            removeTyping();
+            capEl.hidden = true;
+            const labels = FAIL_LABELS[lang] || FAIL_LABELS.en;
+            if (failOverlay) {
+                if (failTitle)    failTitle.textContent = labels.title;
+                if (failSubtitle) failSubtitle.textContent = labels.subtitle;
+                failOverlay.hidden = false;
+            }
+            // After a beat, dispatch phase-change + custom event so the
+            // runtime jumps to reflection. detail.failed=true lets the
+            // reflection phase render the fail-aware variant.
+            const deductionPct = Number(cumulativeDeductionPct) || 0;
+            setTimeout(function () {
+                try {
+                    document.dispatchEvent(new CustomEvent('nets:phase-change', {
+                        detail: {
+                            phase: 'reflection',
+                            failed: true,
+                            reason: 'troll-strikes',
+                            deduction_pct: deductionPct,
+                        },
+                    }));
+                } catch (e) { /* DOM may not support CustomEvent */ }
+                try {
+                    window.dispatchEvent(new CustomEvent('nets:homework-failed', {
+                        detail: {
+                            reason: 'troll-strikes',
+                            deduction_pct: deductionPct,
+                        },
+                    }));
+                } catch (e) { /* swallow */ }
+            }, 2000);
+        }
+
+        // ── Wave J / T4: anti-repetition hint extraction ───────
+        // We inspect the last 3 assistant messages currently in the
+        // DOM and pull the first 3 words of each. Sent as
+        // recent_assistant_phrases on every chat turn — the backend
+        // forwards as RECENT_OPENINGS to the prompt.
+        function extractRecentOpenings() {
+            if (!messages) return [];
+            const nodes = messages.querySelectorAll('.nets-tutor-msg.assistant');
+            const out = [];
+            const start = Math.max(0, nodes.length - 3);
+            for (let i = start; i < nodes.length; i++) {
+                const txt = (nodes[i].textContent || '').trim();
+                if (!txt) continue;
+                const words = txt.split(/\s+/).slice(0, 3).join(' ');
+                if (words) out.push(words);
+            }
+            return out;
+        }
+
+        // ── Wave J / T4: typing-indicator phrase rotation ─────
+        const TYPING_PHRASES = {
+            uz: [
+                "hisoblayapman...",
+                "bir soniya...",
+                "miya zo'r ishlayapti 🧠",
+                "tayyor bo'lyapman...",
+                "yaxshi savol — kutib turing...",
+            ],
+            ru: [
+                "считаю...",
+                "секунду...",
+                "мозг включился 🧠",
+                "готовлю ответ...",
+                "хороший вопрос — момент...",
+            ],
+            en: [
+                "computing...",
+                "one sec...",
+                "brain warming up 🧠",
+                "cooking response 🔥",
+                "good question — hold on...",
+            ],
+        };
+        function pickTypingPhrase() {
+            const pool = TYPING_PHRASES[lang] || TYPING_PHRASES.en;
+            // No-consecutive-repeat: filter the last-shown index out of
+            // the candidate set, then pick uniformly. Single-element
+            // pool degenerates to the same string (impossible here).
+            let candidates;
+            if (state.lastTypingIndex == null || pool.length <= 1) {
+                candidates = pool.map((p, i) => i);
+            } else {
+                candidates = pool.map((_, i) => i).filter(i => i !== state.lastTypingIndex);
+            }
+            const pick = candidates[Math.floor(Math.random() * candidates.length)];
+            state.lastTypingIndex = pick;
+            return pool[pick];
         }
 
         // ── Open / close panel ──────────────────────────────────
@@ -10181,6 +10644,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
         async function sendMessage(text) {
             if (state.isSending || !text) return;
+            if (state.homeworkFailed) return;  // Wave J / T4: hard lock
             state.isSending = true;
             sendBtn.disabled = true;
             appendMessage('user', text);
@@ -10198,6 +10662,10 @@ Prezident ertaga hisobot kutmoqda.`,
                 const activeScreen = document.querySelector('.screen.active');
                 const rawText = activeScreen ? (activeScreen.textContent || '') : '';
                 const screenContext = rawText.replace(/\s+/g, ' ').trim().slice(0, 2000);
+                // Wave J / T4: collect last 3 assistant openings BEFORE
+                // we inject the new turn so we get the previous tone, not
+                // the one we're about to send.
+                const recentOpenings = extractRecentOpenings();
                 const res = await window.NETS_AI.tutorChat({
                     session_id: state.sessionId,
                     hw_id: state.hwId,
@@ -10205,8 +10673,28 @@ Prezident ertaga hisobot kutmoqda.`,
                     question_id: state.currentQuestionId || undefined,
                     message: text,
                     screen_context: screenContext || undefined,
+                    recent_assistant_phrases: recentOpenings.length ? recentOpenings : undefined,
                 });
                 removeTyping();
+                // Wave J / T4: warning state machine — handle BEFORE any
+                // success/error branching so the fail short-circuit + chip
+                // updates fire even when response text is the canned
+                // server-generated fail message.
+                if (res && typeof res === 'object' && !res._error && !res._cap) {
+                    if (res.homework_failed) {
+                        // Render the fail line (server gives a localized one)
+                        // before locking — kids see *why*, not just an overlay.
+                        if (res.response) appendMessage('assistant', res.response);
+                        showFailOverlay(res.cumulative_deduction_pct);
+                        return;
+                    }
+                    if (typeof res.warning_level === 'number') {
+                        updateWarningChip(res.warning_level, res.cumulative_deduction_pct);
+                    }
+                    if (res.is_big_warning) {
+                        showBigWarningBanner(res.cumulative_deduction_pct);
+                    }
+                }
                 if (res && res._cap) {
                     state.messageCount = SESSION_CAP;
                     appendMessage('error', L.cap);

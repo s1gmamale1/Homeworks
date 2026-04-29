@@ -93,6 +93,22 @@ CREATE TABLE IF NOT EXISTS tutor_conversations (
 
 CREATE INDEX IF NOT EXISTS idx_tutor_session
     ON tutor_conversations(session_id, hw_id, created_at);
+
+CREATE TABLE IF NOT EXISTS tutor_warnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    hw_id TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    category TEXT NOT NULL,
+    matched_term TEXT,
+    warning_level INTEGER NOT NULL,
+    deduction_pct INTEGER DEFAULT 0,
+    is_big_warning INTEGER DEFAULT 0,
+    is_fail INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_warnings_hw ON tutor_warnings(hw_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_warnings_session ON tutor_warnings(session_id, hw_id, created_at);
 """
 
 
@@ -750,3 +766,135 @@ async def build_session_profile(session_id: str, hw_id: str) -> str:
     if len(profile) > 1500:
         profile = profile[-1500:]
     return profile
+
+
+# ---------------------------------------------------------------------------
+# Wave J — tutor_warnings helpers
+# ---------------------------------------------------------------------------
+#
+# Records every warning event cross-session per hw_id. Counters never reset
+# when the student reopens the homework — that's by design (troll-deterrence).
+
+
+async def add_warning(
+    *,
+    session_id: str,
+    hw_id: str,
+    severity: str,
+    category: str,
+    matched_term: Optional[str],
+    warning_level: int,
+    deduction_pct: int,
+    is_big_warning: bool,
+    is_fail: bool,
+) -> int:
+    """Append a warning event. Returns the new row id."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "INSERT INTO tutor_warnings "
+            "(session_id, hw_id, severity, category, matched_term, "
+            "warning_level, deduction_pct, is_big_warning, is_fail, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                session_id,
+                hw_id,
+                severity,
+                category,
+                matched_term,
+                warning_level,
+                deduction_pct,
+                1 if is_big_warning else 0,
+                1 if is_fail else 0,
+                _now(),
+            ),
+        )
+        await db.commit()
+        return cursor.lastrowid or 0
+    finally:
+        await db.close()
+
+
+async def count_warnings_for_hw(hw_id: str) -> int:
+    """Total warning events ever recorded for this hw_id across all sessions."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM tutor_warnings WHERE hw_id = ?",
+            (hw_id,),
+        )
+        row = await cursor.fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        await db.close()
+
+
+async def count_warnings_for_session(session_id: str, hw_id: str) -> int:
+    """Warning events for a specific (session_id, hw_id) pair."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT COUNT(*) FROM tutor_warnings WHERE session_id = ? AND hw_id = ?",
+            (session_id, hw_id),
+        )
+        row = await cursor.fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        await db.close()
+
+
+async def list_recent_warnings(hw_id: str, limit: int = 5) -> list[dict]:
+    """Newest-first; used for the 'mild repeated 3x in last 5 turns' rule."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT id, session_id, hw_id, severity, category, matched_term, "
+            "warning_level, deduction_pct, is_big_warning, is_fail, created_at "
+            "FROM tutor_warnings "
+            "WHERE hw_id = ? "
+            "ORDER BY created_at DESC, id DESC LIMIT ?",
+            (hw_id, limit),
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
+
+
+async def sum_deductions(hw_id: str) -> int:
+    """Sum of all deduction_pct rows for an hw_id (idempotent across sessions)."""
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT COALESCE(SUM(deduction_pct), 0) FROM tutor_warnings WHERE hw_id = ?",
+            (hw_id,),
+        )
+        row = await cursor.fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        await db.close()
+
+
+async def summary_for_tutor(hw_id: str) -> str:
+    """Compact one-line summary for prompt injection.
+
+    Returns '' if no prior warnings.
+    Otherwise: 'earlier this hw: 2 profanity_strong, 1 insult_mild'
+    (counts by severity, no quoted terms — keeps slurs out of the LLM context).
+    """
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT severity, COUNT(*) as cnt FROM tutor_warnings "
+            "WHERE hw_id = ? GROUP BY severity ORDER BY cnt DESC",
+            (hw_id,),
+        )
+        rows = await cursor.fetchall()
+    finally:
+        await db.close()
+
+    if not rows:
+        return ""
+
+    parts = [f"{row['cnt']} {row['severity']}" for row in rows]
+    return "earlier this hw: " + ", ".join(parts)

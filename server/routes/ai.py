@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from ..services import tutor, gemini
-from ..services.slur_filter import callout_for as _slur_callout, detect_slurs
+from ..services.slur_filter import classify, detect_slurs
+from ..services import warnings as warnings_svc
 from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
@@ -81,6 +82,7 @@ class TutorChatRequest(BaseModel):
     question_id: Optional[str] = None
     message: str
     screen_context: Optional[str] = None
+    recent_assistant_phrases: list[str] = []
 
 
 class TutorChatResponse(BaseModel):
@@ -325,9 +327,55 @@ async def tutor_chat(req: TutorChatRequest):
     # we drop it entirely outside preview rather than try to scrub.
     if req.screen_context and req.phase == "preview":
         hw_meta["preview_context"] = req.screen_context[:2000]
-    lang = hw.get("language", "uz") if hw else "uz"
-    callout = _slur_callout(req.message, lang=lang)
+
+    # --- Warning state machine ---
+    # Step 1: classify the incoming message via T1's new classifier.
+    classification = classify(req.message)
+
+    # Step 2: evaluate against the warning state machine (persists if triggered).
     try:
+        outcome = await warnings_svc.evaluate(
+            classification,
+            hw_id=req.hw_id,
+            session_id=req.session_id,
+        )
+    except Exception as e:
+        # Don't let a DB error in the warning layer block the tutor.
+        import logging
+        logging.getLogger("nets.tutor").warning("warnings.evaluate failed: %s", e)
+        outcome = None
+
+    # Step 3: fail short-circuit — level 9 means homework failed.
+    if outcome is not None and outcome.is_fail:
+        lang = outcome.lang
+        if lang == "ru":
+            fail_msg = "Урок завершён. Переходим к финалу."
+        elif lang == "en":
+            fail_msg = "Homework done. Moving to reflection."
+        else:
+            fail_msg = "Uy vazifasi tugadi. So'nggi bosqichga o'tamiz."
+        return {
+            "response": fail_msg,
+            "message_id": None,
+            "homework_failed": True,
+            "warning_level": outcome.level,
+            "cumulative_deduction_pct": outcome.cumulative_deduction_pct,
+        }
+
+    try:
+        # Step 4: build kwargs for tutor_chat from warning outcome.
+        warning_kwargs: dict[str, Any] = {}
+        if outcome is not None:
+            warning_kwargs = {
+                "severity": outcome.severity,
+                "warning_level": outcome.level,
+                "cumulative_deduction_pct": outcome.cumulative_deduction_pct,
+                "is_big_warning": outcome.is_big_warning,
+                "deduction_pct_this": outcome.deduction_pct_this,
+                "behavior_summary": outcome.behavior_summary,
+                "message_lang": outcome.lang,
+            }
+
         result = await tutor.tutor_chat(
             session_id=req.session_id,
             hw_id=req.hw_id,
@@ -335,17 +383,45 @@ async def tutor_chat(req: TutorChatRequest):
             question_id=req.question_id,
             message=req.message,
             hw_meta=hw_meta,
+            recent_assistant_phrases=req.recent_assistant_phrases or [],
+            **warning_kwargs,
         )
-        # Defense in depth: slur filter on the LLM output too. A prompt
-        # injection that tricked the model into emitting a slur would
-        # otherwise pass through to the student. Replace the body, not just
-        # prepend, so the slur itself is scrubbed.
+
+        # Defense in depth: slur filter on the LLM output.
+        # Only replace on profanity_strong or above to avoid muting mild-detection
+        # false positives where the new prompt already handles varied callouts.
         response_text = result.get("response", "") or ""
-        if detect_slurs(response_text):
-            replacement = _slur_callout(response_text, lang=lang) or "Keling, savolingizga qaytaylik."
-            result["response"] = replacement
-        elif callout:
-            result["response"] = callout + " " + response_text
+        output_classification = classify(response_text)
+        from ..services.slur_filter import _SEVERITY_RANK
+        if (
+            not output_classification.is_clean
+            and _SEVERITY_RANK.get(output_classification.severity, 0)
+            >= _SEVERITY_RANK.get("profanity_strong", 4)
+        ):
+            lang = outcome.lang if outcome is not None else "uz"
+            if lang == "ru":
+                deflection = "Keling, savolingizga qaytaylik."
+            elif lang == "en":
+                deflection = "Let's get back to the question."
+            else:
+                deflection = "Keling, savolingizga qaytaylik."
+            result["response"] = deflection
+            result["defense_in_depth_triggered"] = True
+        elif not output_classification.is_clean:
+            # Mild detection — log but don't replace (the new prompt handles it)
+            import logging
+            logging.getLogger("nets.tutor").info(
+                "defense_in_depth: mild output classification %s — not replacing",
+                output_classification.severity,
+            )
+
+        # Augment the response with warning fields so the frontend can render
+        # the warning chip / banner / fail handler.
+        result["warning_level"] = outcome.level if outcome is not None else 0
+        result["cumulative_deduction_pct"] = (
+            outcome.cumulative_deduction_pct if outcome is not None else 0
+        )
+        result["homework_failed"] = False
         return result
     except HTTPException:
         # tutor_chat raises HTTPException itself for the cap + LLM-error cases —

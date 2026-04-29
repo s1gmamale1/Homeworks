@@ -162,7 +162,13 @@
      * @param {string} opts.phase       - 'preview' | 'practice' | 'boss'
      * @param {string} [opts.question_id]
      * @param {string} opts.message
-     * @returns {Promise<{response: string, message_id: number} | {_error|_cap|_offline: true, message?: string}>}
+     * @param {string[]} [opts.recent_assistant_phrases] - first 3 words of last
+     *        ~3 assistant turns; backend forwards as anti-repetition hint.
+     * @returns {Promise<{response: string, message_id: number, warning_level?: number,
+     *        cumulative_deduction_pct?: number, is_big_warning?: boolean,
+     *        homework_failed?: boolean, deduction_pct_this?: number,
+     *        defense_in_depth_triggered?: boolean}
+     *        | {_error|_cap|_offline: true, message?: string}>}
      */
     async function tutorChat(opts) {
         const body = {
@@ -173,6 +179,11 @@
         };
         if (opts.question_id) body.question_id = opts.question_id;
         if (opts.screen_context) body.screen_context = opts.screen_context;
+        // Wave J / T4: forward last assistant openings so the backend can
+        // pass them to the prompt as RECENT_OPENINGS (anti-repetition).
+        if (opts.recent_assistant_phrases && opts.recent_assistant_phrases.length) {
+            body.recent_assistant_phrases = opts.recent_assistant_phrases.slice(0, 3);
+        }
         return _post('/tutor/chat', body);
     }
 

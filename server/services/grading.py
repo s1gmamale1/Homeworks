@@ -179,7 +179,12 @@ def _coerce(item: dict[str, Any]) -> _Item:
     return _Item(phase=phase, correct=correct, score=score, axis_1=a1, axis_2=a2, closed=closed)
 
 
-def aggregate(items: Iterable[dict[str, Any]]) -> dict[str, Any]:
+def aggregate(
+    items: Iterable[dict[str, Any]],
+    *,
+    warning_deductions: int = 0,
+    homework_failed: bool = False,
+) -> dict[str, Any]:
     """Take a list of session-log dicts and return the scorecard payload.
 
     Output shape (consumed by the runtime template's `showResultsScreen`):
@@ -307,21 +312,36 @@ def aggregate(items: Iterable[dict[str, Any]]) -> dict[str, Any]:
 
     perf_class = _perf_class_for_pct(overall_pct)
 
+    # ── Warning deductions (applied AFTER the AMR / closed formula) ────────
+    raw_pct_pre_deductions = overall_pct
+    final_score = max(0, overall_pct - warning_deductions)
+
     # ── Action button ──────────────────────────────────────────────
-    if overall_pct >= FINISH_THRESHOLD_PCT:
+    if homework_failed:
+        action = {"kind": "failed", "label": "Failed", "perf_class": "is-failed"}
+    elif final_score >= FINISH_THRESHOLD_PCT:
         action = {"kind": "finish", "label": "Tugatish", "perf_class": "is-finish"}
     else:
-        action = {"kind": "redo",   "label": "Qayta bajarish", "perf_class": "is-redo"}
+        action = {"kind": "redo", "label": "Qayta bajarish", "perf_class": "is-redo"}
+
+    coaching = _coaching_tip(band_key, has_axes, int(round(overall_pct_raw)))
+    if warning_deductions > 0:
+        coaching = coaching + (
+            f" (Xatti-harakatingiz uchun {warning_deductions}% ushlab qolindi.)"
+        )
 
     return {
-        "overall_pct":    overall_pct,
-        "overall_score":  None if overall_score is None else round(overall_score, 1),
-        "overall_axis_1": None if overall_a1 is None else round(overall_a1, 2),
-        "overall_axis_2": None if overall_a2 is None else round(overall_a2, 2),
-        "band":           {"key": band_key, "name": band_name},
-        "perf_class":     perf_class,
-        "has_axes":       has_axes,
-        "phases":         phase_rows,
+        "overall_pct":               final_score,
+        "raw_pct_pre_deductions":    raw_pct_pre_deductions,
+        "warning_deduction_pct":     warning_deductions,
+        "homework_failed":           homework_failed,
+        "overall_score":             None if overall_score is None else round(overall_score, 1),
+        "overall_axis_1":            None if overall_a1 is None else round(overall_a1, 2),
+        "overall_axis_2":            None if overall_a2 is None else round(overall_a2, 2),
+        "band":                      {"key": band_key, "name": band_name},
+        "perf_class":                perf_class,
+        "has_axes":                  has_axes,
+        "phases":                    phase_rows,
         "axes": {
             "axis_1": {
                 "mean":       overall_a1,
@@ -335,6 +355,6 @@ def aggregate(items: Iterable[dict[str, Any]]) -> dict[str, Any]:
             },
         },
         "totals":       {"correct": total_correct, "items": total_items},
-        "coaching_tip": _coaching_tip(band_key, has_axes, int(round(overall_pct_raw))),
+        "coaching_tip": coaching,
         "action":       action,
     }
