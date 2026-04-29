@@ -68,3 +68,4 @@ tests/fixtures/prod_replay/
 ref_*.txt
 
 ai_models_comparison.md
+tmp/

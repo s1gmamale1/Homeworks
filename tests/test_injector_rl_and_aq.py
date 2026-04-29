@@ -264,3 +264,112 @@ def test_aq_redistribution_skipped_when_all_three_tiers_already_present():
 
     by_prompt = {x["prompt"]: x["tier"] for x in items}
     assert by_prompt == {"E1": "easy", "M1": "medium", "H1": "hard"}
+
+
+# ── PR #67 follow-up regression guards ──────────────────────────────────
+
+
+def test_aq_runtime_breaks_inline_option_markers_onto_separate_lines():
+    """Authors of MC-style AQ items often write the options inline in the
+    prompt text:  "Which sentence …?  A) opt-1  B) opt-2  C) opt-3"
+
+    Without intervention, the runtime stamps that as one line via innerHTML
+    and the student sees an unreadable wall of text (Unit 19 regression
+    2026-04-29). The fix is a render-time regex that inserts <br> before
+    each "A)" / "B)" / "C)" / "D)" marker preceded by whitespace.
+
+    This test guards both halves:
+    - the regex transform code is present in the runtime template
+    - the result is assigned to the question element's innerHTML
+    so future template refactors can't silently drop one of the two and
+    re-introduce the wall-of-text rendering."""
+    cj = _content_json_with_aq([
+        {
+            "q": 'Which means "X"?  A) one  B) two  C) three',
+            "tags": "[Bloom: L1 | PISA: L1]",
+            "tier": "EASY",
+            "ans": ["one"],
+        }
+    ])
+    html = inject(cj, runtime_context={"subject": "x", "grade": 8})
+
+    # Half 1: the regex transform is in the runtime.
+    transform_pattern = r".replace(/\s+([A-D]\))/g, '<br>$1')"
+    assert transform_pattern in html, (
+        "AQ option-formatting regex was removed from the runtime. "
+        "Authors writing 'A) ... B) ... C) ...' inline expect each option "
+        "on its own line. See Unit 19 regression 2026-04-29."
+    )
+
+    # Half 2: the formatted result is actually used (assigned via innerHTML).
+    # If a refactor ever computed `formattedPrompt` but stamped item.prompt
+    # raw, the previous check passes but rendering is broken.
+    assert "qEl.innerHTML = formattedPrompt" in html, (
+        "AQ runtime computes formattedPrompt but no longer assigns it to "
+        "the question element. The regex transform is dead code unless "
+        "qEl.innerHTML reads from formattedPrompt."
+    )
+
+
+def test_aq_injector_does_not_default_work_to_repeating_the_answer():
+    """When the author leaves `hint` empty, the injector previously
+    defaulted `work` to ``f"Javob: {answer}"``. The runtime then printed
+    the correct answer twice in wrong-answer feedback:
+
+        "Noto'g'ri. To'g'ri javob: doesn't have to wear. Javob: doesn't have to wear"
+
+    Fix: when there is no authored hint, `work` must be empty so the
+    runtime's `workSuffix = item.work ? '. ' + item.work : ''` appends
+    nothing. This test guards against the default returning."""
+    cj = _content_json_with_aq([
+        {
+            "q": "Stem ___",
+            "tags": "[Bloom: L3 | PISA: L2]",
+            "tier": "MEDIUM",
+            "ans": ["doesn't have to wear"],
+            # No `hint` key — author left it blank.
+        }
+    ])
+    html = inject(cj, runtime_context={"subject": "x", "grade": 8})
+    items = _extract_aq_constant(html)
+    assert len(items) == 1
+
+    work = items[0].get("work")
+    assert work == "", (
+        f'AQ item with no hint must have empty work field, got {work!r}. '
+        f'A non-empty default (e.g. "Javob: {{answer}}") makes the runtime '
+        f'print the correct answer twice in wrong-answer feedback.'
+    )
+
+    # Defensive: also assert the literal "Javob:" prefix never appears
+    # for an item where the author didn't author a hint — catches future
+    # variations of the default like "Answer: X" or " {answer}".
+    assert "Javob: " not in items[0].get("work", ""), (
+        "AQ item with no hint must not have a default work that repeats "
+        "the answer — this caused the wrong-answer-feedback duplication."
+    )
+
+
+def test_aq_injector_preserves_authored_hint_in_work_field():
+    """Negative case for the no-default test: when the author DOES
+    provide a hint, it must round-trip into `work` unchanged. The fix
+    only suppresses the default — real hints still flow through."""
+    cj = _content_json_with_aq([
+        {
+            "q": "Stem ___",
+            "tags": "[Bloom: L3 | PISA: L2]",
+            "tier": "MEDIUM",
+            "ans": ["X"],
+            "hint": "Subject-verb agreement: third-person singular takes 's'.",
+        }
+    ])
+    html = inject(cj, runtime_context={"subject": "x", "grade": 8})
+    items = _extract_aq_constant(html)
+    assert len(items) == 1
+    assert items[0]["work"] == (
+        "Subject-verb agreement: third-person singular takes 's'."
+    ), (
+        "Authored hint must survive into the work field unchanged. "
+        "The PR #67 fix only suppresses the empty-hint default; real "
+        "hints must still round-trip."
+    )
