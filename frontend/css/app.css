@@ -2700,6 +2700,19 @@ body:has(.preview-panel:not([hidden])) .fab-add {
 .card-menu {
   position: relative;
 }
+.card-menu .js-menu-toggle {
+  background: var(--surface-elevated);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: var(--shadow-low);
+}
+.card-menu .js-menu-toggle:hover,
+.card-menu .js-menu-toggle:focus-visible,
+.card-menu.is-open .js-menu-toggle {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
 .card-menu .menu-dropdown {
   position: absolute;
   bottom: calc(100% + 6px);

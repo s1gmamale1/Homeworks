@@ -37,3 +37,13 @@ def test_tutor_chat_has_polished_panel_and_assistant_identity():
     assert "padding-left: 42px" in html
     assert "border-radius: 22px" in html
     assert "[data-theme=\"dark\"] .nets-tutor-msg.assistant::before" in html
+
+
+def test_homework_card_more_actions_button_has_solid_surface():
+    css = _read("frontend/css/app.css")
+
+    assert ".card-menu .js-menu-toggle" in css
+    assert "background: var(--surface-elevated)" in css
+    assert ".card-menu.is-open .js-menu-toggle" in css
+    assert "background: var(--accent)" in css
+    assert "color: #fff" in css
