@@ -5798,7 +5798,12 @@
         // ── BUTTON TEXT CROSS-FADE ───────────────────────────────
         function setBtnText(text) {
             if (!btnText) return;
-            if (btnText.innerText === text) return;
+            if (btnText.innerText === text) {
+                btnText.classList.remove('fade-out', 'fade-in');
+                btnText.style.opacity = '1';
+                btnText.style.transform = '';
+                return;
+            }
             btnText.classList.add('fade-out');
             setTimeout(() => {
                 btnText.innerText = text;

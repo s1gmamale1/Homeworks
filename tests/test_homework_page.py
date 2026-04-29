@@ -460,6 +460,27 @@ def test_runtime_no_hardcoded_keyingi_savol_outside_labels(client, created_hw):
         pos = idx + len(needle)
 
 
+def test_runtime_button_text_same_label_restores_visibility():
+    """If a transition hides the button text and then reuses the same label,
+    setBtnText must still clear the inline hidden state. Otherwise buttons
+    like Keyingi can render as a blue pill with invisible text."""
+    from pathlib import Path
+    import re
+
+    html = Path("server/template/perfect_homework.html").read_text(encoding="utf-8")
+    match = re.search(
+        r"function setBtnText\(text\)\s*\{(?P<body>[\s\S]*?)\n\s*\}\n\n\s*function skipCurrentPhase",
+        html,
+    )
+    assert match, "setBtnText function not found"
+    body = match.group("body")
+
+    assert "if (btnText.innerText === text)" in body
+    same_label_branch = body.split("if (btnText.innerText === text)", 1)[1].split("btnText.classList.add('fade-out')", 1)[0]
+    assert "btnText.classList.remove('fade-out', 'fade-in')" in same_label_branch
+    assert "btnText.style.opacity = '1'" in same_label_branch
+
+
 def test_runtime_template_lang_attr_matches_homework_lang(client):
     """Wave I3: <html lang="..."> must reflect the homework's resolved language
     (not the hardcoded 'uz' default).
