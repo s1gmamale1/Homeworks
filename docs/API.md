@@ -1,6 +1,6 @@
 # NETS Homework Builder — API Reference
 
-Base URL (production): `http://192.168.1.26:8000`  ·  Local dev: `http://localhost:8000`
+Base URL (production): `http://sigmaai.local:8000`  ·  Local dev: `http://localhost:8000`
 
 All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "...", "code": "..." } }` with 4xx/5xx status.
 
@@ -12,11 +12,14 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 | Versions | GET/GET/POST /api/homeworks/{id}/versions, /…/{id}/versions/{vid}, /…/{id}/versions/{vid}/restore |
 | Render | GET /h/{id} (HTML), GET /api/homeworks/{id}/preview (HTML) |
 | Library | GET /api/library, GET /api/library/facets |
+| Quotes | GET /api/quotes |
 | AI tutor | POST /api/ai/check-answer, /api/ai/boss-turn, /api/ai/reflection, /api/ai/tutor |
 | AI live tutor (Wave F1) | POST /api/ai/tutor/chat, /api/ai/tutor/boss-plan, GET /api/ai/tutor/history |
 | AI meta | GET /api/ai/status |
 | Review queue | GET /api/ai/review-queue, POST /api/ai/review-queue/{id}/decide |
 | Answer-spec | POST /api/ai/answer-spec/preview |
+| Notebook | POST /api/notebook/grade, GET /api/notebook/captures |
+| Grading | POST /api/grading/aggregate, GET /api/grading/rubric |
 | Meta | GET /api/health, GET /api/subjects, GET /api/fixtures, GET /api/fixtures/{name} |
 | Trash | GET /api/trash |
 | Admin | POST /api/admin/checkpoint |
@@ -209,9 +212,252 @@ Returns **HTML**. Same render as `/h/{hw_id}` but:
 
 ---
 
+## Quotes
+
+### GET /api/quotes
+
+Searchable quote library used by the builder's quote-picker modal. Returns matching items plus facets so the UI can populate its filter selects in one round-trip.
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `q` | str | — | Substring search over text + author |
+| `type` | str | — | Filter by type: `fact` or `quote` |
+| `origin` | str | — | Filter by origin: `National` or `Global` |
+| `category` | str | — | Filter by category |
+| `author` | str | — | Filter by author |
+| `limit` | int | 50 | 1–200 |
+| `offset` | int | 0 | |
+
+**200**
+```json
+{
+  "items": [
+    {
+      "id": "...",
+      "text": "...",
+      "author": "...",
+      "category": "...",
+      "type": "quote|fact",
+      "origin": "National|Global",
+      "language": "uz|ru|en"
+    }
+  ],
+  "total": N,
+  "limit": 50,
+  "offset": 0,
+  "facets": {
+    "types": ["quote", "fact"],
+    "origins": ["National", "Global"],
+    "categories": [...],
+    "authors": [...]
+  }
+}
+```
+
+---
+
+## Notebook
+
+### POST /api/notebook/grade
+
+Accept multipart photo upload with session/homework/question IDs; grade the handwritten formula and return grading result or rejection reason.
+
+**Multipart fields:**
+- `image` (file, required) — JPEG/PNG/WebP photo (1 KB – 5 MB)
+- `session_id` (text, required) — client-side UUID
+- `hw_id` (text, required) — homework record ID
+- `question_id` (text, required) — question identifier within the homework
+
+**200** on success or rejection (both include `rejected` flag):
+```json
+{
+  "rejected": false,
+  "photo_id": "ph-uuid",
+  "transcribed_text": "x² + 2x + 1 = 0",
+  "confidence": 0.92,
+  "correct": true,
+  "score_1_to_4": 4,
+  "axis_1_concept_id": 3,
+  "axis_2_process_integrity": 4,
+  "feedback": "...",
+  "matches_expected": true
+}
+```
+
+**Rejection response** (HTTP 200, `rejected: true`):
+```json
+{
+  "rejected": true,
+  "reason": "invalid_file|vision_low_confidence|no_math_symbols|blank_or_scene|...",
+  "retry_message_uz": "Rasmning sifati aniq emas...",
+  "retry_message_ru": "...",
+  "retry_message_en": "..."
+}
+```
+
+Rejection reasons:
+- `invalid_file` — unsupported MIME type or file size out of range
+- `vision_low_confidence` — OCR confidence below threshold or empty transcription detected
+- `no_math_symbols` — transcribed text contains no math operators/digits
+- `blank_or_scene` — OpenCV pre-filter detected blank page or scene photo
+
+---
+
+### GET /api/notebook/captures
+
+List all captures for a session (used by review/retry UI).
+
+| Param | Type | Required |
+|-------|------|----------|
+| `session_id` | str | yes |
+| `hw_id` | str | yes |
+
+**200**
+```json
+{
+  "captures": [
+    {
+      "id": "...",
+      "session_id": "...",
+      "hw_id": "...",
+      "question_id": "...",
+      "rejected": false,
+      "reason": null,
+      "photo_id": "...",
+      "transcribed_text": "...",
+      "confidence": 0.92,
+      "correct": true,
+      "created_at": "2026-04-30T10:00:00+00:00"
+    }
+  ]
+}
+```
+
+---
+
+## Grading
+
+### POST /api/grading/aggregate
+
+Take a session log (array of submitted answers) and return the scorecard payload. Pure compute — no DB involved. Replaces the old client-side `_amrAggregate` JS function.
+
+```json
+{
+  "items": [
+    {
+      "phase": "memory-sprint",
+      "correct": true,
+      "axis_1": 3.5,
+      "axis_2": 4.0
+    }
+  ],
+  "session_id": "client-uuid",
+  "homework_id": "HW-20260428-001",
+  "warning_deductions": 0,
+  "homework_failed": false
+}
+```
+
+**200** Scorecard payload consumed by the Results screen:
+```json
+{
+  "overall_pct": 85,
+  "overall_score": 85.0,
+  "overall_axis_1": 3.5,
+  "overall_axis_2": 4.0,
+  "band": {"key": "proficient", "name": "Proficient"},
+  "perf_class": "perf-good",
+  "has_axes": true,
+  "phases": [
+    {
+      "key": "memory-sprint",
+      "label": "Memory Sprint",
+      "method": "closed",
+      "is_phase_level": false,
+      "correct": 5,
+      "total": 5,
+      "pct": 100.0,
+      "perf_class": "perf-good",
+      "score_text": "5/5",
+      "axis_1_mean": null,
+      "axis_2_mean": null
+    }
+  ],
+  "axes": {
+    "axis_1": {
+      "mean": 3.5,
+      "perf_class": "perf-good",
+      "tag": "Developing"
+    },
+    "axis_2": {
+      "mean": 4.0,
+      "perf_class": "perf-good",
+      "tag": "Proficient"
+    }
+  },
+  "totals": {"correct": 45, "items": 50},
+  "coaching_tip": "...",
+  "action": {"kind": "finish", "label": "Tugatish", "perf_class": "is-finish"}
+}
+```
+
+---
+
+### GET /api/grading/rubric
+
+Inspect the current grading rubric configuration. Useful for the dashboard (so teachers can see which phases produce which grade) and for tests.
+
+**200**
+```json
+{
+  "phase_method": {
+    "memory-sprint": "closed",
+    "story-mode": "closed",
+    "adaptive-quiz": "closed",
+    "sentence-fill": "closed",
+    "tile-match": "closed",
+    "real-life": "amr",
+    "consolidation": "ungraded",
+    "final-boss": "amr",
+    "reflection": "ungraded",
+    "theme-preview": "ungraded",
+    "flash-cards": "ungraded"
+  },
+  "phase_display_order": [
+    {"key": "memory-sprint", "label": "Memory Sprint", "phase_level": false},
+    {"key": "story-mode", "label": "Story Mode", "phase_level": false},
+    {"key": "adaptive-quiz", "label": "Adaptive Quiz", "phase_level": false},
+    {"key": "sentence-fill", "label": "Sentence Fill", "phase_level": false},
+    {"key": "tile-match", "label": "Tile Match", "phase_level": true},
+    {"key": "real-life", "label": "Real-Life", "phase_level": false},
+    {"key": "final-boss", "label": "Final Boss", "phase_level": false}
+  ],
+  "band_thresholds": [
+    {"axis_avg_floor": 3.5, "key": "mastered", "name": "Mastered"},
+    {"axis_avg_floor": 2.5, "key": "proficient", "name": "Proficient"},
+    {"axis_avg_floor": 1.5, "key": "apprentice", "name": "Apprentice"},
+    {"axis_avg_floor": 0.0, "key": "novice", "name": "Novice"}
+  ],
+  "finish_threshold_pct": 60
+}
+```
+
+Legend:
+- `phase_method`: `"closed"` = closed accuracy, `"amr"` = 2-axis rubric, `"ungraded"` = participation only
+- `band_thresholds`: scoring bands applied to the 1–4 axis-mean scale (or overall % for closed-only sessions)
+- `finish_threshold_pct`: score at or above which the Finish button is enabled (below: Redo button)
+
+---
+
 ## AI Tutor
 
-All AI endpoints accept and return JSON. On failure: `500` with `{ "error": "...", "code": "AI_ERROR" | "PROMPT_MISSING" }`.
+All AI endpoints accept and return JSON. On failure: `500` with `{ "error": "...", "code": "AI_ERROR" | "PROMPT_MISSING" | "TUTOR_BACKEND_ERROR" | "TUTOR_SESSION_CAP" }`.
+
+### AI Error codes
+- `AI_ERROR` — generic upstream LLM provider failure; client should retry
+- `PROMPT_MISSING` — required prompt field is empty or missing
+- `TUTOR_BACKEND_ERROR` — transient AI backend failure (LLM provider unavailable); client should retry
+- `TUTOR_SESSION_CAP` — per-session message cap reached (60 turns max); no further turns can be appended
 
 ### POST /api/ai/check-answer
 
