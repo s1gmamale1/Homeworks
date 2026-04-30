@@ -6,9 +6,49 @@ cached in memory. See CONTRACTS.md §5 for the injector contract.
 
 import json
 import re
+from typing import Optional
 
 from ..config import TEMPLATE_PATH
 from . import quotes as quotes_service
+
+
+# --------------------------------------------------------------------------- #
+# Boss-name resolution — subject-aware defaults, author override wins.
+# Used by the runtime template's data-boss-name / data-boss-name-label hooks
+# so each homework's final-boss section reads naturally for its subject.
+# --------------------------------------------------------------------------- #
+
+_BOSS_NAME_DEFAULTS = {
+    # Subject-id → default boss name (Uzbek primary; aliases for both
+    # English-style and Latin-Uzbek subject ids observed in DB rows).
+    "algebra":     "Algebra Boshlig'i",
+    "geometry":    "Geometriya Boshlig'i",
+    "geometriya":  "Geometriya Boshlig'i",
+    "physics":     "Fizika Boshlig'i",
+    "fizika":      "Fizika Boshlig'i",
+    "chemistry":   "Kimyo Boshlig'i",
+    "kimyo":       "Kimyo Boshlig'i",
+    "biology":     "Biologiya Boshlig'i",
+    "biologiya":   "Biologiya Boshlig'i",
+    "english":     "English Boss",
+    "russian":     "Русский Босс",
+    "history":     "Tarix Boshlig'i",
+    "tarix":       "Tarix Boshlig'i",
+    "literature":  "Adabiyot Boshlig'i",
+    "uzbek":       "O'zbek tili Boshlig'i",
+}
+
+
+def boss_name_for(subject_id: Optional[str], explicit: Optional[str]) -> str:
+    """Resolve the boss name for a homework. Explicit override wins;
+    falls back to subject default; otherwise generic 'Boss'."""
+    if explicit and explicit.strip():
+        return explicit.strip()
+    if subject_id:
+        sid = subject_id.strip().lower()
+        if sid in _BOSS_NAME_DEFAULTS:
+            return _BOSS_NAME_DEFAULTS[sid]
+    return "Boss"
 
 # Read template ONCE at module load (not per request)
 with open(TEMPLATE_PATH, "r", encoding="utf-8") as _f:
@@ -319,6 +359,17 @@ def inject(
     """
     html = _TEMPLATE
     meta = meta_override or content_json.get("meta") or {}
+
+    # Boss name — author override (content_json.boss_name) wins over the
+    # subject-aware default. Stamped onto the runtime context so the inline
+    # template script (which reads window.NETS_CTX.boss_name on
+    # DOMContentLoaded) can populate the data-boss-name hooks T1 added.
+    if runtime_context is not None and "boss_name" not in runtime_context:
+        runtime_context = dict(runtime_context)
+        runtime_context["boss_name"] = boss_name_for(
+            runtime_context.get("subject"),
+            content_json.get("boss_name") if isinstance(content_json, dict) else None,
+        )
 
     # 0. Stamp <html lang> with the resolved runtime language so the runtime
     # i18n layer (RUNTIME_LABELS / PHASE_LABELS) and any assistive tech

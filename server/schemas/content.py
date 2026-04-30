@@ -303,6 +303,10 @@ class ContentJSON(_Permissive):
     panels: Optional[List[Panel]] = None
     gate_quote: Optional[GateQuote] = None
 
+    # Final-boss section name. Optional override; when missing the runtime
+    # falls back to a subject-aware default (see services/injector.boss_name_for).
+    boss_name: Optional[str] = None
+
     # Phase 1
     flashcards: Optional[List[FlashcardItem]] = None
     # Phase 2

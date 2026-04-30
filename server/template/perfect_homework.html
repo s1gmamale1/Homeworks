@@ -610,12 +610,34 @@
             margin: 8px auto; object-fit: contain;
         }
         .fc-definition b, .fc-definition strong { font-weight: 700; }
+        /* Bullet rules — Image-2 contract: a thin turquoise vertical bar
+           replaces the default disc bullet, giving the back face a clean,
+           Apple-cream rule-list look that matches the front-face chip. */
         .fc-definition ul {
-            padding-left: 18px;
+            list-style: none;
+            padding-left: 0;
             margin-top: 10px;
         }
         .fc-definition li {
-            margin-bottom: 6px;
+            position: relative;
+            padding-left: 16px;
+            margin-bottom: 8px;
+            line-height: 1.55;
+        }
+        .fc-definition li::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 0.35em;
+            width: 2px;
+            height: 1.05em;
+            background: var(--fc-turquoise);
+            border-radius: 1px;
+            opacity: 0.78;
+        }
+        [data-theme="dark"] .fc-definition li::before {
+            background: var(--fc-turquoise);
+            opacity: 0.92;
         }
 
         /* TIP / EXAMPLE pill — back-side, gold accent (small accent per spec) */
@@ -5267,6 +5289,29 @@
         document.addEventListener('DOMContentLoaded', function () {
             const sp = document.getElementById('skip-pill');
             if (sp) sp.textContent = RT('skip.label');
+        });
+
+        // Resolve boss name from injected runtime context (NETS_CTX.boss_name)
+        // and write it into the data-boss-name / data-boss-name-label hooks T1
+        // pre-laid in the boss-intro markup. Server-side defaults already
+        // pick a subject-appropriate name; missing/empty value is a no-op so
+        // the static template fallback ("Algebra Boshlig'i") stays visible.
+        document.addEventListener('DOMContentLoaded', function populateBossName(){
+            try {
+                var name = (window.NETS_CTX && window.NETS_CTX.boss_name) || '';
+                if (!name) return;
+                document.querySelectorAll('[data-boss-name]').forEach(function(el){
+                    el.textContent = name;
+                });
+                document.querySelectorAll('[data-boss-name-label]').forEach(function(el){
+                    // Preserve any leading non-word prefix (e.g. "⚔️ ") and only
+                    // swap the name portion. \W matches the emoji + spaces.
+                    var prev = el.textContent || '';
+                    var m = prev.match(/^(\W*)/);
+                    var prefix = m ? m[1] : '';
+                    el.textContent = prefix + name;
+                });
+            } catch (e) { /* defensive — non-fatal if hooks missing */ }
         });
 
         const PANELS = [

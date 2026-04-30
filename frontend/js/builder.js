@@ -546,6 +546,84 @@
     `;
   }
 
+  // Subject → default boss name (mirrors server/services/injector._BOSS_NAME_DEFAULTS).
+  // Used only to compute the placeholder hint shown in the builder boss-name field;
+  // the runtime resolves the real default server-side, so authors see the same
+  // string in the placeholder as the player will see if the field is left blank.
+  const BOSS_NAME_DEFAULTS = {
+    algebra:    "Algebra Boshlig'i",
+    geometry:   "Geometriya Boshlig'i",
+    geometriya: "Geometriya Boshlig'i",
+    physics:    "Fizika Boshlig'i",
+    fizika:     "Fizika Boshlig'i",
+    chemistry:  "Kimyo Boshlig'i",
+    kimyo:      "Kimyo Boshlig'i",
+    biology:    "Biologiya Boshlig'i",
+    biologiya:  "Biologiya Boshlig'i",
+    english:    "English Boss",
+    russian:    "Русский Босс",
+    history:    "Tarix Boshlig'i",
+    tarix:      "Tarix Boshlig'i",
+    literature: "Adabiyot Boshlig'i",
+    uzbek:      "O'zbek tili Boshlig'i",
+  };
+
+  function defaultBossNameFor(subjectId) {
+    const sid = String(subjectId || "").trim().toLowerCase();
+    return BOSS_NAME_DEFAULTS[sid] || "Boss";
+  }
+
+  function mountBossNameField() {
+    // Prepend a top-of-editor card with the boss-name input, bound to
+    // content.boss_name. Empty string == use server-side default.
+    const content = getContent();
+    const homework = window.BUILDER_STATE.homework || {};
+    const fallback = defaultBossNameFor(homework.subject);
+    const current = String(content.boss_name || "");
+    const label = t("builder.boss_name_label", "Boss name");
+    const placeholderTpl = t(
+      "builder.boss_name_placeholder_template",
+      "Boss name (defaults to: {default})",
+    );
+    const placeholder = placeholderTpl.replace("{default}", fallback);
+    const help = t(
+      "builder.boss_name_help",
+      "Leave blank to use the subject default. Shown on the final-boss screen.",
+    );
+
+    const card = document.createElement("section");
+    card.className = "editor-card";
+    card.dataset.bossNameCard = "true";
+    card.innerHTML = `
+      <div class="editor-grid">
+        <label class="field full-span">
+          <span>${escapeHtml(label)}</span>
+          <input
+            type="text"
+            id="boss-name-input"
+            value="${escapeHtml(current)}"
+            placeholder="${escapeHtml(placeholder)}"
+            maxlength="80"
+            autocomplete="off" />
+          <small class="muted-text">${escapeHtml(help)}</small>
+        </label>
+      </div>
+    `;
+    // Insert at the very top of the editor root (above the boss-questions list).
+    els.editorRoot.insertBefore(card, els.editorRoot.firstChild);
+
+    const input = card.querySelector("#boss-name-input");
+    if (input) {
+      input.addEventListener("input", () => {
+        const next = input.value.trim();
+        const c = getContent();
+        if (next) c.boss_name = next;
+        else delete c.boss_name;
+        markDirty();
+      });
+    }
+  }
+
   function renderActiveEditor() {
     const phase = window.BUILDER_STATE.activePhase;
     const phaseNames = getPhaseNames();
@@ -561,6 +639,12 @@
       editor.render(els.editorRoot, getPhaseData(phase), (nextData) => applyPhaseChange(phase, nextData));
     } else {
       renderPlaceholderEditor(phase);
+    }
+
+    // Boss-phase only: add a top-of-editor input for the dynamic boss name
+    // (binds directly to content.boss_name; outside the boss_questions list).
+    if (phase === "final_challenge") {
+      mountBossNameField();
     }
   }
 

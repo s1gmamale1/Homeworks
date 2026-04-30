@@ -189,6 +189,9 @@ window.STRINGS = {
     'builder.wave1_stub_eyebrow': 'Editor coming soon',
     'builder.wave1_stub_text': 'A dedicated editor for this phase is on the way. The current data shape is shown below for reference.',
     'builder.no_contract_data': 'No contract-backed data key for this phase yet.',
+    'builder.boss_name_label': 'Boss name',
+    'builder.boss_name_placeholder_template': 'Boss name (defaults to: {default})',
+    'builder.boss_name_help': 'Leave blank to use the subject default. Shown on the final-boss screen.',
 
     // ── library (library.html) ───────────────────────────────────────────
     'library.page_title': 'NETS Builder · Library',
@@ -403,6 +406,9 @@ window.STRINGS = {
     'builder.wave1_stub_eyebrow': 'Muharrir tez orada',
     'builder.wave1_stub_text': "Bu bosqich uchun maxsus muharrir tez orada qo'shiladi. Quyida joriy ma'lumot strukturasi havola uchun ko'rsatilgan.",
     'builder.no_contract_data': "Bu bosqich uchun shartnoma asosidagi ma'lumotlar kaliti hali yo'q.",
+    'builder.boss_name_label': 'Boss nomi',
+    'builder.boss_name_placeholder_template': 'Boss nomi (avtomatik: {default})',
+    'builder.boss_name_help': "Bo'sh qoldirsangiz, fan bo'yicha standart nom ishlatiladi. Final bosqichda ko'rinadi.",
 
     // ── library ──────────────────────────────────────────────────────────
     'library.page_title': 'NETS Konstruktor · Kutubxona',
@@ -617,6 +623,9 @@ window.STRINGS = {
     'builder.wave1_stub_eyebrow': 'Редактор скоро',
     'builder.wave1_stub_text': 'Для этого этапа скоро появится отдельный редактор. Ниже показана текущая структура данных для справки.',
     'builder.no_contract_data': 'Для этого этапа пока нет ключа данных по контракту.',
+    'builder.boss_name_label': 'Имя босса',
+    'builder.boss_name_placeholder_template': 'Имя босса (по умолчанию: {default})',
+    'builder.boss_name_help': 'Оставьте пустым, чтобы использовать стандартное имя для предмета. Показывается на экране финального босса.',
 
     // ── library ──────────────────────────────────────────────────────────
     'library.page_title': 'NETS Конструктор · Библиотека',
