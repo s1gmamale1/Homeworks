@@ -29,9 +29,18 @@ Split each deck roughly 70% vocabulary / 30% grammar. If the unit yields fewer r
 
 **Back:** Definition or formula. One line. Include one quick example from the chapter. Add a UZ bridge if the trap needs it (false friend, stress, or structural mismatch).
 
-**Media:** Aim to include a topic-related visual on every card: stress-dot pattern, timeline, word-family branch, sentence diagram, collocation grid, or a concrete textbook object/place/person. Prefer small inline SVG under 200×150px. Use an image URL/data URL only when the source is an actual topic picture. If a card truly has no honest visual, omit `media`.
+**Media:** Include a concept-related visual when one is honest. Each visual must directly represent the target word, phrase, grammar pattern, stress pattern, timeline, collocation grid, word-family branch, sentence diagram, or a concrete textbook object/person/place. Prefer small inline SVG under 200×150px. Use an image URL/data URL **only** when the textbook source provides an actual relevant image. No decorative, generic, stock-like, or out-of-topic media. If there is no honest visual for a card, omit `media`.
 
-**Hint:** Optional mnemonic shown on the back card as "Yodlash usuli". Use it for traps students will forget.
+**Hint:** Optional mnemonic shown on the back card as "Yodlash usuli". A hint is a memory cue only — it must never expose the answer.
+
+Hint rules (hard constraints):
+- Hint must never expose the answer.
+- Hint cannot repeat the target term (or any inflected form of it).
+- Hint cannot include the exact definition.
+- Hint cannot translate the target into Uzbek, Russian, or any other language.
+- Hint cannot give a sentence where the target word is the obvious missing answer (no fill-in-the-blank that points straight at the term).
+- Hint must be only a memory cue: sound clue, stress cue, shape cue, contrast cue, or non-spoiler association.
+- If no honest non-spoiler hint is available, omit `hint`.
 
 That's it.
 
@@ -55,6 +64,17 @@ That's it.
 > **Front:** Past simple — question
 > **Back:** Did + subject + base verb? Misol: "**Did you earn** any money?" UZ: "-dingizmi?" = "Did you ...?"
 
+## Textbook fidelity (hard constraint)
+
+The attached textbook unit is the **only** source. Every term, collocation, grammar rule, example sentence, definition detail, and media idea must come from that unit.
+
+- No out-of-topic facts.
+- No invented examples — every example sentence is a real sentence from the attached chapter.
+- No dictionary padding — do not add senses, registers, or usage notes the textbook does not show.
+- No extra cultural details unless they are present in the textbook source.
+- No media that depicts something the textbook unit does not contain.
+- If the textbook does not support a card, **omit the card**. A short deck of textbook-true cards beats a padded deck.
+
 ## Rules
 
 - One concept per card
@@ -64,7 +84,7 @@ That's it.
 - Level-allowed tenses only in every example (A1: present simple + can + have got · A2: + past simple, going-to, have to · B1: + past continuous, present perfect, will, 1st conditional · B2: full arsenal)
 - Language: student-friendly English on the front; UZ bridge uses formal "Siz"
 - Cards stay accessible throughout the session — student can check them anytime
-- Visuals must be concept-related, not decoration. Aim for every card to have `media`; skip only when a visual would be misleading. Each visual must connect directly to the word/formula.
+- Visuals must be concept-related, not decoration. Include `media` whenever an honest concept-related visual exists; otherwise omit it. Each visual must connect directly to the target word, phrase, grammar pattern, stress pattern, timeline, collocation grid, word-family branch, sentence diagram, or a concrete textbook object/person/place.
 
 
 ---
