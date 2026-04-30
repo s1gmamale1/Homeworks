@@ -47,10 +47,15 @@ def test_phase_method_values_are_valid():
         assert method in valid, f"{phase} has invalid method {method!r}"
 
 
-def test_only_real_life_and_final_boss_are_amr():
-    """Per GRADING.md §4 / §6, the 2-axis rubric is exactly Phase 4 + Phase 6."""
+def test_amr_phases_are_real_life_boss_and_reading_checkpoint():
+    """Per GRADING.md §4 / §6, the 2-axis rubric is anchored on Phase 4 +
+    Phase 6 — Real-Life Challenge + Final Boss. Reading checkpoints
+    (Til Fanlar / Adabiyot) also collect axes when graded by the LMR
+    AI grader, so they participate in the axis-mean pool. All three
+    are flagged as 'amr' in PHASE_METHOD.
+    """
     amr_phases = {p for p, m in PHASE_METHOD.items() if m == "amr"}
-    assert amr_phases == {"real-life", "final-boss"}
+    assert amr_phases == {"real-life", "final-boss", "reading-checkpoint"}
 
 
 def test_sentence_fill_is_closed_not_amr():
@@ -286,9 +291,12 @@ def test_aggregate_output_shape_matches_template_contract():
     # Band shape
     assert set(out["band"].keys()) == {"key", "name"}
 
-    # Axes shape
+    # Axes shape — `name` was added so the renderer can show the right
+    # axis label per rubric (AMR: Concept Identification / Process Integrity;
+    # LMR v2: Grammatical Accuracy / Lexical Quality).
     for axis in ("axis_1", "axis_2"):
-        assert set(out["axes"][axis].keys()) == {"mean", "perf_class", "tag"}
+        assert set(out["axes"][axis].keys()) == {"mean", "perf_class", "tag", "name"}
+        assert isinstance(out["axes"][axis]["name"], str) and out["axes"][axis]["name"]
 
     # Totals shape
     assert set(out["totals"].keys()) == {"correct", "items"}
@@ -327,3 +335,64 @@ def test_coaching_tip_changes_with_band():
     assert mastered["coaching_tip"] != novice["coaching_tip"]
     assert mastered["coaching_tip"]  # not empty
     assert novice["coaching_tip"]    # not empty
+
+
+# ── LMR v2: language-subject rubric routing ────────────────────────────────
+
+def test_lmr_axis_labels_for_language_subject():
+    """English / Ona Tili / Rus Tili must use LMR v2 axis names —
+    Grammatical Accuracy + Lexical Quality. Anything else falls through
+    to AMR (Concept Identification + Process Integrity)."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    eng = aggregate(items, subject="english")
+    assert eng["rubric"] == "lmr"
+    assert eng["axes"]["axis_1"]["name"] == "Grammatical Accuracy"
+    assert eng["axes"]["axis_2"]["name"] == "Lexical Quality"
+
+
+def test_lmr_axis_labels_for_uzbek_and_russian():
+    """ona-tili and rus-tili (and their grade-band aliases) also use LMR v2."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 3, "axis_2": 3}]
+    for subject in ("ona-tili", "rus-tili", "ingliz-tili-g1-11", "ona-tili-g1-11"):
+        out = aggregate(items, subject=subject)
+        assert out["rubric"] == "lmr", subject
+        assert out["axes"]["axis_1"]["name"] == "Grammatical Accuracy", subject
+        assert out["axes"]["axis_2"]["name"] == "Lexical Quality", subject
+
+
+def test_amr_axis_labels_for_non_language_subjects():
+    """Math / science / social subjects keep AMR's axis names regardless
+    of LMR addition. Adding LMR must not regress AMR labelling."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    for subject in ("math-algebra", "math-geometry", "geometriya-g7-11",
+                    "biologiya", "tarix", None, ""):
+        out = aggregate(items, subject=subject)
+        assert out["rubric"] == "amr", subject
+        assert out["axes"]["axis_1"]["name"] == "Concept Identification", subject
+        assert out["axes"]["axis_2"]["name"] == "Process Integrity", subject
+
+
+def test_lmr_score_formula_identical_to_amr():
+    """LMR v2 reuses AMR's ((a1+a2)/2)*25 formula and band thresholds.
+    Same axis values must produce identical pct + band regardless of subject."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 3, "axis_2": 4}]  # → ((3+4)/2)*25 = 87.5 → 88, mastered
+    eng = aggregate(items, subject="english")
+    math = aggregate(items, subject="math-algebra")
+    assert eng["overall_pct"] == math["overall_pct"] == 88
+    assert eng["band"] == math["band"]
+    # Both rubrics must collect the same band even though axis labels differ
+    assert eng["band"]["key"] == "mastered"
+
+
+def test_lmr_floor_25_pct_same_as_amr():
+    """The LMR v2 floor for a 'correct' answer (gate passed but axes 1/1)
+    must equal AMR's floor — both are 25%."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 1, "axis_2": 1}]
+    eng = aggregate(items, subject="english")
+    math = aggregate(items, subject="math-algebra")
+    assert eng["overall_pct"] == math["overall_pct"] == 25
