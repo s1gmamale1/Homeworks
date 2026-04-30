@@ -47,26 +47,26 @@
 }
 
 :root[data-theme="light"] {
-    --lib-hairline:     rgba(17, 24, 39, .10);
-    --lib-glass-top:    rgba(255, 255, 255, .85);
-    --lib-glass-bot:    rgba(255, 255, 255, .55);
-    --lib-text-muted:   rgba(17, 24, 39, .68);
-    --lib-text-faint:   rgba(17, 24, 39, .44);
-    --lib-stat-bg-from: rgba(255, 255, 255, .9);
-    --lib-stat-bg-to:   rgba(255, 255, 255, .65);
-    --lib-tile-base:    #ffffff;
-    --lib-tile-mix-pct: 30%;
-    --lib-radial-bg-1:  rgba(0, 102, 204, .12);
-    --lib-radial-bg-2:  rgba(175, 82, 222, .08);
-    --lib-radial-bg-3:  rgba(255, 149, 0, .06);
-    --lib-shadow-glass: 0 18px 54px rgba(15, 23, 42, .14);
-    --lib-shadow-tile:  0 14px 36px rgba(15, 23, 42, .12);
-    --lib-shadow-panel: 0 28px 70px rgba(15, 23, 42, .20);
+    --lib-hairline:     rgba(15, 23, 42, .14);
+    --lib-glass-top:    rgba(255, 255, 255, .96);
+    --lib-glass-bot:    rgba(248, 250, 253, .92);
+    --lib-text-muted:   rgba(17, 24, 39, .72);
+    --lib-text-faint:   rgba(17, 24, 39, .60);
+    --lib-stat-bg-from: rgba(255, 255, 255, .98);
+    --lib-stat-bg-to:   rgba(244, 247, 252, .94);
+    --lib-tile-base:    color-mix(in oklab, var(--accent, #0066CC) 12%, white 88%);
+    --lib-tile-mix-pct: 50%;
+    --lib-radial-bg-1:  rgba(0, 102, 204, .07);
+    --lib-radial-bg-2:  rgba(175, 82, 222, .045);
+    --lib-radial-bg-3:  rgba(255, 149, 0, .035);
+    --lib-shadow-glass: 0 12px 32px rgba(15, 23, 42, .08), 0 2px 6px rgba(15, 23, 42, .04);
+    --lib-shadow-tile:  0 10px 28px rgba(15, 23, 42, .10), 0 2px 6px rgba(15, 23, 42, .05);
+    --lib-shadow-panel: 0 24px 60px rgba(15, 23, 42, .16), 0 4px 10px rgba(15, 23, 42, .06);
     --lib-input-bg:     rgba(15, 23, 42, .04);
     --lib-chip-bg:      rgba(15, 23, 42, .06);
-    --lib-card-from:    rgba(255, 255, 255, .92);
-    --lib-card-to:      rgba(255, 255, 255, .65);
-    --lib-card-border:  rgba(17, 24, 39, .08);
+    --lib-card-from:    rgba(255, 255, 255, .96);
+    --lib-card-to:      rgba(244, 247, 252, .88);
+    --lib-card-border:  rgba(17, 24, 39, .12);
     --lib-on-tile:      #1d1d1f;
 }
 
@@ -80,6 +80,13 @@ body[data-page="library"] {
         radial-gradient(circle at 16% 20%, var(--lib-radial-bg-2), transparent 28%),
         radial-gradient(circle at 86% 18%, var(--lib-radial-bg-3), transparent 26%),
         var(--bg);
+}
+:root[data-theme="light"] body[data-page="library"] {
+    background:
+        radial-gradient(circle at 50% -12%, var(--lib-radial-bg-1), transparent 32%),
+        radial-gradient(circle at 16% 20%, var(--lib-radial-bg-2), transparent 28%),
+        radial-gradient(circle at 86% 18%, var(--lib-radial-bg-3), transparent 26%),
+        #f4f6fa;  /* cool-tinted near-white instead of pure white */
 }
 
 body[data-page="library"]::before {
@@ -314,7 +321,7 @@ body[data-page="library"] .lang-pill.is-active {
     font-size: 31px;
     line-height: .9;
     letter-spacing: -.055em;
-    font-weight: 900;
+    font-weight: 950;
     color: var(--text);
 }
 
@@ -927,6 +934,23 @@ body[data-page="library"] .lang-pill.is-active {
     color: var(--lib-text-muted);
     font-weight: 800;
 }
+
+/* ---------- Light-mode surface overrides ---------- */
+:root[data-theme="light"] .subject-tile {
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .10), 0 2px 6px rgba(15, 23, 42, .05),
+                inset 0 1px 0 rgba(255, 255, 255, .9);
+    border: 1px solid color-mix(in oklab, var(--accent) 22%, rgba(15, 23, 42, .14));
+}
+
+:root[data-theme="light"] .lib-stat::after {
+    opacity: .38;
+    background: radial-gradient(circle, color-mix(in oklab, var(--accent) 70%, transparent), transparent 60%);
+}
+
+:root[data-theme="light"] .topbar h1 { color: var(--text); }
+:root[data-theme="light"] .topbar .eyebrow { color: rgba(17, 24, 39, .62); }
+:root[data-theme="light"] .topbar a,
+:root[data-theme="light"] .topbar nav a { color: var(--text); }
 
 /* ---------- Responsive: tablet ---------- */
 @media (max-width: 1030px) {

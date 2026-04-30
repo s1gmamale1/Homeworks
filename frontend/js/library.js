@@ -376,37 +376,59 @@
   }
 
   // 4-col grid → 3-col-wide expanded panel anchored adjacent to the
-  // origin tile. Tablet (≤1030) collapses to full-width 2-row, mobile
-  // (≤650) likewise but taller.
-  function getExpandedTarget(tile) {
+  // origin tile. Tablet (≤1030) collapses to full-width 2-col, mobile
+  // (≤650) full-width 1-col. Height scales with item-row count, capped
+  // by available stage height.
+  function getExpandedTarget(tile, items) {
     const gridRect = gridEl.getBoundingClientRect();
     const origin = rectRelativeToGrid(tile.getBoundingClientRect());
     const isMobile = window.innerWidth <= 650;
     const isTablet = window.innerWidth <= 1030;
 
+    const itemCount = (items && items.length) || 0;
+    const cardRowHeight = 234; // 214 min-h + 20 gap
+    const chromeHeight = 170;  // header + chip strip + padding
+    const stageRect = stageEl ? stageEl.getBoundingClientRect() : gridRect;
+    const stageInnerHeight = stageRect.height;
+
     if (isMobile) {
-      return { left: 0, top: origin.top, width: gridRect.width, height: 690 };
+      const cols = 1;
+      const rows = Math.max(1, Math.ceil(itemCount / cols));
+      const desiredHeight = chromeHeight + rows * cardRowHeight;
+      const stageMaxHeight = Math.max(560, stageInnerHeight - origin.top - 16);
+      const height = Math.max(560, Math.min(desiredHeight, stageMaxHeight));
+      return { left: 0, top: origin.top, width: gridRect.width, height };
     }
     if (isTablet) {
-      return { left: 0, top: origin.top, width: gridRect.width, height: 520 };
+      const cols = 2;
+      const rows = Math.max(1, Math.ceil(itemCount / cols));
+      const desiredHeight = chromeHeight + rows * cardRowHeight;
+      const stageMaxHeight = Math.max(480, stageInnerHeight - origin.top - 16);
+      const height = Math.max(480, Math.min(desiredHeight, stageMaxHeight));
+      return { left: 0, top: origin.top, width: gridRect.width, height };
     }
 
+    // Desktop (>1030px): 3-card-wide panel, height scales with row count
     const cardGap = 14;
     const cardWidth = (gridRect.width - cardGap * 3) / 4;
     const originColumn = Math.round(origin.left / (cardWidth + cardGap));
     const width = cardWidth * 3 + cardGap * 2;
     let left;
-    if (originColumn === 0) {
-      // Origin in column 0 → panel covers cols 1–3.
-      left = cardWidth + cardGap;
-    } else if (originColumn === 3) {
-      // Origin in column 3 → panel covers cols 0–2.
-      left = 0;
+    if (originColumn === 3) {
+      left = 0;                              // panel covers cols 0-2
     } else {
-      // Columns 1 or 2 → bias toward right so panel covers cols 1–3.
-      left = cardWidth + cardGap;
+      left = cardWidth + cardGap;            // panel covers cols 1-3
     }
-    return { left, top: origin.top, width, height: 420 };
+
+    // Height scales with item count: 4 cols, ~234px per row (214 min-h + 20 gap),
+    // plus 170px chrome (header + chip strip + padding). Capped by stage height.
+    const cols = 4;
+    const rows = Math.max(1, Math.ceil(itemCount / cols));
+    const desiredHeight = chromeHeight + rows * cardRowHeight;
+    const stageMaxHeight = Math.max(420, stageInnerHeight - origin.top - 16);
+    const height = Math.max(420, Math.min(desiredHeight, stageMaxHeight));
+
+    return { left, top: origin.top, width, height };
   }
 
   function setPanelBox(panel, rect) {
@@ -494,7 +516,7 @@
     sourceTile = tile;
     activeSubjectId = subjectId;
     sourceRect = rectRelativeToGrid(tile.getBoundingClientRect());
-    const targetRect = getExpandedTarget(tile);
+    const targetRect = getExpandedTarget(tile, items);
 
     const panel = document.createElement("section");
     panel.className = "subject-panel animating";
@@ -610,7 +632,8 @@
   // Reposition open panel on resize.
   window.addEventListener("resize", () => {
     if (!openPanel || !sourceTile) return;
-    setPanelBox(openPanel, getExpandedTarget(sourceTile));
+    const resizeItems = activeSubjectId ? (lastGroups[activeSubjectId] || []) : [];
+    setPanelBox(openPanel, getExpandedTarget(sourceTile, resizeItems));
   });
 
   // ── Fetch ────────────────────────────────────────────────────────────────
