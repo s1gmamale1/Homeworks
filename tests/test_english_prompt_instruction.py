@@ -92,3 +92,13 @@ def test_flashcards_concept_related_media_rules():
     ]
     for phrase in required:
         assert phrase in text, f"flashcards.md must contain: {phrase!r}"
+
+
+def test_english_flow_md_is_removed():
+    """flow.md is orphaned after #93 inlined the phase order — must stay
+    deleted to prevent two-sources-of-truth drift."""
+    flow_path = PROMPTS_DIR / "flow.md"
+    assert not flow_path.exists(), (
+        "server/prompts/english/flow.md must not exist — instruction.md inlines the "
+        "phase-prompt order; keeping flow.md creates a conflicting orphan."
+    )

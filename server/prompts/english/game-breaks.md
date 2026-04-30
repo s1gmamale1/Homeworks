@@ -1,108 +1,112 @@
-# Prompt: Game Breaks — English (Phase 3)
+# Prompt: Game Breaks - English (Phase 5, HARD only)
 
-You are building the Game Breaks (Phase 3) for an English homework session. This is where active practice begins. The student applies what they learned in Preview through gamified repetition.
+You are building the Game Breaks phase for an English homework session. English has no Easy mode: always build the HARD pipeline with 3 games. The student applies what they learned in Preview, Flash Cards, Memory Sprint, and Reading through system-supported game mechanics only.
 
 ## Input
 
 - Textbook unit (image or text)
-- Preview + Flash Cards + Sprint (+ Reading if HARD) outputs
-- Mode (from `classify.md`): EASY → **2 games** · HARD → **3 games**
-- Detected CEFR level: A1 · A1+ · A2 · A2+ · B1 · B1+ · B2
+- Preview + Flash Cards + Memory Sprint + Reading outputs
+- Mode from `classify.md`: always `HARD`
+- Detected CEFR level: A1, A1+, A2, A2+, B1, B1+, or B2
 - Grade (for content complexity calibration)
 
 ## Output
 
-2 or 3 games. Each item tagged `[Bloom: LX | PISA: LX]`.
+Exactly 3 games. Adaptive Quiz is mandatory. Pick 2 more from the supported game list below.
 
-Items per game by CEFR level: A1: 4 · A2: 4-5 · B1: 5-6 · B2: 6.
+Items per game by CEFR level: A1: 4 items, A2: 4-5, B1: 5-6, B2: 6.
+
+Every item must come from the current textbook unit only and be tagged `[Bloom: LX | PISA: LX]`.
 
 ---
 
-## Available Games (v1 pool — pick from these only)
+## Supported Games Only
 
-| Game | How it works | Good for |
-|------|-------------|----------|
-| **Adaptive Quiz** | Progressive-difficulty question flow. Notebook Capture built in. | Grammar production, translation tasks |
-| **Tile Match** | Drag pairs to match. | Word ↔ meaning, term ↔ UZ bridge, collocation ↔ context |
-| **Sentence Fill** | Statement with a gap; student selects missing piece. | Grammar slot, tense form, register choice |
-| **Memory Match** | 4×4 flip grid, find pairs. | Vocab ↔ definition, form ↔ name, IPA ↔ word |
-| **Speed Sort** | Items sorted into 2+ categories before time. | Tense sort, register sort, word-class sort |
+Use only these game names/mechanics because these are the ones implemented in the system:
 
-**Banned games (never reference):** Blackjack 21, Bridge Builder, Minefield Navigator, Escape Room, Territory Conquest, Codebreaker. No exceptions.
+| Game | Contract key | How it works | Good for |
+|------|--------------|--------------|----------|
+| **Adaptive Quiz** | `adaptive_quiz` | Progressive difficulty question flow. Notebook Capture can be enabled for production tasks. | Grammar production, translation, short explanation |
+| **Sentence Fill** | `why_chain` | Prompt chain where the student fills or explains the missing language piece. | Grammar slots, tense form, register choice, word-to-structure recall |
+| **Tile Match** | `memory_match` | Left/right tile pairs. | Word to meaning, term to UZ bridge, collocation to context, IPA to word |
+| **Puzzle Lock** | `puzzle_lock` | Knowledge-gated tile puzzle; each move can require answering a unit question. | Short recall, form recognition, vocabulary checks |
+| **Mystery Box** | `mystery_box` | Student identifies category/label and answer for hidden items. | Sorting grammar/vocab categories, register recognition |
+| **Tic Tac Toe vs AI** | `ttt` | 3x3 board with question-gated moves against AI. | Quick MC-style recognition and contrast checks |
+
+**Do not reference any game outside this list.** Any unlisted, legacy, or newly invented game is unsupported.
 
 ## Game Selection
 
-**Mandatory:** Adaptive Quiz must be one of the games.
-
-**EASY (2 games):** Adaptive Quiz + pick 1 from the rest based on unit content.
-**HARD (3 games):** Adaptive Quiz + pick 2. Vary the type — don't pick two matching games.
+**Mandatory:** Adaptive Quiz must be one of the 3 games.
 
 Pick based on content:
-- Vocabulary-heavy → Tile Match or Memory Match
-- Grammar-pattern → Sentence Fill
-- Mixed → Tile Match + Sentence Fill + Speed Sort
-- B2 level: must include ≥1 IELTS collocation or academic cloze item
+- Vocabulary-heavy unit -> Tile Match or Mystery Box
+- Grammar-pattern unit -> Sentence Fill or Adaptive Quiz
+- Mixed grammar + vocabulary -> Adaptive Quiz + Sentence Fill + Tile Match
+- Visual/spatial recall -> Puzzle Lock only when the unit has enough short, fair recall prompts
+- Quick contrast practice -> Tic Tac Toe vs AI only for closed-format recognition items
+- B2 level -> include at least 1 IELTS collocation, academic cloze, register, or rhetorical-analysis item inside Adaptive Quiz or Sentence Fill
+
+Never pick two games that test the same item in the same way.
 
 ---
 
-## Construction per game
+## Construction Per Game
 
 ### Adaptive Quiz
-- Items per level from table
-- Difficulty scales: first 2 easy, middle 2-3 medium, last 1-2 hard
-- G9+: no MC — open-ended production only
-- G5-8: MC allowed for recognition items
-
-### Tile Match
-- Left tile: target word, phrase, or grammar pattern name
-- Right tile: UZ bridge, definition, or real-world use
-- A1: word ↔ UZ meaning · A2: collocation ↔ natural context · B1: formal ↔ informal register · B2: academic collocation ↔ citation
+- Items per level from the table.
+- Difficulty tiers are item tiers, not homework mode: first 2 `EASY`, middle 2-3 `MEDIUM`, last 1-2 `HARD`.
+- G9+: no MC unless the textbook task itself is recognition-only.
+- G5-8: MC allowed for recognition items.
+- Open production answers must include accepted answers or an answer spec.
 
 ### Sentence Fill
-- Sentence or short dialogue with one piece missing
-- Gap must test grammar understanding — not random word removal
-- A1: "She ___ (go) to school every day." (goes) · A2: tense choice between two forms · B1: modal + base verb · B2: inversion or cleft gap
-- Use level-allowed tenses only in all model answers
+- Sentence or short dialogue with one missing piece or one short explanation step.
+- Gap must test grammar understanding, not random word removal.
+- A1: one-word form. A2: tense choice between two forms. B1: modal/perfect/conditional slot. B2: inversion, cleft, register, or academic structure.
+- Use level-allowed tenses only in all model answers.
 
-### Memory Match
-- 4×4 grid (8 pairs)
-- A1: word ↔ picture clue · A2: IPA ↔ word · B1: idiom ↔ meaning · B2: rhetorical device ↔ example
+### Tile Match
+- Left tile: target word, phrase, grammar pattern, IPA cue, or example.
+- Right tile: UZ bridge, definition, form name, or real-world use.
+- A1: word to UZ meaning. A2: collocation to natural context. B1: form to function. B2: academic collocation to citation/register.
+- SVG or image is allowed inside a tile only when it directly represents textbook content.
 
-### Speed Sort
-- Items sorted into 2 categories
-- A1: present/past · A2: formal/informal register · B1: defining/non-defining relative clause · B2: active/passive or academic/general register
+### Puzzle Lock
+- Use only if the unit provides enough short checks.
+- Each tile prompt must have a short answer that can be checked reliably.
+- Avoid long production writing here; use Adaptive Quiz or Sentence Fill for that.
 
----
+### Mystery Box
+- Use 2-4 category labels from the unit.
+- Each box must have a category and a short answer.
+- Good labels: tense, register, word class, collocation type, false friend, function.
 
-## Example: Tile Match (5 pairs, B1)
-
-| Left tile | Right tile |
-|-----------|------------|
-| `have/has + V3` | present perfect |
-| `photographer` | oOoo — /fəˈtɒɡrəfər/ |
-| `magazine` | journal/periodical (NOT a shop) |
-| `She has worked there.` | present result, no time given |
-| `Hilton Tashkent` | 5-star hotel, Uzbekistan context |
+### Tic Tac Toe vs AI
+- Use only for closed recognition or contrast questions.
+- Each item needs one correct option and 2-3 distractors.
+- Do not use it for paragraph writing, translation paragraphs, or open production.
 
 ---
 
 ## Rules
 
-- 2 games (EASY) or 3 games (HARD) — Adaptive Quiz is mandatory
-- Every item tagged `[Bloom: LX | PISA: LX]` — L1-L3 Bloom, L1-L2 PISA for Game Breaks
-- B2 must include ≥1 IELTS collocation or academic cloze item
-- Full answer key for every game
-- Current unit content only — no items from other chapters
-- Language: student-facing English; UZ inside items only as UZ↔EN bridge tile
-- Level-allowed tenses only in model answers
-- No banned games (see list above)
-- Visuals: inline SVG where a visual speeds recognition (tiny stress-dot on a tile, IPA glyph, word-family mini-tree). Under 200×150px. Priority SVG > Mermaid > ASCII.
-
+- Exactly 3 games for English HARD mode; Adaptive Quiz is mandatory.
+- Every item tagged `[Bloom: LX | PISA: LX]`.
+- B2 must include at least 1 IELTS collocation, academic cloze, register, or rhetorical-analysis item.
+- Full answer key for every game.
+- Current textbook unit content only. No items from other chapters and no outside facts.
+- Language: student-facing English; UZ appears only for an explicit UZ<->EN bridge.
+- Level-allowed tenses only in model answers.
+- No unsupported or invented game names.
+- Visuals: inline SVG where a visual speeds recognition. Under 200x150px. Use only textbook-supported visuals; no decorative media.
 
 ---
 
 ## OUTPUT REQUIREMENT
-Return valid JSON matching this exact schema:
+
+Return valid JSON matching this exact schema. Omit optional game arrays only when that game is not selected.
+
 ```json
 {
   "adaptive_quiz": [
@@ -122,7 +126,28 @@ Return valid JSON matching this exact schema:
     }
   ],
   "memory_match": [
-    ["string", "string"]
+    ["left tile", "right tile"]
+  ],
+  "puzzle_lock": [
+    {
+      "tile": "string",
+      "q": "string",
+      "ans": ["string"]
+    }
+  ],
+  "mystery_box": [
+    {
+      "category": "string",
+      "q": "string",
+      "a": "string"
+    }
+  ],
+  "ttt": [
+    {
+      "q": "string",
+      "correct": "string",
+      "distractors": ["string", "string", "string"]
+    }
   ]
 }
 ```

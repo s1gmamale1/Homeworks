@@ -5,7 +5,7 @@ You are building the Reflection phase (final phase) for an English homework sess
 ## Input
 
 - All previous phase outputs
-- Mode (EASY or HARD) from `classify.md`
+- Mode from `classify.md`: always HARD for English
 - Detected CEFR level: A1 · A1+ · A2 · A2+ · B1 · B1+ · B2
 - Grade (for UZ location references and calibration)
 

@@ -144,7 +144,7 @@ Unit content: review chapter, word↔definition matching, no new grammar, short 
 Return valid JSON matching this exact schema:
 ```json
 {
-  "mode": "easy|hard",
+  "mode": "hard",
   "level": "string",
   "reason": "string"
 }

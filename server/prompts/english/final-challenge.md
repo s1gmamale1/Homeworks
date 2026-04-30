@@ -28,6 +28,8 @@ Boss questions with HP damage tags (count by CEFR level). Mix of difficulty tier
 
 ## Damage Table (all levels)
 
+These are question difficulty tiers, not homework modes. English homework mode remains HARD.
+
 | Difficulty | Damage | Distribution |
 |-----------|:------:|:----------:|
 | Easy | -10 HP | 40% |

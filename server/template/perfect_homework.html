@@ -2913,13 +2913,57 @@
             color: var(--accent);
         }
         /* Reading */
+        .screen-reading-shell {
+            display: grid;
+            gap: 14px;
+        }
+        .screen-reading-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .screen-reading-progress {
+            flex: 0 0 auto;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(99,184,255,0.12);
+            border: 1px solid rgba(99,184,255,0.28);
+            border-radius: 999px;
+            padding: 6px 10px;
+        }
+        .screen-reading-status {
+            min-height: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
         .screen-reading-passage {
-            margin-bottom: 18px;
+            margin-bottom: 0;
+            padding: 18px;
+            border: 1px solid rgba(99,184,255,0.22);
+            border-radius: 16px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,251,255,0.90));
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.72);
+            font-size: clamp(16px, 2.2vw, 18px);
+            line-height: 1.72;
+        }
+        .screen-reading-passage p {
+            margin: 0;
+        }
+        .screen-reading-passage p + p {
+            margin-top: 0.85em;
         }
         .screen-reading-checkpoint {
-            margin-top: 14px;
-            padding: 12px;
-            border-left: 3px solid var(--accent);
+            margin-top: 0;
+            padding: 14px;
+            border: 1px solid rgba(99,184,255,0.24);
+            border-left: 4px solid var(--accent);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.72);
         }
         .screen-reading-prompt {
             font-weight: 600;
@@ -2958,6 +3002,12 @@
         }
         .screen-reading-btn:disabled { opacity: 0.45; cursor: default; }
         .screen-reading-btn:hover:not(:disabled) { background: rgba(99,184,255,0.2); }
+        .screen-reading-btn.is-primary {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .screen-reading-btn.is-primary:hover:not(:disabled) { filter: brightness(1.05); }
         .screen-reading-feedback {
             margin-top: 8px;
             font-size: 13px;
@@ -4061,6 +4111,21 @@
         [data-theme="dark"] .screen-reading-btn:hover:not(:disabled) {
             background: rgba(0, 122, 255, 0.30);
         }
+        [data-theme="dark"] .screen-reading-progress {
+            color: #93c5fd;
+            background: rgba(0, 122, 255, 0.18);
+            border-color: rgba(0, 122, 255, 0.45);
+        }
+        [data-theme="dark"] .screen-reading-passage,
+        [data-theme="dark"] .screen-reading-checkpoint {
+            background: rgba(15, 23, 42, 0.74);
+            border-color: rgba(96, 165, 250, 0.32);
+        }
+        [data-theme="dark"] .screen-reading-btn.is-primary {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+        }
         [data-theme="dark"] .screen-reading-feedback.is-correct { background: rgba(34, 197, 94, 0.18); color: #86efac; }
         [data-theme="dark"] .screen-reading-feedback.is-wrong   { background: rgba(239, 68, 68, 0.20); color: #fca5a5; }
         [data-theme="dark"] .screen-reading-feedback.is-pending { background: rgba(0, 122, 255, 0.18); color: #93c5fd; }
@@ -4718,9 +4783,15 @@
                 <div class="phase-intro-text">O'qish</div>
             </div>
             <div class="card panel-card screen-wave2-card" id="reading-content-card">
-                <div class="caption screen-wave2-caption" id="reading-title">O'qish</div>
-                <div class="content-area screen-reading-passage" id="reading-passage"></div>
-                <div id="reading-checkpoints"></div>
+                <div class="screen-reading-topline">
+                    <div class="caption screen-wave2-caption" id="reading-title">O'qish</div>
+                    <div class="screen-reading-progress" id="reading-progress"></div>
+                </div>
+                <div class="screen-reading-status" id="reading-status"></div>
+                <div class="screen-reading-shell">
+                    <div class="content-area screen-reading-passage" id="reading-passage"></div>
+                    <div id="reading-checkpoints"></div>
+                </div>
             </div>
         </div>
 
@@ -4815,6 +4886,9 @@
                 'reading.placeholder':   'Javobingizni yozing...',
                 'reading.check':         'Tekshirish',
                 'reading.next_question': 'Keyingi savol',
+                'reading.page_label':    'Sahifa',
+                'reading.must_answer':   'Davom etish uchun savolga javob bering.',
+                'reading.all_done':      'Reading checkpoint bajarildi. Endi davom etishingiz mumkin.',
                 'reading.correct':       "✓ To'g'ri!",
                 'reading.wrong':         "✗ Noto'g'ri.",
                 'reading.right_answer':  "To'g'ri javob:",
@@ -4938,6 +5012,9 @@
                 'reading.placeholder':   'Введите ваш ответ...',
                 'reading.check':         'Проверить',
                 'reading.next_question': 'Следующий вопрос',
+                'reading.page_label':    'Page',
+                'reading.must_answer':   'Answer the checkpoint to continue.',
+                'reading.all_done':      'Reading checkpoint complete. You can continue.',
                 'reading.correct':       '✓ Верно!',
                 'reading.wrong':         '✗ Неверно.',
                 'reading.right_answer':  'Правильный ответ:',
@@ -5050,6 +5127,9 @@
                 'reading.placeholder':   'Type your answer...',
                 'reading.check':         'Check',
                 'reading.next_question': 'Next question',
+                'reading.page_label':    'Page',
+                'reading.must_answer':   'Answer the checkpoint to continue.',
+                'reading.all_done':      'Reading checkpoint complete. You can continue.',
                 'reading.correct':       '✓ Correct!',
                 'reading.wrong':         '✗ Wrong.',
                 'reading.right_answer':  'Correct answer:',
@@ -9735,7 +9815,7 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function readingHasContent() {
             if (!READING) return false;
-            const has = (READING.passage && String(READING.passage).trim()) ||
+            const has = ((READING.passage || READING.text) && String(READING.passage || READING.text).trim()) ||
                         (READING.title && String(READING.title).trim()) ||
                         (Array.isArray(READING.checkpoints) && READING.checkpoints.length);
             return Boolean(has);
@@ -9775,23 +9855,125 @@ Prezident ertaga hisobot kutmoqda.`,
             return candidates.some(a => readingNorm(a) === norm);
         }
 
+        const readingState = {
+            page: 0,
+            pages: [],
+            answered: [],
+            answers: [],
+            results: [],
+            feedback: [],
+            onContinue: null,
+        };
+
+        function readingEscapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function readingTextFromHtml(html) {
+            const div = document.createElement('div');
+            div.innerHTML = String(html || '');
+            return (div.textContent || div.innerText || '').trim();
+        }
+
+        function readingBuildPages(rawPassage) {
+            const raw = String(rawPassage || '').trim();
+            if (!raw) return [];
+            const paragraphMatches = raw.match(/<p\b[\s\S]*?<\/p>/gi);
+            if (paragraphMatches && paragraphMatches.length > 1) return paragraphMatches;
+
+            const text = readingTextFromHtml(raw) || raw.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, ' ');
+            const sentences = (text.match(/[^.!?]+[.!?]+(?:["')\]]+)?|[^.!?]+$/g) || [text])
+                .map(s => s.trim())
+                .filter(Boolean);
+            const chunks = [];
+            let current = [];
+            let length = 0;
+            sentences.forEach(sentence => {
+                const nextLength = length + sentence.length;
+                if (current.length && (current.length >= 2 || nextLength > 260)) {
+                    chunks.push(current.join(' '));
+                    current = [];
+                    length = 0;
+                }
+                current.push(sentence);
+                length += sentence.length;
+            });
+            if (current.length) chunks.push(current.join(' '));
+            return chunks.map(chunk => '<p>' + readingEscapeHtml(chunk) + '</p>');
+        }
+
+        function readingCheckpointPage(index, totalPages, checkpointCount) {
+            if (!checkpointCount) return -1;
+            return Math.min(totalPages - 1, Math.max(0, Math.round(((index + 1) * totalPages) / checkpointCount) - 1));
+        }
+
+        function readingIsComplete(checkpoints) {
+            if (!checkpoints.length) return true;
+            return checkpoints.every((_, i) => Boolean(readingState.answered[i]));
+        }
+
+        function updateReadingContinueState() {
+            const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
+            const done = readingIsComplete(checkpoints);
+            const status = document.getElementById('reading-status');
+            if (status) status.textContent = done ? RT('reading.all_done') : RT('reading.must_answer');
+            if (!btn) return;
+            btn.classList.remove('pulse', 'state-pill', 'state-line');
+            if (done) {
+                btn.classList.add('state-pill', 'pulse');
+            } else {
+                btn.classList.add('state-line');
+            }
+            setBtnText(RT('btn.continue'));
+        }
+
+        function readingGoToPage(nextPage) {
+            const max = Math.max(0, readingState.pages.length - 1);
+            readingState.page = Math.min(max, Math.max(0, nextPage));
+            renderReading();
+            const card = document.getElementById('reading-content-card');
+            if (card) card.scrollTop = 0;
+        }
+
         function renderReading() {
             const titleEl = document.getElementById('reading-title');
             const passageEl = document.getElementById('reading-passage');
+            const progressEl = document.getElementById('reading-progress');
             const cpEl = document.getElementById('reading-checkpoints');
+            const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
+            const readingPassage = READING.passage || READING.text || '';
+
             if (titleEl) titleEl.textContent = (READING.title || RT('reading.title_default')).toUpperCase();
-            if (passageEl) passageEl.innerHTML = READING.passage || '';
+            if (!readingState.pages.length) {
+                readingState.pages = readingBuildPages(readingPassage);
+                if (!readingState.pages.length) readingState.pages = [''];
+            }
+            if (readingState.page >= readingState.pages.length) readingState.page = readingState.pages.length - 1;
+            if (passageEl) passageEl.innerHTML = readingState.pages[readingState.page] || '';
+            if (progressEl) {
+                progressEl.textContent = RT('reading.page_label') + ' ' + (readingState.page + 1) + ' / ' + readingState.pages.length;
+            }
+
             if (cpEl) {
                 cpEl.innerHTML = '';
-                const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
-                checkpoints.forEach((cp, i) => {
+                const pageCheckpointIndexes = checkpoints
+                    .map((_, i) => i)
+                    .filter(i => readingCheckpointPage(i, readingState.pages.length, checkpoints.length) === readingState.page);
+
+                pageCheckpointIndexes.forEach((i) => {
+                    const cp = checkpoints[i] || {};
                     const block = document.createElement('div');
                     block.className = 'screen-reading-checkpoint';
                     block.id = 'reading-cp-' + i;
 
                     const q = document.createElement('div');
                     q.className = 'screen-reading-prompt';
-                    q.innerHTML = '<span class="caption screen-reading-q-tag">Q' + (i+1) + '</span>' + (cp.prompt || '');
+                    q.innerHTML = '<span class="caption screen-reading-q-tag">Q' + (i + 1) + '</span>' + (cp.prompt || cp.q || '');
                     block.appendChild(q);
 
                     const input = document.createElement('input');
@@ -9802,6 +9984,8 @@ Prezident ertaga hisobot kutmoqda.`,
                     input.setAttribute('autocapitalize', 'off');
                     input.setAttribute('spellcheck', 'false');
                     input.placeholder = RT('reading.placeholder');
+                    input.value = readingState.answers[i] || '';
+                    input.disabled = Boolean(readingState.answered[i]);
                     block.appendChild(input);
 
                     const btnRow = document.createElement('div');
@@ -9811,32 +9995,31 @@ Prezident ertaga hisobot kutmoqda.`,
                     checkBtn.className = 'screen-reading-btn';
                     checkBtn.id = 'reading-cp-check-' + i;
                     checkBtn.textContent = RT('reading.check');
+                    checkBtn.disabled = Boolean(readingState.answered[i]);
                     btnRow.appendChild(checkBtn);
                     const nextBtn = document.createElement('button');
                     nextBtn.type = 'button';
-                    nextBtn.className = 'screen-reading-btn';
+                    nextBtn.className = 'screen-reading-btn is-primary';
                     nextBtn.id = 'reading-cp-next-' + i;
-                    nextBtn.textContent = RT('reading.next_question');
-                    nextBtn.style.display = 'none';
+                    nextBtn.textContent = (readingState.page < readingState.pages.length - 1) ? RT('btn.next') : RT('btn.continue');
+                    nextBtn.style.display = readingState.answered[i] ? '' : 'none';
                     btnRow.appendChild(nextBtn);
                     block.appendChild(btnRow);
 
                     const fb = document.createElement('div');
                     fb.className = 'screen-reading-feedback';
                     fb.id = 'reading-cp-fb-' + i;
-                    fb.style.display = 'none';
+                    if (readingState.feedback[i]) {
+                        fb.style.display = '';
+                        fb.className = 'screen-reading-feedback ' + (readingState.results[i] ? 'is-correct' : 'is-wrong');
+                        fb.innerHTML = readingState.feedback[i];
+                    } else {
+                        fb.style.display = 'none';
+                    }
                     block.appendChild(fb);
 
                     cpEl.appendChild(block);
 
-                    // Click handler.
-                    //   • Language subjects (english / ona-tili / rus-tili): use AI
-                    //     for SEMANTIC matching against the accepted answer (paraphrases
-                    //     accepted) + collect LMR v2 axes (Grammatical Accuracy +
-                    //     Lexical Quality) for the overall scorecard.
-                    //   • Other subjects: keep the ORIGINAL local string-match — instant
-                    //     feedback, no AI call. (Scope: per user's clarification, AI on
-                    //     non-RL/non-Boss free-text fields only applies to language.)
                     checkBtn.addEventListener('click', async () => {
                         if (input.disabled) return;
                         const studentAnswer = (input.value || '').trim();
@@ -9849,7 +10032,6 @@ Prezident ertaga hisobot kutmoqda.`,
                         const isLanguage = (typeof gbIsLanguageSubject === 'function')
                             ? gbIsLanguageSubject() : false;
 
-                        // Build the accepted-answer list (cp.ans + cp.acceptable[]).
                         const expectedList = [];
                         if (cp.ans) expectedList.push(cp.ans);
                         if (Array.isArray(cp.acceptable)) expectedList.push(...cp.acceptable);
@@ -9857,25 +10039,10 @@ Prezident ertaga hisobot kutmoqda.`,
                         input.disabled = true;
                         checkBtn.disabled = true;
 
-                        // Wire up the "Next checkpoint" button once (independent of
-                        // grading path — both paths reach the same point).
-                        if (i < checkpoints.length - 1) {
-                            nextBtn.style.display = '';
-                            nextBtn.addEventListener('click', () => {
-                                const nextBlock = document.getElementById('reading-cp-' + (i+1));
-                                if (nextBlock) {
-                                    nextBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    const nextInput = document.getElementById('reading-cp-input-' + (i+1));
-                                    if (nextInput) { try { nextInput.focus({ preventScroll: true }); } catch(e) { nextInput.focus(); } }
-                                }
-                            }, { once: true });
-                        }
-
                         let isCorrect;
                         let aiResult = null;
 
                         if (isLanguage) {
-                            // ── Language path — AI semantic match + LMR axes ──
                             fb.style.display = '';
                             fb.className = 'screen-reading-feedback is-pending';
                             fb.innerHTML = '<em>' + RT('wc.checking') + '</em>';
@@ -9886,7 +10053,7 @@ Prezident ertaga hisobot kutmoqda.`,
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         question_id: cp.id || ('reading-cp-' + i),
-                                        question: cp.prompt || '',
+                                        question: cp.prompt || cp.q || '',
                                         student_answer: studentAnswer,
                                         expected_answers: expectedList,
                                         answer_spec: {
@@ -9899,9 +10066,9 @@ Prezident ertaga hisobot kutmoqda.`,
                                         allow_ai_fallback: true,
                                         subject: (window.NETS_CTX && NETS_CTX.subject) || 'english',
                                         grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
-                                        tier: 'EASY',
+                                        tier: 'HARD',
                                         phase: 'reading-checkpoint',
-                                        context: READING.passage || '',
+                                        context: readingPassage,
                                     }),
                                 });
                                 if (resp.ok) aiResult = await resp.json();
@@ -9911,11 +10078,9 @@ Prezident ertaga hisobot kutmoqda.`,
                                 ? aiResult.correct
                                 : readingMatchLocal(studentAnswer, cp);
                         } else {
-                            // ── Non-language path — original local string match ──
                             isCorrect = readingMatchLocal(studentAnswer, cp);
                         }
 
-                        // Render feedback
                         fb.style.display = '';
                         if (isCorrect) {
                             fb.className = 'screen-reading-feedback is-correct';
@@ -9930,8 +10095,13 @@ Prezident ertaga hisobot kutmoqda.`,
                             fb.innerHTML = RT('reading.wrong') + expected + aiFb + cpFb;
                         }
 
-                        // Log to scorecard. Axes only on language path (non-language
-                        // logs without axes — per-phase row still counts correctness).
+                        readingState.answered[i] = true;
+                        readingState.answers[i] = studentAnswer;
+                        readingState.results[i] = Boolean(isCorrect);
+                        readingState.feedback[i] = fb.innerHTML;
+                        nextBtn.style.display = '';
+                        updateReadingContinueState();
+
                         if (window.__sessionLog) {
                             const entry = {
                                 phase: 'reading-checkpoint',
@@ -9944,8 +10114,40 @@ Prezident ertaga hisobot kutmoqda.`,
                             window.__sessionLog.push(entry);
                         }
                     });
+
+                    nextBtn.addEventListener('click', () => {
+                        if (!readingState.answered[i]) return;
+                        if (readingState.page < readingState.pages.length - 1) {
+                            readingGoToPage(readingState.page + 1);
+                        } else if (readingIsComplete(checkpoints) && typeof readingState.onContinue === 'function') {
+                            readingState.onContinue();
+                        }
+                    });
                 });
+
+                const nav = document.createElement('div');
+                nav.className = 'screen-reading-btn-row';
+                if (readingState.page > 0) {
+                    const prevBtn = document.createElement('button');
+                    prevBtn.type = 'button';
+                    prevBtn.className = 'screen-reading-btn';
+                    prevBtn.textContent = 'Back';
+                    prevBtn.addEventListener('click', () => readingGoToPage(readingState.page - 1));
+                    nav.appendChild(prevBtn);
+                }
+                if (readingState.page < readingState.pages.length - 1) {
+                    const hasBlockingCheckpoint = pageCheckpointIndexes.some(i => !readingState.answered[i]);
+                    const pageNextBtn = document.createElement('button');
+                    pageNextBtn.type = 'button';
+                    pageNextBtn.className = 'screen-reading-btn is-primary';
+                    pageNextBtn.textContent = RT('btn.next');
+                    pageNextBtn.disabled = hasBlockingCheckpoint;
+                    pageNextBtn.addEventListener('click', () => readingGoToPage(readingState.page + 1));
+                    nav.appendChild(pageNextBtn);
+                }
+                if (nav.children.length) cpEl.appendChild(nav);
             }
+            updateReadingContinueState();
         }
 
         function renderConsolidation() {
@@ -10010,10 +10212,31 @@ Prezident ertaga hisobot kutmoqda.`,
         // reflection after boss-done (7.5) before the finish state.
         function showReadingScreen(onContinue) {
             if (!readingHasContent()) { onContinue(); return; }
+            readingState.page = 0;
+            readingState.pages = [];
+            readingState.answered = [];
+            readingState.answers = [];
+            readingState.results = [];
+            readingState.feedback = [];
             setStage(4.7);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sr = document.getElementById('screen-reading');
             if (sr) sr.classList.add('active');
+            const finishReading = () => {
+                const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
+                if (!readingIsComplete(checkpoints)) {
+                    updateReadingContinueState();
+                    const firstMissing = checkpoints.findIndex((_, i) => !readingState.answered[i]);
+                    if (firstMissing >= 0) {
+                        readingGoToPage(readingCheckpointPage(firstMissing, readingState.pages.length, checkpoints.length));
+                    }
+                    return;
+                }
+                btn.removeEventListener('click', handler, true);
+                if (sr) sr.classList.remove('active');
+                onContinue();
+            };
+            readingState.onContinue = finishReading;
             // Hide the reading content card during the intro announcement.
             const readingContent = document.getElementById('reading-content-card');
             if (readingContent) { readingContent.style.transition = 'none'; readingContent.style.opacity = '0'; }
@@ -10024,17 +10247,9 @@ Prezident ertaga hisobot kutmoqda.`,
             playPhaseIntro('reading-phase-center-card', () => {
                 if (readingContent) { readingContent.style.transition = 'opacity 300ms ease'; readingContent.style.opacity = '1'; }
                 renderReading();
-                btn.classList.remove('state-line');
-                btn.classList.add('state-pill','pulse');
-                setBtnText(RT('btn.continue'));
-                // Single-tap continuation.
-                const handler = () => {
-                    btn.removeEventListener('click', handler, true);
-                    if (sr) sr.classList.remove('active');
-                    onContinue();
-                };
                 btn.addEventListener('click', handler, true);
             });
+            function handler() { finishReading(); }
         }
 
         function showConsolidationScreen(onContinue) {

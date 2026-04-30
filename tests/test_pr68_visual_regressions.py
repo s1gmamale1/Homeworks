@@ -90,6 +90,22 @@ def test_runtime_caps_tall_preview_media_inside_panels():
     assert "max-height: 56vh" in svg_block
 
 
+def test_reading_runtime_paginates_and_requires_checkpoint_answer():
+    html = _read(RUNTIME)
+
+    assert 'id="reading-progress"' in html
+    assert 'id="reading-status"' in html
+    assert "function readingBuildPages" in html
+    assert "function readingIsComplete" in html
+    assert "function updateReadingContinueState" in html
+    assert "READING.passage || READING.text || ''" in html
+    assert "readingState.answered[i] = true" in html
+    assert "if (!readingIsComplete(checkpoints))" in html
+    assert "readingGoToPage(readingCheckpointPage(firstMissing" in html
+    assert "tier: 'HARD'" in html
+    assert "tier: 'EASY'" not in html[html.index("function renderReading"):html.index("function renderConsolidation")]
+
+
 def test_adaptive_quiz_builder_has_grouped_grading_ui():
     js = _read(AQ_EDITOR)
     css = _read(APP_CSS)
@@ -144,3 +160,38 @@ def test_dashboard_demo_copy_was_removed():
     ]
     for phrase in forbidden:
         assert phrase not in text
+
+
+def test_reading_gate_blocks_empty_and_whitespace_answers():
+    """Submit handler must early-return on falsy/whitespace-only studentAnswer
+    so answered[i] stays false and the page-next button stays disabled."""
+    template_text = _read(RUNTIME)
+    # The handler trims input before checking
+    assert "const studentAnswer = (input.value || '').trim()" in template_text, (
+        "checkpoint submit must assign studentAnswer as trimmed input value"
+    )
+    # The handler bails on empty/whitespace-only input
+    assert "if (!studentAnswer)" in template_text, (
+        "checkpoint submit must early-return on empty/whitespace input"
+    )
+    # answered[i] is only set inside the handler after the early-return guard
+    assert "readingState.answered[i] = true" in template_text, (
+        "checkpoint submit must set readingState.answered[i] = true on valid submit"
+    )
+
+
+def test_reading_continue_button_disabled_until_complete():
+    """Page-next button must be disabled while unanswered checkpoints remain
+    on the current page — not just structurally present but wired via
+    hasBlockingCheckpoint."""
+    template_text = _read(RUNTIME)
+    assert "readingIsComplete" in template_text, (
+        "readingIsComplete function must exist in the reading runtime"
+    )
+    # The page-next disable guard uses hasBlockingCheckpoint
+    assert "const hasBlockingCheckpoint = pageCheckpointIndexes.some(i => !readingState.answered[i])" in template_text, (
+        "page-next button gate must derive hasBlockingCheckpoint from unanswered checkpoints"
+    )
+    assert "pageNextBtn.disabled = hasBlockingCheckpoint" in template_text, (
+        "page-next button must be disabled when hasBlockingCheckpoint is true"
+    )
