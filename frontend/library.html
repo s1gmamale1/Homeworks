@@ -35,10 +35,8 @@
       </div>
     </header>
 
-    <main class="dashboard-layout">
-      <!-- Top filter bar — language chips + search. Subject and grade
-           chips live INSIDE each section, not at the page level, since
-           those are the section's own dimensions. -->
+    <main class="dashboard-layout" data-page="library">
+      <!-- Toolbar — keep existing search + lang chips, restyled by CSS only -->
       <section class="toolbar glass-card lib-toolbar" data-i18n-aria-label="library.filters_aria" aria-label="Library filters">
         <div class="lib-filter-row lib-lang-row" role="group" data-i18n-aria-label="library.content_lang_aria" aria-label="Content language">
           <span class="lib-filter-label" data-i18n="library.content_lang_label">Til</span>
@@ -49,51 +47,45 @@
             <button type="button" class="lib-chip" data-lib-lang="en">EN</button>
           </div>
         </div>
-
         <label class="search-box lib-search">
           <span class="search-box__icon" aria-hidden="true">⌕</span>
           <input id="lib-search" type="search" data-i18n-placeholder="library.search_placeholder" placeholder="Search by title or chapter…" autocomplete="off" />
           <button type="button" class="search-box__clear" data-search-clear data-i18n-aria-label="common.clear" aria-label="Clear search" tabindex="-1">×</button>
         </label>
-
         <button class="btn btn-ghost" id="lib-clear-btn" type="button" data-i18n="library.clear">Clear</button>
       </section>
 
-      <!-- Results — grouped by subject. Sections are rendered into
-           #lib-sections by library.js. Each section is a collapsible
-           <details> with a grade chip strip and a card grid inside. -->
-      <section class="library-section" aria-labelledby="lib-heading">
-        <div class="section-heading">
+      <!-- Stat cards — populated by library.js, hidden during loading/error/empty -->
+      <section class="lib-stats" id="lib-stats" aria-label="Library statistics" hidden></section>
+
+      <!-- Stage — holds the subject grid; expanding panel positions itself absolutely inside -->
+      <section class="lib-stage glass-card" id="lib-stage" hidden>
+        <div class="stage-head">
           <div>
-            <p class="eyebrow" data-i18n="library.results_eyebrow">Results</p>
-            <h2 id="lib-heading"><span data-i18n="library.h2">Homeworks</span> <span class="tab-count" id="lib-count"></span></h2>
+            <p class="eyebrow" data-i18n="library.results_eyebrow">Subjects</p>
+            <h2 id="lib-heading" data-i18n="library.subject_blocks_h2">Subject Blocks</h2>
+            <p class="lib-stage-sub" data-i18n="library.subject_blocks_sub">Click a block to expand from its position.</p>
           </div>
         </div>
-
-        <!-- Loading -->
-        <div class="loading-state glass-card" id="lib-loading">
-          <div class="spinner" aria-hidden="true"></div>
-          <p data-i18n="library.loading">Loading library…</p>
-        </div>
-
-        <!-- Error -->
-        <div class="error-state glass-card hidden" id="lib-error">
-          <div class="empty-orb" aria-hidden="true">⚠</div>
-          <h3 data-i18n="common.could_not_reach_server">Could not reach the server</h3>
-          <p id="lib-error-msg" data-i18n="common.check_connection">Check your connection and try again.</p>
-          <button class="btn btn-primary" id="lib-retry-btn" type="button" data-i18n="common.retry">Retry</button>
-        </div>
-
-        <!-- Empty state — shown when zero homeworks across all sections. -->
-        <div class="empty-state glass-card hidden" id="lib-empty">
-          <div class="empty-orb" aria-hidden="true">📚</div>
-          <h3 data-i18n="library.empty_h3">No homeworks found</h3>
-          <p data-i18n="library.empty_text">Try adjusting your filters or search query.</p>
-        </div>
-
-        <!-- Subject sections live here — populated by library.js. -->
-        <div id="lib-sections" class="lib-sections" aria-live="polite"></div>
+        <div class="lib-subject-grid" id="lib-subject-grid" aria-live="polite"></div>
       </section>
+
+      <!-- Loading / Error / Empty — keep the existing IDs so library.js can hide/show them -->
+      <div class="loading-state glass-card" id="lib-loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <p data-i18n="library.loading">Loading library…</p>
+      </div>
+      <div class="error-state glass-card hidden" id="lib-error">
+        <div class="empty-orb" aria-hidden="true">⚠</div>
+        <h3 data-i18n="common.could_not_reach_server">Could not reach the server</h3>
+        <p id="lib-error-msg" data-i18n="common.check_connection">Check your connection and try again.</p>
+        <button class="btn btn-primary" id="lib-retry-btn" type="button" data-i18n="common.retry">Retry</button>
+      </div>
+      <div class="empty-state glass-card hidden" id="lib-empty">
+        <div class="empty-orb" aria-hidden="true">📚</div>
+        <h3 data-i18n="library.empty_h3">No homeworks found</h3>
+        <p data-i18n="library.empty_text">Try adjusting your filters or search query.</p>
+      </div>
     </main>
   </div>
 

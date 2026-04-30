@@ -42,10 +42,13 @@ def test_search_box_uses_visual_icon_and_pill_focus_treatment():
 def test_library_toolbar_prioritizes_search_column():
     css = _read("frontend/css/library.css")
 
+    # Apple-redesign keeps the same 3-column toolbar grid (lang chips |
+    # search | clear button) but the mobile breakpoint moved 640 -> 650
+    # to align with the rest of the redesign's responsive cutoffs.
     assert "grid-template-columns: auto minmax(280px, 1fr) auto" in css
     assert ".lib-search" in css
     assert "justify-self: stretch" in css
-    assert "@media (max-width: 640px)" in css
+    assert "@media (max-width: 650px)" in css
 
 
 def test_tutor_chat_has_polished_panel_and_assistant_identity():

@@ -167,15 +167,19 @@ def test_library_facets_includes_languages(client):
 
 def test_library_html_has_new_shell():
     html = LIBRARY_HTML.read_text(encoding="utf-8")
-    # The new shell IDs / classes — these are what library.js binds to.
+    # The 2026-04-30 Apple-style redesign replaced the <details>
+    # `#lib-sections` container with an Apple-grid `#lib-subject-grid`
+    # of expandable subject tiles plus a `#lib-stats` strip.
     assert 'id="lib-lang-chips"' in html, "missing language chip group"
-    assert 'id="lib-sections"' in html, "missing #lib-sections container"
+    assert 'id="lib-subject-grid"' in html, "missing #lib-subject-grid container"
+    assert 'id="lib-stats"' in html, "missing #lib-stats strip"
+    assert 'id="lib-stage"' in html, "missing #lib-stage host"
     # The four old per-page dropdowns must be gone — sections own
     # subject/grade now, mode is communicated via the per-card badge.
-    forbidden_ids = ('id="lib-subject"', 'id="lib-grade"', 'id="lib-mode"')
+    forbidden_ids = ('id="lib-subject"', 'id="lib-grade"', 'id="lib-mode"', 'id="lib-sections"')
     for fid in forbidden_ids:
         assert fid not in html, (
-            f"library.html still ships {fid} — the sectioned redesign "
+            f"library.html still ships {fid} — the Apple-style redesign "
             "moved subject/grade/mode out of the page-level toolbar"
         )
 
@@ -199,26 +203,39 @@ def test_lang_chip_group_has_all_three_languages():
 
 def test_library_js_has_grouping_helpers():
     src = LIBRARY_JS.read_text(encoding="utf-8")
+    # 2026-04-30 redesign: <details> sections replaced by FLIP-expand
+    # subject tiles. The grouping helper survives but the per-section
+    # render path is now `renderTile` + `openSubject` + `closePanel`.
     for needle in (
         "function groupBySubject",
-        "function renderSection",
-        "function repaintGrid",
-        "function makeGradeChip",
+        "function renderTile",
+        "function openSubject",
+        "function closePanel",
+        "function getExpandedTarget",
+        "function renderHomeworkCard",
+        "function renderStats",
     ):
         assert needle in src, f"library.js missing {needle}"
 
 
 def test_library_js_persists_state_in_localStorage():
     src = LIBRARY_JS.read_text(encoding="utf-8")
-    # Persisted state — language choice + per-section open/closed +
-    # per-section selected grade — survives reloads. Key namespaced
-    # under nets.library.v2 so the legacy v1 (if any) is invalidated.
-    assert "nets.library.v2" in src, (
+    # Persisted state — language choice + per-subject selected grade —
+    # survives reloads. Open-panel state is intentionally NOT persisted
+    # (auto-restoring an expanded panel on reload was disruptive).
+    # Key bumped to v3 to invalidate the v2 schema (had `openSubjects`).
+    assert "nets.library.v3" in src, (
         "library.js must namespace its localStorage key so a future "
         "schema bump can be invalidated cleanly"
     )
-    assert "openSubjects" in src and "gradeBySubject" in src, (
-        "library.js lost the section/grade persistence keys"
+    assert "gradeBySubject" in src, (
+        "library.js lost the per-subject grade persistence key"
+    )
+    # The legacy openSubjects key should be gone — the FLIP-panel
+    # design doesn't auto-restore an open panel on reload.
+    assert "openSubjects" not in src, (
+        "library.js still references openSubjects — the FLIP redesign "
+        "intentionally drops auto-restore-open behaviour"
     )
 
 
@@ -268,13 +285,17 @@ def test_i18n_strings_define_new_keys(key):
 
 def test_library_css_has_section_and_chip_rules():
     css = LIBRARY_CSS.read_text(encoding="utf-8")
+    # 2026-04-30 redesign moved section CSS to subject-tile + panel
+    # rules; the chip group + grade chips remain (renamed to
+    # .lib-grade-chip in the panel). The CSS agent owns the file —
+    # this guard just pins the surface that library.js binds to.
     needles = (
-        ".lib-section",
-        ".lib-section-summary",
-        ".lib-grade-strip",
+        ".subject-tile",
+        ".subject-panel",
         ".lib-grade-chip",
         ".lib-chip-group",
         ".lib-chip",
+        ".homework-card",
     )
     for n in needles:
         assert n in css, f"library.css missing rule for {n}"
@@ -290,7 +311,10 @@ def test_served_library_page_renders_new_shell(client):
     assert r.status_code == 200
     body = r.text
     assert 'id="lib-lang-chips"' in body
-    assert 'id="lib-sections"' in body
+    assert 'id="lib-subject-grid"' in body
+    assert 'id="lib-stats"' in body
+    assert 'id="lib-stage"' in body
     # Old IDs must be gone from the served HTML too.
     assert 'id="lib-subject"' not in body
     assert 'id="lib-grade"' not in body
+    assert 'id="lib-sections"' not in body

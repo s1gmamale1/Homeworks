@@ -185,14 +185,22 @@ def test_app_css_dark_mode_coverage(selector):
 @pytest.mark.parametrize(
     "selector",
     [
-        '[data-theme="dark"] .lib-mode-badge[data-mode="easy"]',
-        '[data-theme="dark"] .lib-mode-badge[data-mode="hard"]',
-        '[data-theme="dark"] .lib-card-pill.grade',
+        # Apple-redesign inverted the default — dark IS the default surface,
+        # so light mode is the override. Lock light-mode contrast rules for
+        # the difficulty badges + every tag color variant; without these,
+        # hardcoded dark colors (cyan, purple, orange) become illegible on
+        # the light glass surface.
+        ':root[data-theme="light"] .homework-card .hw-badge[data-mode="hard"]',
+        ':root[data-theme="light"] .homework-card .hw-badge[data-mode="easy"]',
+        ':root[data-theme="light"] .homework-card .hw-tag.blue',
+        ':root[data-theme="light"] .homework-card .hw-tag.purple',
+        ':root[data-theme="light"] .homework-card .hw-tag.cyan',
     ],
 )
-def test_library_css_dark_mode_coverage(selector):
-    """Lock the dark-mode override rules added in library.css for badges and
-    grade pills — hardcoded dark greens/reds/purples were unreadable on the
-    dark surface."""
+def test_library_css_theme_coverage(selector):
+    """Lock the light-mode override rules in library.css for the redesigned
+    homework-card badges + tags. Dark is the default (matches the GPT-5.5
+    reference); light needs explicit colour overrides so the accent-tinted
+    tags don't disappear on a near-white surface."""
     css = _read(LIBRARY_CSS)
-    assert selector in css, f"library.css missing dark-mode rule for `{selector}`"
+    assert selector in css, f"library.css missing light-mode rule for `{selector}`"

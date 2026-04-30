@@ -140,16 +140,19 @@ def test_app_css_collapses_homework_grid_at_640px():
     )
 
 
-def test_library_css_collapses_lib_grid_at_640px():
+def test_library_css_collapses_subject_grid_at_650px():
     css = _library_css()
-    # Used to be 600px — the audit asked for ≤640px parity with app.css.
+    # Apple-redesign breakpoint is 650px (was 640px under the old <details>
+    # layout; new mobile cutoff aligns with the iPhone-portrait + small-tablet
+    # span used elsewhere in the redesign). The new contract uses
+    # `.lib-subject-grid` instead of the removed `.lib-grid`.
     assert re.search(
-        r"@media\s*\(max-width:\s*640px\)[^{]*\{[^}]*\.lib-grid[^}]*1fr",
+        r"@media\s*\(max-width:\s*650px\)[^{]*\{[^}]*\.lib-subject-grid[^}]*1fr",
         css,
         flags=re.DOTALL,
     ), (
-        "library.css must collapse .lib-grid to 1 column at ≤640px (was "
-        "600px, which left a gap on iPhone landscape widths)"
+        "library.css must collapse .lib-subject-grid to 1 column at ≤650px "
+        "(Apple-redesign breakpoint)"
     )
 
 
