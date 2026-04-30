@@ -51,11 +51,16 @@ PHASE_METHOD: dict[str, str] = {
     "tile-match":     "closed",
     "mystery-box":    "closed",
     "puzzle-lock":    "closed",
-    # Phase 4 — open responses, 2-axis AMR rubric
+    # Reading checkpoints (Til Fanlar / Adabiyot) — semantic-match against
+    # accepted answer. Marked "amr" so LMR/AMR axes from items that supply
+    # them (language homeworks via the AI grader) flow into the overall
+    # axis means. Items without axes still contribute to closed accuracy.
+    "reading-checkpoint": "amr",
+    # Phase 4 — open responses, 2-axis rubric
     "real-life":      "amr",
     # Phase 5 — ungraded (memory tree + 1-min self-check)
     "consolidation":  "ungraded",
-    # Phase 6 — open boss attacks, 2-axis AMR rubric
+    # Phase 6 — open boss attacks, 2-axis rubric
     "final-boss":     "amr",
     # Phase 7 — ungraded (participation)
     "reflection":     "ungraded",
@@ -66,13 +71,14 @@ PHASE_METHOD: dict[str, str] = {
 # they're "amr" — but they don't render their own row. Keep this aligned
 # with the at-a-glance order so the scorecard reads top-to-bottom.
 PHASE_DISPLAY_ORDER: list[dict[str, Any]] = [
-    {"key": "memory-sprint", "label": "Memory Sprint",  "phase_level": False},
-    {"key": "story-mode",    "label": "Story Mode",     "phase_level": False},
-    {"key": "adaptive-quiz", "label": "Adaptive Quiz",  "phase_level": False},
-    {"key": "sentence-fill", "label": "Sentence Fill",  "phase_level": False},
-    {"key": "tile-match",    "label": "Tile Match",     "phase_level": True},
-    {"key": "real-life",     "label": "Real-Life",      "phase_level": False},
-    {"key": "final-boss",    "label": "Final Boss",     "phase_level": False},
+    {"key": "memory-sprint",      "label": "Memory Sprint",  "phase_level": False},
+    {"key": "story-mode",         "label": "Story Mode",     "phase_level": False},
+    {"key": "reading-checkpoint", "label": "O'qish",         "phase_level": False},
+    {"key": "adaptive-quiz",      "label": "Adaptive Quiz",  "phase_level": False},
+    {"key": "sentence-fill",      "label": "Sentence Fill",  "phase_level": False},
+    {"key": "tile-match",         "label": "Tile Match",     "phase_level": True},
+    {"key": "real-life",          "label": "Real-Life",      "phase_level": False},
+    {"key": "final-boss",         "label": "Final Boss",     "phase_level": False},
 ]
 
 # Band thresholds applied to the 1-4 axis-mean scale (per GRADING.md
@@ -184,6 +190,7 @@ def aggregate(
     *,
     warning_deductions: int = 0,
     homework_failed: bool = False,
+    subject: str | None = None,
 ) -> dict[str, Any]:
     """Take a list of session-log dicts and return the scorecard payload.
 
@@ -330,6 +337,24 @@ def aggregate(
             f" (Xatti-harakatingiz uchun {warning_deductions}% ushlab qolindi.)"
         )
 
+    # Pick axis labels by rubric. Language subjects (til-fanlar) use LMR v2;
+    # everything else (aniq/tabiy/ijtimoiy fanlar) uses AMR.
+    #
+    # LMR v2 semantics: meaning-similarity is the correct/incorrect gate, so
+    # task achievement is implicit in passing the gate, not double-counted on
+    # an axis. The two axes evaluate quality of expression only:
+    #   Axis 1 — Grammatical Accuracy (form, agreement, target pattern, mechanics)
+    #   Axis 2 — Lexical Quality      (word choice, collocations, naturalness, register)
+    from .language import is_language_subject  # local import — avoids cycle
+    if is_language_subject(subject):
+        rubric_key = "lmr"
+        axis_1_name = "Grammatical Accuracy"
+        axis_2_name = "Lexical Quality"
+    else:
+        rubric_key = "amr"
+        axis_1_name = "Concept Identification"
+        axis_2_name = "Process Integrity"
+
     return {
         "overall_pct":               final_score,
         "raw_pct_pre_deductions":    raw_pct_pre_deductions,
@@ -341,14 +366,17 @@ def aggregate(
         "band":                      {"key": band_key, "name": band_name},
         "perf_class":                perf_class,
         "has_axes":                  has_axes,
+        "rubric":                    rubric_key,
         "phases":                    phase_rows,
         "axes": {
             "axis_1": {
+                "name":       axis_1_name,
                 "mean":       overall_a1,
                 "perf_class": _perf_class_for_axis(overall_a1),
                 "tag":        _axis_tag_for(overall_a1),
             },
             "axis_2": {
+                "name":       axis_2_name,
                 "mean":       overall_a2,
                 "perf_class": _perf_class_for_axis(overall_a2),
                 "tag":        _axis_tag_for(overall_a2),

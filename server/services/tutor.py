@@ -329,12 +329,29 @@ async def check_answer(
         flush=True,
     )
 
-    prompt = _load_runtime_prompt("answer-checker")
-    # Caller can request 2-axis Anchored Mastery Rubric scoring by setting
-    # answer_spec.amr=true (or implicitly via type="semantic" — open-ended
-    # responses always benefit from AMR). The prompt has an opt-in section
-    # that emits axis_1/axis_2 when amr_mode is true in the input payload.
-    amr_requested = bool(answer_spec.get("amr")) or answer_spec.get("type") == "semantic"
+    # Language subjects (English / Ona Tili / Rus Tili) use a different rubric
+    # (Language Mastery Rubric — Form Accuracy + Communication Effectiveness)
+    # because AMR's "name the rule + show steps" anchors don't fit language
+    # production. Lookup is in services/language.py.
+    from . import language as _lang
+    use_language_rubric = _lang.is_language_subject(subject)
+    prompt_name = "answer-checker-language" if use_language_rubric else "answer-checker"
+    prompt = _load_runtime_prompt(prompt_name)
+    # Caller can request 2-axis rubric scoring by setting answer_spec.amr=true
+    # (or implicitly via type="semantic" — open-ended responses always benefit
+    # from rubric grading). The prompts have opt-in sections that emit
+    # axis_1/axis_2 when amr_mode is true in the input payload.
+    #
+    # An EXPLICIT `amr: false` is honored even when type="semantic" — used by
+    # the reading-checkpoint phase on non-language subjects, where we still
+    # need semantic meaning-matching but don't want a "name-the-rule" rubric.
+    _amr_explicit = answer_spec.get("amr")
+    if _amr_explicit is False:
+        amr_requested = False
+    elif _amr_explicit is True:
+        amr_requested = True
+    else:
+        amr_requested = answer_spec.get("type") == "semantic"
     payload = {
         "question": question,
         "student_answer": student_answer,
@@ -348,17 +365,28 @@ async def check_answer(
     schema = {
         "correct": "bool",
         "score": "float between 0 and 1",
-        "feedback": "Uzbek string, formal Siz, 1-2 sentences",
+        "feedback": "Short string, 1-2 sentences (matches student's language)",
         "matched_expected": "string or null",
         "confidence": "float between 0 and 1",
     }
     if amr_requested:
-        schema.update({
-            "axis_1": "integer 1..4 (Concept Identification)",
-            "axis_2": "integer 1..4 (Process Integrity)",
-            "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
-            "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
-        })
+        if use_language_rubric:
+            # LMR v2: meaning-similarity gate decides correct/incorrect; axes
+            # evaluate quality of expression (Grammatical Accuracy + Lexical
+            # Quality). Task achievement is implicit in the gate, not in axes.
+            schema.update({
+                "axis_1": "integer 1..4 (Grammatical Accuracy)",
+                "axis_2": "integer 1..4 (Lexical Quality)",
+                "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+                "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
+            })
+        else:
+            schema.update({
+                "axis_1": "integer 1..4 (Concept Identification)",
+                "axis_2": "integer 1..4 (Process Integrity)",
+                "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
+                "axis_2_label": "Mastered|Proficient|Apprentice|Novice",
+            })
     ai_response = await gemini.generate_json(
         f"{prompt}\n\n---\n\nINPUT:\n{json.dumps(payload, ensure_ascii=False, indent=2)}",
         schema_hint=schema,

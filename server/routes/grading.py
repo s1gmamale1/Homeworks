@@ -28,6 +28,11 @@ class AggregateRequest(BaseModel):
     # Wave J — warning deductions from the anti-troll state machine.
     warning_deductions: int = 0
     homework_failed: bool = False
+    # Language-rubric routing — when present, language subjects (english,
+    # ona-tili, rus-tili) get LMR v2 axis labels (Grammatical Accuracy /
+    # Lexical Quality) instead of AMR's (Concept Identification / Process
+    # Integrity). The numeric scoring is identical; only the labels differ.
+    subject: str | None = None
 
 
 @router.post("/aggregate")
@@ -41,6 +46,7 @@ async def aggregate(req: AggregateRequest) -> dict[str, Any]:
         req.items,
         warning_deductions=req.warning_deductions,
         homework_failed=req.homework_failed,
+        subject=req.subject,
     )
 
 

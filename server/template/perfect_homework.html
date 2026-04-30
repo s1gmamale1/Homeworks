@@ -7310,7 +7310,55 @@
             if (capStatus) { capStatus.textContent = RT('aq.solution_uploaded'); capStatus.className = 'gb-aq-capture-status ok'; }
         }
 
-        function gbAQAction() {
+        // List mirrors server/services/language.py — keep them in sync. Used to decide
+        // whether AQ goes through deterministic string match (default, fast, no AI cost)
+        // or through the AI grader (language subjects, paraphrase-aware).
+        const LANGUAGE_SUBJECTS_RUNTIME = new Set([
+            'english', 'ona-tili', 'rus-tili',
+            'ingliz-tili', 'ingliz-tili-g1-11', 'ona-tili-g1-11', 'rus-tili-g1-11',
+        ]);
+
+        function gbIsLanguageSubject() {
+            const s = (window.NETS_CTX && (NETS_CTX.subject || '')).toLowerCase().trim();
+            return LANGUAGE_SUBJECTS_RUNTIME.has(s);
+        }
+
+        async function gbAQAIGrade(question, studentAnswer, acceptList) {
+            // Route Adaptive Quiz answers through the AI grader for language
+            // subjects so different sentence forms / paraphrases are accepted
+            // (e.g. "She has to do homework." ≡ "Doing homework is required of her.").
+            // Closed verdict only — no AMR axes for AQ.
+            try {
+                const resp = await fetch('/api/ai/check-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_id: 'aq-' + ((gbState.aq && gbState.aq.shown != null) ? (gbState.aq.shown + 1) : '?'),
+                        question: question || '',
+                        student_answer: studentAnswer,
+                        expected_answers: acceptList,
+                        answer_spec: {
+                            type: 'semantic',
+                            expected: (acceptList[0] || ''),
+                            canonical_display: (acceptList[0] || ''),
+                            allow_ai_fallback: true,
+                            amr: false
+                        },
+                        allow_ai_fallback: true,
+                        subject: (window.NETS_CTX && NETS_CTX.subject) || 'english',
+                        grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
+                        tier: 'EASY',
+                        phase: 'adaptive-quiz'
+                    })
+                });
+                if (!resp.ok) return { correct: false, error: 'http ' + resp.status };
+                return await resp.json();
+            } catch (e) {
+                return { correct: false, error: String(e) };
+            }
+        }
+
+        async function gbAQAction() {
             const aq = gbState.aq;
             if (aq.answered) {
                 // User clicked Next before the auto-advance timer fired — cancel
@@ -7340,14 +7388,25 @@
                 : (Array.isArray(item.ans_all) && item.ans_all.length)
                     ? item.ans_all
                     : (item.answer != null ? [item.answer] : []);
-            const userN = norm(userVal);
-            const isCorrect = acceptList.some(a => {
-                const an = norm(a);
-                if (!an) return false;
-                if (an === userN) return true;
-                // Loose include for partial-form answers (matches legacy behavior).
-                return an.includes(userN.split(/[,\s]/)[0]) || userN.includes(an);
-            });
+            // Language subjects: route through the AI grader so paraphrases /
+            // alternative sentence forms are accepted as right.
+            // Other subjects: keep the deterministic string-match path (faster,
+            // no token cost, deterministic for closed-form numeric answers).
+            let isCorrect;
+            if (gbIsLanguageSubject()) {
+                if (inp) inp.disabled = true;
+                const result = await gbAQAIGrade(item.q || item.prompt || '', userVal, acceptList);
+                isCorrect = !!result.correct;
+            } else {
+                const userN = norm(userVal);
+                isCorrect = acceptList.some(a => {
+                    const an = norm(a);
+                    if (!an) return false;
+                    if (an === userN) return true;
+                    // Loose include for partial-form answers (matches legacy behavior).
+                    return an.includes(userN.split(/[,\s]/)[0]) || userN.includes(an);
+                });
+            }
             aq.answered = true;
             if (inp) inp.disabled = true;
             const fb = document.getElementById('gb-aq-feedback');
@@ -9755,8 +9814,15 @@ Prezident ertaga hisobot kutmoqda.`,
 
                     cpEl.appendChild(block);
 
-                    // Click handler — local match + dispatch nets:submit for AI grading
-                    checkBtn.addEventListener('click', () => {
+                    // Click handler.
+                    //   • Language subjects (english / ona-tili / rus-tili): use AI
+                    //     for SEMANTIC matching against the accepted answer (paraphrases
+                    //     accepted) + collect LMR v2 axes (Grammatical Accuracy +
+                    //     Lexical Quality) for the overall scorecard.
+                    //   • Other subjects: keep the ORIGINAL local string-match — instant
+                    //     feedback, no AI call. (Scope: per user's clarification, AI on
+                    //     non-RL/non-Boss free-text fields only applies to language.)
+                    checkBtn.addEventListener('click', async () => {
                         if (input.disabled) return;
                         const studentAnswer = (input.value || '').trim();
                         if (!studentAnswer) {
@@ -9764,23 +9830,20 @@ Prezident ertaga hisobot kutmoqda.`,
                             setTimeout(() => { input.style.borderColor = ''; }, 1200);
                             return;
                         }
-                        const localCorrect = readingMatchLocal(studentAnswer, cp);
+
+                        const isLanguage = (typeof gbIsLanguageSubject === 'function')
+                            ? gbIsLanguageSubject() : false;
+
+                        // Build the accepted-answer list (cp.ans + cp.acceptable[]).
+                        const expectedList = [];
+                        if (cp.ans) expectedList.push(cp.ans);
+                        if (Array.isArray(cp.acceptable)) expectedList.push(...cp.acceptable);
+
                         input.disabled = true;
                         checkBtn.disabled = true;
 
-                        // Local-match feedback (instant, immediate)
-                        fb.style.display = '';
-                        if (localCorrect) {
-                            fb.className = 'screen-reading-feedback is-correct';
-                            fb.innerHTML = RT('reading.correct') + (cp.fb ? ' <span style="opacity:0.85;">' + cp.fb + '</span>' : '');
-                        } else {
-                            fb.className = 'screen-reading-feedback is-wrong';
-                            const expected = cp.ans ? ('<br><span style="opacity:0.85;">' + RT('reading.right_answer') + ' ' + cp.ans + '</span>') : '';
-                            const explain = cp.fb ? ('<br><span style="opacity:0.7;">' + cp.fb + '</span>') : '';
-                            fb.innerHTML = RT('reading.wrong') + expected + explain;
-                        }
-
-                        // Show "Next checkpoint" button if not last
+                        // Wire up the "Next checkpoint" button once (independent of
+                        // grading path — both paths reach the same point).
                         if (i < checkpoints.length - 1) {
                             nextBtn.style.display = '';
                             nextBtn.addEventListener('click', () => {
@@ -9793,27 +9856,78 @@ Prezident ertaga hisobot kutmoqda.`,
                             }, { once: true });
                         }
 
-                        // AI fallback: dispatch nets:submit so the runtime can call /api/ai/check-answer.
-                        // The bridge in runtime.js handles 'answer' kind → checkAnswer() → /api/ai/check-answer.
-                        // We tag it with kind 'reading-checkpoint' for clarity but route to 'answer' so the
-                        // existing bridge consumes it; payload mirrors NETS_AI.checkAnswer opts.
-                        const expectedList = [];
-                        if (cp.ans) expectedList.push(cp.ans);
-                        if (Array.isArray(cp.acceptable)) expectedList.push(...cp.acceptable);
-                        try {
-                            document.dispatchEvent(new CustomEvent('nets:submit', { detail: {
-                                kind: 'reading-checkpoint',
-                                payload: {
-                                    questionId: cp.id || ('reading-cp-' + i),
-                                    studentAnswer: studentAnswer,
-                                    expected: expectedList,
-                                    question: cp.prompt || '',
-                                    expectedAnswers: expectedList,
-                                    tier: 'EASY',
-                                    context: READING.passage || '',
-                                },
-                            }}));
-                        } catch (e) { /* ignore — local feedback already shown */ }
+                        let isCorrect;
+                        let aiResult = null;
+
+                        if (isLanguage) {
+                            // ── Language path — AI semantic match + LMR axes ──
+                            fb.style.display = '';
+                            fb.className = 'screen-reading-feedback is-pending';
+                            fb.innerHTML = '<em>' + RT('wc.checking') + '</em>';
+
+                            try {
+                                const resp = await fetch('/api/ai/check-answer', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        question_id: cp.id || ('reading-cp-' + i),
+                                        question: cp.prompt || '',
+                                        student_answer: studentAnswer,
+                                        expected_answers: expectedList,
+                                        answer_spec: {
+                                            type: 'semantic',
+                                            expected: (expectedList[0] || ''),
+                                            canonical_display: (expectedList[0] || ''),
+                                            allow_ai_fallback: true,
+                                            amr: true,
+                                        },
+                                        allow_ai_fallback: true,
+                                        subject: (window.NETS_CTX && NETS_CTX.subject) || 'english',
+                                        grade: (window.NETS_CTX && NETS_CTX.grade) || 8,
+                                        tier: 'EASY',
+                                        phase: 'reading-checkpoint',
+                                        context: READING.passage || '',
+                                    }),
+                                });
+                                if (resp.ok) aiResult = await resp.json();
+                            } catch (e) { /* fall back to local match below */ }
+
+                            isCorrect = (aiResult && typeof aiResult.correct === 'boolean')
+                                ? aiResult.correct
+                                : readingMatchLocal(studentAnswer, cp);
+                        } else {
+                            // ── Non-language path — original local string match ──
+                            isCorrect = readingMatchLocal(studentAnswer, cp);
+                        }
+
+                        // Render feedback
+                        fb.style.display = '';
+                        if (isCorrect) {
+                            fb.className = 'screen-reading-feedback is-correct';
+                            const aiFb = (aiResult && aiResult.feedback) ? (' <span style="opacity:0.85;">' + aiResult.feedback + '</span>') : '';
+                            const cpFb = cp.fb ? (' <span style="opacity:0.85;">' + cp.fb + '</span>') : '';
+                            fb.innerHTML = RT('reading.correct') + aiFb + cpFb;
+                        } else {
+                            fb.className = 'screen-reading-feedback is-wrong';
+                            const expected = cp.ans ? ('<br><span style="opacity:0.85;">' + RT('reading.right_answer') + ' ' + cp.ans + '</span>') : '';
+                            const aiFb = (aiResult && aiResult.feedback) ? ('<br><span style="opacity:0.7;">' + aiResult.feedback + '</span>') : '';
+                            const cpFb = cp.fb ? ('<br><span style="opacity:0.7;">' + cp.fb + '</span>') : '';
+                            fb.innerHTML = RT('reading.wrong') + expected + aiFb + cpFb;
+                        }
+
+                        // Log to scorecard. Axes only on language path (non-language
+                        // logs without axes — per-phase row still counts correctness).
+                        if (window.__sessionLog) {
+                            const entry = {
+                                phase: 'reading-checkpoint',
+                                id: cp.id || ('reading-cp-' + i),
+                                correct: isCorrect,
+                                score: (aiResult && typeof aiResult.score === 'number') ? aiResult.score : (isCorrect ? 1 : 0),
+                            };
+                            if (aiResult && typeof aiResult.axis_1 === 'number') entry.axis_1 = aiResult.axis_1;
+                            if (aiResult && typeof aiResult.axis_2 === 'number') entry.axis_2 = aiResult.axis_2;
+                            window.__sessionLog.push(entry);
+                        }
                     });
                 });
             }
@@ -10004,6 +10118,9 @@ Prezident ertaga hisobot kutmoqda.`,
                 const body = {
                     items: log,
                     homework_id: (window.NETS_CTX && window.NETS_CTX.homework_id) || null,
+                    // Subject is forwarded so the backend picks the right
+                    // axis labels (LMR for language subjects, AMR otherwise).
+                    subject: (window.NETS_CTX && window.NETS_CTX.subject) || null,
                 };
                 if (window.__homeworkFailed) body.homework_failed = true;
                 if (typeof window.__warningDeductions === 'number'
