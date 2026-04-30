@@ -123,6 +123,7 @@ _HTML_PAGES: dict[str, str] = {
     "/index.html":    "index.html",
     "/builder.html":  "builder.html",
     "/library.html":  "library.html",
+    "/landing.html":  "landing.html",
 }
 
 def _render_html_with_version(filename: str) -> str:

@@ -90,7 +90,7 @@ def _internal_asset_refs(body: str) -> list[str]:
     ]
 
 
-@pytest.mark.parametrize("path", ["/", "/builder.html", "/library.html"])
+@pytest.mark.parametrize("path", ["/", "/builder.html", "/library.html", "/landing.html"])
 def test_no_internal_script_or_link_tag_skips_cache_bust(client, path):
     """Strict variant: every same-origin <script src=> / <link href=> on
     every dashboard page must carry ?v=<sha>. Catches the footgun where a
