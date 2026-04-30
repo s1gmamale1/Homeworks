@@ -354,16 +354,16 @@ Returns chronological turns (oldest first), capped at 50.
 **200**:
 ```json
 {
-  "backend": "kimi|vertex|gemini|none",
+  "backend": "kimi|vertex|gemini_api|none",
   "model_fast": "gemini-2.5-flash",
   "model_pro": "gemini-2.5-pro",
   "active_provider": "kimi",
-  "preference_list": ["kimi", "vertex", "gemini"],
+  "preference_list": ["kimi", "vertex", "gemini_api"],
   "available_providers": ["kimi"]
 }
 ```
 - `active_provider` — name of the provider currently selected (first available in `preference_list`).
-- `preference_list` — ordered list read from `AI_BACKEND_PREFERENCE` env (default `kimi,vertex,gemini`).
+- `preference_list` — ordered list read from `AI_BACKEND_PREFERENCE` env (default `kimi,vertex,gemini_api`).
 - `available_providers` — all registered providers whose credentials are present.
 - `backend` is a legacy alias for `active_provider` — kept for backward compat.
 When `active_provider == "vertex"`: also includes `project`, `location`, `credentials_path`.

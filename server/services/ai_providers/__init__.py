@@ -12,7 +12,7 @@ register("kimi", KimiProvider())
 provider = get_provider("kimi")
 
 # Walk a preference list, return first available, or None
-provider = select_provider(["kimi", "vertex", "gemini"])
+provider = select_provider(["kimi", "vertex", "gemini_api"])
 """
 from __future__ import annotations
 

@@ -5,7 +5,7 @@ Public API (unchanged from Wave C):
   - generate_json(prompt, context, model, schema_hint) -> dict
   - generate(prompt, context, model, json_mode, temperature) -> str
   - health_check() -> bool
-  - ACTIVE_BACKEND: str   ("kimi" | "vertex" | "gemini" | "none")
+  - ACTIVE_BACKEND: str   ("kimi" | "vertex" | "gemini_api" | "none")
   - FAST_MODEL, PRO_MODEL: str
 
 All routing logic has moved to server/services/ai_providers/.
