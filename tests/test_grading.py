@@ -396,3 +396,109 @@ def test_lmr_floor_25_pct_same_as_amr():
     eng = aggregate(items, subject="english")
     math = aggregate(items, subject="math-algebra")
     assert eng["overall_pct"] == math["overall_pct"] == 25
+
+
+# ── Skipped-question penalty (expected_open_count padding) ──────────────
+
+def test_one_perfect_answer_with_others_skipped_does_not_score_100():
+    """User-flagged: a student who solves one Real-Life question with full
+    rubric (axis 4/4) and dismisses the other 9 open questions used to
+    score 100% because the mean was taken over answered items only.
+    With expected_open_count=10 the missing 9 are padded to floor (1/1)
+    and the score reflects partial completion."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    out = aggregate(items, subject="english", expected_open_count=10)
+    # ((4 + 9*1) / 10) on each axis = 1.3 → ((1.3 + 1.3)/2) * 25 = 32.5 → 32 or 33
+    assert out["overall_pct"] < 50, (
+        f"one-of-ten perfect answer must NOT score >= 50%, got {out['overall_pct']}"
+    )
+    assert out["overall_pct"] >= 25, (
+        f"answered floor must hold; one perfect answer should still beat pure 25%"
+    )
+    assert round(out["overall_axis_1"], 1) == 1.3
+    assert round(out["overall_axis_2"], 1) == 1.3
+
+
+def test_full_completion_unchanged_by_padding():
+    """When the student answers all expected_open_count items, padding
+    must be a no-op — the mean of 10 perfect items stays at 4.0/4.0."""
+    items = [
+        {"phase": "real-life", "id": f"rl-{i}", "correct": True, "score": 1.0,
+         "axis_1": 4, "axis_2": 4} for i in range(5)
+    ] + [
+        {"phase": "final-boss", "id": f"boss-{i}", "correct": True, "score": 1.0,
+         "axis_1": 4, "axis_2": 4} for i in range(5)
+    ]
+    out = aggregate(items, subject="english", expected_open_count=10)
+    assert out["overall_pct"] == 100
+    assert out["overall_axis_1"] == 4.0
+    assert out["overall_axis_2"] == 4.0
+
+
+def test_partial_completion_scales_proportionally():
+    """Half the questions answered perfectly, half skipped:
+    mean = (5*4 + 5*1) / 10 = 2.5 on each axis →
+    ((2.5+2.5)/2) * 25 = 62.5% → 62 (banker's rounding).
+    A student who does half the work crosses the 60% finish threshold;
+    below half they retry. That's the intended difficulty curve."""
+    items = [
+        {"phase": "real-life", "id": f"rl-{i}", "correct": True, "score": 1.0,
+         "axis_1": 4, "axis_2": 4} for i in range(5)
+    ]
+    out = aggregate(items, subject="english", expected_open_count=10)
+    assert round(out["overall_axis_1"], 2) == 2.5
+    assert round(out["overall_axis_2"], 2) == 2.5
+    assert out["overall_pct"] == 62
+    # Just at the proficient/apprentice border (axis avg 2.5 = proficient floor)
+    assert out["band"]["key"] in ("apprentice", "proficient")
+
+
+def test_skipped_padding_works_for_amr_too():
+    """The bug also affects math/science (AMR) when answers go through
+    AI grading. Same fix, same test pattern."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    eng = aggregate(items, subject="english",     expected_open_count=10)
+    math = aggregate(items, subject="math-algebra", expected_open_count=10)
+    # Same numerical scoring regardless of rubric — only labels differ
+    assert eng["overall_pct"] == math["overall_pct"]
+    assert eng["overall_pct"] < 50
+
+
+def test_no_padding_when_expected_count_omitted_legacy_behaviour():
+    """Backwards compatibility: callers that don't pass expected_open_count
+    get the unchanged behaviour (mean over answered only, partial
+    inflation possible). The runtime template DOES pass the count after
+    this fix, but legacy tests / callers must not break."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    out = aggregate(items, subject="english")  # no expected_open_count
+    assert out["overall_pct"] == 100  # legacy behaviour: one item averages to 4/4
+
+
+def test_padding_handles_count_smaller_than_actual():
+    """Defensive: if the runtime sends an expected_open_count that's
+    SMALLER than the actual answered count (shouldn't happen but
+    possible if RL_SCENARIO is undefined and only BOSS counts),
+    no padding is added — just average over actual."""
+    items = [
+        {"phase": "real-life", "id": f"rl-{i}", "correct": True, "score": 1.0,
+         "axis_1": 4, "axis_2": 4} for i in range(10)
+    ]
+    out = aggregate(items, subject="english", expected_open_count=5)
+    # 10 actual > 5 expected → no padding, simple average over 10
+    assert out["overall_axis_1"] == 4.0
+    assert out["overall_axis_2"] == 4.0
+    assert out["overall_pct"] == 100
+
+
+def test_zero_answered_with_expected_count_pure_floor():
+    """Edge case: student dismissed everything (zero items, but expected
+    10). All 10 padded to floor → 25%."""
+    out = aggregate([], subject="english", expected_open_count=10)
+    # Zero answered → all 10 padded to (1, 1) → mean 1.0/1.0 → 25%
+    assert out["overall_axis_1"] == 1.0
+    assert out["overall_axis_2"] == 1.0
+    assert out["overall_pct"] == 25
+    assert out["band"]["key"] == "novice"

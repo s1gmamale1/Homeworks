@@ -10352,6 +10352,29 @@ Prezident ertaga hisobot kutmoqda.`,
                     // axis labels (LMR for language subjects, AMR otherwise).
                     subject: (window.NETS_CTX && window.NETS_CTX.subject) || null,
                 };
+                // Skipped-question penalty: tell the backend the total open
+                // count so dismissing questions no longer inflates the mean
+                // over answered ones. Counts every question that COULD have
+                // produced AMR/LMR axes if it had been answered.
+                try {
+                    let expected = 0;
+                    // Real-Life q1..qN
+                    if (typeof RL_SCENARIO !== 'undefined' && RL_SCENARIO &&
+                        Array.isArray(RL_SCENARIO.questions)) {
+                        expected += RL_SCENARIO.questions.length;
+                    }
+                    // Final Boss attacks
+                    if (typeof BOSS_QUESTIONS !== 'undefined' &&
+                        Array.isArray(BOSS_QUESTIONS)) {
+                        expected += BOSS_QUESTIONS.length;
+                    }
+                    // Reading checkpoints (LMR-only path)
+                    if (typeof READING !== 'undefined' && READING &&
+                        Array.isArray(READING.checkpoints)) {
+                        expected += READING.checkpoints.length;
+                    }
+                    if (expected > 0) body.expected_open_count = expected;
+                } catch (_) { /* best-effort — backend defaults are safe */ }
                 if (window.__homeworkFailed) body.homework_failed = true;
                 if (typeof window.__warningDeductions === 'number'
                     && window.__warningDeductions > 0) {

@@ -33,6 +33,12 @@ class AggregateRequest(BaseModel):
     # Lexical Quality) instead of AMR's (Concept Identification / Process
     # Integrity). The numeric scoring is identical; only the labels differ.
     subject: str | None = None
+    # Total expected open-rubric items in the homework (5 Real-Life + 5
+    # Boss for Hard mode = 10; reading checkpoints add to this for
+    # language subjects). Sent by the runtime so the aggregator can
+    # penalise skipped questions instead of inflating the mean over
+    # answered ones only. Optional — None preserves legacy behaviour.
+    expected_open_count: int | None = None
 
 
 @router.post("/aggregate")
@@ -47,6 +53,7 @@ async def aggregate(req: AggregateRequest) -> dict[str, Any]:
         warning_deductions=req.warning_deductions,
         homework_failed=req.homework_failed,
         subject=req.subject,
+        expected_open_count=req.expected_open_count,
     )
 
 

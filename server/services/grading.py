@@ -191,6 +191,7 @@ def aggregate(
     warning_deductions: int = 0,
     homework_failed: bool = False,
     subject: str | None = None,
+    expected_open_count: int | None = None,
 ) -> dict[str, Any]:
     """Take a list of session-log dicts and return the scorecard payload.
 
@@ -280,6 +281,28 @@ def aggregate(
         for x in lst:
             if x.axis_1 is not None and x.axis_2 is not None:
                 all_axed.append(x)
+
+    # ── Skipped-question penalty ──────────────────────────────────────
+    # Without this, a student who answers ONE open question with axis 4/4
+    # and dismisses the rest would score 100% (mean of 1 item = 4.0). That
+    # rewards quitting and breaks completion incentives. Pad every missing
+    # open-rubric question with a floor entry (axis_1=1, axis_2=1 = Novice)
+    # so partial completion is correctly proportional.
+    #
+    # `expected_open_count` is sent by the runtime template based on the
+    # actual homework: typically 5 Real-Life + 5 Boss = 10 for Hard mode.
+    # When omitted (e.g. legacy callers, tests), behaviour is unchanged —
+    # mean is taken over answered items only.
+    if expected_open_count is not None and expected_open_count > len(all_axed):
+        missing = expected_open_count - len(all_axed)
+        for _ in range(missing):
+            all_axed.append(_Item(
+                phase="__skipped__",
+                correct=False,
+                score=0.0,
+                axis_1=1.0,
+                axis_2=1.0,
+            ))
 
     if all_axed:
         overall_a1 = sum(x.axis_1 for x in all_axed) / len(all_axed)
