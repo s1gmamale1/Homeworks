@@ -69,6 +69,4 @@ tests/fixtures/prod_replay/
 
 # Scratch / reference snippets
 ref_*.txt
-
 ai_models_comparison.md
-tmp/
