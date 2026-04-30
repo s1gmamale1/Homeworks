@@ -1079,6 +1079,19 @@
             color: var(--accent);
             border: 1px solid rgba(0, 122, 255, 0.22);
         }
+        /* Gate-quote card (Stage 1) — sparse glass with generous
+           whitespace for the BILARMIDINGIZ? pill-on-glass pattern.
+           Glass chrome is fully inherited from .card (T1). */
+        .quote-card {
+            padding: 48px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 280px;
+        }
+
         /* When the chip introduces the content (facts / "Bilarmidingiz?")
            it sits ABOVE the text instead of below — same pill, swapped
            gap so it reads as a label heading. Quotes keep the chip below
@@ -1319,9 +1332,11 @@
             justify-content: center;
             gap: 14px;
             background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
             border-radius: 28px;
-            border: 1px solid rgba(99, 184, 255, 0.24);
-            box-shadow: 0 14px 34px rgba(141, 180, 212, 0.14), var(--shadow-card);
+            border: 1px solid var(--surface-border);
+            box-shadow: var(--shadow-card);
             opacity: 0;
             transform: translateY(18px) scale(0.98);
             transition: opacity 500ms ease, transform 500ms ease;
@@ -1370,8 +1385,8 @@
             font-size: 24px;
             font-weight: 700;
             line-height: 1.3;
-            color: var(--accent);
-            text-shadow: 0 0 10px var(--accent-glow);
+            color: var(--text);
+            text-shadow: none;
         }
 
         .ms-question-subtitle,
@@ -1397,9 +1412,9 @@
             min-height: 84px;
             padding: 16px 18px;
             border-radius: 24px;
-            border: 1px solid rgba(99, 184, 255, 0.24);
-            background: rgba(255, 255, 255, 0.92);
-            box-shadow: 0 12px 28px rgba(141, 180, 212, 0.14), var(--shadow-card);
+            border: 1px solid var(--surface-border);
+            background: var(--surface-strong);
+            box-shadow: var(--shadow-card);
             color: var(--text);
             font-size: 15px;
             font-weight: 600;
@@ -1627,8 +1642,10 @@
         /* ── ADAPTIVE QUIZ ── */
         .gb-aq-prompt {
             background: var(--surface);
-            border-radius: 20px;
-            border: 1.5px solid var(--accent);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 22px;
+            border: 1px solid var(--surface-border);
             padding: 20px 18px;
             margin-bottom: 14px;
             box-shadow: var(--shadow-card);
@@ -1867,9 +1884,11 @@
             gap: 8px;
         }
         .gb-tm-tile {
-            background: rgba(99, 184, 255, 0.08);
-            border: 2px solid rgba(99, 184, 255, 0.3);
-            border-radius: 12px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
             padding: 12px 14px;
             cursor: pointer;
             transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, opacity 240ms ease;
@@ -1880,6 +1899,7 @@
             min-height: 56px;
             display: flex;
             align-items: center;
+            box-shadow: var(--shadow-card);
         }
         .gb-tm-tile:hover:not(.matched):not(.locked) {
             background: rgba(99, 184, 255, 0.16);
@@ -1944,14 +1964,14 @@
             -webkit-backface-visibility: hidden;
         }
         .gb-mm-back-face {
-            background: linear-gradient(135deg,rgba(99,184,255,0.22),rgba(180,223,255,0.14));
-            border: 1.5px solid rgba(99,184,255,0.35);
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
             font-size: 20px;
         }
         .gb-mm-front-face {
             transform: rotateY(180deg);
-            background: rgba(255,255,255,0.92);
-            border: 1.5px solid rgba(99,184,255,0.4);
+            background: var(--surface-strong);
+            border: 1px solid var(--surface-border);
             font-size: 10px;
             font-weight: 600;
             color: var(--text);
@@ -1974,11 +1994,14 @@
             80% { transform: rotateY(180deg) translateX(4px); }
         }
         .gb-mm-confirm-box {
-            background: rgba(227,242,255,0.95);
-            border: 1.5px solid var(--accent);
-            border-radius: 18px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
             padding: 16px 18px;
             margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
             display: none;
         }
         .gb-mm-confirm-box.show { display: block; }
@@ -2054,9 +2077,11 @@
         }
         .gb-pl-cell {
             aspect-ratio: 1 / 1;
-            background: rgba(255,255,255,0.92);
-            border: 1.5px solid rgba(0,0,0,0.08);
-            border-radius: 12px;
+            background: var(--surface-strong);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
             padding: 6px;
             font-size: 13px;
             line-height: 1.25;
@@ -2066,8 +2091,9 @@
             justify-content: center;
             text-align: center;
             user-select: none;
-            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
             overflow: hidden;
+            box-shadow: var(--shadow-card);
         }
         .gb-pl-cell:hover { transform: scale(1.03); border-color: var(--accent); }
         .gb-pl-cell.empty { background: transparent; border-style: dashed; cursor: default; }
@@ -2082,11 +2108,14 @@
             75% { transform: translateX(3px); }
         }
         .gb-pl-question-box {
-            background: rgba(99,184,255,0.10);
-            border: 1.5px solid rgba(99,184,255,0.4);
-            border-radius: 16px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
             padding: 14px 16px;
             margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
             display: none;
         }
         .gb-pl-question-box.show { display: block; }
@@ -2146,17 +2175,20 @@
         }
         .gb-mb-box {
             aspect-ratio: 1 / 1;
-            background: linear-gradient(160deg, rgba(99,184,255,0.18), rgba(212,175,55,0.12));
-            border: 2px solid rgba(99,184,255,0.5);
-            border-radius: 18px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
             font-size: 36px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             user-select: none;
-            transition: transform 200ms ease, border-color 200ms ease, opacity 200ms ease;
+            transition: transform 200ms ease, border-color 200ms ease, opacity 200ms ease, box-shadow 200ms ease;
             position: relative;
+            box-shadow: var(--shadow-card);
         }
         .gb-mb-box:hover { transform: scale(1.04); border-color: var(--accent); }
         .gb-mb-box.opened { opacity: 0.45; cursor: default; }
@@ -2179,11 +2211,14 @@
         .gb-mb-box-mark.correct { color: #2d7a2f; }
         .gb-mb-box-mark.wrong { color: #d9534f; }
         .gb-mb-stage {
-            background: rgba(99,184,255,0.10);
-            border: 1.5px solid rgba(99,184,255,0.4);
-            border-radius: 16px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
             padding: 14px 16px;
             margin-bottom: 14px;
+            box-shadow: var(--shadow-card);
             display: none;
         }
         .gb-mb-stage.show { display: block; }
@@ -2206,9 +2241,9 @@
         }
         .gb-mb-label {
             padding: 8px 14px;
-            border: 1.5px solid rgba(0,0,0,0.12);
+            border: 1px solid var(--surface-border);
             border-radius: 999px;
-            background: rgba(255,255,255,0.92);
+            background: var(--surface-strong);
             font-size: 13px;
             cursor: pointer;
             transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
@@ -2285,22 +2320,26 @@
             margin: 0 auto 18px;
         }
         .gb-ttt-cell {
-            background: rgba(212,175,55,0.06);
-            border: 1.5px solid rgba(212,175,55,0.3);
-            border-radius: 14px;
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 56px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 180ms ease, transform 180ms ease, border-color 180ms ease;
+            transition: background 180ms ease, transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
             user-select: none;
+            box-shadow: var(--shadow-card);
         }
         .gb-ttt-cell:hover:not(.filled):not(.locked) {
-            background: rgba(212,175,55,0.14);
+            background: var(--surface-strong);
             border-color: var(--accent);
             transform: scale(1.03);
+            box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-card);
         }
         .gb-ttt-cell.filled { cursor: default; }
         .gb-ttt-cell.locked { cursor: not-allowed; opacity: 0.85; }
@@ -4232,8 +4271,8 @@
 
         /* Mystery Box / Puzzle Lock / Tile Match / Memory Match ---- */
         [data-theme="dark"] .gb-mb-label {
-            background: rgba(15, 23, 42, 0.74);
-            border-color: rgba(148, 163, 184, 0.30);
+            background: var(--surface-strong);
+            border-color: var(--surface-border);
             color: var(--text);
         }
         [data-theme="dark"] .gb-mb-label.picked-correct { border-color: #5bb85d; background: rgba(34, 197, 94, 0.22); }
@@ -4253,22 +4292,26 @@
         [data-theme="dark"] .gb-pl-win-text { color: #86efac; }
         [data-theme="dark"] .gb-pl-grid { background: rgba(15, 23, 42, 0.45); }
         [data-theme="dark"] .gb-pl-cell {
-            background: rgba(15, 23, 42, 0.74);
-            border-color: rgba(148, 163, 184, 0.28);
+            background: var(--surface-strong);
+            border-color: var(--surface-border);
             color: var(--text);
         }
         [data-theme="dark"] .gb-pl-question-box {
-            background: rgba(0, 122, 255, 0.14);
-            border-color: rgba(0, 122, 255, 0.42);
+            background: var(--surface);
+            border-color: var(--surface-border);
         }
         [data-theme="dark"] .gb-mm-confirm-box {
-            background: rgba(0, 122, 255, 0.14);
-            border-color: var(--accent);
+            background: var(--surface);
+            border-color: var(--surface-border);
         }
         [data-theme="dark"] .gb-mm-front-face {
-            background: rgba(15, 23, 42, 0.78);
-            border-color: rgba(96, 165, 250, 0.42);
+            background: var(--surface-strong);
+            border-color: var(--surface-border);
             color: var(--text);
+        }
+        [data-theme="dark"] .gb-mm-back-face {
+            background: var(--surface);
+            border-color: var(--surface-border);
         }
         [data-theme="dark"] .gb-mm-card.matched .gb-mm-front-face {
             background: rgba(34, 197, 94, 0.22);
@@ -4288,19 +4331,19 @@
         /* Phase progress bar (top of screen) ----------------------- */
         [data-theme="dark"] .phase-seg { background: rgba(255, 255, 255, 0.10); }
 
-        /* ── Wave V.1 (runtime UX polish 2026-04-30): Memory Sprint dark mode ──
-           User-flagged: option buttons rendered white-on-light-grey in dark
-           mode. Make every Memory Sprint surface read on the dark theme. */
+        /* ── Wave V.1 + T3 glass lift: Memory Sprint dark-mode surfaces.
+           .ms-question-box uses tokens; .ms-option-btn retains explicit
+           rgba(15, 23, 42) to pass test_memory_sprint_button_dark_bg_is_not_white. */
         [data-theme="dark"] .ms-question-box {
             background: var(--surface);
-            border-color: rgba(96, 165, 250, 0.30);
-            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.36), var(--shadow-card);
+            border-color: var(--surface-border);
+            box-shadow: var(--shadow-card);
         }
         [data-theme="dark"] .ms-option-btn {
             background: rgba(15, 23, 42, 0.78);
-            border-color: rgba(96, 165, 250, 0.32);
+            border-color: var(--surface-border);
             color: var(--text);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
+            box-shadow: var(--shadow-card);
         }
         [data-theme="dark"] .ms-option-btn:hover:not(.merging):not(.is-hidden) {
             background: rgba(15, 23, 42, 0.90);
@@ -4330,6 +4373,37 @@
         [data-theme="dark"] .rl-input:focus {
             background: rgba(15, 23, 42, 0.86);
             border-color: var(--accent);
+        }
+
+        /* ── T3 glass lift dark-mode parity (2026-05-01) ──
+           Newly tokenised game-break surfaces get explicit dark overrides. */
+        [data-theme="dark"] .gb-aq-prompt {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-tm-tile {
+            background: var(--surface);
+            border-color: var(--surface-border);
+            color: var(--text);
+        }
+        [data-theme="dark"] .gb-mb-box {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-mb-stage {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-ttt-cell {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-ttt-cell:hover:not(.filled):not(.locked) {
+            background: var(--surface-strong);
+        }
+        [data-theme="dark"] .quote-card {
+            background: var(--surface);
+            border-color: var(--surface-border);
         }
 
         /* Glyph badges on game tiles use light-mode greens; brighten for dark ---- */
