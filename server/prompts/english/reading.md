@@ -79,7 +79,9 @@ Format:
 - No bazaar/shopkeeper/farmer clichés in pro-role settings.
 - Checkpoints tagged `[Bloom: LX | PISA: LX]`. Range: L1-L2 main idea, L2-L3 inference/purpose, L3-L4 language analysis, L4-L5 evaluation.
 - Do NOT print a word count label in the output — just meet it.
-- Visuals: inline SVG where it aids comprehension (sentence diagram splitting a load-bearing sentence into subject/verb/object at Checkpoint 2). Under 300×200px. Priority SVG > Mermaid > ASCII.
+- **Visuals:** inline SVG only when it aids comprehension of THIS narrative's load-bearing sentence — a sentence-diagram tree splitting subject / verb / object at Checkpoint 2, a timeline of events if the narrative spans multiple time points. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px. Priority SVG > Mermaid > ASCII.
+  - BAD: a generic open-book SVG decorating the top of the reading passage.
+  - GOOD: a sentence-tree SVG of the narrative's most syntactically complex sentence, branches labeled with the parts of speech the checkpoint question targets.
 
 
 ---

@@ -99,7 +99,9 @@ Each question:
 - Language: student-facing English. UZ bridge allowed in model answers.
 - No bazaar/village/shopkeeper clichés
 - Apply Wise Status Injection Recipe on every scenario
-- Visuals: inline SVG where visuals aid understanding (scenario setup diagram, timeline). Under 300×200px. Priority SVG > Mermaid > ASCII.
+- **Visuals:** inline SVG only when a visual aids understanding of THIS scenario — a setup diagram of the workplace/location, a timeline of the scenario's events, a register-comparison table when the question pivots on formal vs informal. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px. Priority SVG > Mermaid > ASCII.
+  - BAD: a generic city-skyline SVG attached to a hotel-receptionist scenario.
+  - GOOD: a phone-handset SVG with two speech bubbles ("Good morning" / "Hello") labeled "formal" and "informal", paired to the register-choice question.
 
 
 ---

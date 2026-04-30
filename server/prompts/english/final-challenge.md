@@ -28,19 +28,19 @@ Boss questions with HP damage tags (count by CEFR level). Mix of difficulty tier
 
 ## Damage Table (all levels)
 
-These are question difficulty tiers, not homework modes. English homework mode remains HARD.
-
 | Difficulty | Damage | Distribution |
 |-----------|:------:|:----------:|
 | Easy | -10 HP | 40% |
 | Medium | -20 HP | 40% |
 | Hard | -30 HP | 20% |
 
+> **Tier disambiguation.** "Easy / Medium / Hard" in the table above refers to **item difficulty within the boss**, not homework mode. English homework mode is always HARD per `classify.md`. Do not treat a per-question tier label as a basis for switching the session's overall mode.
+
 ---
 
 ## Question Construction
 
-Every question tagged: `[UZ-ENG{G}-UNIT{N}-{SEQ}] | Bloom: LX | PISA: LX | Damage: -XX HP`
+Every question tagged: `[Bloom: LX | PISA: LX | Damage: -XX HP]`
 
 **Must include:**
 - ≥1 reading/vocab-in-context Q (student reads a short text and answers)
@@ -63,26 +63,39 @@ Every question tagged: `[UZ-ENG{G}-UNIT{N}-{SEQ}] | Bloom: LX | PISA: LX | Damag
 
 ## Example: B1, 4 questions (present perfect unit)
 
-> **Q1** `[UZ-ENG7-UNIT4-01] | Bloom: L2 | PISA: L1 | Damage: -10 HP`
+> **Q1** `[Bloom: L2 | PISA: L1 | Damage: -10 HP]`
 > Read: "Scientists have discovered a new species in the Zarafshon river delta."
 > What tense is used, and why is it correct here — not past simple?
 
-> **Q2** `[UZ-ENG7-UNIT4-02] | Bloom: L3 | PISA: L2 | Damage: -10 HP`
+> **Q2** `[Bloom: L3 | PISA: L2 | Damage: -10 HP]`
 > Write 2 sentences about Tashkent IT Park using present perfect. Each sentence must use a different time adverb (already / yet / just / ever / never / recently).
 
-> **Q3** `[UZ-ENG7-UNIT4-03] | Bloom: L4 | PISA: L2 | Damage: -20 HP`
+> **Q3** `[Bloom: L4 | PISA: L2 | Damage: -20 HP]`
 > A student wrote: "She has visited Paris last summer." Find the error, explain why it is wrong, and rewrite correctly. Then write a second sentence about the same topic using past simple.
 
-> **Q4** `[UZ-ENG7-UNIT4-04] | Bloom: L5 | PISA: L3 | Damage: -30 HP`
+> **Q4** `[Bloom: L5 | PISA: L3 | Damage: -30 HP]`
 > You are a BBC Tashkent junior reporter. Write a 40-word news paragraph about the Samarkand UNESCO Heritage Festival using at least 2 present perfect sentences and 1 past simple sentence. Your paragraph must flow naturally — not a list of grammar examples.
 
 ---
 
 ## Hint Ladder
 
-- Hint 1: -5 HP. Remind which grammar rule or vocabulary item applies.
-- Hint 2: -5 HP. Show the formula structure or the first clause.
-- Hint 3: -5 HP. Show the frame; student completes the content.
+- **Hint 1: -5 HP.** Remind which grammar rule or vocabulary item applies — name the concept, never the answer.
+- **Hint 2: -5 HP.** Show the formula structure (e.g., "have/has + V3") or the first clause — never the full model answer.
+- **Hint 3: -5 HP.** Show the frame with all content blanked; student fills in. Even at Hint 3, the literal answer text never appears.
+
+**Anti-leak rules (apply at every level):**
+- Hint must never quote the model answer verbatim or in any inflected form.
+- Hint must never name the correct option for any sub-choice in the question.
+- Hint must teach toward the answer (concept, formula, frame), not deliver it.
+
+**BAD / GOOD (for a question whose answer is "She has already finished the report"):**
+- BAD Hint 1: "The answer is present perfect with 'already'." (names the answer)
+- GOOD Hint 1: "Look at the time adverb — which tense pairs with 'already'?"
+- BAD Hint 2: "Use 'has already finished'." (gives the answer)
+- GOOD Hint 2: "Formula: subject + has/have + V3. Time adverb sits between."
+- BAD Hint 3: "She has already finished the report." (literal answer)
+- GOOD Hint 3: "She _____ the report. (verb + time adverb in V3 form)"
 
 ## Failure Response
 
@@ -102,7 +115,9 @@ Show WHY the correct answer is correct. Route back to the relevant Preview card.
 - Hints cost HP, not free
 - Language: student-facing English
 - "Hali emas!" / "Not yet" — never "Noto'g'ri"
-- Visuals: inline SVG for diagram-reading questions (force diagrams, sentence trees, IPA charts, timelines). Under 300×200px. Priority SVG > Mermaid > ASCII.
+- **Visuals:** inline SVG only for diagram-reading boss questions — sentence trees, IPA charts, register-comparison tables, timelines. The visual must be exactly what the question references. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px. Priority SVG > Mermaid > ASCII.
+  - BAD: a generic London skyline SVG on a present-perfect question (no link to the grammar being tested).
+  - GOOD: a sentence-tree SVG with the verb-phrase node circled, paired to a question asking the student to identify the present-perfect structure.
 
 
 ---

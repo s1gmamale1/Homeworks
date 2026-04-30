@@ -15,7 +15,7 @@ Find and read the corresponding textbook pages. Extract:
 
 ## Step 2: Classify the lesson
 
-Read `06-prompts/english/classify.md` and apply it.
+Read `classify.md` and apply it.
 
 Two axes:
 1. **Mode:** always HARD for English.

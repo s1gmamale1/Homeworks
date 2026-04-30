@@ -5,7 +5,7 @@ You are building the Reflection phase (final phase) for an English homework sess
 ## Input
 
 - All previous phase outputs
-- Mode from `classify.md`: always HARD for English
+- Mode: always HARD per `classify.md`
 - Detected CEFR level: A1 · A1+ · A2 · A2+ · B1 · B1+ · B2
 - Grade (for UZ location references and calibration)
 
@@ -48,7 +48,7 @@ Example (B1 weak topic: time adverb placement):
 
 > "Today you learned [goal from Preview Panel 2's key rule] — can you name it in one line?"
 
-Student responds freely. Not scored. The goal string is pulled from Preview Panel 2's key rule.
+Student responds freely. Not scored. Use the same goal/topic line Preview Panel 2's key rule established — do not invent a new one.
 
 Example: "Today you learned that present perfect = a bridge from a past action to a present result — can you name it in one line?"
 
@@ -102,13 +102,26 @@ Never punitive. Never "you failed."
 - Not scored — calm close
 - Micro-exercises count per level table. Target weak topics only, not full review.
 - Complexity matches level: A1/A2 tap or one-word; B1/B2 short sentences.
-- BOST string pulled from Preview Panel 2 — not invented
+- BOST string echoes Preview Panel 2's key rule — not invented
 - Language: student-facing English. UZ bridge allowed in metacognitive prompts.
 - Closing line tied to score performance — never generic
 - Summary must reference actual content from this session
 - Use level-allowed tenses in micro-exercise model answers — never a banned tense
 - Visuals: inline SVG only if it aids the micro-exercise (rare — mostly text). Under 200×150px.
 
+
+---
+
+## Schema mapping (6 parts → 4 keys)
+
+The 6 body parts above collapse into 4 JSON fields. Compose them like this:
+
+- **`summary`** ← Part 1 (Today's Results) + Part 2 (Micro-exercises). Join into a single multi-paragraph string. Use plain text with line breaks; results bullets first, then a "Micro-exercises:" subsection with each exercise + answer.
+- **`question`** ← Part 3 (BOST Check-In) + ONE rotated prompt from Part 4 (Metacognitive). Join with a single line break — BOST line first, metacognitive prompt second.
+- **`spaced_rep`** ← Part 5 (Spaced Repetition Schedule) verbatim, including the "tomorrow · day 3 · day 7 · day 21" header line and the 2-3 item bullets.
+- **`closing`** ← Part 6 (Closing Line) verbatim — exactly one of the two score-tied lines.
+
+Do not drop any of the 6 parts. If a part has no content for this session, write a one-line placeholder rather than empty string.
 
 ---
 

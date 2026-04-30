@@ -94,7 +94,9 @@ Apply SMASHIN' SCOPE: Substitution, Movement, Association, Absurdity, Humour, Im
 - Language: student-facing English. Station labels in English. UZ location name in parentheses.
 - Technique must match content structure — never default to Palace unless content is spatial
 - G5-6: prefer student's own maktab/mahalla; G7-11: prefer national landmarks
-- Visuals: inline SVG per station — simple line drawing of the location with the station image overlaid. Under 300×200px.
+- **Visuals:** inline SVG per station — simple line drawing of the named location with the station image overlaid in its anchor position. The location must be the actual one in the mnemonic chain (Registan gate, Chorsu dome, Hilton Tashkent lobby, etc.), not a generic interior. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px.
+  - BAD: a generic library shelf SVG used as the "Hilton Tashkent" station for a present-perfect mnemonic.
+  - GOOD: an outline SVG of the Hilton Tashkent facade with the past-participle ("worked") banner planted in the lobby — the location is real and the image-anchor matches the chain.
 
 
 ---

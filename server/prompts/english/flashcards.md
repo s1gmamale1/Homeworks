@@ -31,18 +31,31 @@ Split each deck roughly 70% vocabulary / 30% grammar. If the unit yields fewer r
 
 **Media:** Include a concept-related visual when one is honest. Each visual must directly represent the target word, phrase, grammar pattern, stress pattern, timeline, collocation grid, word-family branch, sentence diagram, or a concrete textbook object/person/place. Prefer small inline SVG under 200×150px. Use an image URL/data URL **only** when the textbook source provides an actual relevant image. No decorative, generic, stock-like, or out-of-topic media. If there is no honest visual for a card, omit `media`.
 
-**Hint:** Optional mnemonic shown on the back card as "Yodlash usuli". A hint is a memory cue only — it must never expose the answer.
+**Hint:** Always-visible Buzan-style mnemonic shown on the back card as "Yodlash usuli". Every card must include a `hint` — a memory technique that helps the student remember the term, never a clue that exposes the answer.
 
-Hint rules (hard constraints):
+**Required Buzan techniques (pick the one that fits the term):**
+- **Link / Story** — chain the target to a vivid mental image or short story. Best for concrete nouns and action verbs.
+- **Peg / Number** — anchor the item to a numbered peg (1=sun, 2=shoe, 3=tree…) when the deck has an ordered set the student must recall in sequence.
+- **Major system** — convert digits to consonants to form a memorable word. Best for numbers, dates, or grammar codes the student must memorize.
+- **Substitute word / Sound-alike** — replace an abstract or hard-to-picture term with a concrete sound-alike image. Best for technical or abstract vocabulary and false friends.
+- **MIG (Movement · Imagination · Grouping)** — exaggerated, moving, multi-sensory mental image. Layer this on top of any of the above for stickier recall.
+
+**Hint rules (hard constraints — apply on top of the chosen technique):**
 - Hint must never expose the answer.
 - Hint cannot repeat the target term (or any inflected form of it).
 - Hint cannot include the exact definition.
 - Hint cannot translate the target into Uzbek, Russian, or any other language.
 - Hint cannot give a sentence where the target word is the obvious missing answer (no fill-in-the-blank that points straight at the term).
-- Hint must be only a memory cue: sound clue, stress cue, shape cue, contrast cue, or non-spoiler association.
-- If no honest non-spoiler hint is available, omit `hint`.
+- Maximum two sentences. Vivid imagery beats long prose.
+- Pick the technique that genuinely fits the term — do not force a Major system on a noun that wants a Link, or a Peg on a single isolated word.
 
-That's it.
+**Worked example — Link applied to "photographer":**
+> Hint: Picture a giant FOTO flash going off over a sheet of GRAPH paper — every flash draws another picture on the grid.
+(Builds a vivid moving image around the syllables "foto-graph" without naming the target.)
+
+**Worked example — Substitute-word applied to "magazine ≠ магазин":**
+> Hint: A glossy MAGnet pulls journal pages out of a shop counter, sticking only to the journals and leaving the shop behind.
+(Anchors the false-friend distinction with motion + contrast — no translation, no definition.)
 
 ## Examples
 
@@ -93,6 +106,6 @@ The attached textbook unit is the **only** source. Every term, collocation, gram
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "optional mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
+  { "term": "string", "def": "string", "cluster": "QOIDA|MISOL|TAHLIL|METOD", "hint": "required Buzan-style mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```
