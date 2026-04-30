@@ -2647,6 +2647,37 @@
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             padding: 72px 20px 130px; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
+        /* Boss "black scene" — high-contrast dramatic backdrop with red+blue
+           radial accents (lifted from the GPT preview mockup, runtime-redesign).
+           Sub-cards (.boss-hp-section, .boss-q-card) keep their own light
+           --surface background so the inline question/HP text stays readable. */
+        .boss-shell,
+        #screen-boss .card {
+            background:
+                radial-gradient(circle at 88% 0%, rgba(255,59,48,0.22), transparent 32%),
+                radial-gradient(circle at 12% 0%, rgba(0,102,204,0.18), transparent 35%),
+                linear-gradient(145deg, rgba(24,24,27,0.96), rgba(9,9,11,0.92)) !important;
+            color: white !important;
+        }
+        /* Intro card sits directly on the dark shell — give its text white-leaning
+           contrast so name/sub/label remain legible against the gradient. */
+        #screen-boss .boss-intro-name {
+            color: #ffffff;
+            text-shadow: 0 0 22px rgba(0, 122, 255, 0.55);
+        }
+        #screen-boss .boss-intro-sub {
+            color: rgba(255, 255, 255, 0.78);
+        }
+        #screen-boss .boss-intro-label {
+            color: #ff6b6b;
+        }
+        /* HP-bar glow tweak (preview.html:4808-4811) — hotter red→orange ramp
+           with an outer halo so the dark scene reads as "battle". */
+        .boss-shell .boss-hp-bar {
+            background: linear-gradient(90deg, #FF3B30, #FF9500) !important;
+            box-shadow: 0 0 26px rgba(255, 59, 48, 0.28);
+            border-radius: 999px;
+        }
         .boss-intro-card {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; gap: 8px; text-align: center;
@@ -4730,13 +4761,13 @@
                 <div id="boss-intro-card" class="boss-intro-card">
                     <div class="boss-intro-label">Phase 5 · Final Boss · Sub Boss</div>
                     <div class="boss-intro-art">⚔️</div>
-                    <div class="boss-intro-name">Algebra Boshlig'i</div>
+                    <div class="boss-intro-name" data-boss-name>Algebra Boshlig'i</div>
                     <div class="boss-intro-sub">§22 · Kvadrat Tenglama · 100 HP</div>
                 </div>
                 <div id="boss-battle" class="boss-battle" style="display:none;">
                     <div class="boss-hp-section">
                         <div class="boss-name-row">
-                            <span class="boss-name-label">⚔️ Algebra Boshlig'i</span>
+                            <span class="boss-name-label" data-boss-name-label>⚔️ Algebra Boshlig'i</span>
                             <span class="boss-hp-num" id="boss-hp-num">100 HP</span>
                         </div>
                         <div class="boss-hp-bar-bg">
