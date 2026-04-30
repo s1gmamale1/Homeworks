@@ -235,6 +235,10 @@ body[data-page="dashboard"] .dash-hero-grid {
 }
 
 body[data-page="dashboard"] .hero-card {
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+    align-items: stretch;
     position: relative;
     overflow: hidden;
     background: var(--dash-glass-bg);
@@ -245,6 +249,10 @@ body[data-page="dashboard"] .hero-card {
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     animation: dashFadeUp 0.85s var(--apple-spring-open) both;
+}
+
+body[data-page="dashboard"] .hero-card h2 {
+    max-width: none;
 }
 
 body[data-page="dashboard"] .hero-card::before {
