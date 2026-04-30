@@ -1,11 +1,43 @@
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing import Optional, Dict, Any
 
 from server import db
+from server.schemas.content import ContentJSON
 from server.services.routing import SUBJECTS, ALWAYS_HARD, SUBJECT_GRADES, SUBJECT_TO_FAMILY
 
 router = APIRouter(prefix="/homeworks", tags=["homework"])
+
+
+def _validate_content_json(content: Any) -> None:
+    """Run `content` through ContentJSON. Raises 400 INVALID_CONTENT on failure.
+
+    GPT-5.5 audit (2026-04-29) flagged content_json as the largest long-term
+    safety risk: a frontend or agent that drops a key silently corrupts a
+    homework. This is the single boundary hook gating PUT + PATCH.
+    """
+    if content is None:
+        return
+    if not isinstance(content, dict):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "content_json must be a JSON object",
+                "code": "INVALID_CONTENT",
+                "details": [{"msg": "content_json is not a dict"}],
+            },
+        )
+    try:
+        ContentJSON.model_validate(content)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "content_json validation failed",
+                "code": "INVALID_CONTENT",
+                "details": exc.errors(),
+            },
+        )
 
 class HomeworkCreate(BaseModel):
     title: str
@@ -128,6 +160,9 @@ async def update_homework(hw_id: str, hw_update: HomeworkUpdate):
     if not updates:
         return hw
 
+    if "content_json" in updates:
+        _validate_content_json(updates["content_json"])
+
     return await db.update_homework(hw_id, updates)
 
 @router.patch("/{hw_id}/content")
@@ -148,6 +183,9 @@ async def patch_homework_content(hw_id: str, body: ContentPatch):
 
     existing = hw.get("content_json") or {}
     merged = _deep_merge_content(existing, body.content_json)
+    # Validate the *merged* result, not just the patch — otherwise an
+    # accidental key drop in the patch wouldn't be caught.
+    _validate_content_json(merged)
     return await db.update_homework(hw_id, {"content_json": merged})
 
 @router.delete("/{hw_id}")
