@@ -53,6 +53,21 @@ def test_content_security_policy_keeps_required_runtime_sources():
     assert SECURITY_HEADERS["X-Frame-Options"] == "SAMEORIGIN"
 
 
+def test_csp_frame_ancestors_allows_same_origin():
+    """Builder preview iframe ships from the same origin; CSP must allow self.
+
+    Regression for the PR #73 → PR #76 case where 'none' blocked
+    the builder's /api/homeworks/{id}/preview iframe.
+    """
+    csp = SECURITY_HEADERS["Content-Security-Policy"]
+    assert "frame-ancestors 'self'" in csp, (
+        f"frame-ancestors should be 'self' (was: {csp!r})"
+    )
+    assert "frame-ancestors 'none'" not in csp, (
+        f"frame-ancestors must not be 'none' (regression of PR #73)"
+    )
+
+
 def test_e2e_scripts_use_shared_chrome_launcher():
     e2e_dir = ROOT / "scripts/e2e"
     scripts = sorted(
