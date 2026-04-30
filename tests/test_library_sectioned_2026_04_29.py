@@ -203,15 +203,16 @@ def test_lang_chip_group_has_all_three_languages():
 
 def test_library_js_has_grouping_helpers():
     src = LIBRARY_JS.read_text(encoding="utf-8")
-    # 2026-04-30 redesign: <details> sections replaced by FLIP-expand
-    # subject tiles. The grouping helper survives but the per-section
-    # render path is now `renderTile` + `openSubject` + `closePanel`.
+    # 2026-04-30 v2 redesign: <details> sections replaced by in-grid
+    # tile expansion. The grouping helper survives; the per-section
+    # render path is now `renderTile` + `expandSubject` + `collapseSubject`
+    # (the FLIP overlay's `openSubject` / `closePanel` / `getExpandedTarget`
+    # were retired when the .subject-panel overlay was deleted).
     for needle in (
         "function groupBySubject",
         "function renderTile",
-        "function openSubject",
-        "function closePanel",
-        "function getExpandedTarget",
+        "function expandSubject",
+        "function collapseSubject",
         "function renderHomeworkCard",
         "function renderStats",
     ):
@@ -285,13 +286,14 @@ def test_i18n_strings_define_new_keys(key):
 
 def test_library_css_has_section_and_chip_rules():
     css = LIBRARY_CSS.read_text(encoding="utf-8")
-    # 2026-04-30 redesign moved section CSS to subject-tile + panel
-    # rules; the chip group + grade chips remain (renamed to
-    # .lib-grade-chip in the panel). The CSS agent owns the file —
-    # this guard just pins the surface that library.js binds to.
+    # 2026-04-30 v2 redesign: replaced the overlay .subject-panel with
+    # in-grid expansion (.subject-tile.is-expanded). The chip group +
+    # grade chips remain (renamed to .lib-grade-chip in the expanded
+    # tile body). The CSS agent owns the file — this guard just pins
+    # the surface that library.js binds to.
     needles = (
         ".subject-tile",
-        ".subject-panel",
+        ".subject-tile.is-expanded",
         ".lib-grade-chip",
         ".lib-chip-group",
         ".lib-chip",

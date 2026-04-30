@@ -1,22 +1,23 @@
 // frontend/js/library.js
-// Library page — Apple-style subject blocks with FLIP-expand panels.
+// Library page — Apple-style subject blocks with in-grid expansion.
 //
-// Layout (replaces the pre-2026-04-30 <details> grouping):
+// Layout (2026-04-30 v2 — replaces FLIP overlay panel):
 //
 //   [ Til: All UZ RU EN ]      [ search… ]   [ Clear ]
 //
 //   ┌ Total ┐ ┌ Subj ┐ ┌ Hard ┐ ┌ UZ ┐
 //
 //   ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
-//   │ Algebra│ │ Geom   │ │ Eng    │ │ Phys   │   ← .subject-tile buttons
+//   │ Algebra│ │ Geom   │ │ Eng    │ │ Phys   │   ← .subject-tile
 //   └────────┘ └────────┘ └────────┘ └────────┘
 //
-//   On click → tile expands into a 3-column-wide .subject-panel that
-//   FLIPs from the tile's exact position. Esc / × closes.
+//   On click → tile gets .is-expanded → grid-column: 1 / -1 (full row),
+//   other tiles flow to next rows. View Transitions API morphs the
+//   layout. Esc / × closes. Same DOM node for compact + expanded —
+//   only innerHTML + class changes.
 //
 // Persistence: language + per-subject grade selection live in
-// localStorage. Open-panel state is NOT persisted (too disruptive on
-// reload).
+// localStorage. Open-tile state is NOT persisted.
 (function () {
   "use strict";
 
@@ -95,13 +96,11 @@
   let debounceTimer = null;
 
   const state = loadPersistedState();
-  // Per-render cache so the panel can re-filter without re-fetch.
+  // Per-render cache so the expanded tile can re-filter without re-fetch.
   let lastGroups = {};
-  // FLIP engine state
-  let openPanel  = null;
-  let sourceTile = null;
-  let sourceRect = null;
-  let activeSubjectId = null;
+  // The currently expanded tile element (or null).
+  let expandedTile = null;
+  let expandedSubjectId = null;
 
   function loadPersistedState() {
     try {
@@ -204,14 +203,17 @@
       .replace(/'/g, "&#039;");
   }
 
+  // Sanitize the subject id for use as a view-transition-name (must be
+  // a valid CSS ident). Replace any non-alphanumeric with `-`.
+  function vtNameFor(subjectId) {
+    return "library-tile-" + String(subjectId).replace(/[^a-zA-Z0-9]+/g, "-");
+  }
+
   function isHardItem(hw) {
-    // Primary: explicit difficulty / mode field.
     const diff = (hw && hw.difficulty || "").toString().toLowerCase();
     if (diff === "hard") return true;
     const mode = (hw && hw.mode || "").toString().toLowerCase();
     if (mode === "hard") return true;
-    // Heuristic fallback when neither field is present: senior-grade
-    // content (grade ≥ 9) is typically the "needs review" cohort.
     if (typeof hw.grade === "number" && hw.grade >= 9 && !mode && !diff) {
       return true;
     }
@@ -250,35 +252,56 @@
   }
 
   // ── Subject tiles ────────────────────────────────────────────────────────
-  function renderTile(subjectId, items) {
-    const accent = subjectFamilyColor(subjectId);
+  function compactMarkup(subjectId, items) {
     const name = subjectDisplayName(subjectId);
     const glyph = subjectIcon(subjectId);
     const count = items.length;
     const tagline = subjectTagline(subjectId) || formatCount(count);
-    const ariaLabel = t("library.subject_open_label", "Open {name}").replace("{name}", name);
     const openLabel = t("library.tile_open", "Open");
+
+    return `
+      <div class="tile-orb" aria-hidden="true"></div>
+      <div class="tile-icon tile-icon-compact">${escapeHtml(glyph)}</div>
+      <div class="tile-copy tile-copy-compact">
+        <h3>${escapeHtml(name)}</h3>
+        <p>${escapeHtml(tagline)}</p>
+      </div>
+      <div class="tile-footer tile-footer-compact">
+        <span>${escapeHtml(formatCount(count))}</span>
+        <span class="tile-pill">${escapeHtml(openLabel)} ↗</span>
+      </div>
+    `;
+  }
+
+  function renderTile(subjectId, items) {
+    const accent = subjectFamilyColor(subjectId);
+    const name = subjectDisplayName(subjectId);
+    const ariaLabel = t("library.subject_open_label", "Open {name}").replace("{name}", name);
 
     const tile = document.createElement("button");
     tile.type = "button";
     tile.className = "subject-tile";
     tile.style.setProperty("--accent", accent);
+    tile.style.setProperty("--accent-hover", shade(accent, -12));
+    tile.style.setProperty("--accent-glow", hexToRgba(accent, 0.28));
+    tile.style.setProperty("--accent-light", hexToRgba(accent, 0.10));
+    tile.style.viewTransitionName = vtNameFor(subjectId);
     tile.dataset.subjectId = subjectId;
     tile.setAttribute("aria-label", ariaLabel);
-    tile.innerHTML = `
-      <div class="tile-orb" aria-hidden="true"></div>
-      <div class="tile-icon">${escapeHtml(glyph)}</div>
-      <div class="tile-copy">
-        <h3>${escapeHtml(name)}</h3>
-        <p>${escapeHtml(tagline)}</p>
-        <div class="tile-footer">
-          <span>${escapeHtml(formatCount(count))}</span>
-          <span class="tile-pill">${escapeHtml(openLabel)} ↗</span>
-        </div>
-      </div>
-    `;
-    tile.addEventListener("click", () => openSubject(tile, subjectId));
+    tile.setAttribute("aria-expanded", "false");
+    tile.innerHTML = compactMarkup(subjectId, items);
+    wireCompactHandlers(tile, subjectId);
     return tile;
+  }
+
+  function wireCompactHandlers(tile, subjectId) {
+    tile.onclick = (ev) => {
+      // Ignore clicks while already expanded (close handled separately)
+      if (tile.classList.contains("is-expanded")) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      expandSubject(tile, subjectId);
+    };
   }
 
   function renderTiles(groups) {
@@ -289,16 +312,41 @@
     gridEl.appendChild(frag);
   }
 
-  // ── Homework card ────────────────────────────────────────────────────────
+  // ── Color helpers (for per-tile accent CSS vars) ────────────────────────
+  function hexToRgba(hex, a) {
+    const h = hex.replace("#", "");
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+  function shade(hex, percent) {
+    // negative percent → darken
+    const h = hex.replace("#", "");
+    let r = parseInt(h.slice(0, 2), 16);
+    let g = parseInt(h.slice(2, 4), 16);
+    let b = parseInt(h.slice(4, 6), 16);
+    const f = (percent + 100) / 100;
+    r = Math.max(0, Math.min(255, Math.round(r * f)));
+    g = Math.max(0, Math.min(255, Math.round(g * f)));
+    b = Math.max(0, Math.min(255, Math.round(b * f)));
+    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+
+  // ── Homework card (dashboard-parity) ─────────────────────────────────────
   function renderHomeworkCard(hw, index) {
+    const accent = subjectFamilyColor(hw.subject || "");
     const subjectName = subjectDisplayName(hw.subject);
+    const subjectGlyph = subjectIcon(hw.subject);
     const language = hw.language ? hw.language.toUpperCase() : "";
     const mode = (hw.mode || "").toString().toLowerCase();
     const modeLabel = hw.mode ? hw.mode.toUpperCase() : "";
-    const num = String(index + 1).padStart(2, "0");
+    const status = (hw.status || "draft").toString().toLowerCase();
+    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
     const chapter = hw.chapter || "";
     const title = hw.title || hw.id;
     const idShort = hw.id ? String(hw.id).slice(0, 8) : "";
+    const openLabel = t("dashboard.btn_open", "Open");
 
     const card = document.createElement("a");
     card.className = "homework-card";
@@ -306,36 +354,46 @@
     card.target = "_blank";
     card.rel = "noreferrer";
     card.setAttribute("aria-label", title);
+    // Per-card accent (top border + icon badge)
+    card.style.setProperty("--accent", accent);
+    card.style.setProperty("--accent-hover", shade(accent, -12));
+    card.style.setProperty("--accent-glow", hexToRgba(accent, 0.28));
+    card.style.setProperty("--accent-light", hexToRgba(accent, 0.10));
 
-    const showBadge = !!hw.mode;
-    const badgeHtml = showBadge
-      ? `<span class="hw-badge ${escapeHtml(mode)}">${escapeHtml(modeLabel)}</span>`
+    const badgeHtml = hw.mode
+      ? `<span class="hw-pill" data-mode="${escapeHtml(mode)}">${escapeHtml(modeLabel)}</span>`
+      : "";
+    const gradePill = (hw.grade != null)
+      ? `<span class="hw-pill">${escapeHtml(t("common.grade", "Grade"))} ${escapeHtml(String(hw.grade))}</span>`
+      : "";
+    const langPill = language
+      ? `<span class="hw-pill">${escapeHtml(language)}</span>`
       : "";
 
-    const subjectTag = subjectName
-      ? `<span class="hw-tag blue">${escapeHtml(subjectName)}</span>`
-      : "";
-    const gradeTag = (hw.grade != null)
-      ? `<span class="hw-tag purple">${escapeHtml(t("common.grade", "Grade"))} ${escapeHtml(String(hw.grade))}</span>`
-      : "";
-    const langTag = language
-      ? `<span class="hw-tag cyan">${escapeHtml(language)}</span>`
-      : "";
+    const subjectMeta = subjectName
+      ? `${escapeHtml(subjectName)}${hw.grade != null ? ` · ${escapeHtml(String(hw.grade))}-sinf` : ""}`
+      : (hw.grade != null ? `${escapeHtml(String(hw.grade))}-sinf` : "");
+
+    const updatedLabel = formatDate(hw.updated_at);
 
     card.innerHTML = `
       <div class="hw-head">
-        <span class="hw-num">${escapeHtml(num)}</span>
-        ${badgeHtml}
+        <div class="hw-icon" aria-hidden="true">${escapeHtml(subjectGlyph)}</div>
+        <span class="hw-status">${escapeHtml(statusLabel)}</span>
       </div>
-      <h4 class="hw-title">${escapeHtml(title)}</h4>
-      <div class="hw-subtopic">${escapeHtml(chapter)}</div>
-      <div class="hw-tags">
-        ${subjectTag}${gradeTag}${langTag}
+      <div>
+        <h4 class="hw-title">${escapeHtml(title)}</h4>
+        <p class="hw-id">${escapeHtml(idShort || "")}</p>
       </div>
-      <div class="hw-bottom">
-        <span>ⓘ ${escapeHtml(idShort || formatCount(1))}</span>
-        <span>▣ ${escapeHtml(formatDate(hw.updated_at))}</span>
+      <div class="hw-meta">
+        ${subjectMeta ? `<span>${subjectMeta}</span>` : ""}
+        ${chapter ? `<span>${escapeHtml(chapter)}</span>` : ""}
+        ${updatedLabel ? `<span>${escapeHtml(updatedLabel)}</span>` : ""}
       </div>
+      <div class="hw-pills">
+        ${badgeHtml}${gradePill}${langPill}
+      </div>
+      <span class="hw-open">${escapeHtml(openLabel)}</span>
     `;
     return card;
   }
@@ -364,87 +422,12 @@
     });
   }
 
-  // ── FLIP engine ──────────────────────────────────────────────────────────
-  function rectRelativeToGrid(rect) {
-    const gridRect = gridEl.getBoundingClientRect();
-    return {
-      left:   rect.left - gridRect.left,
-      top:    rect.top  - gridRect.top,
-      width:  rect.width,
-      height: rect.height,
-    };
-  }
-
-  // 4-col grid → 3-col-wide expanded panel anchored adjacent to the
-  // origin tile. Tablet (≤1030) collapses to full-width 2-col, mobile
-  // (≤650) full-width 1-col. Height scales with item-row count, capped
-  // by available stage height.
-  function getExpandedTarget(tile, items) {
-    const gridRect = gridEl.getBoundingClientRect();
-    const origin = rectRelativeToGrid(tile.getBoundingClientRect());
-    const isMobile = window.innerWidth <= 650;
-    const isTablet = window.innerWidth <= 1030;
-
-    const itemCount = (items && items.length) || 0;
-    const cardRowHeight = 234; // 214 min-h + 20 gap
-    const chromeHeight = 170;  // header + chip strip + padding
-    const stageRect = stageEl ? stageEl.getBoundingClientRect() : gridRect;
-    const stageInnerHeight = stageRect.height;
-
-    if (isMobile) {
-      const cols = 1;
-      const rows = Math.max(1, Math.ceil(itemCount / cols));
-      const desiredHeight = chromeHeight + rows * cardRowHeight;
-      const stageMaxHeight = Math.max(560, stageInnerHeight - origin.top - 16);
-      const height = Math.max(560, Math.min(desiredHeight, stageMaxHeight));
-      return { left: 0, top: origin.top, width: gridRect.width, height };
-    }
-    if (isTablet) {
-      const cols = 2;
-      const rows = Math.max(1, Math.ceil(itemCount / cols));
-      const desiredHeight = chromeHeight + rows * cardRowHeight;
-      const stageMaxHeight = Math.max(480, stageInnerHeight - origin.top - 16);
-      const height = Math.max(480, Math.min(desiredHeight, stageMaxHeight));
-      return { left: 0, top: origin.top, width: gridRect.width, height };
-    }
-
-    // Desktop (>1030px): 3-card-wide panel, height scales with row count
-    const cardGap = 14;
-    const cardWidth = (gridRect.width - cardGap * 3) / 4;
-    const originColumn = Math.round(origin.left / (cardWidth + cardGap));
-    const width = cardWidth * 3 + cardGap * 2;
-    let left;
-    if (originColumn === 3) {
-      left = 0;                              // panel covers cols 0-2
-    } else {
-      left = cardWidth + cardGap;            // panel covers cols 1-3
-    }
-
-    // Height scales with item count: 4 cols, ~234px per row (214 min-h + 20 gap),
-    // plus 170px chrome (header + chip strip + padding). Capped by stage height.
-    const cols = 4;
-    const rows = Math.max(1, Math.ceil(itemCount / cols));
-    const desiredHeight = chromeHeight + rows * cardRowHeight;
-    const stageMaxHeight = Math.max(420, stageInnerHeight - origin.top - 16);
-    const height = Math.max(420, Math.min(desiredHeight, stageMaxHeight));
-
-    return { left, top: origin.top, width, height };
-  }
-
-  function setPanelBox(panel, rect) {
-    panel.style.setProperty("--panel-left",   `${rect.left}px`);
-    panel.style.setProperty("--panel-top",    `${rect.top}px`);
-    panel.style.setProperty("--panel-width",  `${rect.width}px`);
-    panel.style.setProperty("--panel-height", `${rect.height}px`);
-  }
-
-  function panelMarkup(subjectId, items) {
-    const accent = subjectFamilyColor(subjectId);
+  // ── Expanded markup ──────────────────────────────────────────────────────
+  function expandedMarkup(subjectId, items) {
     const name = subjectDisplayName(subjectId);
     const glyph = subjectIcon(subjectId);
     const count = items.length;
 
-    // Grade range header — min..max present in items.
     const grades = items
       .map(i => i.grade)
       .filter(g => typeof g === "number")
@@ -454,10 +437,8 @@
           ? `${t("common.grade", "Grade")} ${grades[0]}`
           : `${t("common.grade", "Grade")} ${grades[0]}–${grades[grades.length - 1]}`)
       : "";
-
     const subline = `${formatCount(count)}${gradeRange ? ` · ${escapeHtml(gradeRange)}` : ""}`;
 
-    // Grade chips — only grades present in this subject's items.
     const gradesPresent = Array.from(new Set(grades));
     const persisted = state.gradeBySubject[subjectId] || "all";
     const selected = (persisted === "all" || gradesPresent.includes(Number(persisted))) ? persisted : "all";
@@ -468,26 +449,28 @@
       return `<button class="lib-grade-chip${active ? " is-active" : ""}" data-grade="${escapeHtml(String(g))}">${escapeHtml(String(g))}</button>`;
     })).join("");
 
+    const closeLabel = t("common.close", "Close");
+
     return `
-      <div class="panel-content">
-        <div class="panel-top">
-          <div class="panel-title">
-            <div class="panel-glyph">${escapeHtml(glyph)}</div>
+      <div class="tile-expanded-body">
+        <div class="expanded-head">
+          <div class="expanded-title">
+            <div class="expanded-glyph" aria-hidden="true">${escapeHtml(glyph)}</div>
             <div>
               <h2>${escapeHtml(name)}</h2>
               <p>${subline}</p>
             </div>
           </div>
-          <button class="panel-close" aria-label="${escapeHtml(t("common.close", "Close"))}" data-i18n-aria-label="common.close">×</button>
+          <button class="expanded-close" type="button" aria-label="${escapeHtml(closeLabel)}" data-i18n-aria-label="common.close">×</button>
         </div>
-        <div class="panel-actions">${chipsHtml}</div>
-        <div class="panel-cards"></div>
+        <div class="expanded-actions">${chipsHtml}</div>
+        <div class="expanded-cards"></div>
       </div>
     `;
   }
 
-  function paintPanelCards(panel, subjectId, items) {
-    const cardsHost = panel.querySelector(".panel-cards");
+  function paintExpandedCards(tile, subjectId, items) {
+    const cardsHost = tile.querySelector(".expanded-cards");
     if (!cardsHost) return;
     while (cardsHost.firstChild) cardsHost.removeChild(cardsHost.firstChild);
 
@@ -498,7 +481,7 @@
 
     if (!filtered.length) {
       const empty = document.createElement("div");
-      empty.className = "lib-section-empty";
+      empty.className = "expanded-empty";
       empty.textContent = t("library.section_empty", "No homeworks for this grade.");
       cardsHost.appendChild(empty);
       return;
@@ -509,132 +492,90 @@
     cardsHost.appendChild(frag);
   }
 
-  function openSubject(tile, subjectId) {
-    if (openPanel) closePanel(false);
+  function wireExpandedHandlers(tile, subjectId, items) {
+    const closeBtn = tile.querySelector(".expanded-close");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        collapseSubject(tile, true);
+      });
+    }
 
-    const items = lastGroups[subjectId] || [];
-    sourceTile = tile;
-    activeSubjectId = subjectId;
-    sourceRect = rectRelativeToGrid(tile.getBoundingClientRect());
-    const targetRect = getExpandedTarget(tile, items);
-
-    const panel = document.createElement("section");
-    panel.className = "subject-panel animating";
-    panel.style.setProperty("--accent", subjectFamilyColor(subjectId));
-    setPanelBox(panel, targetRect);
-    panel.innerHTML = panelMarkup(subjectId, items);
-
-    gridEl.appendChild(panel);
-    openPanel = panel;
-    gridEl.classList.add("has-panel");
-    if (stageEl) stageEl.classList.add("has-panel");
-    tile.classList.add("is-origin");
-
-    // FLIP — animate from source rect to target rect.
-    const dx = sourceRect.left - targetRect.left;
-    const dy = sourceRect.top  - targetRect.top;
-    const sx = sourceRect.width  / targetRect.width;
-    const sy = sourceRect.height / targetRect.height;
-
-    const animation = panel.animate([
-      {
-        transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
-        opacity: 1,
-        borderRadius: "31px",
-        filter: "brightness(1.14) saturate(1.12)",
-      },
-      {
-        transform: "translate(0, 0) scale(1, 1)",
-        opacity: 1,
-        borderRadius: "31px",
-        filter: "brightness(1) saturate(1)",
-      },
-    ], {
-      duration: 640,
-      easing: "cubic-bezier(.16, 1, .3, 1)",
-      fill: "both",
-    });
-    animation.onfinish = () => panel.classList.remove("animating");
-
-    // Render cards immediately so the staggered CSS animation can play.
-    paintPanelCards(panel, subjectId, items);
-
-    // Wire close + escape + grade chips.
-    const closeBtn = panel.querySelector(".panel-close");
-    if (closeBtn) closeBtn.addEventListener("click", () => closePanel(true));
-
-    const actions = panel.querySelector(".panel-actions");
+    const actions = tile.querySelector(".expanded-actions");
     if (actions) {
       actions.addEventListener("click", (ev) => {
         const chip = ev.target.closest(".lib-grade-chip");
         if (!chip) return;
+        ev.preventDefault();
+        ev.stopPropagation();
         const grade = chip.dataset.grade || "all";
         state.gradeBySubject[subjectId] = grade;
         persist();
         actions.querySelectorAll(".lib-grade-chip").forEach(c => {
           c.classList.toggle("is-active", c.dataset.grade === grade);
         });
-        paintPanelCards(panel, subjectId, items);
+        paintExpandedCards(tile, subjectId, items);
       });
     }
 
-    document.addEventListener("keydown", escHandler);
+    // Block bubbling clicks on the expanded body from re-triggering expand.
+    const body = tile.querySelector(".tile-expanded-body");
+    if (body) {
+      body.addEventListener("click", (ev) => ev.stopPropagation());
+    }
+  }
+
+  // ── Expand / collapse (View Transitions API) ────────────────────────────
+  function expandSubject(tile, subjectId) {
+    if (expandedTile && expandedTile !== tile) {
+      collapseSubject(expandedTile, false);
+    }
+    const items = lastGroups[subjectId] || [];
+    const apply = () => {
+      tile.classList.add("is-expanded");
+      tile.setAttribute("aria-expanded", "true");
+      tile.innerHTML = expandedMarkup(subjectId, items);
+      wireExpandedHandlers(tile, subjectId, items);
+      paintExpandedCards(tile, subjectId, items);
+      expandedTile = tile;
+      expandedSubjectId = subjectId;
+      document.addEventListener("keydown", escHandler);
+    };
+    if (typeof document.startViewTransition === "function") {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  }
+
+  function collapseSubject(tile, animate) {
+    if (!tile) return;
+    const subjectId = tile.dataset.subjectId;
+    const items = lastGroups[subjectId] || [];
+    const apply = () => {
+      tile.classList.remove("is-expanded");
+      tile.setAttribute("aria-expanded", "false");
+      tile.innerHTML = compactMarkup(subjectId, items);
+      wireCompactHandlers(tile, subjectId);
+      if (expandedTile === tile) {
+        expandedTile = null;
+        expandedSubjectId = null;
+        document.removeEventListener("keydown", escHandler);
+      }
+    };
+    if (animate && typeof document.startViewTransition === "function") {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
   }
 
   function escHandler(event) {
-    if (event.key === "Escape") closePanel(true);
-  }
-
-  function closePanel(animate) {
-    if (animate === undefined) animate = true;
-    if (!openPanel) return;
-
-    const panel = openPanel;
-    const originRect = sourceTile
-      ? rectRelativeToGrid(sourceTile.getBoundingClientRect())
-      : sourceRect;
-    const currentRect = rectRelativeToGrid(panel.getBoundingClientRect());
-    panel.classList.add("animating");
-    document.removeEventListener("keydown", escHandler);
-
-    const finish = () => {
-      if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
-      if (sourceTile) sourceTile.classList.remove("is-origin");
-      if (gridEl) gridEl.classList.remove("has-panel");
-      if (stageEl) stageEl.classList.remove("has-panel");
-      openPanel = null;
-      sourceTile = null;
-      sourceRect = null;
-      activeSubjectId = null;
-    };
-
-    if (!animate || !originRect) {
-      finish();
-      return;
+    if (event.key === "Escape" && expandedTile) {
+      collapseSubject(expandedTile, true);
     }
-
-    const dx = originRect.left - currentRect.left;
-    const dy = originRect.top  - currentRect.top;
-    const sx = originRect.width  / currentRect.width;
-    const sy = originRect.height / currentRect.height;
-
-    const animation = panel.animate([
-      { transform: "translate(0, 0) scale(1, 1)",                                    opacity: 1,   borderRadius: "31px" },
-      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,                opacity: .98, borderRadius: "31px" },
-    ], {
-      duration: 500,
-      easing: "cubic-bezier(.22, 1, .36, 1)",
-      fill: "both",
-    });
-    animation.onfinish = finish;
   }
-
-  // Reposition open panel on resize.
-  window.addEventListener("resize", () => {
-    if (!openPanel || !sourceTile) return;
-    const resizeItems = activeSubjectId ? (lastGroups[activeSubjectId] || []) : [];
-    setPanelBox(openPanel, getExpandedTarget(sourceTile, resizeItems));
-  });
 
   // ── Fetch ────────────────────────────────────────────────────────────────
   async function fetchAllItems() {
@@ -661,9 +602,12 @@
   }
 
   async function loadAndRender() {
-    // Close any open panel before re-rendering — its source tile is
-    // about to be removed.
-    if (openPanel) closePanel(false);
+    // Drop any expanded state — the tile is about to be removed.
+    if (expandedTile) {
+      expandedTile = null;
+      expandedSubjectId = null;
+      document.removeEventListener("keydown", escHandler);
+    }
 
     hide(errorEl);
     hide(emptyEl);

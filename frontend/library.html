@@ -58,13 +58,12 @@
       <!-- Stat cards — populated by library.js, hidden during loading/error/empty -->
       <section class="lib-stats" id="lib-stats" aria-label="Library statistics" hidden></section>
 
-      <!-- Stage — holds the subject grid; expanding panel positions itself absolutely inside -->
+      <!-- Stage — holds the subject grid; tiles expand in-place via View Transitions -->
       <section class="lib-stage glass-card" id="lib-stage" hidden>
-        <div class="stage-head">
+        <div class="lib-stage-head">
           <div>
             <p class="eyebrow" data-i18n="library.results_eyebrow">Subjects</p>
             <h2 id="lib-heading" data-i18n="library.subject_blocks_h2">Subject Blocks</h2>
-            <p class="lib-stage-sub" data-i18n="library.subject_blocks_sub">Click a block to expand from its position.</p>
           </div>
         </div>
         <div class="lib-subject-grid" id="lib-subject-grid" aria-live="polite"></div>

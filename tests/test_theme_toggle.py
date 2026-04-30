@@ -185,22 +185,30 @@ def test_app_css_dark_mode_coverage(selector):
 @pytest.mark.parametrize(
     "selector",
     [
-        # Apple-redesign inverted the default — dark IS the default surface,
-        # so light mode is the override. Lock light-mode contrast rules for
-        # the difficulty badges + every tag color variant; without these,
-        # hardcoded dark colors (cyan, purple, orange) become illegible on
-        # the light glass surface.
-        ':root[data-theme="light"] .homework-card .hw-badge[data-mode="hard"]',
-        ':root[data-theme="light"] .homework-card .hw-badge[data-mode="easy"]',
-        ':root[data-theme="light"] .homework-card .hw-tag.blue',
-        ':root[data-theme="light"] .homework-card .hw-tag.purple',
-        ':root[data-theme="light"] .homework-card .hw-tag.cyan',
+        # 2026-04-30 v2: in-grid expansion replaces the FLIP overlay.
+        # The homework-card inside an expanded tile now mirrors the
+        # dashboard's card design — dashboard parity tokens (var(--text),
+        # var(--surface), var(--border), var(--accent)) adapt to both
+        # themes via app.css, so we no longer need explicit per-tag
+        # light-mode overrides. We DO still need to pin the dark theme's
+        # expanded-tile recolour (the linear-gradient background must
+        # change between light and dark or the tile becomes near-white
+        # in dark mode).
+        '[data-theme="dark"] .subject-tile',
+        '[data-theme="dark"] .subject-tile.is-expanded',
+        '[data-theme="dark"] .subject-tile .tile-icon',
+        # And the per-mode pill colors must be present so HARD/EASY
+        # tags keep their accessible WCAG-AA tinted backgrounds.
+        '.homework-card .hw-pill[data-mode="hard"]',
+        '.homework-card .hw-pill[data-mode="easy"]',
     ],
 )
 def test_library_css_theme_coverage(selector):
-    """Lock the light-mode override rules in library.css for the redesigned
-    homework-card badges + tags. Dark is the default (matches the GPT-5.5
-    reference); light needs explicit colour overrides so the accent-tinted
-    tags don't disappear on a near-white surface."""
+    """Lock the theme-aware rules in library.css for the redesigned
+    subject tiles + homework cards. The 2026-04-30 v2 redesign moved
+    to app.css token inheritance — most colours now adapt automatically.
+    The two things that DO need explicit theme branches: the expanded
+    tile's gradient (different mix ratios for light/dark) and the
+    per-mode HARD/EASY pill colours."""
     css = _read(LIBRARY_CSS)
-    assert selector in css, f"library.css missing light-mode rule for `{selector}`"
+    assert selector in css, f"library.css missing rule for `{selector}`"
