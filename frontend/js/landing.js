@@ -15,7 +15,7 @@
   //            lock, message, play, sparkles, wand, zap
   const iconPaths = {
     arrowRight: "M5 12h14M13 5l7 7-7 7",
-    book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z",
+    book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z",
     brain: "M9 3a3 3 0 0 0-3 3v1a3 3 0 0 0-2 5.23V14a4 4 0 0 0 4 4h1m6-15a3 3 0 0 1 3 3v1a3 3 0 0 1 2 5.23V14a4 4 0 0 1-4 4h-1M9 3v18m6-18v18M9 9H6m12 0h-3M9 15H6m12 0h-3",
     check: "M20 6 9 17l-5-5",
     chevronRight: "m9 18 6-6-6-6",
