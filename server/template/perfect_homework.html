@@ -4891,12 +4891,17 @@
                 'res.correct_suffix':    "to'g'ri",
                 'res.phase_done':        'Tamomlandi',
                 'res.phase_undone':      'Bajarilmadi',
-                'res.amr_title':         'AMR — 2-axis Anchored Mastery Rubric',
-                'res.amr_title_short':   'AMR — 2-axis rubric',
-                'res.amr_no_ai':         "Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill, Real-Life Q5, Boss Q3-Q5) AI orqali 2-axis bo'yicha baholanadi.",
-                'res.amr_axis1':         'Axis 1 — Concept Identification',
-                'res.amr_axis2':         'Axis 2 — Process Integrity',
-                'res.amr_no_items':      'no AI-graded items',
+                'res.amr_title':         "AMR · 2-eksa tahlili",
+                'res.amr_title_short':   'AMR — 2-eksa rubrika',
+                'res.amr_no_ai':         "Bu sessiyada hech qaysi javob AI tomonidan baholanmadi (faqat yopiq-format savollar bo'ldi). Ochiq javoblar (Sentence Fill, Real-Life Q5, Boss Q3-Q5) AI orqali 2-eksa bo'yicha baholanadi.",
+                'res.amr_axis1':         "1-eksa · Konseptni nomlash",
+                'res.amr_axis2':         "2-eksa · Bosqichlar izchilligi",
+                'res.amr_no_items':      'AI tomonidan baholanmagan',
+                // LMR v2 — language subjects (English / Ona Tili / Rus Tili).
+                'res.lmr_title':         'LMR · 2-eksa tahlili',
+                'res.lmr_title_short':   'LMR — 2-eksa rubrika',
+                'res.lmr_axis1':         "1-eksa · Grammatika to'g'riligi",
+                'res.lmr_axis2':         "2-eksa · So'z tanlash sifati",
                 'res.tip_mastered':      "Ajoyib! Siz ushbu mavzuni mukammal o'zlashtirdingiz. Mastery promotion windowga 1 ball qo'shildi (3 dan).",
                 'res.tip_proficient':    'Yaxshi. Siz mustaqil ishlay olasiz. Yana 1-2 sessiya — Mastered darajasiga yetasiz.',
                 'res.tip_apprentice':    "Haqida o'ylash kerak. Konseptni nomlash yoki bosqichlarni ko'rsatishda bo'shliqlar bor — keyingi mashqlarda jarayonni yozma ko'rsating.",
@@ -5005,6 +5010,11 @@
                 'res.amr_axis1':         'Ось 1 — Идентификация концепта',
                 'res.amr_axis2':         'Ось 2 — Корректность процесса',
                 'res.amr_no_items':      'нет ответов с AI-оценкой',
+                // LMR v2 — language subjects (English / Ona Tili / Rus Tili).
+                'res.lmr_title':         'LMR — двухосевая шкала владения языком',
+                'res.lmr_title_short':   'LMR — 2-осевая шкала',
+                'res.lmr_axis1':         'Ось 1 — Грамматическая точность',
+                'res.lmr_axis2':         'Ось 2 — Лексическое качество',
                 'res.tip_mastered':      'Отлично! Вы полностью освоили тему. К окну продвижения мастерства добавлен 1 балл (из 3).',
                 'res.tip_proficient':    'Хорошо. Вы можете работать самостоятельно. Ещё 1-2 сессии — и достигнете уровня Mastered.',
                 'res.tip_apprentice':    'Есть над чем подумать. В назывании концепта или показе шагов есть пробелы — в следующих упражнениях расписывайте процесс письменно.',
@@ -5112,6 +5122,11 @@
                 'res.amr_axis1':         'Axis 1 — Concept Identification',
                 'res.amr_axis2':         'Axis 2 — Process Integrity',
                 'res.amr_no_items':      'no AI-graded items',
+                // LMR v2 — language subjects (English / Ona Tili / Rus Tili).
+                'res.lmr_title':         'LMR — 2-axis Language Mastery Rubric',
+                'res.lmr_title_short':   'LMR — 2-axis rubric',
+                'res.lmr_axis1':         'Axis 1 — Grammatical Accuracy',
+                'res.lmr_axis2':         'Axis 2 — Lexical Quality',
                 'res.tip_mastered':      'Excellent! You have mastered this topic. +1 point added to the mastery promotion window (out of 3).',
                 'res.tip_proficient':    'Good. You can work independently. Another 1-2 sessions and you reach Mastered.',
                 'res.tip_apprentice':    'Worth a re-look. There are gaps in naming the concept or showing the steps — write the process out next time.',
@@ -10276,33 +10291,53 @@ Prezident ertaga hisobot kutmoqda.`,
                      <div class="results-phase-list">${rows}</div>`;
             }
 
-            // AMR axes — backend pre-computes mean / perf_class / tag.
+            // 2-axis rubric — backend pre-computes mean / perf_class / tag and
+            // tells us which rubric applies via card.rubric ("amr" | "lmr").
+            // Math/science/social → AMR (Concept Identification + Process Integrity).
+            // Language subjects (english/ona-tili/rus-tili) → LMR v2
+            // (Grammatical Accuracy + Lexical Quality).
             const amrEl = document.getElementById('results-amr');
             if (amrEl) {
+                const isLMR     = (card.rubric === 'lmr');
+                const titleKey  = isLMR ? 'res.lmr_title'  : 'res.amr_title';
+                const axis1Key  = isLMR ? 'res.lmr_axis1'  : 'res.amr_axis1';
+                const axis2Key  = isLMR ? 'res.lmr_axis2'  : 'res.amr_axis2';
                 if (card.has_axes) {
                     amrEl.innerHTML = `
-                    <div class="results-section-title">AMR · 2-eksa tahlili</div>
+                    <div class="results-section-title">${RT(titleKey)}</div>
                     <div class="results-amr-grid">
-                      ${_renderAxisBar('1-eksa · Konseptni nomlash',     card.axes && card.axes.axis_1)}
-                      ${_renderAxisBar('2-eksa · Bosqichlar izchilligi', card.axes && card.axes.axis_2)}
+                      ${_renderAxisBar(RT(axis1Key), card.axes && card.axes.axis_1)}
+                      ${_renderAxisBar(RT(axis2Key), card.axes && card.axes.axis_2)}
                     </div>
                     <div class="results-amr-note">
-                      2-eksa baholash <strong>faqat 4-faza Real-Life va 6-faza Final Boss</strong>
-                      ochiq javoblariga qo'llaniladi. Yopiq formatdagi raqamli javoblar
-                      (masalan, "40°") va Sentence Fill javoblari to'g'ri/noto'g'ri
-                      sifatida hisoblanadi va faza ballariga ta'sir qiladi, lekin
-                      eksa o'rtachasiga qo'shilmaydi — chunki rubrika qoidani nomlash
-                      va bosqichma-bosqich asoslashni baholaydi, faqat son javobini emas.
+                      ${isLMR
+                        ? `2-eksa baholash <strong>faqat ochiq javoblar</strong> uchun
+                           qo'llaniladi. Yopiq formatdagi javoblar (variant tanlash,
+                           aniq moslik) faza ballariga ta'sir qiladi, lekin eksa
+                           o'rtachasiga qo'shilmaydi — chunki rubrika grammatika va
+                           so'z tanlashni baholaydi, faqat bitta so'zli javobni emas.`
+                        : `2-eksa baholash <strong>faqat 4-faza Real-Life va 6-faza Final Boss</strong>
+                           ochiq javoblariga qo'llaniladi. Yopiq formatdagi raqamli javoblar
+                           (masalan, "40°") va Sentence Fill javoblari to'g'ri/noto'g'ri
+                           sifatida hisoblanadi va faza ballariga ta'sir qiladi, lekin
+                           eksa o'rtachasiga qo'shilmaydi — chunki rubrika qoidani nomlash
+                           va bosqichma-bosqich asoslashni baholaydi, faqat son javobini emas.`}
                     </div>`;
                 } else {
                     amrEl.innerHTML = `
-                    <div class="results-section-title">AMR · 2-eksa tahlili</div>
+                    <div class="results-section-title">${RT(titleKey)}</div>
                     <div class="results-amr-empty">
-                      Bu sessiyada hech qaysi 4- yoki 6-faza javobi 2-eksa rubrika
-                      bo'yicha baholanmadi. AMR ochiq, asoslangan javoblarni talab
-                      qiladi: qoidani aniq nomlang ("Pifagor teoremasi"), uni masala
-                      shartiga bog'lang, va bosqichma-bosqich yeching. Faqat son
-                      javobi rubrikaning past chegarasi (25%) hisoblanadi.
+                      ${isLMR
+                        ? `Bu sessiyada hech qaysi ochiq javob 2-eksa rubrika bo'yicha
+                           baholanmadi. LMR to'liq jumlali javoblarni talab qiladi:
+                           grammatik to'g'ri va lug'aviy aniq jumla yozing.
+                           Faqat bitta so'z yoki kalit so'z javobi rubrikaning
+                           past chegarasi (25%) hisoblanadi.`
+                        : `Bu sessiyada hech qaysi 4- yoki 6-faza javobi 2-eksa rubrika
+                           bo'yicha baholanmadi. AMR ochiq, asoslangan javoblarni talab
+                           qiladi: qoidani aniq nomlang ("Pifagor teoremasi"), uni masala
+                           shartiga bog'lang, va bosqichma-bosqich yeching. Faqat son
+                           javobi rubrikaning past chegarasi (25%) hisoblanadi.`}
                     </div>`;
                 }
             }
