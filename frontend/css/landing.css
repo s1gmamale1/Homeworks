@@ -196,6 +196,28 @@ img, svg { display: block; max-width: 100%; }
   -webkit-backdrop-filter: blur(20px);
 }
 
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--landing-zinc-200);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--landing-shadow-soft);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.theme-toggle:hover { transform: scale(1.05); }
+.theme-toggle:focus-visible { outline: 2px solid var(--landing-blue-600); outline-offset: 2px; }
+[data-theme="dark"] .theme-toggle {
+  background: rgba(24, 24, 27, 0.85);
+  border-color: rgba(63, 63, 70, 0.6);
+}
+
 .lang-pill {
   padding: 4px 12px;
   font-size: 11px;
@@ -1418,135 +1440,132 @@ img, svg { display: block; max-width: 100%; }
   .phone-foot { left: 16px; right: 16px; bottom: 16px; }
 }
 
-/* -------- Dark mode (system) — but dark sections always stay dark -------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --landing-bg: #0a0a0a;
-    --landing-bg-warm: #111111;
-    --landing-card: #18181b;
-    --landing-card-tinted: #1f2026;
-    --landing-ring: rgba(63, 63, 70, 0.7);
-    --landing-shadow-card: 0 20px 60px rgba(0, 0, 0, 0.4);
-    --landing-shadow-card-hover: 0 30px 80px rgba(0, 0, 0, 0.55);
-    --landing-shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.35);
-  }
-
-  body.landing-body {
-    color: rgba(244, 244, 245, 0.96);
-    background: var(--landing-bg);
-  }
-
-  body.landing-body ::selection {
-    background: rgba(37, 99, 235, 0.4);
-    color: white;
-  }
-
-  .landing-header {
-    background: rgba(10, 10, 10, 0.78);
-    border-bottom-color: rgba(63, 63, 70, 0.5);
-  }
-  @supports (backdrop-filter: blur(40px)) {
-    .landing-header { background: rgba(10, 10, 10, 0.62); }
-  }
-
-  .brand-link { color: rgba(244, 244, 245, 0.96); }
-  .brand-mark { background: white; color: var(--landing-zinc-950); }
-
-  .nav-link { color: rgba(244, 244, 245, 0.62); }
-  .nav-link:hover { color: rgba(244, 244, 245, 0.96); }
-
-  .lang-toggle {
-    background: rgba(24, 24, 27, 0.85);
-    border-color: rgba(63, 63, 70, 0.6);
-  }
-  .lang-pill { color: rgba(244, 244, 245, 0.55); }
-  .lang-pill:hover { color: rgba(244, 244, 245, 0.96); }
-  .lang-pill.is-active { background: white; color: var(--landing-zinc-950); }
-
-  .btn-primary-pill { background: white; color: var(--landing-zinc-950); }
-  .btn-primary-pill:hover { background: rgba(244, 244, 245, 0.85); }
-
-  .hero-bg-glow {
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(99, 102, 241, 0.18) 35%, transparent 70%);
-  }
-  .hero-bg-fade { background: linear-gradient(to top, var(--landing-bg), transparent); }
-
-  .hero-title { color: rgba(244, 244, 245, 0.96); }
-  .hero-text { color: rgba(244, 244, 245, 0.72); }
-
-  .hero-badge {
-    background: rgba(24, 24, 27, 0.7);
-    border-color: rgba(63, 63, 70, 0.6);
-    color: rgba(244, 244, 245, 0.85);
-  }
-
-  .stat-card {
-    background: rgba(24, 24, 27, 0.7);
-    border-color: rgba(63, 63, 70, 0.6);
-  }
-  .stat-value { color: rgba(244, 244, 245, 0.96); }
-  .stat-label { color: rgba(244, 244, 245, 0.62); }
-
-  /* Overview / feature cards (light by default → dark in dark mode) */
-  .feature-card {
-    background: var(--landing-card);
-    border-color: var(--landing-ring);
-  }
-  .feature-title { color: rgba(244, 244, 245, 0.96); }
-  .feature-body { color: rgba(244, 244, 245, 0.72); }
-  .feature-icon { background: white; color: var(--landing-zinc-950); }
-
-  .section-title { color: rgba(244, 244, 245, 0.96); }
-  .section-lead { color: rgba(244, 244, 245, 0.72); }
-
-  .eyebrow--blue { color: var(--landing-blue-400); }
-
-  /* Tutor light card → dark mode */
-  .tutor-card-light {
-    background: var(--landing-card);
-    border-color: var(--landing-ring);
-  }
-  .tutor-card-light__title { color: rgba(244, 244, 245, 0.96); }
-  .tutor-card-light__body { color: rgba(244, 244, 245, 0.72); }
-
-  /* Workflow shell */
-  .workflow-shell {
-    background: var(--landing-card);
-    border-color: var(--landing-ring);
-  }
-  .workflow-step { background: rgba(24, 24, 27, 0.6); }
-  .workflow-step__title { color: rgba(244, 244, 245, 0.96); }
-  .workflow-step__body { color: rgba(244, 244, 245, 0.72); }
-  .workflow-step__num { color: rgba(244, 244, 245, 0.45); }
-
-  /* Quick card stays light-tinted? — adopt darker gradient */
-  .quick-card {
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    border-color: rgba(63, 63, 70, 0.6);
-    color: rgba(244, 244, 245, 0.96);
-  }
-  .quick-card__icon { color: var(--landing-blue-400); }
-  .quick-card__title { color: rgba(244, 244, 245, 0.96); }
-  .quick-card__body { color: rgba(244, 244, 245, 0.72); }
-
-  /* btn-blue / btn-white-outline tweaks for dark page */
-  .btn-white-outline {
-    background: var(--landing-card);
-    border-color: var(--landing-ring);
-    color: var(--landing-blue-400);
-  }
-  .btn-white-outline:hover { background: rgba(39, 39, 42, 0.9); }
-
-  .landing-footer { color: rgba(244, 244, 245, 0.55); }
-  .landing-footer__sep { color: rgba(244, 244, 245, 0.30); }
+/* -------- Dark mode (manual toggle via theme.js — stays in sync with rest of app) -------- */
+[data-theme="dark"] {
+  --landing-bg: #0a0a0a;
+  --landing-bg-warm: #111111;
+  --landing-card: #18181b;
+  --landing-card-tinted: #1f2026;
+  --landing-ring: rgba(63, 63, 70, 0.7);
+  --landing-shadow-card: 0 20px 60px rgba(0, 0, 0, 0.4);
+  --landing-shadow-card-hover: 0 30px 80px rgba(0, 0, 0, 0.55);
+  --landing-shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
-/* dark-section is intentional: always dark regardless of system theme */
+[data-theme="dark"] body.landing-body {
+  color: rgba(244, 244, 245, 0.96);
+  background: var(--landing-bg);
+}
+
+[data-theme="dark"] body.landing-body ::selection {
+  background: rgba(37, 99, 235, 0.4);
+  color: white;
+}
+
+[data-theme="dark"] .landing-header {
+  background: rgba(10, 10, 10, 0.78);
+  border-bottom-color: rgba(63, 63, 70, 0.5);
+}
+@supports (backdrop-filter: blur(40px)) {
+  [data-theme="dark"] .landing-header { background: rgba(10, 10, 10, 0.62); }
+}
+
+[data-theme="dark"] .brand-link { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .brand-mark { background: white; color: var(--landing-zinc-950); }
+
+[data-theme="dark"] .nav-link { color: rgba(244, 244, 245, 0.62); }
+[data-theme="dark"] .nav-link:hover { color: rgba(244, 244, 245, 0.96); }
+
+[data-theme="dark"] .lang-toggle {
+  background: rgba(24, 24, 27, 0.85);
+  border-color: rgba(63, 63, 70, 0.6);
+}
+[data-theme="dark"] .lang-pill { color: rgba(244, 244, 245, 0.55); }
+[data-theme="dark"] .lang-pill:hover { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .lang-pill.is-active { background: white; color: var(--landing-zinc-950); }
+
+[data-theme="dark"] .btn-primary-pill { background: white; color: var(--landing-zinc-950); }
+[data-theme="dark"] .btn-primary-pill:hover { background: rgba(244, 244, 245, 0.85); }
+
+[data-theme="dark"] .hero-bg-glow {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(99, 102, 241, 0.18) 35%, transparent 70%);
+}
+[data-theme="dark"] .hero-bg-fade { background: linear-gradient(to top, var(--landing-bg), transparent); }
+
+[data-theme="dark"] .hero-title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .hero-text { color: rgba(244, 244, 245, 0.72); }
+
+[data-theme="dark"] .hero-badge {
+  background: rgba(24, 24, 27, 0.7);
+  border-color: rgba(63, 63, 70, 0.6);
+  color: rgba(244, 244, 245, 0.85);
+}
+
+[data-theme="dark"] .stat-card {
+  background: rgba(24, 24, 27, 0.7);
+  border-color: rgba(63, 63, 70, 0.6);
+}
+[data-theme="dark"] .stat-value { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .stat-label { color: rgba(244, 244, 245, 0.62); }
+
+/* Overview / feature cards (light by default → dark in dark mode) */
+[data-theme="dark"] .feature-card {
+  background: var(--landing-card);
+  border-color: var(--landing-ring);
+}
+[data-theme="dark"] .feature-title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .feature-body { color: rgba(244, 244, 245, 0.72); }
+[data-theme="dark"] .feature-icon { background: white; color: var(--landing-zinc-950); }
+
+[data-theme="dark"] .section-title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .section-lead { color: rgba(244, 244, 245, 0.72); }
+
+[data-theme="dark"] .eyebrow--blue { color: var(--landing-blue-400); }
+
+/* Tutor light card → dark mode */
+[data-theme="dark"] .tutor-card-light {
+  background: var(--landing-card);
+  border-color: var(--landing-ring);
+}
+[data-theme="dark"] .tutor-card-light__title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .tutor-card-light__body { color: rgba(244, 244, 245, 0.72); }
+
+/* Workflow shell */
+[data-theme="dark"] .workflow-shell {
+  background: var(--landing-card);
+  border-color: var(--landing-ring);
+}
+[data-theme="dark"] .workflow-step { background: rgba(24, 24, 27, 0.6); }
+[data-theme="dark"] .workflow-step__title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .workflow-step__body { color: rgba(244, 244, 245, 0.72); }
+[data-theme="dark"] .workflow-step__num { color: rgba(244, 244, 245, 0.45); }
+
+/* Quick card stays light-tinted? — adopt darker gradient */
+[data-theme="dark"] .quick-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-color: rgba(63, 63, 70, 0.6);
+  color: rgba(244, 244, 245, 0.96);
+}
+[data-theme="dark"] .quick-card__icon { color: var(--landing-blue-400); }
+[data-theme="dark"] .quick-card__title { color: rgba(244, 244, 245, 0.96); }
+[data-theme="dark"] .quick-card__body { color: rgba(244, 244, 245, 0.72); }
+
+/* btn-blue / btn-white-outline tweaks for dark page */
+[data-theme="dark"] .btn-white-outline {
+  background: var(--landing-card);
+  border-color: var(--landing-ring);
+  color: var(--landing-blue-400);
+}
+[data-theme="dark"] .btn-white-outline:hover { background: rgba(39, 39, 42, 0.9); }
+
+[data-theme="dark"] .landing-footer { color: rgba(244, 244, 245, 0.55); }
+[data-theme="dark"] .landing-footer__sep { color: rgba(244, 244, 245, 0.30); }
+
+/* dark-section is intentional: always dark regardless of theme */
 .dark-section { color: white; }
-@media (prefers-color-scheme: dark) {
-  /* Embedded dark sections need slightly stronger separation against a dark page bg */
-  .preview-section { box-shadow: 0 0 0 1px rgba(63, 63, 70, 0.4); }
-  .tutor-card-dark,
-  .safe-card,
-  .launch-shell { box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(63, 63, 70, 0.4); }
-}
+
+/* Embedded dark sections get slightly stronger separation against a dark page bg */
+[data-theme="dark"] .preview-section { box-shadow: 0 0 0 1px rgba(63, 63, 70, 0.4); }
+[data-theme="dark"] .tutor-card-dark,
+[data-theme="dark"] .safe-card,
+[data-theme="dark"] .launch-shell { box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(63, 63, 70, 0.4); }
