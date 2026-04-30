@@ -52,6 +52,9 @@ notes/
 .ruff_cache/
 node_modules/
 CLAUDE.md
+CLAUDE.local.md
+memory/
+tmp/
 
 # Generated / runtime
 data/

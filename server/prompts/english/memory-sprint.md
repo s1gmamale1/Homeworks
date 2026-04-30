@@ -1,14 +1,15 @@
 # Prompt: Memory Sprint — English (Phase 1)
 
-You are building the Memory Sprint (Phase 1) for an English homework session. Quick warm-up — tap-only, under 2 minutes. The student just finished Preview and Flash Cards. Now you activate prior-unit knowledge with fast recognition questions.
+You are building the Memory Sprint (Phase 1) for an English homework session. Quick warm-up — tap-only, under 2 minutes. The student just finished Preview and Flash Cards. Now you check that the flashcards stuck and the unit's theme is anchored, with fast recognition questions.
 
-This is NOT new practice. No writing, no production, no multi-step analysis. Just: do you remember what you learned before this unit?
+This is NOT new practice. No writing, no production, no multi-step analysis. Just: do you recognize the items the student just saw in the flashcards, or facts/rules tied to this unit's theme?
 
 ## Input
 
 - Textbook unit (image or text)
 - Detected CEFR level (from `classify.md`): A1 · A1+ · A2 · A2+ · B1 · B1+ · B2
-- Prior unit reference (for item content)
+- The flashcards generated for this same unit (see `flashcards.md` output) — primary source for item content
+- The unit's theme (grammar focus + vocabulary cluster) — fallback source when a flashcard angle doesn't fit a chosen format
 
 ## Output
 
@@ -39,20 +40,20 @@ Example:
 > (A = present perfect mistake · C = no conjugation · D = regular-rule over-application)
 
 ### True / False (T/F)
-- Statement about a grammar rule or vocabulary fact from the PRIOR unit.
+- Statement about a grammar rule or vocabulary fact tied to the flashcards or this unit's theme.
 - Must test a RULE or common MISCONCEPTION — not trivial recall.
 - BAD: "'Went' is past tense of 'go' — True or False?" (trivial)
 - GOOD: "In the past simple, we use 'did' for questions with all verbs including 'be' — True or False?"
 
 ### Yes / No / Not Given (YNNG)
-- Statement about what the PRIOR unit states or implies.
+- Statement about what this unit's reading, theme, or flashcards state or imply.
 - Student taps Yes / No / Not Given.
-- "Not Given" = the chapter does not address this claim.
+- "Not Given" = this unit's content does not address this claim.
 - Include at least 1 item with "Not Given" as the correct answer when YNNG is used.
 
 Example:
-> "According to the previous unit, a receptionist always answers calls in formal English — Yes / No / Not Given"
-> Correct: Not Given. (The chapter described the role but never specified register rules.)
+> "According to this unit, a receptionist always answers calls in formal English — Yes / No / Not Given"
+> Correct: Not Given. (The unit describes the role but never specifies register rules.)
 
 ---
 
@@ -60,12 +61,13 @@ Example:
 
 - **Tap only.** No typing, no drag-and-drop, no fill-in-blank, no open-ended.
 - **2 minutes max.** Every item answerable in ≤25 seconds.
-- **Prior unit only.** No items from the current chapter.
+- **Flashcard- or theme-relevant only.** Every item must connect to one of the flashcards generated for this unit OR to the unit's grammar/vocabulary theme. No off-topic content, no pop-culture trivia, no facts the student hasn't seen here.
+- **At least 1 item per Sprint must directly mirror a flashcard** (test the same word/rule/collocation the flashcard introduced).
 - **No hints.** No help available in this phase.
 - **No production.** If solving requires writing a sentence, it doesn't belong here.
 - **Wrong answer feedback:** one line showing the gap + UZ bridge. Show WHY, not just what.
 - Language: student-facing English. UZ bridge in feedback uses formal "Siz".
-- Put the most important prior-unit concept as item 1 — primacy effect.
+- Put the most important flashcard or theme concept as item 1 — primacy effect.
 - Tags: each item `[Bloom: L1-L2 | PISA: L1]` — Sprint is recognition only, never L3+.
 - Visuals: inline SVG only where it speeds recognition (stress-dot, tiny sentence diagram). Under 200×150px.
 
