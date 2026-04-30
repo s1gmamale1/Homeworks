@@ -1,0 +1,1443 @@
+/* ============================================================
+   NETS Builder — Dashboard page (Apple redesign 2026-05)
+   Inherits app.css tokens. Adds page-scoped --dash-* tokens
+   and component classes prefixed `.dash-` / `.hw-card`.
+   ============================================================ */
+
+/* ---------- Apple animation curves ---------- */
+:root {
+    --apple-spring-open:  cubic-bezier(.16, 1, .3, 1);
+    --apple-spring-close: cubic-bezier(.22, 1, .36, 1);
+    --apple-ease:         cubic-bezier(.25, .1, .25, 1);
+
+    /* Page-scoped tokens (Apple glass + subject-family stops) */
+    --dash-glass-bg:        rgba(255, 255, 255, 0.72);
+    --dash-glass-border:    rgba(255, 255, 255, 0.78);
+    --dash-glass-shadow:    0 24px 80px rgba(15, 23, 42, 0.09);
+    --dash-glass-shadow-sm: 0 18px 55px rgba(15, 23, 42, 0.08);
+    --dash-control-bg:      #0b0f17;
+    --dash-control-fg:      #ffffff;
+    --dash-control-glow:    rgba(34, 211, 238, 0.20);
+    --dash-zinc-50:  #fafafa;
+    --dash-zinc-100: #f4f4f5;
+    --dash-zinc-200: #e4e4e7;
+    --dash-zinc-400: #a1a1aa;
+    --dash-zinc-500: #71717a;
+    --dash-zinc-600: #52525b;
+    --dash-zinc-700: #3f3f46;
+    --dash-zinc-900: #18181b;
+    --dash-zinc-950: #09090b;
+
+    /* Subject-family gradient stops (mirror JSX from-X to-Y palette) */
+    --dash-grad-aniq:     linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
+    --dash-grad-tabiy:    linear-gradient(135deg, #10b981 0%, #5eead4 100%);
+    --dash-grad-til:      linear-gradient(135deg, #d946ef 0%, #a78bfa 100%);
+    --dash-grad-ijtimoiy: linear-gradient(135deg, #f59e0b 0%, #fdba74 100%);
+    --dash-grad-aniq-alt: linear-gradient(135deg, #6366f1 0%, #93c5fd 100%);
+    --dash-grad-tabiy-alt:linear-gradient(135deg, #84cc16 0%, #6ee7b7 100%);
+}
+
+[data-theme="dark"] {
+    --dash-glass-bg:        rgba(28, 28, 35, 0.72);
+    --dash-glass-border:    rgba(255, 255, 255, 0.08);
+    --dash-glass-shadow:    0 30px 100px rgba(0, 0, 0, 0.55);
+    --dash-glass-shadow-sm: 0 22px 70px rgba(0, 0, 0, 0.45);
+    --dash-control-bg:      #050810;
+    --dash-control-fg:      #f8fafc;
+    --dash-control-glow:    rgba(34, 211, 238, 0.30);
+    --dash-zinc-50:  #1a1a20;
+    --dash-zinc-100: #1f1f25;
+    --dash-zinc-200: rgba(255, 255, 255, 0.10);
+    --dash-zinc-400: #94a3b8;
+    --dash-zinc-500: #cbd5e1;
+    --dash-zinc-600: #e2e8f0;
+    --dash-zinc-700: #f1f5f9;
+    --dash-zinc-900: #f8fafc;
+    --dash-zinc-950: #ffffff;
+}
+
+/* ---------- Page-level body palette ---------- */
+body[data-page="dashboard"] {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                 "Helvetica Neue", "Inter", "Segoe UI", sans-serif;
+    overflow-x: hidden;
+    background: #f5f5f7;
+    background-image:
+        radial-gradient(circle at 0% 0%, rgba(0, 102, 204, 0.13), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(175, 82, 222, 0.11), transparent 34%),
+        radial-gradient(circle at 100% 100%, rgba(52, 199, 89, 0.09), transparent 36%);
+    background-attachment: fixed;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] {
+    background: #07090f;
+    background-image:
+        radial-gradient(circle at 0% 0%, rgba(56, 132, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.16), transparent 34%),
+        radial-gradient(circle at 100% 100%, rgba(34, 197, 94, 0.12), transparent 36%),
+        linear-gradient(180deg, #07090f 0%, #0b0f17 100%);
+    background-attachment: fixed;
+}
+
+/* ---------- App shell, narrower max-width to match prototype ---------- */
+body[data-page="dashboard"] .app-shell {
+    max-width: 1240px;
+    padding: 20px 24px 40px;
+    gap: 22px;
+}
+
+/* ============================================================
+   Topbar — sticky glass header
+   ============================================================ */
+body[data-page="dashboard"] .topbar {
+    border-radius: 28px;
+    padding: 14px 20px;
+    min-height: 64px;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    box-shadow: var(--dash-glass-shadow-sm);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    top: 14px;
+    animation: dashSlideDown 0.75s var(--apple-spring-open) both;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .topbar {
+    background: var(--dash-glass-bg);
+    border-color: var(--dash-glass-border);
+}
+
+body[data-page="dashboard"] .brand-block .eyebrow {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--dash-zinc-500);
+}
+
+body[data-page="dashboard"] .brand-block h1 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--dash-zinc-950);
+    margin: 0;
+}
+
+body[data-page="dashboard"] .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.25);
+    font-size: 14px;
+}
+
+/* Replace default topbar-nav chips with pill segmented control */
+body[data-page="dashboard"] .topbar-nav {
+    display: none;
+    background: var(--dash-zinc-100);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 0;
+}
+
+@media (min-width: 880px) {
+    body[data-page="dashboard"] .topbar-nav { display: inline-flex; }
+}
+
+body[data-page="dashboard"] .topbar-nav .btn-ghost {
+    border: 0;
+    background: transparent;
+    color: var(--dash-zinc-500);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+    transition: background 180ms var(--apple-ease), color 180ms var(--apple-ease);
+}
+
+body[data-page="dashboard"] .topbar-nav .btn-ghost:hover {
+    color: var(--dash-zinc-950);
+    background: transparent;
+}
+
+body[data-page="dashboard"] .topbar-nav .is-active {
+    background: #ffffff;
+    color: var(--dash-zinc-950);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .topbar-nav .is-active {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+}
+
+body[data-page="dashboard"] .topbar-actions {
+    gap: 10px;
+}
+
+body[data-page="dashboard"] .health-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.10);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    color: #047857;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 8px;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .health-pill {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.34);
+    color: #6ee7b7;
+}
+
+body[data-page="dashboard"] .health-pill .status-dot.error {
+    background: #ef4444;
+}
+
+/* New-Homework primary CTA — black pill */
+body[data-page="dashboard"] #new-homework-btn {
+    background: var(--dash-zinc-950);
+    color: #ffffff;
+    border: 0;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 8px 22px rgba(9, 9, 11, 0.18);
+    transition: transform 180ms var(--apple-ease), box-shadow 180ms var(--apple-ease);
+}
+
+body[data-page="dashboard"] #new-homework-btn:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(9, 9, 11, 0.28);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] #new-homework-btn {
+    background: #ffffff;
+    color: #09090b;
+}
+
+/* ============================================================
+   Hero + Control aside split
+   ============================================================ */
+body[data-page="dashboard"] .dash-hero-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+    body[data-page="dashboard"] .dash-hero-grid {
+        grid-template-columns: 1.35fr 0.65fr;
+    }
+}
+
+body[data-page="dashboard"] .hero-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    border-radius: 36px;
+    padding: 36px 36px 32px;
+    box-shadow: var(--dash-glass-shadow);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    animation: dashFadeUp 0.85s var(--apple-spring-open) both;
+}
+
+body[data-page="dashboard"] .hero-card::before {
+    content: "";
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 290px;
+    height: 290px;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.18);
+    filter: blur(60px);
+    pointer-events: none;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hero-card::before {
+    background: rgba(56, 132, 255, 0.32);
+}
+
+body[data-page="dashboard"] .hero-card .eyebrow {
+    color: #2563eb;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hero-card .eyebrow {
+    color: #60a5fa;
+}
+
+body[data-page="dashboard"] .hero-card h2 {
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--dash-zinc-950);
+    font-weight: 600;
+    margin: 0;
+}
+
+body[data-page="dashboard"] .hero-card .muted-text {
+    margin-top: 18px;
+    max-width: 620px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--dash-zinc-600);
+}
+
+body[data-page="dashboard"] .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+body[data-page="dashboard"] .hero-actions .btn {
+    border-radius: 999px;
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body[data-page="dashboard"] .hero-actions .hero-cta-primary {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.30);
+    border: 0;
+}
+
+body[data-page="dashboard"] .hero-actions .hero-cta-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+body[data-page="dashboard"] .hero-actions .hero-cta-secondary {
+    background: #ffffff;
+    color: #2563eb;
+    border: 1px solid var(--dash-zinc-200);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hero-actions .hero-cta-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #93c5fd;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Control aside (always dark) */
+body[data-page="dashboard"] .dash-control {
+    position: relative;
+    overflow: hidden;
+    background: var(--dash-control-bg);
+    color: var(--dash-control-fg);
+    border-radius: 36px;
+    padding: 30px;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.26);
+    animation: dashFadeUp 0.85s var(--apple-spring-open) 0.08s both;
+}
+
+body[data-page="dashboard"] .dash-control::before {
+    content: "";
+    position: absolute;
+    top: -80px;
+    right: -64px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: var(--dash-control-glow);
+    filter: blur(60px);
+    pointer-events: none;
+}
+
+body[data-page="dashboard"] .dash-control-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+body[data-page="dashboard"] .dash-control-tag {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+body[data-page="dashboard"] .dash-control-icon {
+    color: #67e8f9;
+}
+
+body[data-page="dashboard"] .dash-control h2 {
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    position: relative;
+}
+
+body[data-page="dashboard"] .dash-control-text {
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.62);
+    position: relative;
+}
+
+body[data-page="dashboard"] .dash-control-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 28px;
+    position: relative;
+}
+
+body[data-page="dashboard"] .dash-control-step {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 12px 6px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.74);
+    line-height: 1.45;
+}
+
+body[data-page="dashboard"] .dash-control-step strong {
+    display: block;
+    font-size: 12px;
+    color: #67e8f9;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   Stat cards (4-up grid)
+   ============================================================ */
+body[data-page="dashboard"] .dash-stats {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+    body[data-page="dashboard"] .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    body[data-page="dashboard"] .dash-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+body[data-page="dashboard"] .dash-stat-card {
+    border-radius: 28px;
+    padding: 22px 22px 18px;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    box-shadow: var(--dash-glass-shadow-sm);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+    transition: opacity 0.85s var(--apple-spring-open),
+                transform 0.85s var(--apple-spring-open);
+}
+
+body[data-page="dashboard"] .dash-stat-card.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+body[data-page="dashboard"] .dash-stat-card:nth-child(1) { transition-delay: 0ms; }
+body[data-page="dashboard"] .dash-stat-card:nth-child(2) { transition-delay: 70ms; }
+body[data-page="dashboard"] .dash-stat-card:nth-child(3) { transition-delay: 140ms; }
+body[data-page="dashboard"] .dash-stat-card:nth-child(4) { transition-delay: 210ms; }
+
+body[data-page="dashboard"] .dash-stat-card:hover {
+    transform: translateY(-5px) scale(1.015);
+}
+
+body[data-page="dashboard"] .dash-stat-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+body[data-page="dashboard"] .dash-stat-value {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--dash-zinc-950);
+    line-height: 1.1;
+}
+
+body[data-page="dashboard"] .dash-stat-label {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dash-zinc-500);
+}
+
+body[data-page="dashboard"] .dash-stat-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: var(--dash-zinc-950);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(9, 9, 11, 0.20);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .dash-stat-icon {
+    background: #ffffff;
+    color: #09090b;
+}
+
+body[data-page="dashboard"] .dash-stat-hint {
+    margin-top: 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--dash-zinc-400);
+}
+
+/* ============================================================
+   Filter toolbar
+   ============================================================ */
+body[data-page="dashboard"] .toolbar {
+    border-radius: 30px;
+    padding: 16px;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    box-shadow: var(--dash-glass-shadow-sm);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+    flex-wrap: initial;
+}
+
+@media (min-width: 1024px) {
+    body[data-page="dashboard"] .toolbar {
+        grid-template-columns: 1fr 180px 180px 180px;
+    }
+}
+
+body[data-page="dashboard"] .toolbar .search-box {
+    height: 48px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid var(--dash-zinc-200);
+    box-shadow: inset 0 1px 0 rgba(9, 9, 11, 0.02);
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .toolbar .search-box {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+body[data-page="dashboard"] .toolbar .search-box:focus-within {
+    border-color: rgba(59, 130, 246, 0.50);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+}
+
+body[data-page="dashboard"] .toolbar .search-box input {
+    height: 100%;
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dash-zinc-950);
+}
+
+body[data-page="dashboard"] .toolbar .search-box input::placeholder {
+    color: var(--dash-zinc-400);
+    font-weight: 500;
+}
+
+body[data-page="dashboard"] .toolbar .filter-row {
+    display: contents;
+}
+
+body[data-page="dashboard"] .toolbar .filter-row label {
+    display: contents;
+}
+
+body[data-page="dashboard"] .toolbar .filter-row label > span {
+    display: none;
+}
+
+body[data-page="dashboard"] .toolbar select {
+    height: 48px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid var(--dash-zinc-200);
+    padding: 0 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dash-zinc-700);
+    outline: 0;
+    transition: border-color 180ms var(--apple-ease), box-shadow 180ms var(--apple-ease);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 1l5 5 5-5'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .toolbar select {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: var(--dash-zinc-600);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M1 1l5 5 5-5'/></svg>");
+}
+
+body[data-page="dashboard"] .toolbar select:focus-visible {
+    border-color: rgba(59, 130, 246, 0.50);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+}
+
+/* ============================================================
+   Library section heading + tabs
+   ============================================================ */
+body[data-page="dashboard"] .library-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+body[data-page="dashboard"] .section-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+}
+
+@media (min-width: 720px) {
+    body[data-page="dashboard"] .section-heading {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+    }
+}
+
+body[data-page="dashboard"] .section-heading .eyebrow {
+    color: var(--dash-zinc-400);
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+body[data-page="dashboard"] .section-heading h2 {
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    color: var(--dash-zinc-950);
+    margin: 0;
+}
+
+body[data-page="dashboard"] .section-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body[data-page="dashboard"] .library-tabs {
+    display: inline-flex;
+    background: var(--dash-zinc-100);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 0;
+}
+
+body[data-page="dashboard"] .library-tab {
+    border: 0;
+    background: transparent;
+    color: var(--dash-zinc-500);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 220ms var(--apple-ease), color 220ms var(--apple-ease);
+}
+
+body[data-page="dashboard"] .library-tab.is-active {
+    background: #ffffff;
+    color: var(--dash-zinc-950);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .library-tab.is-active {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+}
+
+body[data-page="dashboard"] .library-tab .tab-count {
+    font-size: 11px;
+    color: inherit;
+    opacity: 0.75;
+    font-weight: 600;
+}
+
+body[data-page="dashboard"] #refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--dash-zinc-600);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--dash-zinc-200);
+    transition: background 180ms var(--apple-ease), color 180ms var(--apple-ease);
+}
+
+body[data-page="dashboard"] #refresh-btn:hover {
+    background: var(--dash-zinc-50);
+    color: var(--dash-zinc-950);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] #refresh-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: var(--dash-zinc-600);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] #refresh-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+/* ============================================================
+   View transitions hook (tab swap)
+   ============================================================ */
+body[data-page="dashboard"] .homework-grid,
+body[data-page="dashboard"] .empty-state {
+    view-transition-name: hw-content;
+}
+
+::view-transition-old(hw-content),
+::view-transition-new(hw-content) {
+    animation-duration: 380ms;
+    animation-timing-function: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* ============================================================
+   Homework grid + Apple-style cards
+   ============================================================ */
+body[data-page="dashboard"] .homework-grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+    body[data-page="dashboard"] .homework-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1180px) {
+    body[data-page="dashboard"] .homework-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+body[data-page="dashboard"] .hw-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    border-radius: 32px;
+    padding: 16px;
+    box-shadow: 0 20px 65px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    cursor: default;
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+    transition: opacity 0.85s var(--apple-spring-open),
+                transform 0.85s var(--apple-spring-open),
+                box-shadow 0.4s var(--apple-ease);
+    display: flex;
+    flex-direction: column;
+}
+
+body[data-page="dashboard"] .hw-card.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Stagger reveal */
+body[data-page="dashboard"] .hw-card:nth-child(1)  { transition-delay: 0ms; }
+body[data-page="dashboard"] .hw-card:nth-child(2)  { transition-delay: 60ms; }
+body[data-page="dashboard"] .hw-card:nth-child(3)  { transition-delay: 120ms; }
+body[data-page="dashboard"] .hw-card:nth-child(4)  { transition-delay: 180ms; }
+body[data-page="dashboard"] .hw-card:nth-child(5)  { transition-delay: 240ms; }
+body[data-page="dashboard"] .hw-card:nth-child(6)  { transition-delay: 300ms; }
+body[data-page="dashboard"] .hw-card:nth-child(7)  { transition-delay: 360ms; }
+body[data-page="dashboard"] .hw-card:nth-child(8)  { transition-delay: 420ms; }
+body[data-page="dashboard"] .hw-card:nth-child(9)  { transition-delay: 480ms; }
+body[data-page="dashboard"] .hw-card:nth-child(n+10) { transition-delay: 540ms; }
+
+body[data-page="dashboard"] .hw-card:hover {
+    transform: translateY(-8px) scale(1.015);
+    box-shadow: 0 32px 80px rgba(15, 23, 42, 0.16);
+}
+
+body[data-page="dashboard"] .hw-card.is-visible:hover {
+    transition: transform 0.4s var(--apple-spring-open),
+                box-shadow 0.4s var(--apple-spring-open);
+}
+
+/* Subject-family gradient header */
+body[data-page="dashboard"] .hw-card-header {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    padding: 20px;
+    color: #ffffff;
+    background: var(--dash-grad-aniq);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+    margin-bottom: 16px;
+}
+
+body[data-page="dashboard"] .hw-card[data-family="aniq-fanlar"] .hw-card-header     { background: var(--dash-grad-aniq); }
+body[data-page="dashboard"] .hw-card[data-family="tabiy-fanlar"] .hw-card-header    { background: var(--dash-grad-tabiy); }
+body[data-page="dashboard"] .hw-card[data-family="til-fanlar"] .hw-card-header      { background: var(--dash-grad-til); }
+body[data-page="dashboard"] .hw-card[data-family="ijtimoiy-fanlar"] .hw-card-header { background: var(--dash-grad-ijtimoiy); }
+
+/* Per-subject overrides for variety (mirror JSX index→colour mapping) */
+body[data-page="dashboard"] .hw-card[data-subject="geometriya-g7-11"] .hw-card-header { background: var(--dash-grad-aniq-alt); }
+body[data-page="dashboard"] .hw-card[data-subject="kimyo-g7-11"] .hw-card-header      { background: var(--dash-grad-tabiy-alt); }
+
+body[data-page="dashboard"] .hw-card-header::before {
+    content: "";
+    position: absolute;
+    top: -32px;
+    right: -32px;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    filter: blur(28px);
+    pointer-events: none;
+}
+
+body[data-page="dashboard"] .hw-card-header-top {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body[data-page="dashboard"] .hw-symbol {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30);
+    backdrop-filter: blur(12px);
+}
+
+body[data-page="dashboard"] .hw-grade-badge {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+}
+
+body[data-page="dashboard"] .hw-card-header-titleblock {
+    position: relative;
+    margin-top: 28px;
+}
+
+body[data-page="dashboard"] .hw-card-subject {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgba(255, 255, 255, 0.74);
+    margin: 0;
+}
+
+body[data-page="dashboard"] .hw-card-title {
+    margin-top: 8px;
+    font-size: 20px;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    color: #ffffff;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Card body */
+body[data-page="dashboard"] .hw-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 4px 4px;
+    flex: 1;
+}
+
+body[data-page="dashboard"] .hw-pill-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body[data-page="dashboard"] .hw-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    border: 1px solid transparent;
+}
+
+body[data-page="dashboard"] .hw-status[data-status="ready"] {
+    background: rgba(16, 185, 129, 0.10);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.28);
+}
+
+body[data-page="dashboard"] .hw-status[data-status="draft"] {
+    background: var(--dash-zinc-100);
+    color: var(--dash-zinc-600);
+    border-color: var(--dash-zinc-200);
+}
+
+body[data-page="dashboard"] .hw-status[data-status="generating"] {
+    background: rgba(245, 158, 11, 0.10);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.30);
+}
+
+body[data-page="dashboard"] .hw-status[data-status="error"] {
+    background: rgba(244, 63, 94, 0.10);
+    color: #be123c;
+    border-color: rgba(244, 63, 94, 0.30);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-status[data-status="ready"] {
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-status[data-status="draft"] {
+    color: var(--dash-zinc-500);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-status[data-status="generating"] {
+    color: #fbbf24;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-status[data-status="error"] {
+    color: #fda4af;
+}
+
+body[data-page="dashboard"] .hw-mode {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--dash-zinc-100);
+    color: var(--dash-zinc-600);
+    border: 0;
+}
+
+body[data-page="dashboard"] .hw-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body[data-page="dashboard"] .hw-progress-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dash-zinc-500);
+}
+
+body[data-page="dashboard"] .hw-progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--dash-zinc-100);
+    overflow: hidden;
+}
+
+body[data-page="dashboard"] .hw-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--dash-zinc-950);
+    width: 0%;
+    transform-origin: left center;
+    transition: width 0.9s var(--apple-spring-open);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-progress-fill {
+    background: #ffffff;
+}
+
+body[data-page="dashboard"] .hw-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dash-zinc-100);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-foot {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-page="dashboard"] .hw-updated {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--dash-zinc-400);
+}
+
+body[data-page="dashboard"] .hw-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.85;
+    transition: opacity 200ms var(--apple-ease);
+}
+
+body[data-page="dashboard"] .hw-card:hover .hw-actions {
+    opacity: 1;
+}
+
+body[data-page="dashboard"] .hw-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: var(--dash-zinc-100);
+    color: var(--dash-zinc-700);
+    border: 0;
+    cursor: pointer;
+    transition: background 180ms var(--apple-ease),
+                color 180ms var(--apple-ease),
+                transform 200ms var(--apple-spring-open);
+}
+
+body[data-page="dashboard"] .hw-action:hover {
+    background: var(--dash-zinc-950);
+    color: #ffffff;
+}
+
+body[data-page="dashboard"] .hw-action--primary {
+    background: var(--dash-zinc-950);
+    color: #ffffff;
+}
+
+body[data-page="dashboard"] .hw-action--primary:hover {
+    background: var(--dash-zinc-900);
+    transform: scale(1.06);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-action {
+    background: rgba(255, 255, 255, 0.10);
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-action:hover {
+    background: #ffffff;
+    color: #09090b;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-action--primary {
+    background: #ffffff;
+    color: #09090b;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-action--primary:hover {
+    background: #f1f5f9;
+}
+
+/* Card menu (re-uses existing js-menu-toggle / .card-menu / .menu-dropdown) */
+body[data-page="dashboard"] .hw-card-menu {
+    position: relative;
+}
+
+body[data-page="dashboard"] .hw-card-menu .menu-dropdown {
+    position: absolute;
+    right: 0;
+    bottom: 46px;
+    min-width: 200px;
+    background: #ffffff;
+    border: 1px solid var(--dash-zinc-200);
+    border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+    padding: 6px;
+    display: none;
+    z-index: 20;
+}
+
+body[data-page="dashboard"] .hw-card-menu.is-open .menu-dropdown {
+    display: block;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-card-menu .menu-dropdown {
+    background: #1a1a20;
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+body[data-page="dashboard"] .hw-card-menu .menu-item {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dash-zinc-700);
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+body[data-page="dashboard"] .hw-card-menu .menu-item:hover {
+    background: var(--dash-zinc-100);
+    color: var(--dash-zinc-950);
+}
+
+body[data-page="dashboard"] .hw-card-menu .menu-item.danger {
+    color: #be123c;
+}
+
+body[data-page="dashboard"] .hw-card-menu .menu-item.danger:hover {
+    background: rgba(244, 63, 94, 0.10);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-card-menu .menu-item {
+    color: var(--dash-zinc-600);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .hw-card-menu .menu-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+/* ============================================================
+   Empty / Error / Loading
+   ============================================================ */
+body[data-page="dashboard"] .empty-state,
+body[data-page="dashboard"] .error-state,
+body[data-page="dashboard"] .loading-state {
+    border-radius: 32px;
+    padding: 56px 24px;
+    text-align: center;
+    background: var(--dash-glass-bg);
+    border: 1px dashed rgba(9, 9, 11, 0.16);
+    box-shadow: var(--dash-glass-shadow-sm);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .empty-state,
+[data-theme="dark"] body[data-page="dashboard"] .error-state,
+[data-theme="dark"] body[data-page="dashboard"] .loading-state {
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+body[data-page="dashboard"] .empty-state .empty-orb,
+body[data-page="dashboard"] .error-state .empty-orb {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: var(--dash-zinc-100);
+    color: var(--dash-zinc-500);
+    font-size: 22px;
+}
+
+body[data-page="dashboard"] .empty-state h3,
+body[data-page="dashboard"] .error-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dash-zinc-950);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+}
+
+body[data-page="dashboard"] .empty-state p,
+body[data-page="dashboard"] .error-state p {
+    color: var(--dash-zinc-500);
+    font-size: 14px;
+}
+
+body[data-page="dashboard"] .empty-state .btn,
+body[data-page="dashboard"] .error-state .btn {
+    margin-top: 16px;
+    border-radius: 999px;
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+body[data-page="dashboard"] .pagination-bar {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+body[data-page="dashboard"] .pagination-bar .pagination-label {
+    font-size: 13px;
+    color: var(--dash-zinc-500);
+    font-weight: 500;
+}
+
+/* ============================================================
+   Modals — softer rounded corners + token reuse
+   ============================================================ */
+body[data-page="dashboard"] .modal-card {
+    border-radius: 28px;
+    background: var(--dash-glass-bg);
+    border: 1px solid var(--dash-glass-border);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    box-shadow: 0 30px 90px rgba(15, 23, 42, 0.20);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .modal-card {
+    background: var(--dash-glass-bg);
+    border-color: var(--dash-glass-border);
+}
+
+/* ============================================================
+   Lang switch — match new pill style
+   ============================================================ */
+body[data-page="dashboard"] .lang-switch {
+    background: #ffffff;
+    border: 1px solid var(--dash-zinc-200);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 0;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .lang-switch {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+body[data-page="dashboard"] .lang-pill {
+    border: 0;
+    background: transparent;
+    color: var(--dash-zinc-500);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    line-height: 1.2;
+}
+
+body[data-page="dashboard"] .lang-pill:hover {
+    color: var(--dash-zinc-950);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .lang-pill:hover {
+    color: #ffffff;
+}
+
+body[data-page="dashboard"] .lang-pill.is-active,
+body[data-page="dashboard"] .lang-pill[aria-pressed="true"] {
+    background: var(--dash-zinc-950);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .lang-pill.is-active,
+[data-theme="dark"] body[data-page="dashboard"] .lang-pill[aria-pressed="true"] {
+    background: #ffffff;
+    color: #09090b;
+}
+
+/* ============================================================
+   Theme toggle button
+   ============================================================ */
+body[data-page="dashboard"] .theme-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid var(--dash-zinc-200);
+    color: var(--dash-zinc-700);
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+}
+
+/* ============================================================
+   Focus rings (accessibility)
+   ============================================================ */
+body[data-page="dashboard"] :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 12px;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes dashSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-18px);
+        filter: blur(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes dashFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* ============================================================
+   Reduced-motion safety
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+    body[data-page="dashboard"] *,
+    body[data-page="dashboard"] *::before,
+    body[data-page="dashboard"] *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    body[data-page="dashboard"] .hw-card,
+    body[data-page="dashboard"] .dash-stat-card {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* ============================================================
+   Mobile collapse rules
+   ============================================================ */
+@media (max-width: 720px) {
+    body[data-page="dashboard"] .app-shell {
+        padding: 14px 14px 32px;
+    }
+
+    body[data-page="dashboard"] .topbar {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    body[data-page="dashboard"] .health-pill {
+        display: none;
+    }
+
+    body[data-page="dashboard"] .hero-card {
+        padding: 26px 22px;
+        border-radius: 28px;
+    }
+
+    body[data-page="dashboard"] .dash-control {
+        padding: 24px;
+        border-radius: 28px;
+    }
+}
+
+/* ============================================================
+   SVG icon sizing
+   ============================================================ */
+body[data-page="dashboard"] .dash-icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+body[data-page="dashboard"] .dash-icon--sm { width: 15px; height: 15px; }
+body[data-page="dashboard"] .dash-icon--md { width: 16px; height: 16px; }
+body[data-page="dashboard"] .dash-icon--lg { width: 24px; height: 24px; }
+
+/* Toast keeps app.css base; small radius bump */
+body[data-page="dashboard"] .toast {
+    border-radius: 16px;
+}

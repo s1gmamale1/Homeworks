@@ -21,8 +21,49 @@
     biology: "🧬",
     "kimyo-g7-11": "⚗",
     english: "Aa",
-    history: "🏛",
+    history: "T",
   };
+
+  // Map subject_id → family. If a subject has explicit `family` from API, that wins
+  // (see _subjectFamily). This switch is the fallback / hard-coded assignment.
+  const SUBJECT_FAMILY_MAP = {
+    "math-algebra": "aniq-fanlar",
+    "geometriya-g7-11": "aniq-fanlar",
+    physics: "aniq-fanlar",
+    biology: "tabiy-fanlar",
+    "kimyo-g7-11": "tabiy-fanlar",
+    english: "til-fanlar",
+    russian: "til-fanlar",
+    uzbek: "til-fanlar",
+    literature: "til-fanlar",
+    history: "ijtimoiy-fanlar",
+    social: "ijtimoiy-fanlar",
+  };
+
+  // Inline SVG icon library (path strings). Mirrors the JSX prototype.
+  const ICON_PATHS = {
+    plus:     "M12 5v14M5 12h14",
+    search:   "M21 21l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z",
+    refresh:  "M20 6v5h-5M4 18v-5h5M19 11a7 7 0 0 0-12.2-4.7L4 9m1 4a7 7 0 0 0 12.2 4.7L20 15",
+    library:  "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z",
+    trash:    "M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v6M14 11v6",
+    sparkles: "M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2Zm7 12 .8 2.6L22 17l-2.2.4L19 20l-.8-2.6L16 17l2.2-.4L19 14Z",
+    arrow:    "M5 12h14M13 5l7 7-7 7",
+    copy:     "M8 8h12v12H8zM4 4h12v12",
+    eye:      "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+    magic:    "M15 4l5 5M14 5l5 5M4 20 18 6M5 5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z",
+    check:    "M20 6 9 17l-5-5",
+    clock:    "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+    alert:    "M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+    grid:     "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
+    more:     "M5 12h.01M12 12h.01M19 12h.01",
+  };
+
+  function _iconSvg(name, sizeClass) {
+    const d = ICON_PATHS[name] || ICON_PATHS.plus;
+    const cls = sizeClass ? `dash-icon ${sizeClass}` : "dash-icon";
+    return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  }
 
   const DEFAULT_FAMILY_COLORS = {
     "aniq-fanlar": "#007AFF",
@@ -95,6 +136,7 @@
       statTotal: $("stat-total"),
       statReady: $("stat-ready"),
       statDraft: $("stat-draft"),
+      statReview: $("stat-review"),
       tabLibrary: $("tab-library"),
       tabTrash: $("tab-trash"),
       tabCountLibrary: $("tab-count-library"),
@@ -147,6 +189,80 @@
 
   function getFamilyColor(family) {
     return state.families[family] || DEFAULT_FAMILY_COLORS[family] || DEFAULT_FAMILY_COLORS["aniq-fanlar"];
+  }
+
+  // _subjectFamily — derive family slug from a subject_id. If the API surfaced
+  // an explicit family on the subject record, prefer that; otherwise fall back
+  // to the static SUBJECT_FAMILY_MAP. Defaults to "aniq-fanlar".
+  function _subjectFamily(subjectId) {
+    const subject = getSubject(subjectId);
+    if (subject && subject.family) return subject.family;
+    return SUBJECT_FAMILY_MAP[subjectId] || "aniq-fanlar";
+  }
+
+  // _subjectIconChar — single glyph that gets rendered inside the gradient
+  // header symbol-tile. Mirrors JSX iconography (Σ, △, ⚛, Aa, ⚗, T, …).
+  function _subjectIconChar(subjectId) {
+    return SUBJECT_ICONS[subjectId] || "N";
+  }
+
+  // _subjectGradient — vanilla CSS gradient string per family. Kept here so
+  // the renderer can drive inline styles when a per-card override is needed,
+  // but the primary rule is data-family attribute → CSS variable in dashboard.css.
+  function _subjectGradient(family) {
+    switch (family) {
+      case "tabiy-fanlar":    return "linear-gradient(135deg, #10b981 0%, #5eead4 100%)";
+      case "til-fanlar":      return "linear-gradient(135deg, #d946ef 0%, #a78bfa 100%)";
+      case "ijtimoiy-fanlar": return "linear-gradient(135deg, #f59e0b 0%, #fdba74 100%)";
+      case "aniq-fanlar":
+      default:                return "linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%)";
+    }
+  }
+
+  // _relativeTime — Intl.RelativeTimeFormat-driven phrase using the live i18n lang.
+  // Returns "2 min ago" / "1 hour ago" / "Yesterday" etc. Falls back to formatRelative.
+  function _relativeTime(iso) {
+    if (!iso) return "—";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "—";
+
+    const lang = (window.i18n && typeof window.i18n.getLang === "function" && window.i18n.getLang())
+      || document.documentElement.lang
+      || "en";
+    const localeMap = { uz: "uz", ru: "ru", en: "en" };
+    const locale = localeMap[lang] || "en";
+
+    let rtf;
+    try {
+      rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    } catch (_e) {
+      return formatRelative(iso);
+    }
+
+    const diffSec = Math.round((date.getTime() - Date.now()) / 1000);
+    const abs = Math.abs(diffSec);
+    if (abs < 60)        return rtf.format(Math.round(diffSec), "second");
+    if (abs < 3600)      return rtf.format(Math.round(diffSec / 60), "minute");
+    if (abs < 86400)     return rtf.format(Math.round(diffSec / 3600), "hour");
+    if (abs < 86400 * 7) return rtf.format(Math.round(diffSec / 86400), "day");
+    if (abs < 86400 * 30)return rtf.format(Math.round(diffSec / (86400 * 7)), "week");
+    if (abs < 86400 * 365)return rtf.format(Math.round(diffSec / (86400 * 30)), "month");
+    return rtf.format(Math.round(diffSec / (86400 * 365)), "year");
+  }
+
+  // _progressFromStatus — derive 0..100 progress for the card progress-bar.
+  function _progressFromStatus(item) {
+    if (!item) return 0;
+    if (item.status === "ready") return 100;
+    if (typeof item.progress === "number" && item.progress >= 0 && item.progress <= 100) {
+      return Math.round(item.progress);
+    }
+    switch (item.status) {
+      case "generating": return 50;
+      case "draft":      return 35;
+      case "error":      return 20;
+      default:           return 0;
+    }
   }
 
   function titleCase(value) {
@@ -221,13 +337,16 @@
   }
 
   function renderStats() {
-    const total = state.view === "library" ? state.total : state.homeworks.length;
     const ready = state.homeworks.filter((item) => item.status === "ready").length;
     const drafts = state.homeworks.filter((item) => item.status === "draft").length;
+    const review = state.homeworks.filter(
+      (item) => item.status === "error" || item.status === "generating"
+    ).length;
 
     els.statTotal.textContent = state.view === "library" ? state.total : state.homeworks.length;
     els.statReady.textContent = ready;
     els.statDraft.textContent = drafts;
+    if (els.statReview) els.statReview.textContent = review;
 
     els.tabCountLibrary.textContent = state.total;
     els.tabCountTrash.textContent = state.trash.length;
@@ -364,29 +483,37 @@
   function renderHomeworkCard(homework) {
     const familyColor = getFamilyColor(homework.family);
     const subjectLabel = getSubjectLabel(homework.subject);
-    const subjectIcon = getSubjectIcon(homework.subject);
+    const subjectIconChar = _subjectIconChar(homework.subject);
+    const family = _subjectFamily(homework.subject);
     const status = homework.status || "draft";
     const mode = homework.mode || "easy";
     const isTrash = state.view === "trash";
     const shareUrl = `/h/${encodeURIComponent(homework.id)}`;
-    const updatedLabel = formatRelative(homework.updated_at || homework.created_at);
     const updatedAbs = formatAbsolute(homework.updated_at || homework.created_at);
-    const deletedLabel = homework.deleted_at ? formatRelative(homework.deleted_at) : "";
+    const updatedLabel = _relativeTime(homework.updated_at || homework.created_at);
+    const deletedLabel = homework.deleted_at ? _relativeTime(homework.deleted_at) : "";
     const menuOpen = state.openMenuId === homework.id ? "is-open" : "";
+    const progress = _progressFromStatus(homework);
+    const modeLabel = mode === "hard" ? t("common.hard") : t("common.easy");
+    const previewLabel = t("dashboard.card_preview", "Preview");
+    const openLabel = t("dashboard.card_open");
+    const moreActionsLabel = t("dashboard.card_more_actions");
 
+    // Trash mode: keep restore/hard-delete affordances, but render them as
+    // the same hw-action pair so the card silhouette stays consistent.
     const trashActions = `
-      <div class="card-actions">
-        <button class="btn btn-primary js-restore" type="button">${escapeHtml(t("dashboard.card_restore"))}</button>
-        <button class="btn btn-ghost danger js-hard-delete" type="button">${escapeHtml(t("dashboard.card_delete_forever"))}</button>
+      <div class="hw-actions">
+        <button class="hw-action js-restore" type="button" title="${escapeHtml(t("dashboard.card_restore"))}" aria-label="${escapeHtml(t("dashboard.card_restore"))}">${_iconSvg("refresh", "dash-icon--md")}</button>
+        <button class="hw-action hw-action--primary js-hard-delete" type="button" title="${escapeHtml(t("dashboard.card_delete_forever"))}" aria-label="${escapeHtml(t("dashboard.card_delete_forever"))}">${_iconSvg("trash", "dash-icon--md")}</button>
       </div>
     `;
 
-    const moreActionsLabel = escapeHtml(t("dashboard.card_more_actions"));
     const liveActions = `
-      <div class="card-actions">
-        <button class="btn btn-primary js-open" type="button">${escapeHtml(t("dashboard.card_open"))}</button>
-        <div class="card-menu ${menuOpen}">
-          <button class="icon-btn js-menu-toggle" type="button" title="${moreActionsLabel}" aria-label="${moreActionsLabel}" aria-expanded="${menuOpen ? "true" : "false"}">⋯</button>
+      <div class="hw-actions">
+        <a class="hw-action" href="${escapeHtml(shareUrl)}" target="_blank" rel="noreferrer" title="${escapeHtml(previewLabel)}" aria-label="${escapeHtml(previewLabel)}">${_iconSvg("eye", "dash-icon--md")}</a>
+        <button class="hw-action hw-action--primary js-open" type="button" title="${escapeHtml(openLabel)}" aria-label="${escapeHtml(openLabel)}">${_iconSvg("arrow", "dash-icon--md")}</button>
+        <div class="hw-card-menu card-menu ${menuOpen}">
+          <button class="hw-action js-menu-toggle" type="button" title="${escapeHtml(moreActionsLabel)}" aria-label="${escapeHtml(moreActionsLabel)}" aria-expanded="${menuOpen ? "true" : "false"}">${_iconSvg("more", "dash-icon--md")}</button>
           <div class="menu-dropdown" role="menu">
             <a class="menu-item" href="${escapeHtml(shareUrl)}" target="_blank" rel="noreferrer" role="menuitem">${escapeHtml(t("dashboard.menu_open_preview"))}</a>
             <button class="menu-item js-duplicate" type="button" role="menuitem">${escapeHtml(t("dashboard.menu_duplicate"))}</button>
@@ -397,38 +524,83 @@
       </div>
     `;
 
-    const metaLine = isTrash
-      ? escapeHtml(deletedLabel)
-      : `<span title="${escapeHtml(updatedAbs)}">${escapeHtml(updatedLabel)}</span>`;
+    const updatedDisplay = isTrash
+      ? `<span class="hw-updated">${escapeHtml(deletedLabel)}</span>`
+      : `<span class="hw-updated" title="${escapeHtml(updatedAbs)}">${escapeHtml(t("dashboard.card_updated", "Updated"))} ${escapeHtml(updatedLabel)}</span>`;
 
     return `
-      <article class="homework-card glass-card" style="--family-color: ${escapeHtml(familyColor)}" data-id="${escapeHtml(homework.id)}">
-        <div class="homework-card-top">
-          <div class="subject-icon" aria-hidden="true">${escapeHtml(subjectIcon)}</div>
-          <span class="status-pill" data-status="${escapeHtml(status)}">
-            <span class="status-dot ${escapeHtml(status)}"></span>
-            ${escapeHtml(titleCase(status))}
-          </span>
+      <article class="hw-card homework-card glass-card"
+               style="--family-color: ${escapeHtml(familyColor)}"
+               data-id="${escapeHtml(homework.id)}"
+               data-family="${escapeHtml(family)}"
+               data-subject="${escapeHtml(homework.subject || "")}">
+        <div class="hw-card-header" aria-hidden="false">
+          <div class="hw-card-header-top">
+            <div class="hw-symbol" aria-hidden="true">${escapeHtml(subjectIconChar)}</div>
+            <span class="hw-grade-badge">${escapeHtml(String(homework.grade))}-sinf</span>
+          </div>
+          <div class="hw-card-header-titleblock">
+            <p class="hw-card-subject">${escapeHtml(subjectLabel)}</p>
+            <h3 class="hw-card-title">${escapeHtml(homework.title || t("dashboard.untitled"))}</h3>
+          </div>
         </div>
 
-        <div>
-          <h3 class="homework-title">${escapeHtml(homework.title || t("dashboard.untitled"))}</h3>
-          <p class="homework-id muted-text">${escapeHtml(homework.id || "")}</p>
-        </div>
+        <div class="hw-card-body">
+          <div class="hw-pill-row">
+            <span class="hw-status status-pill" data-status="${escapeHtml(status)}">${escapeHtml(titleCase(status))}</span>
+            <span class="hw-mode" data-mode="${escapeHtml(mode)}">${escapeHtml(modeLabel)}</span>
+          </div>
 
-        <div class="homework-meta">
-          <span>${escapeHtml(subjectLabel)} · ${escapeHtml(String(homework.grade))}-sinf</span>
-          <span>${metaLine}</span>
-        </div>
+          <div class="hw-progress" aria-hidden="true">
+            <div class="hw-progress-head">
+              <span>${escapeHtml(t("dashboard.card_progress", "Progress"))}</span>
+              <span>${progress}%</span>
+            </div>
+            <div class="hw-progress-track">
+              <div class="hw-progress-fill" style="width: ${progress}%"></div>
+            </div>
+          </div>
 
-        <div class="pill-row">
-          <span class="mode-pill" data-mode="${escapeHtml(mode)}">${escapeHtml(titleCase(mode))}</span>
-          <span class="grade-pill">${escapeHtml(t("common.grade"))} ${escapeHtml(String(homework.grade))}</span>
+          <div class="hw-foot">
+            ${updatedDisplay}
+            ${isTrash ? trashActions : liveActions}
+          </div>
         </div>
-
-        ${isTrash ? trashActions : liveActions}
       </article>
     `;
+  }
+
+  // Lazy-init IntersectionObserver that reveals .hw-card / .dash-stat-card with
+  // an Apple-spring opacity+translate stagger. Cards begin opacity:0 in CSS so
+  // the observer's `is-visible` flip is the trigger.
+  let _cardObserver = null;
+  function _ensureCardObserver() {
+    if (_cardObserver || typeof IntersectionObserver === "undefined") return _cardObserver;
+    _cardObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            _cardObserver.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+    );
+    return _cardObserver;
+  }
+
+  function _observeReveals(root) {
+    const obs = _ensureCardObserver();
+    if (!obs) {
+      // Reduced motion / unsupported — flip everything visible immediately.
+      (root || document).querySelectorAll(".hw-card, .dash-stat-card").forEach((el) => {
+        el.classList.add("is-visible");
+      });
+      return;
+    }
+    (root || document).querySelectorAll(".hw-card:not(.is-visible), .dash-stat-card:not(.is-visible)")
+      .forEach((el) => obs.observe(el));
   }
 
   function renderHomeworks() {
@@ -436,6 +608,7 @@
     renderStats();
 
     els.homeworkGrid.innerHTML = filtered.map(renderHomeworkCard).join("");
+    _observeReveals(els.homeworkGrid);
 
     const activeList = getActiveList();
     const hasAny = activeList.length > 0;
@@ -474,16 +647,25 @@
   }
 
   function setView(view) {
-    state.view = view;
-    state.openMenuId = null;
+    const apply = () => {
+      state.view = view;
+      state.openMenuId = null;
 
-    els.tabLibrary.classList.toggle("is-active", view === "library");
-    els.tabTrash.classList.toggle("is-active", view === "trash");
-    els.tabLibrary.setAttribute("aria-selected", view === "library" ? "true" : "false");
-    els.tabTrash.setAttribute("aria-selected", view === "trash" ? "true" : "false");
+      els.tabLibrary.classList.toggle("is-active", view === "library");
+      els.tabTrash.classList.toggle("is-active", view === "trash");
+      els.tabLibrary.setAttribute("aria-selected", view === "library" ? "true" : "false");
+      els.tabTrash.setAttribute("aria-selected", view === "trash" ? "true" : "false");
 
-    els.libraryTitle.textContent = view === "trash" ? t("dashboard.tab_trash") : t("dashboard.lib_h2");
-    renderHomeworks();
+      els.libraryTitle.textContent = view === "trash" ? t("dashboard.tab_trash") : t("dashboard.lib_h2");
+      renderHomeworks();
+    };
+
+    // Smooth tab swap via View Transitions API where supported (Chromium 111+).
+    if (typeof document.startViewTransition === "function") {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
   }
 
   async function loadHealth() {
@@ -795,6 +977,11 @@
   function bindEvents() {
     els.newHomeworkBtn.addEventListener("click", openCreateModal);
     els.emptyNewBtn.addEventListener("click", openCreateModal);
+
+    // Hero card "Create homework" CTA — opens the same modal as the topbar btn.
+    document.querySelectorAll('[data-action="new-homework"]').forEach((btn) => {
+      btn.addEventListener("click", openCreateModal);
+    });
     els.closeCreateModal.addEventListener("click", closeCreateModal);
     els.cancelCreate.addEventListener("click", closeCreateModal);
     els.refreshBtn.addEventListener("click", loadHomeworks);
@@ -923,6 +1110,10 @@
     cacheElements();
     bindEvents();
     setLoading(true);
+
+    // Reveal the four stat-cards via the IntersectionObserver pipeline so they
+    // share the Apple-spring stagger with the homework grid.
+    _observeReveals(document);
 
     // Re-render dynamic content when the user switches language. The static
     // [data-i18n] attrs are handled by i18n.js automatically, but rebuilt

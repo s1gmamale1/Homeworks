@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="dashboard.page_title">NETS Builder · Dashboard</title>
   <link rel="stylesheet" href="/css/app.css?v=__VERSION__" />
+  <link rel="stylesheet" href="/css/dashboard.css?v=__VERSION__" />
   <script src="/js/theme.js?v=__VERSION__"></script>
   <script src="/js/katex-render.js?v=__VERSION__"></script>
 </head>
 <body data-page="dashboard">
   <div class="app-shell">
+
+    <!-- ============================================================
+         Topbar
+         ============================================================ -->
     <header class="topbar glass-card">
       <div class="brand-block">
         <div class="brand-mark" aria-hidden="true">N</div>
@@ -25,51 +30,132 @@
       </nav>
 
       <div class="topbar-actions">
+        <div class="health-pill" id="health-pill" data-i18n-title="dashboard.health_title" title="Backend and Gemini status">
+          <span class="status-dot muted"></span>
+          <span id="health-label" data-i18n="dashboard.checking">Checking…</span>
+        </div>
+
         <div class="lang-switch" role="group" data-i18n-aria-label="common.lang_aria" aria-label="Language">
           <button type="button" class="lang-pill" data-lang="uz">UZ</button>
           <button type="button" class="lang-pill" data-lang="ru">RU</button>
           <button type="button" class="lang-pill" data-lang="en">EN</button>
         </div>
+
         <button class="btn btn-ghost theme-toggle" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
-        <div class="health-pill" id="health-pill" data-i18n-title="dashboard.health_title" title="Backend and Gemini status">
-          <span class="status-dot muted"></span>
-          <span id="health-label" data-i18n="dashboard.checking">Checking…</span>
-        </div>
+
         <button class="btn btn-primary" id="new-homework-btn" type="button">
-          <span aria-hidden="true">＋</span>
+          <svg class="dash-icon dash-icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           <span data-i18n="dashboard.new_homework">New Homework</span>
         </button>
       </div>
     </header>
 
     <main class="dashboard-layout">
-      <section class="hero-card glass-card">
-        <div>
+
+      <!-- ============================================================
+           Hero (light glass) + Control aside (dark)
+           ============================================================ -->
+      <section class="dash-hero-grid">
+        <article class="hero-card">
           <p class="eyebrow" data-i18n="dashboard.hero_eyebrow">Builder workspace</p>
           <h2 data-i18n="dashboard.hero_h2">Build, edit, preview, and share interactive NETS homework.</h2>
           <p class="muted-text" data-i18n="dashboard.hero_text">
             Create a homework record, open the builder, and fill in each phase. Preview live as you go, then publish a permanent share link.
           </p>
+          <div class="hero-actions">
+            <button class="btn hero-cta-primary" type="button" data-action="new-homework">
+              <svg class="dash-icon dash-icon--md" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              <span data-i18n="dashboard.empty_btn">Create homework</span>
+            </button>
+            <a class="btn hero-cta-secondary" href="/library.html">
+              <svg class="dash-icon dash-icon--md" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2Zm7 12 .8 2.6L22 17l-2.2.4L19 20l-.8-2.6L16 17l2.2-.4L19 14Z"/></svg>
+              <span data-i18n="common.library">Library</span>
+            </a>
+          </div>
+        </article>
+
+        <aside class="dash-control" aria-label="Control room">
+          <div class="dash-control-head">
+            <span class="dash-control-tag" data-i18n="dashboard.control_tag">Control</span>
+            <svg class="dash-icon dash-icon--lg dash-control-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
+          </div>
+          <h2 data-i18n="dashboard.insights_h2">Today’s control room</h2>
+          <p class="dash-control-text" data-i18n="dashboard.insights_text">
+            Fast glance for teachers: what is ready, what needs edits, and what can be shared now.
+          </p>
+          <div class="dash-control-steps" aria-hidden="true">
+            <div class="dash-control-step"><strong>01</strong><span data-i18n="dashboard.step_build">Build</span></div>
+            <div class="dash-control-step"><strong>02</strong><span data-i18n="dashboard.step_preview">Preview</span></div>
+            <div class="dash-control-step"><strong>03</strong><span data-i18n="dashboard.step_share">Share</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ============================================================
+           Stat cards (4-up)
+           ============================================================ -->
+      <section class="dash-stats" data-i18n-aria-label="dashboard.stats_aria" aria-label="Homework statistics">
+        <div class="dash-stat-card">
+          <div class="dash-stat-head">
+            <div>
+              <div class="dash-stat-value" id="stat-total">0</div>
+              <div class="dash-stat-label" data-i18n="dashboard.stat_total">Total</div>
+            </div>
+            <div class="dash-stat-icon" aria-hidden="true">
+              <svg class="dash-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>
+            </div>
+          </div>
+          <div class="dash-stat-hint" data-i18n="dashboard.stat_total_hint">All active records</div>
         </div>
-        <div class="hero-stats" data-i18n-aria-label="dashboard.stats_aria" aria-label="Homework statistics">
-          <div class="stat-card">
-            <span id="stat-total">0</span>
-            <small data-i18n="dashboard.stat_total">Total</small>
+
+        <div class="dash-stat-card">
+          <div class="dash-stat-head">
+            <div>
+              <div class="dash-stat-value" id="stat-ready">0</div>
+              <div class="dash-stat-label" data-i18n="dashboard.stat_ready">Ready</div>
+            </div>
+            <div class="dash-stat-icon" aria-hidden="true">
+              <svg class="dash-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
           </div>
-          <div class="stat-card">
-            <span id="stat-ready">0</span>
-            <small data-i18n="dashboard.stat_ready">Ready</small>
+          <div class="dash-stat-hint" data-i18n="dashboard.stat_ready_hint">Can be shared now</div>
+        </div>
+
+        <div class="dash-stat-card">
+          <div class="dash-stat-head">
+            <div>
+              <div class="dash-stat-value" id="stat-draft">0</div>
+              <div class="dash-stat-label" data-i18n="dashboard.stat_drafts">Drafts</div>
+            </div>
+            <div class="dash-stat-icon" aria-hidden="true">
+              <svg class="dash-icon" viewBox="0 0 24 24"><path d="M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            </div>
           </div>
-          <div class="stat-card">
-            <span id="stat-draft">0</span>
-            <small data-i18n="dashboard.stat_drafts">Drafts</small>
+          <div class="dash-stat-hint" data-i18n="dashboard.stat_drafts_hint">Needs editing</div>
+        </div>
+
+        <div class="dash-stat-card">
+          <div class="dash-stat-head">
+            <div>
+              <div class="dash-stat-value" id="stat-review">0</div>
+              <div class="dash-stat-label" data-i18n="dashboard.stat_review">Review Queue</div>
+            </div>
+            <div class="dash-stat-icon" aria-hidden="true">
+              <svg class="dash-icon" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            </div>
           </div>
+          <div class="dash-stat-hint" data-i18n="dashboard.stat_review_hint">Needs attention</div>
         </div>
       </section>
 
-      <section class="toolbar glass-card" data-i18n-aria-label="dashboard.toolbar_aria" aria-label="Library filters">
+      <!-- ============================================================
+           Filter toolbar
+           ============================================================ -->
+      <section class="toolbar" data-i18n-aria-label="dashboard.toolbar_aria" aria-label="Library filters">
         <label class="search-box">
-          <span class="search-box__icon" aria-hidden="true">⌕</span>
+          <span class="search-box__icon" aria-hidden="true">
+            <svg class="dash-icon" viewBox="0 0 24 24"><path d="M21 21l-4.3-4.3M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z"/></svg>
+          </span>
           <input id="search-input" type="search" data-i18n-placeholder="dashboard.search_placeholder" placeholder="Search by title, subject, ID…" autocomplete="off" />
           <button type="button" class="search-box__clear" data-search-clear data-i18n-aria-label="common.clear" aria-label="Clear search" tabindex="-1">×</button>
         </label>
@@ -104,36 +190,46 @@
         </div>
       </section>
 
+      <!-- ============================================================
+           Library section heading + tabs + grid
+           ============================================================ -->
       <section class="library-section" aria-labelledby="library-title">
         <div class="section-heading">
           <div>
             <p class="eyebrow" data-i18n="dashboard.lib_eyebrow">Library</p>
             <h2 id="library-title" data-i18n="dashboard.lib_h2">Homeworks</h2>
           </div>
-          <div class="library-tabs" role="tablist" data-i18n-aria-label="dashboard.tabs_aria" aria-label="Library view">
-            <button class="library-tab is-active" id="tab-library" role="tab" type="button" aria-selected="true">
-              <span data-i18n="dashboard.tab_library">Library</span> <span class="tab-count" id="tab-count-library">0</span>
-            </button>
-            <button class="library-tab" id="tab-trash" role="tab" type="button" aria-selected="false">
-              <span data-i18n="dashboard.tab_trash">Trash</span> <span class="tab-count" id="tab-count-trash">0</span>
+          <div class="section-actions">
+            <div class="library-tabs" role="tablist" data-i18n-aria-label="dashboard.tabs_aria" aria-label="Library view">
+              <button class="library-tab is-active" id="tab-library" role="tab" type="button" aria-selected="true">
+                <span data-i18n="dashboard.tab_library">Library</span>
+                <span class="tab-count" id="tab-count-library">0</span>
+              </button>
+              <button class="library-tab" id="tab-trash" role="tab" type="button" aria-selected="false">
+                <span data-i18n="dashboard.tab_trash">Trash</span>
+                <span class="tab-count" id="tab-count-trash">0</span>
+              </button>
+            </div>
+            <button id="refresh-btn" type="button">
+              <svg class="dash-icon dash-icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M19 11a7 7 0 0 0-12.2-4.7L4 9m1 4a7 7 0 0 0 12.2 4.7L20 15"/></svg>
+              <span data-i18n="common.refresh">Refresh</span>
             </button>
           </div>
-          <button class="btn btn-ghost" id="refresh-btn" type="button" data-i18n="common.refresh">Refresh</button>
         </div>
 
-        <div class="loading-state glass-card" id="loading-state">
+        <div class="loading-state" id="loading-state">
           <div class="spinner" aria-hidden="true"></div>
           <p data-i18n="dashboard.loading_library">Loading homework library…</p>
         </div>
 
-        <div class="error-state glass-card hidden" id="error-state">
+        <div class="error-state hidden" id="error-state">
           <div class="empty-orb" aria-hidden="true">⚠</div>
           <h3 id="error-state-title" data-i18n="common.could_not_reach_server">Could not reach the server</h3>
           <p id="error-state-message" data-i18n="common.check_connection">Check your connection and try again.</p>
           <button class="btn btn-primary" id="retry-btn" type="button" data-i18n="common.retry">Retry</button>
         </div>
 
-        <div class="empty-state glass-card hidden" id="empty-state">
+        <div class="empty-state hidden" id="empty-state">
           <div class="empty-orb" aria-hidden="true">📚</div>
           <h3 data-i18n="dashboard.empty_h3">No homework yet</h3>
           <p data-i18n="dashboard.empty_text">Create your first NETS homework to begin the builder flow.</p>
@@ -146,6 +242,9 @@
     </main>
   </div>
 
+  <!-- ============================================================
+       Modals (kept as <dialog>; identical contract)
+       ============================================================ -->
   <dialog class="modal" id="create-modal" aria-labelledby="create-modal-title">
     <form class="modal-card glass-card" id="create-form" method="dialog">
       <div class="modal-header">

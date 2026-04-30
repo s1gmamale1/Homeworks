@@ -120,6 +120,22 @@ window.STRINGS = {
     'dashboard.no_snapshots': 'No snapshots yet. Versions are captured automatically as you edit.',
     'dashboard.untitled': 'Untitled homework',
 
+    // ── dashboard — Apple redesign additions (2026-05) ──────────────────
+    'dashboard.stat_review': 'Review Queue',
+    'dashboard.stat_total_hint': 'All active records',
+    'dashboard.stat_ready_hint': 'Can be shared now',
+    'dashboard.stat_drafts_hint': 'Needs editing',
+    'dashboard.stat_review_hint': 'Needs attention',
+    'dashboard.insights_h2': 'Today’s control room',
+    'dashboard.insights_text': 'Fast glance for teachers: what is ready, what needs edits, and what can be shared now.',
+    'dashboard.control_tag': 'Control',
+    'dashboard.step_build': 'Build',
+    'dashboard.step_preview': 'Preview',
+    'dashboard.step_share': 'Share',
+    'dashboard.card_preview': 'Preview',
+    'dashboard.card_progress': 'Progress',
+    'dashboard.card_updated': 'Updated',
+
     // ── builder (builder.html) ───────────────────────────────────────────
     'builder.page_title': 'NETS Builder · Homework Editor',
     'builder.back_to_dashboard': 'Back to dashboard',
@@ -317,6 +333,22 @@ window.STRINGS = {
     'dashboard.no_snapshots': "Hali nusxalar yo'q. Tahrirlash davomida versiyalar avtomatik saqlanadi.",
     'dashboard.untitled': 'Nomsiz vazifa',
 
+    // ── dashboard — Apple redesign additions (2026-05) ──────────────────
+    'dashboard.stat_review': "Ko'rib chiqish",
+    'dashboard.stat_total_hint': 'Barcha faol yozuvlar',
+    'dashboard.stat_ready_hint': "Hozir ulashish mumkin",
+    'dashboard.stat_drafts_hint': "Tahrir qilish kerak",
+    'dashboard.stat_review_hint': "E'tibor talab qiladi",
+    'dashboard.insights_h2': "Bugungi boshqaruv xonasi",
+    'dashboard.insights_text': "O'qituvchilar uchun tez ko'rinish: nima tayyor, nima tahrir kerak va hozir nimani ulashish mumkin.",
+    'dashboard.control_tag': 'Boshqaruv',
+    'dashboard.step_build': 'Yaratish',
+    'dashboard.step_preview': "Ko'rish",
+    'dashboard.step_share': 'Ulashish',
+    'dashboard.card_preview': "Ko'rish",
+    'dashboard.card_progress': "Bajarilgan",
+    'dashboard.card_updated': 'Yangilandi',
+
     // ── builder ──────────────────────────────────────────────────────────
     'builder.page_title': 'NETS Konstruktor · Vazifa muharriri',
     'builder.back_to_dashboard': 'Boshqaruvga qaytish',
@@ -513,6 +545,22 @@ window.STRINGS = {
     'dashboard.version_restore_btn': 'Восстановить эту версию',
     'dashboard.no_snapshots': 'Снимков пока нет. Версии создаются автоматически по мере правок.',
     'dashboard.untitled': 'Без названия',
+
+    // ── dashboard — Apple redesign additions (2026-05) ──────────────────
+    'dashboard.stat_review': 'На проверке',
+    'dashboard.stat_total_hint': 'Все активные записи',
+    'dashboard.stat_ready_hint': 'Можно делиться',
+    'dashboard.stat_drafts_hint': 'Требуют редактуры',
+    'dashboard.stat_review_hint': 'Требуют внимания',
+    'dashboard.insights_h2': 'Сегодняшняя панель управления',
+    'dashboard.insights_text': 'Быстрый взгляд для учителей: что готово, что нужно подправить и чем можно делиться.',
+    'dashboard.control_tag': 'Контроль',
+    'dashboard.step_build': 'Создать',
+    'dashboard.step_preview': 'Превью',
+    'dashboard.step_share': 'Поделиться',
+    'dashboard.card_preview': 'Превью',
+    'dashboard.card_progress': 'Прогресс',
+    'dashboard.card_updated': 'Обновлено',
 
     // ── builder ──────────────────────────────────────────────────────────
     'builder.page_title': 'NETS Конструктор · Редактор задания',
