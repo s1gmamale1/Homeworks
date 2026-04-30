@@ -307,6 +307,20 @@ code {
     box-shadow: 0 4px 14px var(--accent-glow);
 }
 
+a.brand-mark {
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.brand-mark:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px var(--accent-glow);
+}
+a.brand-mark:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
 /* -------- Cards & Glass -------- */
 .glass-card {
     background: var(--surface);
