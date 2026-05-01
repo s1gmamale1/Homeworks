@@ -398,6 +398,66 @@ def test_lmr_floor_25_pct_same_as_amr():
     assert eng["overall_pct"] == math["overall_pct"] == 25
 
 
+# ── Subject-aware phase-row visibility (LANGUAGE_ONLY_PHASES) ──────────────
+
+def _phase_keys(scorecard):
+    return {row["key"] for row in scorecard["phases"]}
+
+
+def test_reading_checkpoint_hidden_on_non_language_subject():
+    """A math/physics/etc. homework must NOT show the "O'qish" row on the
+    scorecard. Reading checkpoints exist only in the Til Fanlar HARD
+    pipeline (services/routing.py), so on every other subject the row
+    would always be empty — skip it entirely so the scorecard lists
+    only phases the student actually played."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    for subject in ("math-algebra", "geometriya-g7-11", "physics", "biology",
+                    "kimyo-g7-11", "history"):
+        out = aggregate(items, subject=subject)
+        assert "reading-checkpoint" not in _phase_keys(out), (
+            f"reading-checkpoint row must be hidden on subject={subject}"
+        )
+
+
+def test_reading_checkpoint_visible_on_language_subject():
+    """English / Ona Tili / Rus Tili pipelines DO include the reading
+    phase, so the row must remain visible on their scorecards even when
+    no reading items were submitted (the row simply shows '—')."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    for subject in ("english", "ona-tili", "rus-tili", "ingliz-tili-g1-11"):
+        out = aggregate(items, subject=subject)
+        assert "reading-checkpoint" in _phase_keys(out), (
+            f"reading-checkpoint row must be visible on subject={subject}"
+        )
+
+
+def test_reading_checkpoint_visible_when_subject_omitted_legacy():
+    """Legacy callers (older tests, scripts) that never pass `subject`
+    must keep seeing every row including reading-checkpoint. The new
+    filter only fires when the caller has identified the subject."""
+    items = [{"phase": "real-life", "id": "Q1", "correct": True, "score": 1.0,
+              "axis_1": 4, "axis_2": 4}]
+    out = aggregate(items)  # no subject
+    assert "reading-checkpoint" in _phase_keys(out)
+
+
+def test_reading_checkpoint_row_carries_actual_data_on_language_subject():
+    """When a language homework has reading-checkpoint items, the row
+    must reflect their counts, not just be a placeholder."""
+    items = [
+        {"phase": "reading-checkpoint", "id": "rc-1", "correct": True,  "closed": True},
+        {"phase": "reading-checkpoint", "id": "rc-2", "correct": True,  "closed": True},
+        {"phase": "reading-checkpoint", "id": "rc-3", "correct": False, "closed": True},
+    ]
+    out = aggregate(items, subject="english")
+    rows = {r["key"]: r for r in out["phases"]}
+    assert "reading-checkpoint" in rows
+    assert rows["reading-checkpoint"]["correct"] == 2
+    assert rows["reading-checkpoint"]["total"] == 3
+
+
 # ── Skipped-question penalty (expected_open_count padding) ──────────────
 
 def test_one_perfect_answer_with_others_skipped_does_not_score_100():
