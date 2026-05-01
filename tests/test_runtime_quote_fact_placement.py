@@ -112,6 +112,31 @@ def test_gate_quote_card_keeps_body_text_visible():
     assert "align-items: center" in item_body
 
 
+def test_gate_quote_card_uses_premium_window_treatment():
+    """Pin the requested Apple-style glass window treatment for Stage 1."""
+    html = _read(RUNTIME)
+    card = re.search(r"\.quote-card\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    assert card, "missing .quote-card rule"
+    card_body = card.group("body")
+    assert "radial-gradient(circle at 12% 8%" in card_body
+    assert "linear-gradient(145deg" in card_body
+    assert "backdrop-filter: blur(46px) saturate(190%)" in card_body
+    assert "overflow: hidden" in card_body
+    assert "isolation: isolate" in card_body
+
+    before = re.search(r"\.quote-card::before\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    assert before, "missing inner window highlight layer"
+    before_body = before.group("body")
+    assert "inset: 12px" in before_body
+    assert "pointer-events: none" in before_body
+
+    after = re.search(r"\.quote-card::after\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    assert after, "missing window control dots layer"
+    after_body = after.group("body")
+    assert "radial-gradient(circle at 6px 6px" in after_body
+    assert "radial-gradient(circle at 40px 6px" in after_body
+
+
 def test_run_quote_sequence_does_not_use_fact_label_as_quote_author():
     html = _read(RUNTIME)
     block_match = re.search(
