@@ -72,6 +72,38 @@ def test_run_quote_sequence_drops_emoji_for_facts():
     )
 
 
+def test_gate_quote_card_keeps_body_text_visible():
+    """The gate quote card must show the text body under/above the label.
+
+    A stale branch hid `.quote-text-line`, leaving only the Bilarmidingiz?
+    pill floating in an empty card. Keep the restored glass card layout pinned.
+    """
+    html = _read(RUNTIME)
+    rule = re.search(
+        r"\.quote-card \.quote-text-line\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert rule, "missing .quote-card .quote-text-line rule"
+    body = rule.group("body")
+    assert "display: none" not in body, (
+        "gate quote text must stay visible; do not hide .quote-text-line"
+    )
+    assert "color: var(--text)" in body, (
+        "gate quote text should use the runtime body text color"
+    )
+
+    item_rule = re.search(
+        r"\.quote-card \.quote-item\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert item_rule, "missing .quote-card .quote-item layout rule"
+    item_body = item_rule.group("body")
+    assert "display: flex" in item_body
+    assert "align-items: center" in item_body
+
+
 # ── Mid-homework break card ──────────────────────────────────────────
 
 
