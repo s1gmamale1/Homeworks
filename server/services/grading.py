@@ -81,6 +81,13 @@ PHASE_DISPLAY_ORDER: list[dict[str, Any]] = [
     {"key": "final-boss",         "label": "Final Boss",     "phase_level": False},
 ]
 
+# Phases that only render on the scorecard for specific subject families.
+# `reading-checkpoint` exists only in the Til Fanlar (language) HARD pipeline
+# (see services/routing.py). On math/science/social-studies homeworks the
+# row would always be empty — skip rendering it altogether so the scorecard
+# lists only phases the student actually played.
+LANGUAGE_ONLY_PHASES: frozenset[str] = frozenset({"reading-checkpoint"})
+
 # Band thresholds applied to the 1-4 axis-mean scale (per GRADING.md
 # rubric levels). For closed-only sessions where there are no axes, the
 # overall percentage is mapped to the same 1-4 scale before banding.
@@ -228,9 +235,20 @@ def aggregate(
         by_phase.setdefault(it.phase, []).append(it)
 
     # ── Per-phase rows ───────────────────────────────────────────────
+    # Local import to avoid a top-level cycle with services.language —
+    # the same helper drives the LMR/AMR axis-label split below.
+    from .language import is_language_subject as _is_language_subject
+    is_language = _is_language_subject(subject)
+
     phase_rows: list[dict[str, Any]] = []
     for spec in PHASE_DISPLAY_ORDER:
         key = spec["key"]
+        # Skip language-only phases (currently just reading-checkpoint /
+        # "O'qish") when the caller identifies a non-language subject. If
+        # `subject` is None (legacy callers / tests), preserve original
+        # behaviour and render every row.
+        if subject is not None and key in LANGUAGE_ONLY_PHASES and not is_language:
+            continue
         items_in_phase = by_phase.get(key, [])
         method = PHASE_METHOD.get(key, "closed")
         is_phase_level = bool(spec["phase_level"])
@@ -368,8 +386,10 @@ def aggregate(
     # an axis. The two axes evaluate quality of expression only:
     #   Axis 1 — Grammatical Accuracy (form, agreement, target pattern, mechanics)
     #   Axis 2 — Lexical Quality      (word choice, collocations, naturalness, register)
-    from .language import is_language_subject  # local import — avoids cycle
-    if is_language_subject(subject):
+    # `is_language` was computed near the top of this function from the
+    # same helper that gates LANGUAGE_ONLY_PHASES — reuse it so the rubric
+    # split and the row-visibility split can never disagree.
+    if is_language:
         rubric_key = "lmr"
         axis_1_name = "Grammatical Accuracy"
         axis_2_name = "Lexical Quality"
