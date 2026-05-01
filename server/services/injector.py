@@ -855,18 +855,56 @@ def inject(
             checkpoints = obj.get("checkpoints") or []
             if not isinstance(checkpoints, list):
                 checkpoints = []
+            out_cps = []
+            for cp in checkpoints:
+                if not isinstance(cp, dict):
+                    out_cps.append({"prompt": "", "ans": "", "acceptable": [], "fb": ""})
+                    continue
+                # `ans` may be a string (legacy fixtures) or a list (segment-aware
+                # adapter output). When it's a list, the head is the canonical
+                # answer and the tail goes into `acceptable[]` for the runtime's
+                # multi-answer matcher (cp.ans + cp.acceptable[] is the existing
+                # contract). Authors can also supply `acceptable[]` explicitly.
+                raw_ans = cp.get("ans")
+                if isinstance(raw_ans, list):
+                    ans_str = str(raw_ans[0]) if raw_ans else ""
+                    acceptable = [str(a) for a in raw_ans[1:]]
+                else:
+                    ans_str = str(raw_ans or "")
+                    acceptable = []
+                extra_acc = cp.get("acceptable")
+                if isinstance(extra_acc, list):
+                    acceptable = acceptable + [str(a) for a in extra_acc]
+                out_cps.append({
+                    "prompt":     str(cp.get("prompt") or cp.get("q") or ""),
+                    "ans":        ans_str,
+                    "acceptable": acceptable,
+                    "fb":         str(cp.get("fb") or ""),
+                })
             normalized = {
                 "title":       str(obj.get("title") or ""),
                 "passage":     str(obj.get("passage") or ""),
-                "checkpoints": [
-                    {
-                        "prompt": str(cp.get("prompt") or "") if isinstance(cp, dict) else "",
-                        "ans":    str(cp.get("ans") or "")    if isinstance(cp, dict) else "",
-                        "fb":     str(cp.get("fb") or "")     if isinstance(cp, dict) else "",
-                    }
-                    for cp in checkpoints
-                ],
+                "checkpoints": out_cps,
             }
+            # Pass through segment-aware reading fields. When `segments` is
+            # present, the runtime renders an interleaved text→question stream
+            # via these objects (see perfect_homework.html::readingBuildPages).
+            # Legacy fixtures (no segments key) keep the chunker fallback path.
+            raw_segments = obj.get("segments")
+            if isinstance(raw_segments, list):
+                segments_out = [
+                    {"text": str(s.get("text") or s.get("html") or "")}
+                    for s in raw_segments
+                    if isinstance(s, dict)
+                ]
+                if segments_out:
+                    normalized["segments"] = segments_out
+            media = obj.get("media")
+            if isinstance(media, dict):
+                normalized["media"] = {
+                    "type": str(media.get("type") or ""),
+                    "html": str(media.get("html") or ""),
+                }
         elif key == "consolidation":
             bullets = obj.get("bullets") or []
             if not isinstance(bullets, list):

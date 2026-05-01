@@ -5056,6 +5056,15 @@
         <div id="skip-overlay">
             <div id="skip-pill">⏭ Fazani o'tkazib yuborish</div>
         </div>
+
+        <!-- Shared phase-announcement card (Bug #4): one card, dynamic text from
+             i18n labels, used for sub-game starts inside Stage 5 plus the
+             entries into Real-Life / Consolidation / Reflection. Existing
+             gb-phase-center-card and reading-phase-center-card stay as-is for
+             backward compat with their current call sites. -->
+        <div id="phase-announce-card" class="phase-intro-card">
+            <div class="phase-intro-text" id="phase-announce-text"></div>
+        </div>
     </main>
 
     <script>
@@ -5197,6 +5206,18 @@
                 'res.closing':           'Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.',
                 // misc
                 'gb.break_done':         "O'yin tanaffusi tugadi!",
+                // phase announcement card labels (Bug #4)
+                'phase.game_breaks':     "O'yin tanaffusi",
+                'phase.real_life':       "Hayotiy mashq",
+                'phase.consolidation':   "Mustahkamlash",
+                'phase.reflection':      "Mulohaza",
+                // sub-game announcement labels (Bug #4)
+                'game.aq':               "Moslashuvchan test",
+                'game.wc':               "Gap to'ldirish",
+                'game.mm':               "Juftlik topish",
+                'game.pl':               "Qulf ochish",
+                'game.mb':               "Sirli quti",
+                'game.ttt':              "Krestiki-Nolikar",
             },
             ru: {
                 'skip.label':            '⏭ Пропустить фазу',
@@ -5312,6 +5333,18 @@
                 'res.closed_format':     'Анализ закрытых ответов: ',
                 'res.closing':           'Отчёт сохранён. Следующее повторение через 1 день.',
                 'gb.break_done':         'Игровой перерыв окончен!',
+                // phase announcement card labels (Bug #4)
+                'phase.game_breaks':     'Игровой перерыв',
+                'phase.real_life':       'Жизненная задача',
+                'phase.consolidation':   'Закрепление',
+                'phase.reflection':      'Рефлексия',
+                // sub-game announcement labels (Bug #4)
+                'game.aq':               'Адаптивный тест',
+                'game.wc':               'Заполнение предложения',
+                'game.mm':               'Парная память',
+                'game.pl':               'Замок-головоломка',
+                'game.mb':               'Загадочный ящик',
+                'game.ttt':              'Крестики-нолики',
             },
             en: {
                 'skip.label':            '⏭ Skip phase',
@@ -5427,6 +5460,18 @@
                 'res.closed_format':     'Closed-format analysis: ',
                 'res.closing':           'Report saved. Next review in 1 day.',
                 'gb.break_done':         'Game break finished!',
+                // phase announcement card labels (Bug #4)
+                'phase.game_breaks':     'Game Break',
+                'phase.real_life':       'Real-Life Challenge',
+                'phase.consolidation':   'Consolidation',
+                'phase.reflection':      'Reflection',
+                // sub-game announcement labels (Bug #4)
+                'game.aq':               'Adaptive Quiz',
+                'game.wc':               'Sentence Fill',
+                'game.mm':               'Tile Match',
+                'game.pl':               'Puzzle Lock',
+                'game.mb':               'Mystery Box',
+                'game.ttt':              'Tic Tac Toe',
             },
         };
 
@@ -5917,11 +5962,13 @@
                 if (state.stage === 7.5) return;
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
                 const fromEdge = e.clientX <= EDGE_ZONE || e.clientX >= window.innerWidth - EDGE_ZONE;
-                // In game-break stage AND on the Wave-2 reading/consolidation/reflection
-                // interstitial screens (stage 4.7 / 6.5 / 7.7), only track edge drags
+                // In game-break stage AND on the Consolidation / Reflection
+                // interstitial screens (stage 6.5 / 7.7), only track edge drags
                 // (skip gesture) — let internal content scroll/interact freely.
-                const isWave2Stage = state.stage === 4.7 || state.stage === 6.5 || state.stage === 7.7;
-                if ((state.stage === 5 || isWave2Stage) && !fromEdge) return;
+                // Reading (4.7) DOES allow within-phase horizontal swipe-left to
+                // advance between segment + checkpoint panels.
+                const isInterstitialNoSwipe = state.stage === 6.5 || state.stage === 7.7;
+                if ((state.stage === 5 || isInterstitialNoSwipe) && !fromEdge) return;
                 // Detect horizontally scrollable ancestor — if found, skip swipe handling
                 // (horizontal swipe only blocked by horizontally-scrolling content; vertical
                 // scroll containers don't conflict with horizontal page-swipe gestures).
@@ -5991,6 +6038,33 @@
                             const ap = document.querySelector('#panel-content .page.active');
                             if (ap) ap.style.transition = '';
                             handleSwipe(dir);
+                        } else {
+                            resetDragPreview();
+                        }
+                    } else if (absDx > 50 && state.stage === 4.7) {
+                        // Reading: forward (left) swipe advances the panel stream.
+                        // Question panels with unanswered checkpoints stay locked —
+                        // the answer is the gate, not the swipe. Backward (right)
+                        // swipe is a no-op for now (reading is forward-only by design).
+                        const dir = dx > 0 ? 'right' : 'left';
+                        if (dir === 'left' && typeof readingState !== 'undefined') {
+                            const totalPages = readingState.pages.length;
+                            const currentPage = readingState.pages[readingState.page] || {};
+                            const isLockedQuestion =
+                                currentPage.kind === 'question' &&
+                                typeof currentPage.cpIndex === 'number' &&
+                                !readingState.answered[currentPage.cpIndex];
+                            if (isLockedQuestion) {
+                                updateReadingContinueState();
+                                resetDragPreview();
+                            } else if (readingState.page < totalPages - 1) {
+                                readingGoToPage(readingState.page + 1);
+                            } else if (readingIsComplete(Array.isArray(READING.checkpoints) ? READING.checkpoints : [])
+                                       && typeof readingState.onContinue === 'function') {
+                                readingState.onContinue();
+                            } else {
+                                resetDragPreview();
+                            }
                         } else {
                             resetDragPreview();
                         }
@@ -6286,9 +6360,21 @@
                 startStage5();
                 return;
             }
-            // Wave 2 interstitials — clicking the action button advances them, so
-            // edge-swipe-skip just simulates a click on the morphing button.
-            if (s === 4.7 || s === 6.5 || s === 7.7) {
+            // Reading (4.7): edge-swipe phase-skip must bypass the checkpoint
+            // answer-lock — the user has explicitly asked to leave the phase, so
+            // unanswered checkpoints don't gate the exit. Call onContinue with
+            // force=true to skip the readingIsComplete() guard inside finishReading.
+            if (s === 4.7) {
+                if (typeof readingState !== 'undefined' && typeof readingState.onContinue === 'function') {
+                    readingState.onContinue(true);
+                } else if (typeof btn !== 'undefined' && btn) {
+                    btn.click();
+                }
+                return;
+            }
+            // Consolidation (6.5) / Reflection (7.7) interstitials — clicking the
+            // action button advances them, so edge-swipe-skip just simulates a click.
+            if (s === 6.5 || s === 7.7) {
                 if (typeof btn !== 'undefined' && btn) btn.click();
                 return;
             }
@@ -7563,17 +7649,17 @@
         function gbActiveGameOrder() {
             const list = [];
             if (Array.isArray(GB_ADAPTIVE_QUIZ) && GB_ADAPTIVE_QUIZ.length > 0)
-                list.push({ id: 'aq', sub: 0, init: gbInitAQ, panel: 'gb-panel-aq', label: 'Adaptive Quiz', setupBtn: gbSetButtonForAQ });
+                list.push({ id: 'aq', sub: 0, init: gbInitAQ, panel: 'gb-panel-aq', label: 'Adaptive Quiz', labelKey: 'game.aq', setupBtn: gbSetButtonForAQ });
             if (Array.isArray(GB_WHY_CHAIN) && GB_WHY_CHAIN.length > 0)
-                list.push({ id: 'wc', sub: 1, init: gbInitWC, panel: 'gb-panel-wc', label: 'Sentence Fill', setupBtn: gbSetButtonForWC });
+                list.push({ id: 'wc', sub: 1, init: gbInitWC, panel: 'gb-panel-wc', label: 'Sentence Fill', labelKey: 'game.wc', setupBtn: gbSetButtonForWC });
             if (Array.isArray(GB_MEMORY_MATCH) && GB_MEMORY_MATCH.length > 0)
-                list.push({ id: 'mm', sub: 2, init: gbInitMM, panel: 'gb-panel-mm', label: 'Tile Match', setupBtn: null });
+                list.push({ id: 'mm', sub: 2, init: gbInitMM, panel: 'gb-panel-mm', label: 'Tile Match', labelKey: 'game.mm', setupBtn: null });
             if (Array.isArray(GB_PUZZLE_LOCK) && GB_PUZZLE_LOCK.length > 0)
-                list.push({ id: 'pl', sub: 3, init: gbInitPL, panel: 'gb-panel-pl', label: 'Puzzle Lock', setupBtn: null });
+                list.push({ id: 'pl', sub: 3, init: gbInitPL, panel: 'gb-panel-pl', label: 'Puzzle Lock', labelKey: 'game.pl', setupBtn: null });
             if (Array.isArray(GB_MYSTERY_BOX) && GB_MYSTERY_BOX.length > 0)
-                list.push({ id: 'mb', sub: 4, init: gbInitMB, panel: 'gb-panel-mb', label: 'Mystery Box', setupBtn: null });
+                list.push({ id: 'mb', sub: 4, init: gbInitMB, panel: 'gb-panel-mb', label: 'Mystery Box', labelKey: 'game.mb', setupBtn: null });
             if (Array.isArray(GB_TTT) && GB_TTT.length > 0)
-                list.push({ id: 'ttt', sub: 5, init: gbInitTTT, panel: 'gb-panel-ttt', label: 'Tic Tac Toe', setupBtn: null });
+                list.push({ id: 'ttt', sub: 5, init: gbInitTTT, panel: 'gb-panel-ttt', label: 'Tic Tac Toe', labelKey: 'game.ttt', setupBtn: null });
             return list;
         }
 
@@ -7599,15 +7685,23 @@
             const next = order[idx + 1];
             gbState.subGame = next.sub;
             gbUpdateProgress(idx + 1);
+            // Bug #4: announce the next sub-game's name before its init runs.
+            // Card is the shared phase-announce-card; text is read from i18n
+            // (e.g. game.aq → "Adaptive Quiz" / "Moslashuvchan test"). The card
+            // is suppressed for empty sub-games because gbActiveGameOrder()
+            // already filters them out — we never reach here for an unauthored
+            // game (preserves the games-optional rule).
             gbTransition(currentPanelId, next.panel, () => {
-                next.init();
-                if (next.setupBtn) {
-                    next.setupBtn();
-                } else {
-                    btn.classList.remove('pulse','state-pill','state-line');
-                    btn.classList.add('state-line');
-                    if (btnText) btnText.style.opacity = '0';
-                }
+                playPhaseAnnouncement(next.labelKey || ('game.' + next.id), () => {
+                    next.init();
+                    if (next.setupBtn) {
+                        next.setupBtn();
+                    } else {
+                        btn.classList.remove('pulse','state-pill','state-line');
+                        btn.classList.add('state-line');
+                        if (btnText) btnText.style.opacity = '0';
+                    }
+                });
             });
         }
 
@@ -7686,6 +7780,24 @@
                 card.style.animation = '';
                 onDone && onDone();
             }, 1950);
+        }
+
+        // Bug #4: phase announcement card retrofit. Single shared card whose
+        // text comes from RUNTIME_LABELS so it speaks the homework's language.
+        // Used for sub-game starts inside Stage 5 plus the entries into
+        // Real-Life / Consolidation / Reflection. Boss has its own bespoke
+        // intro card and is intentionally skipped here. Existing static cards
+        // (gb-phase-center-card, reading-phase-center-card) keep their callers.
+        function playPhaseAnnouncement(labelKey, onDone) {
+            const card = document.getElementById('phase-announce-card');
+            if (!card) { onDone && onDone(); return; }
+            const textEl = document.getElementById('phase-announce-text');
+            if (textEl) {
+                const resolved = (typeof labelKey === 'string' && labelKey)
+                    ? RT(labelKey) : '';
+                textEl.textContent = resolved || labelKey || '';
+            }
+            playPhaseIntro('phase-announce-card', onDone);
         }
 
         function gbUpdateProgress(idx) {
@@ -9782,10 +9894,20 @@ Prezident ertaga hisobot kutmoqda.`,
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
 
-            btn.classList.remove('pulse', 'state-line', 'state-start');
-            btn.classList.add('state-pill');
-            setBtnText(RT('btn.start'));
-            btn.classList.add('pulse');
+            // Bug #4: hold the story content + button inert during the phase
+            // announcement card, then reveal both when the card fades out.
+            // Mirrors the showReadingScreen pattern.
+            if (story) { story.style.transition = 'none'; story.style.opacity = '0'; }
+            btn.classList.remove('pulse', 'state-line', 'state-start', 'state-pill');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
+            playPhaseAnnouncement('phase.real_life', () => {
+                if (story) { story.style.transition = 'opacity 300ms ease'; story.style.opacity = '1'; }
+                btn.classList.remove('state-line');
+                btn.classList.add('state-pill', 'pulse');
+                setBtnText(RT('btn.start'));
+                if (btnText) btnText.style.opacity = '';
+            });
         }
 
         function rlHandleAction() {
@@ -10369,31 +10491,50 @@ Prezident ertaga hisobot kutmoqda.`,
             return (div.textContent || div.innerText || '').trim();
         }
 
-        function readingBuildPages(rawPassage) {
+        function readingBuildPages(rawPassage, segments) {
+            // New segment-aware path: explicit segments[] from content_json.
+            // Each segment becomes two pages — the text segment, then its checkpoint.
+            // Total page count = 2 * segments.length, alternating text → question.
+            if (Array.isArray(segments) && segments.length) {
+                const pages = [];
+                segments.forEach((seg, i) => {
+                    const segText = (seg && (seg.text || seg.html)) ? String(seg.text || seg.html) : '';
+                    pages.push({ kind: 'text', html: segText });
+                    pages.push({ kind: 'question', cpIndex: i });
+                });
+                return pages;
+            }
+            // Legacy chunker fallback: passage as one HTML blob, checkpoints get
+            // geometrically attached to chunked pages at render time. Old fixtures
+            // (no segments[] in content_json) keep working unchanged.
             const raw = String(rawPassage || '').trim();
             if (!raw) return [];
+            let chunks;
             const paragraphMatches = raw.match(/<p\b[\s\S]*?<\/p>/gi);
-            if (paragraphMatches && paragraphMatches.length > 1) return paragraphMatches;
-
-            const text = readingTextFromHtml(raw) || raw.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, ' ');
-            const sentences = (text.match(/[^.!?]+[.!?]+(?:["')\]]+)?|[^.!?]+$/g) || [text])
-                .map(s => s.trim())
-                .filter(Boolean);
-            const chunks = [];
-            let current = [];
-            let length = 0;
-            sentences.forEach(sentence => {
-                const nextLength = length + sentence.length;
-                if (current.length && (current.length >= 2 || nextLength > 260)) {
-                    chunks.push(current.join(' '));
-                    current = [];
-                    length = 0;
-                }
-                current.push(sentence);
-                length += sentence.length;
-            });
-            if (current.length) chunks.push(current.join(' '));
-            return chunks.map(chunk => '<p>' + readingEscapeHtml(chunk) + '</p>');
+            if (paragraphMatches && paragraphMatches.length > 1) {
+                chunks = paragraphMatches;
+            } else {
+                const text = readingTextFromHtml(raw) || raw.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, ' ');
+                const sentences = (text.match(/[^.!?]+[.!?]+(?:["')\]]+)?|[^.!?]+$/g) || [text])
+                    .map(s => s.trim())
+                    .filter(Boolean);
+                chunks = [];
+                let current = [];
+                let length = 0;
+                sentences.forEach(sentence => {
+                    const nextLength = length + sentence.length;
+                    if (current.length && (current.length >= 2 || nextLength > 260)) {
+                        chunks.push(current.join(' '));
+                        current = [];
+                        length = 0;
+                    }
+                    current.push(sentence);
+                    length += sentence.length;
+                });
+                if (current.length) chunks.push(current.join(' '));
+                chunks = chunks.map(chunk => '<p>' + readingEscapeHtml(chunk) + '</p>');
+            }
+            return chunks.map(html => ({ kind: 'legacy', html }));
         }
 
         function readingCheckpointPage(index, totalPages, checkpointCount) {
@@ -10410,7 +10551,34 @@ Prezident ertaga hisobot kutmoqda.`,
             const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
             const done = readingIsComplete(checkpoints);
             const status = document.getElementById('reading-status');
-            if (status) status.textContent = done ? RT('reading.all_done') : RT('reading.must_answer');
+
+            // Lock-message scoping: "Davom etish uchun savolga javob bering" should
+            // appear ONLY on a question panel that's still unanswered. Text-only
+            // segment panels and the all-done state both hide it. Legacy chunker
+            // pages show it when the page has any unanswered geometric checkpoint.
+            let pageNeedsAnswer = false;
+            const currentPage = readingState.pages[readingState.page] || { kind: 'text' };
+            if (currentPage.kind === 'question' && typeof currentPage.cpIndex === 'number') {
+                pageNeedsAnswer = !readingState.answered[currentPage.cpIndex];
+            } else if (currentPage.kind === 'legacy') {
+                const idxs = checkpoints
+                    .map((_, i) => i)
+                    .filter(i => readingCheckpointPage(i, readingState.pages.length, checkpoints.length) === readingState.page);
+                pageNeedsAnswer = idxs.some(i => !readingState.answered[i]);
+            }
+            if (status) {
+                if (pageNeedsAnswer) {
+                    status.textContent = RT('reading.must_answer');
+                    status.style.display = '';
+                } else if (done) {
+                    status.textContent = RT('reading.all_done');
+                    status.style.display = '';
+                } else {
+                    status.textContent = '';
+                    status.style.display = 'none';
+                }
+            }
+
             if (!btn) return;
             btn.classList.remove('pulse', 'state-pill', 'state-line');
             if (done) {
@@ -10435,24 +10603,47 @@ Prezident ertaga hisobot kutmoqda.`,
             const progressEl = document.getElementById('reading-progress');
             const cpEl = document.getElementById('reading-checkpoints');
             const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
+            const segments = Array.isArray(READING.segments) ? READING.segments : null;
             const readingPassage = READING.passage || READING.text || '';
 
             if (titleEl) titleEl.textContent = (READING.title || RT('reading.title_default')).toUpperCase();
             if (!readingState.pages.length) {
-                readingState.pages = readingBuildPages(readingPassage);
-                if (!readingState.pages.length) readingState.pages = [''];
+                readingState.pages = readingBuildPages(readingPassage, segments);
+                if (!readingState.pages.length) readingState.pages = [{ kind: 'text', html: '' }];
             }
             if (readingState.page >= readingState.pages.length) readingState.page = readingState.pages.length - 1;
-            if (passageEl) passageEl.innerHTML = readingState.pages[readingState.page] || '';
+
+            const currentPage = readingState.pages[readingState.page] || { kind: 'text', html: '' };
+            const isQuestionPanel = currentPage.kind === 'question';
+
+            // Passage area: text + legacy show their html; question panels hide the
+            // passage block entirely so the checkpoint UI gets the full panel.
+            if (passageEl) {
+                if (isQuestionPanel) {
+                    passageEl.style.display = 'none';
+                    passageEl.innerHTML = '';
+                } else {
+                    passageEl.style.display = '';
+                    passageEl.innerHTML = currentPage.html || '';
+                }
+            }
             if (progressEl) {
                 progressEl.textContent = RT('reading.page_label') + ' ' + (readingState.page + 1) + ' / ' + readingState.pages.length;
             }
 
             if (cpEl) {
                 cpEl.innerHTML = '';
-                const pageCheckpointIndexes = checkpoints
-                    .map((_, i) => i)
-                    .filter(i => readingCheckpointPage(i, readingState.pages.length, checkpoints.length) === readingState.page);
+                let pageCheckpointIndexes = [];
+                if (isQuestionPanel && typeof currentPage.cpIndex === 'number') {
+                    // Segment-aware: question page renders exactly one checkpoint.
+                    pageCheckpointIndexes = [currentPage.cpIndex];
+                } else if (currentPage.kind === 'legacy') {
+                    // Legacy chunker: checkpoints geometrically attached to chunked pages.
+                    pageCheckpointIndexes = checkpoints
+                        .map((_, i) => i)
+                        .filter(i => readingCheckpointPage(i, readingState.pages.length, checkpoints.length) === readingState.page);
+                }
+                // Text-kind pages render no checkpoint at all (segment-aware path).
 
                 pageCheckpointIndexes.forEach((i) => {
                     const cp = checkpoints[i] || {};
@@ -10486,13 +10677,19 @@ Prezident ertaga hisobot kutmoqda.`,
                     checkBtn.textContent = RT('reading.check');
                     checkBtn.disabled = Boolean(readingState.answered[i]);
                     btnRow.appendChild(checkBtn);
-                    const nextBtn = document.createElement('button');
-                    nextBtn.type = 'button';
-                    nextBtn.className = 'screen-reading-btn is-primary';
-                    nextBtn.id = 'reading-cp-next-' + i;
-                    nextBtn.textContent = (readingState.page < readingState.pages.length - 1) ? RT('btn.next') : RT('btn.continue');
-                    nextBtn.style.display = readingState.answered[i] ? '' : 'none';
-                    btnRow.appendChild(nextBtn);
+                    // Per-checkpoint manual "Next" button — legacy chunker mode only.
+                    // Segment-aware mode (current question panel kind === 'question')
+                    // auto-advances after a correct answer; no manual next needed.
+                    let nextBtn = null;
+                    if (currentPage.kind === 'legacy') {
+                        nextBtn = document.createElement('button');
+                        nextBtn.type = 'button';
+                        nextBtn.className = 'screen-reading-btn is-primary';
+                        nextBtn.id = 'reading-cp-next-' + i;
+                        nextBtn.textContent = (readingState.page < readingState.pages.length - 1) ? RT('btn.next') : RT('btn.continue');
+                        nextBtn.style.display = readingState.answered[i] ? '' : 'none';
+                        btnRow.appendChild(nextBtn);
+                    }
                     block.appendChild(btnRow);
 
                     const fb = document.createElement('div');
@@ -10588,8 +10785,23 @@ Prezident ertaga hisobot kutmoqda.`,
                         readingState.answers[i] = studentAnswer;
                         readingState.results[i] = Boolean(isCorrect);
                         readingState.feedback[i] = fb.innerHTML;
-                        nextBtn.style.display = '';
+                        if (nextBtn) nextBtn.style.display = '';
                         updateReadingContinueState();
+
+                        // Segment-aware mode: auto-advance after a correct answer
+                        // so the student doesn't have to hunt for a Next button.
+                        // 1100ms beat = enough to read the feedback line, not so
+                        // long it feels stalled. Wrong answers stay on the panel
+                        // (the input + feedback already block the lock-message).
+                        if (isCorrect && isQuestionPanel) {
+                            setTimeout(() => {
+                                if (readingState.page < readingState.pages.length - 1) {
+                                    readingGoToPage(readingState.page + 1);
+                                } else if (readingIsComplete(checkpoints) && typeof readingState.onContinue === 'function') {
+                                    readingState.onContinue();
+                                }
+                            }, 1100);
+                        }
 
                         if (window.__sessionLog) {
                             const entry = {
@@ -10604,37 +10816,44 @@ Prezident ertaga hisobot kutmoqda.`,
                         }
                     });
 
-                    nextBtn.addEventListener('click', () => {
-                        if (!readingState.answered[i]) return;
-                        if (readingState.page < readingState.pages.length - 1) {
-                            readingGoToPage(readingState.page + 1);
-                        } else if (readingIsComplete(checkpoints) && typeof readingState.onContinue === 'function') {
-                            readingState.onContinue();
-                        }
-                    });
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            if (!readingState.answered[i]) return;
+                            if (readingState.page < readingState.pages.length - 1) {
+                                readingGoToPage(readingState.page + 1);
+                            } else if (readingIsComplete(checkpoints) && typeof readingState.onContinue === 'function') {
+                                readingState.onContinue();
+                            }
+                        });
+                    }
                 });
 
-                const nav = document.createElement('div');
-                nav.className = 'screen-reading-btn-row';
-                if (readingState.page > 0) {
-                    const prevBtn = document.createElement('button');
-                    prevBtn.type = 'button';
-                    prevBtn.className = 'screen-reading-btn';
-                    prevBtn.textContent = 'Back';
-                    prevBtn.addEventListener('click', () => readingGoToPage(readingState.page - 1));
-                    nav.appendChild(prevBtn);
+                // Bottom prev/next page nav — legacy chunker mode only.
+                // Segment-aware mode uses swipe-left for text panels and
+                // auto-advance on correct for question panels.
+                if (currentPage.kind === 'legacy') {
+                    const nav = document.createElement('div');
+                    nav.className = 'screen-reading-btn-row';
+                    if (readingState.page > 0) {
+                        const prevBtn = document.createElement('button');
+                        prevBtn.type = 'button';
+                        prevBtn.className = 'screen-reading-btn';
+                        prevBtn.textContent = 'Back';
+                        prevBtn.addEventListener('click', () => readingGoToPage(readingState.page - 1));
+                        nav.appendChild(prevBtn);
+                    }
+                    if (readingState.page < readingState.pages.length - 1) {
+                        const hasBlockingCheckpoint = pageCheckpointIndexes.some(i => !readingState.answered[i]);
+                        const pageNextBtn = document.createElement('button');
+                        pageNextBtn.type = 'button';
+                        pageNextBtn.className = 'screen-reading-btn is-primary';
+                        pageNextBtn.textContent = RT('btn.next');
+                        pageNextBtn.disabled = hasBlockingCheckpoint;
+                        pageNextBtn.addEventListener('click', () => readingGoToPage(readingState.page + 1));
+                        nav.appendChild(pageNextBtn);
+                    }
+                    if (nav.children.length) cpEl.appendChild(nav);
                 }
-                if (readingState.page < readingState.pages.length - 1) {
-                    const hasBlockingCheckpoint = pageCheckpointIndexes.some(i => !readingState.answered[i]);
-                    const pageNextBtn = document.createElement('button');
-                    pageNextBtn.type = 'button';
-                    pageNextBtn.className = 'screen-reading-btn is-primary';
-                    pageNextBtn.textContent = RT('btn.next');
-                    pageNextBtn.disabled = hasBlockingCheckpoint;
-                    pageNextBtn.addEventListener('click', () => readingGoToPage(readingState.page + 1));
-                    nav.appendChild(pageNextBtn);
-                }
-                if (nav.children.length) cpEl.appendChild(nav);
             }
             updateReadingContinueState();
         }
@@ -10711,13 +10930,24 @@ Prezident ertaga hisobot kutmoqda.`,
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sr = document.getElementById('screen-reading');
             if (sr) sr.classList.add('active');
-            const finishReading = () => {
+            const finishReading = (force) => {
                 const checkpoints = Array.isArray(READING.checkpoints) ? READING.checkpoints : [];
-                if (!readingIsComplete(checkpoints)) {
+                // `force` lets the edge-swipe phase-skip gesture exit the reading
+                // phase even when checkpoints are unanswered. The within-phase
+                // continue button + auto-advance both call without `force` so the
+                // checkpoint lock still gates normal navigation.
+                if (!force && !readingIsComplete(checkpoints)) {
                     updateReadingContinueState();
                     const firstMissing = checkpoints.findIndex((_, i) => !readingState.answered[i]);
                     if (firstMissing >= 0) {
-                        readingGoToPage(readingCheckpointPage(firstMissing, readingState.pages.length, checkpoints.length));
+                        // Segment-aware: jump to that checkpoint's question panel.
+                        // Legacy: fall back to geometric checkpoint→page mapping.
+                        const targetPage = readingState.pages.findIndex(p =>
+                            p && p.kind === 'question' && p.cpIndex === firstMissing
+                        );
+                        readingGoToPage(targetPage >= 0
+                            ? targetPage
+                            : readingCheckpointPage(firstMissing, readingState.pages.length, checkpoints.length));
                     }
                     return;
                 }
@@ -10748,15 +10978,24 @@ Prezident ertaga hisobot kutmoqda.`,
             const sc = document.getElementById('screen-consolidation');
             if (sc) sc.classList.add('active');
             renderConsolidation();
-            btn.classList.remove('pulse','state-line');
-            btn.classList.add('state-pill','pulse');
-            setBtnText(RT('btn.continue'));
+            // Bug #4: hold content + button inert during phase announcement.
+            if (sc) { sc.style.transition = 'none'; sc.style.opacity = '0'; }
+            btn.classList.remove('pulse', 'state-pill', 'state-line');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
             const handler = () => {
                 btn.removeEventListener('click', handler, true);
                 if (sc) sc.classList.remove('active');
                 onContinue();
             };
-            btn.addEventListener('click', handler, true);
+            playPhaseAnnouncement('phase.consolidation', () => {
+                if (sc) { sc.style.transition = 'opacity 300ms ease'; sc.style.opacity = '1'; }
+                btn.classList.remove('state-line');
+                btn.classList.add('state-pill', 'pulse');
+                setBtnText(RT('btn.continue'));
+                if (btnText) btnText.style.opacity = '';
+                btn.addEventListener('click', handler, true);
+            });
         }
 
         function showReflectionScreen(onContinue) {
@@ -10766,15 +11005,24 @@ Prezident ertaga hisobot kutmoqda.`,
             const sr = document.getElementById('screen-reflection');
             if (sr) sr.classList.add('active');
             renderReflection();
-            btn.classList.remove('pulse','state-line');
-            btn.classList.add('state-pill','pulse');
-            setBtnText(RT('btn.finish'));
+            // Bug #4: hold content + button inert during phase announcement.
+            if (sr) { sr.style.transition = 'none'; sr.style.opacity = '0'; }
+            btn.classList.remove('pulse', 'state-pill', 'state-line');
+            btn.classList.add('state-line');
+            if (btnText) btnText.style.opacity = '0';
             const handler = () => {
                 btn.removeEventListener('click', handler, true);
                 if (sr) sr.classList.remove('active');
                 onContinue();
             };
-            btn.addEventListener('click', handler, true);
+            playPhaseAnnouncement('phase.reflection', () => {
+                if (sr) { sr.style.transition = 'opacity 300ms ease'; sr.style.opacity = '1'; }
+                btn.classList.remove('state-line');
+                btn.classList.add('state-pill', 'pulse');
+                setBtnText(RT('btn.finish'));
+                if (btnText) btnText.style.opacity = '';
+                btn.addEventListener('click', handler, true);
+            });
         }
 
         /* ── Stage 9 · AMR Results Scorecard ──────────────────────────

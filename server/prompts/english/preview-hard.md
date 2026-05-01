@@ -30,20 +30,24 @@ Never use a tense banned at the detected level — not even in examples.
 
 ## Panel 1: Summary
 
-Reframe the unit as something useful the student can DO, not a definition to memorize.
+Recap what THIS unit covers. A short, accurate inventory of the chapter's content — like the back-cover summary of the unit, written in plain student-English.
 
-- 2 big ideas in plain student-English. No restatement of the book title.
-- Optional 1-line attributed quote (≤125 chars) — prefer Navoiy, Ibn Sino, Malala, Obama, Rowling.
-- No jargon, no fragments.
+- Cover every distinct content area the unit teaches: vocabulary cluster(s), grammar pattern(s) and their exceptions, pronunciation/spelling/usage notes, the reading text, and the writing or speaking task. If the unit has 3 things, list 3 things; do not undercount to fit a "two ideas" frame.
+- Past- or present-tense recap of unit content ("This unit teaches X, introduces Y, and gives a reading/writing task on Z"). NOT future-tense outcome promises ("you will be able to…", "by the end you can…"). Outcome framing is what Why-This-Matters (Panel 8) is for, not Panel 1.
+- No restatement of the book title. No jargon. No fragments. Plain prose + at most one short bullet list of the unit's content areas.
+- Optional 1-line attributed quote (≤125 chars) — prefer Navoiy, Ibn Sino, Malala, Obama, Rowling. Attribution must be verifiable; do not invent or paraphrase a quote into someone's name.
 
 ## Panel 2: Better Explanation
 
-The hidden rule or trick the textbook shows but never explains.
+The decompiler. Two jobs, both required:
 
-- One explicit mental model OR one algebraic grammar formula (e.g., `(Wh-) + did + subject + base verb + ?`)
-- Mandatory UZ↔EN bridge: map the English structure to its Uzbek grammatical equivalent with a labelled side-by-side
-- Show WHY the form exists — the logic behind it, not just the shape
-- Stress + IPA for any 2+-syllable target word with non-initial stress or known UZ/RU mis-stress (B1+ only)
+1. **Simplify what the textbook overcomplicates.** Where the textbook lists 4 spelling rules, 3 exceptions, and a stress note across separate boxes, compress into one mental model or one algebraic formula (e.g., `(Wh-) + did + subject + base verb + ?`). The student should leave Panel 2 holding ONE compact picture of how the rule works, not five disconnected fragments.
+2. **Explain what the textbook leaves unsaid.** Surface the WHY behind the form — the logic the textbook shows but never explains, the UZ↔EN structural parallel, the stress trap, the false friend, the register note. If the textbook just gives examples and expects the student to infer the rule, your job is to state the rule explicitly.
+
+- One explicit mental model OR one algebraic grammar formula required.
+- Mandatory UZ↔EN bridge: map the English structure to its Uzbek grammatical equivalent with a labelled side-by-side.
+- Stress + IPA for any 2+-syllable target word with non-initial stress or known UZ/RU mis-stress (B1+ only).
+- The simplification must shorten, not just rephrase. If your Panel 2 is longer than the textbook's own explanation of the same rule, you are not simplifying.
 
 ## Panel 3: Examples
 
