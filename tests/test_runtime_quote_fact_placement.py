@@ -230,3 +230,37 @@ def test_fact_default_label_is_bilarmidingiz():
     assert "'Bilarmidingiz?'" in body, (
         "renderBreakQuote must keep 'Bilarmidingiz?' as the fact default label"
     )
+
+
+# ── Apple-glass port (Image #11 reference) ────────────────────────────
+
+
+def test_quote_card_drops_linen_repeating_gradient():
+    """PR #128's repeating-linear-gradient linen layer was removed (user-flagged "weird inner light")."""
+    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    import re
+    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    assert "repeating-linear-gradient" not in block, (
+        "quote-card no longer ships the linen-texture 3rd layer — keep this assertion"
+    )
+
+
+def test_quote_card_uses_premium_radius():
+    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    import re
+    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    assert "border-radius: 34px" in block
+
+
+def test_quote_card_uses_explicit_blur_46():
+    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    import re
+    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    assert "blur(46px)" in block
+
+
+def test_quote_text_line_has_premium_letter_spacing():
+    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    import re
+    block = re.search(r"\.quote-card \.quote-text-line\s*\{[^}]*\}", src, re.S).group(0)
+    assert "letter-spacing" in block
