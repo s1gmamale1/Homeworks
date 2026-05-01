@@ -74,9 +74,13 @@ async def search_homeworks(
 
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
+    # Include content_json so the route handler can compute real per-card
+    # progress (the dashboard bar's denominator). content_json is dropped
+    # from the response payload before returning — the dashboard list
+    # doesn't need the full blob.
     cols = (
         "id, title, subject, grade, mode, family, language, status, "
-        "created_at, updated_at, deleted_at"
+        "content_json, created_at, updated_at, deleted_at"
     )
     count_sql = f"SELECT COUNT(*) FROM homeworks {where}"
     list_sql = (

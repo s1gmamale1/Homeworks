@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any
 
 from server import db
 from server.schemas.content import ContentJSON
+from server.services.progress import compute_progress
 from server.services.routing import SUBJECTS, ALWAYS_HARD, SUBJECT_GRADES, SUBJECT_TO_FAMILY
 
 router = APIRouter(prefix="/homeworks", tags=["homework"])
@@ -95,6 +96,14 @@ async def list_homeworks(
         limit=limit,
         offset=offset,
     )
+    # Enrich each item with a real `progress` value computed from how many
+    # canonical content sections are filled. Strip content_json from the
+    # response — the list endpoint only needs the metadata, and shipping
+    # the full blob per row would balloon the dashboard payload.
+    items = result.get("items", [])
+    for item in items:
+        item["progress"] = compute_progress(item)
+        item.pop("content_json", None)
     return result
 
 @router.post("")
