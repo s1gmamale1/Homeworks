@@ -5997,48 +5997,174 @@
         }
 
         // ── PHASE PROGRESS BAR ──────────────────────────────────
-        // Phases (dot index): 1=Preview, 2=Flashcards, 3=MemorySprint, 4=GameBreaks,
-        // 5=RealLife, 6=Boss, 7=Done.
+        // Dots (1..7) map to phases as before:
+        //   1 = Preview (gate quote + reading panels)
+        //   2 = Flashcards
+        //   3 = Memory Sprint
+        //   4 = Game Breaks (incl. Adaptive Quiz & the Reading interstitial)
+        //   5 = Real Life
+        //   6 = Boss (incl. Consolidation interstitial)
+        //   7 = Done (Reflection + Results)
         //
-        // Half-step convention: integer stages are the "main" stages of each phase;
-        // .5/.7 stages are short interstitial screens (loading, hand-off, or the
-        // Wave-2 reading/consolidation/reflection cards) that belong to the same
-        // phase as their preceding integer stage. They map to the same dot OR to
-        // the dot of the phase the user is transitioning into — pick whichever
-        // matches author intent.
+        // PROGRESS IS DRIVEN BY REAL COMPLETION, NOT RAW state.stage.
         //
-        // Wave 2 mappings:
-        //   4.7 = Reading      (between MS-end 4.5 and Game Breaks 5) → dot 4 (GameBreaks)
-        //   6.5 = Consolidation (between Real-Life 6 and Boss 7)        → dot 6 (Boss)
-        //   7.7 = Reflection    (after Boss-done 7.5 before finish)     → dot 7 (Done)
-        const phaseMap = {
-            0:0, 1:1, 2:1,
-            2.5:2, 3:2, 3.5:3,
-            4:3, 4.5:3,
-            4.7:4,            // Wave 2: Reading — entering GameBreaks
-            5:4,
-            6:5,
-            6.5:6,            // Wave 2: Consolidation — entering Boss
-            7:6,
-            7.5:7,
-            7.7:7             // Wave 2: Reflection — Done dot
+        // Each phase carries {viewed, required, complete}. `viewed` increments
+        // when the student does an action that counts toward this phase
+        // (advanced a panel, answered a sprint question, finished a sub-game,
+        // answered a boss question, etc.). `complete` is the authoritative
+        // "phase fully done" flag — it is set ONLY when the runtime crosses
+        // the phase's terminal action (last panel viewed, last flashcard
+        // done, sprint finished, results shown).
+        //
+        // updateProgress() reads completionState — not state.stage — to set
+        // each segment's done/active class and inline width. The active dot
+        // partial-fills proportionally (8% floor visible-but-just-started,
+        // 92% ceiling so it can never read as "done" until `complete` flips).
+        const _phaseDotById = {
+            preview: 1, flashcards: 2, sprint: 3, gameBreaks: 4,
+            realLife: 5, boss: 6, done: 7,
         };
-        function updatePhaseProgress() {
+        // Stage → "currently inside this phase" so the active dot reflects
+        // where the student is right now. Half-step interstitials map to the
+        // phase they belong to (Reading→gameBreaks, Consolidation→boss,
+        // Reflection→done). Stage 8 = results screen → all phases done.
+        const _phaseIdByStage = {
+            0: null, 1: 'preview', 2: 'preview',
+            2.5: 'flashcards', 3: 'flashcards',
+            3.5: 'sprint', 4: 'sprint', 4.5: 'sprint',
+            4.7: 'gameBreaks', 5: 'gameBreaks',
+            6: 'realLife',
+            6.5: 'boss', 7: 'boss',
+            7.5: 'done', 7.7: 'done', 8: 'done',
+        };
+        // Back-compat: external code (Wave 2 comments, screenshots) may
+        // reference phaseMap. Keep it as a derived view so anything reading
+        // it gets the canonical dot for a given stage.
+        const phaseMap = (function buildPhaseMap() {
+            const out = {};
+            Object.keys(_phaseIdByStage).forEach(stage => {
+                const id = _phaseIdByStage[stage];
+                out[stage] = id ? (_phaseDotById[id] || 0) : 0;
+            });
+            return out;
+        })();
+
+        const completionState = {
+            preview:    { viewed: 0, required: 1, complete: false },
+            flashcards: { viewed: 0, required: 1, complete: false },
+            sprint:     { viewed: 0, required: 1, complete: false },
+            gameBreaks: { viewed: 0, required: 1, complete: false },
+            realLife:   { viewed: 0, required: 1, complete: false },
+            boss:       { viewed: 0, required: 1, complete: false },
+            done:       { viewed: 0, required: 1, complete: false },
+        };
+
+        function setPhaseRequired(id, n) {
+            const ph = completionState[id];
+            if (!ph) return;
+            ph.required = Math.max(1, parseInt(n, 10) || 1);
+            if (ph.viewed > ph.required) ph.viewed = ph.required;
+            updateProgress();
+        }
+
+        function bumpPhase(id, by) {
+            const ph = completionState[id];
+            if (!ph) return;
+            const inc = (typeof by === 'number') ? by : 1;
+            ph.viewed = Math.min(ph.required, ph.viewed + inc);
+            updateProgress();
+        }
+
+        function setPhaseProgress(id, viewed, required) {
+            const ph = completionState[id];
+            if (!ph) return;
+            if (typeof required === 'number' && required > 0) {
+                ph.required = required;
+            }
+            ph.viewed = Math.max(0, Math.min(ph.required, parseInt(viewed, 10) || 0));
+            updateProgress();
+        }
+
+        function completePhase(id) {
+            const ph = completionState[id];
+            if (!ph) return;
+            ph.viewed = ph.required;
+            ph.complete = true;
+            updateProgress();
+        }
+
+        function completeAllPhases() {
+            Object.keys(completionState).forEach(id => {
+                const ph = completionState[id];
+                ph.viewed = ph.required;
+                ph.complete = true;
+            });
+            updateProgress();
+        }
+
+        function _currentPhaseIdForStage(stage) {
+            // Use Object.prototype.hasOwnProperty in case stage is a string key.
+            if (Object.prototype.hasOwnProperty.call(_phaseIdByStage, stage)) {
+                return _phaseIdByStage[stage];
+            }
+            // Unknown stage: fall back to numeric-nearest match.
+            return null;
+        }
+
+        function updateProgress() {
             const bar = document.getElementById('phase-progress');
             if (!bar) return;
-            const active = phaseMap[state.stage] || 0;
-            bar.classList.toggle('visible', active > 0);
+
+            const curId = _currentPhaseIdForStage(state.stage);
+            const curDot = curId ? (_phaseDotById[curId] || 0) : 0;
+
+            bar.classList.toggle('visible', curDot > 0);
             // Reflect the active phase index in the progressbar landmark
             // so AT users hear "phase 4 of 7" as the runtime advances.
-            bar.setAttribute('aria-valuenow', String(active));
+            bar.setAttribute('aria-valuenow', String(curDot));
+
             for (let i = 1; i <= 7; i++) {
                 const seg = document.getElementById('ps-' + i);
                 if (!seg) continue;
                 seg.classList.remove('done', 'active');
-                if (i < active) seg.classList.add('done');
-                else if (i === active) seg.classList.add('active');
+                const fill = seg.querySelector('.phase-seg-fill');
+
+                // Find the phase id that owns this dot.
+                const owner = Object.keys(_phaseDotById).find(k => _phaseDotById[k] === i);
+                const ph = owner ? completionState[owner] : null;
+
+                if (ph && ph.complete) {
+                    seg.classList.add('done');
+                    if (fill) fill.style.width = '100%';
+                } else if (i === curDot) {
+                    seg.classList.add('active');
+                    if (fill) {
+                        const ratio = ph
+                            ? Math.max(0, Math.min(1, ph.viewed / Math.max(1, ph.required)))
+                            : 0;
+                        // 8% floor → "started, not yet done"; 92% ceiling →
+                        // never reads as full until `complete` flips. Smooth
+                        // partial fill in between mirrors real progress.
+                        const pct = (8 + ratio * 84).toFixed(2);
+                        fill.style.width = pct + '%';
+                    }
+                } else if (i < curDot) {
+                    // Past dot but not explicitly marked complete (e.g. user
+                    // skipped via edge-swipe). Treat as done so the bar reads
+                    // monotonically forward — but consult the live skip
+                    // semantics: a skipped phase whose `viewed > 0` is still
+                    // "done" from the bar's perspective.
+                    seg.classList.add('done');
+                    if (fill) fill.style.width = '100%';
+                } else {
+                    // Future dot — empty.
+                    if (fill) fill.style.width = '0%';
+                }
             }
         }
+
+        // Back-compat shim: existing call sites still call updatePhaseProgress().
+        function updatePhaseProgress() { updateProgress(); }
 
         // ── BUTTON TEXT CROSS-FADE ───────────────────────────────
         function setBtnText(text) {
@@ -6220,6 +6346,13 @@
             setTimeout(() => {
                 document.getElementById('screen-2').classList.add('active');
                 setStage(2);
+                // Preview phase: 1 unit for the gate-quote continue (the student
+                // just pressed it to land here), plus 1 per upcoming panel.
+                // The panel array is fully built by this point.
+                const panelCount = (typeof PANELS !== 'undefined' && Array.isArray(PANELS))
+                    ? PANELS.length : 1;
+                setPhaseRequired('preview', 1 + panelCount);
+                bumpPhase('preview', 1);  // gate continue → real action just happened
                 renderPanel();
                 state.isAnimating = false;
             }, 500);
@@ -6363,6 +6496,8 @@
 
         function showBreakScreen() {
             state.isAnimating = true;
+            // Preview phase fully done — student finished all reading panels.
+            completePhase('preview');
             renderBreakQuote(1);
             const content = document.getElementById('panel-content');
             if (content) {
@@ -6404,6 +6539,12 @@
                 state.cardIndex = 0;
                 state.cardFlipped = false;
                 state.hintShown = false;
+                // Real completion: 1 unit per flashcard the student steps to.
+                // First card is "viewed" by virtue of being on-screen.
+                const fcCount = (typeof FLASHCARDS !== 'undefined' && Array.isArray(FLASHCARDS))
+                    ? FLASHCARDS.length : 1;
+                setPhaseRequired('flashcards', fcCount);
+                bumpPhase('flashcards', 1);  // student is looking at card 1
                 renderFlashcard(false);
                 document.getElementById('fc-inner').addEventListener('click', handleCardTap);
                 setupFlashcardCarouselControls();
@@ -6666,6 +6807,10 @@
 
             setTimeout(() => {
                 state.cardIndex = newIdx;
+                // Each card the student moves to counts toward flashcards
+                // completion. The progress model caps `viewed` at `required`,
+                // so wrap-around browsing won't push past 100%.
+                bumpPhase('flashcards', 1);
                 const showYakunlash = (newIdx === FLASHCARDS.length - 1);
                 renderFlashcard(showYakunlash);
 
@@ -6697,6 +6842,8 @@
         function endStage3() {
             if (state.isAnimating) return;
             state.isAnimating = true;
+            // Flashcards phase done — student finished or chose Yakunlash.
+            completePhase('flashcards');
             renderBreakQuote(2);
             const fcInner = document.getElementById('fc-inner');
             if (fcInner) {
@@ -6845,6 +6992,10 @@
             msState.index = 0;
             msState.score = 0;
             msState.isAnimating = true;
+            // Real completion: 1 unit per sprint question answered.
+            const msTotal = (typeof MS_QUESTIONS !== 'undefined' && Array.isArray(MS_QUESTIONS))
+                ? MS_QUESTIONS.length : 1;
+            setPhaseRequired('sprint', msTotal);
 
             const screenMs = document.getElementById('screen-ms');
             if (screenMs) screenMs.classList.add('active');
@@ -7039,6 +7190,8 @@
             setTimeout(() => {
                 if (qBox) qBox.classList.remove('out');
                 msState.index++;
+                // Real student action: just answered a sprint question.
+                bumpPhase('sprint', 1);
                 if (msState.index >= MS_QUESTIONS.length) {
                     msFinishSprint();
                     return;
@@ -7050,6 +7203,8 @@
         }
 
         function msFinishSprint() {
+            // Sprint phase done — student answered (or skipped to) the end.
+            completePhase('sprint');
             const quizShell = document.getElementById('ms-quiz-shell');
             const resultPanel = document.getElementById('ms-result-panel');
             if (quizShell) quizShell.classList.remove('visible');
@@ -7138,6 +7293,8 @@
             setTimeout(() => {
                 state.panelIndex++;
                 state.pageIndex = 0;
+                // Real student action: advanced to next preview panel.
+                bumpPhase('preview', 1);
                 renderPanel();
                 if (content) {
                     content.style.transition = 'none';
@@ -7314,6 +7471,7 @@
             const order = gbActiveGameOrder();
             if (order.length === 0) {
                 // No games authored anywhere — skip Stage 5 entirely.
+                // Treat as no-op for completion; nothing to do here.
                 gbExitToStage6();
                 return;
             }
@@ -7323,6 +7481,10 @@
             if (btnText) btnText.style.opacity = '0';
             document.querySelectorAll('.screen.active').forEach(s => s.classList.remove('active'));
             setStage(5);
+            // Real completion: 1 unit per sub-game (Adaptive Quiz, Memory
+            // Match, Pattern Lock, Math Brawl, …). gbUpdateProgress(idx)
+            // below mirrors the live index into completionState.
+            setPhaseRequired('gameBreaks', order.length);
             const first = order[0];
             gbState.subGame = first.sub;
             const firstPanel = document.getElementById(first.panel);
@@ -7403,6 +7565,11 @@
                     else if (i - 1 === idx) d.classList.add('active');
                 }
             }
+            // Mirror sub-game index into the top-level completion model so the
+            // dot-4 (Game Breaks) segment partial-fills as the student clears
+            // Adaptive Quiz → Memory Match → Pattern Lock → Math Brawl.
+            // `idx` is 0-based; treat "currently on game N" as N-prior games done.
+            setPhaseProgress('gameBreaks', Math.max(0, idx), total > 0 ? total : 1);
         }
 
         function gbSetButtonForAQ() {
@@ -8801,6 +8968,9 @@
         function gbExitToStage6() {
             if (state.isAnimating) return;
             state.isAnimating = true;
+            // Game Breaks phase done — student cleared (or skipped past) all
+            // sub-games. Reading interstitial counts under this dot too.
+            completePhase('gameBreaks');
             btn.classList.remove('pulse','state-pill');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
@@ -9352,6 +9522,12 @@ Prezident ertaga hisobot kutmoqda.`,
             state.isAnimating = true;
             const idx = stage6State.qIndex;
             const total = (RL_SCENARIO.questions || []).length || 6;
+            // Real student action: just submitted answer for question `idx`
+            // (the only path into rlAdvanceFromQuestion is after submitted[idx]
+            // is set true). Mirror submitted-count into completion progress so
+            // the dot 5 segment partial-fills with each answer.
+            const answeredCount = stage6State.submitted.filter(Boolean).length;
+            setPhaseProgress('realLife', answeredCount, total);
 
             if (idx < total - 1) {
                 const curEl = document.getElementById('rl-q' + (idx + 1));
@@ -9405,6 +9581,8 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function rlShowEndPlaceholder() {
             state.isAnimating = true;
+            // Real Life phase done — student finished the scenario or skipped.
+            completePhase('realLife');
             const screen6 = document.getElementById('screen-6');
             if (screen6) { screen6.style.transition = 'opacity 400ms ease'; screen6.style.opacity = '0'; }
             btn.classList.remove('pulse', 'state-pill');
@@ -9424,6 +9602,10 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function startStage6() {
             setStage(6);
+            // Real Life is a fixed 6-question scenario in this template; the
+            // submitted[] array is what the runtime fills as the student
+            // answers each one. Mirror that into completionState.
+            setPhaseRequired('realLife', 6);
             const allScreens = document.querySelectorAll('.screen');
             allScreens.forEach(s => s.classList.remove('active'));
 
@@ -9615,6 +9797,12 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function startFinalBoss() {
             setStage(7);
+            // Boss phase: 1 unit per boss question. Required is set from the
+            // (possibly reordered) BOSS_QUESTIONS array, which initBossPlan
+            // has already finalised by this point.
+            const bossTotal = (typeof BOSS_QUESTIONS !== 'undefined' && Array.isArray(BOSS_QUESTIONS))
+                ? BOSS_QUESTIONS.length : 1;
+            setPhaseRequired('boss', bossTotal);
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sb = document.getElementById('screen-boss');
             if (sb) sb.classList.add('active');
@@ -9755,6 +9943,10 @@ Prezident ertaga hisobot kutmoqda.`,
 
             if (bossState.answered) {
                 bossState.qIndex++;
+                // Real student action: just resolved a boss question and is
+                // moving on. Mirror qIndex into completion progress so the
+                // dot 6 segment partial-fills as the boss progresses.
+                setPhaseProgress('boss', bossState.qIndex, BOSS_QUESTIONS.length);
                 if (bossState.qIndex >= BOSS_QUESTIONS.length) { bossEnd(false); return; }
                 bossRenderQuestion(bossState.qIndex);
                 setBtnText(RT('btn.check_answer'));
@@ -9903,6 +10095,8 @@ Prezident ertaga hisobot kutmoqda.`,
             // their score; the conditional Tugatish / Qayta bajarish button
             // at the bottom of the scorecard owns the next-step decision.
             bossState.done = true;
+            // Boss phase fully done — student finished or HP hit 0.
+            completePhase('boss');
             const battle = document.getElementById('boss-battle');
             if (battle) { battle.style.transition = 'opacity 400ms ease'; battle.style.opacity = '0'; }
 
@@ -10618,6 +10812,11 @@ Prezident ertaga hisobot kutmoqda.`,
             const sr = document.getElementById('screen-results');
             if (sr) sr.classList.add('active');
             setStage(8);
+            // Results phase = 100%. Mark every phase complete in case some
+            // earlier phase was bypassed (e.g. fixture had no Reading content
+            // and the runtime auto-skipped that interstitial without crossing
+            // its action). The bar now reads as fully done.
+            completeAllPhases();
 
             // Fetch the canonical scorecard from /api/grading/aggregate.
             const log = window.__sessionLog || [];
