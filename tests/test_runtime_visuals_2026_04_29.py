@@ -24,7 +24,7 @@ Coverage:
      replaced with the var fallback.
 
 3. Color-only correctness affordances
-   - boss-feedback / gb-aq-feedback / gb-mb-feedback / ms-option-btn
+   - boss-feedback / aq-result-box / gb-mb-feedback / ms-option-btn
      all carry a glyph (✓ / ✗ / ◐) via ::before|::after CSS so a
      red-green colorblind student can distinguish correct from wrong.
 
@@ -183,7 +183,7 @@ def test_correct_wrong_have_glyph_pseudo_elements():
     pairs = [
         ("ms-option-btn", "::after"),
         ("boss-feedback", "::before"),
-        ("gb-aq-feedback", "::before"),
+        ("aq-result-box", "::before"),
         ("gb-mb-feedback", "::before"),
         ("gb-mb-label", "::after"),
         ("gb-tm-tile", "::after"),
@@ -206,7 +206,7 @@ def test_feedback_containers_are_live_regions():
     """boss/AQ/MB feedback elements must be aria-live regions so the
     text announcement reaches assistive tech."""
     html = _runtime()
-    for el_id in ("boss-feedback", "gb-aq-feedback",
+    for el_id in ("boss-feedback", "aq-result-box",
                   "gb-mb-id-feedback", "gb-mb-solve-feedback"):
         m = re.search(rf'id=["\']{el_id}["\'][^>]*>', html)
         assert m, f"missing element #{el_id}"

@@ -1706,113 +1706,345 @@
             margin-bottom: 10px;
             flex-shrink: 0;
         }
-        /* ── ADAPTIVE QUIZ ── */
-        .gb-aq-prompt {
+        /* ── ADAPTIVE QUIZ (Apple-glass redesign) ──
+           Mobile-first glass cards: sticky topbar + question card with
+           decorative blob + answer card with conditional upload-gate +
+           result-box. Reuses runtime tokens (--accent, --surface,
+           --surface-border, --glass-blur, --shadow-card, --text,
+           --text-muted, --accent-glow). The runtime's global action
+           button (#gb-btn) is the only submit affordance — we do NOT
+           introduce a second .submit/.dock here. */
+        .aq-stack {
+            display: grid;
+            gap: 12px;
+        }
+        .aq-topbar {
+            position: sticky;
+            top: 6px;
+            z-index: 5;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
             background: var(--surface);
+            border: 1px solid var(--surface-border);
+            box-shadow: var(--shadow-card);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
-            border-radius: 22px;
-            border: 1px solid var(--surface-border);
-            padding: 20px 18px;
-            margin-bottom: 14px;
-            box-shadow: var(--shadow-card);
-            animation: card-border-glow 4s infinite alternate ease-in-out;
         }
-        .gb-aq-tier {
+        .aq-phase, .aq-count {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.58);
+            border: 1px solid rgba(20,28,44,0.07);
+            min-width: 0;
+        }
+        .aq-phase strong, .aq-count strong {
             font-size: 11px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 0.025em;
             text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .gb-aq-tier.easy { color: #5bb85d; }
-        .gb-aq-tier.medium { color: #f0ad4e; }
-        .gb-aq-tier.hard { color: #d9534f; }
-        .gb-aq-question {
-            font-size: 17px;
-            font-weight: 600;
             color: var(--text);
-            line-height: 1.4;
-            font-family: "SF Mono","SFMono-Regular",Menlo,monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .gb-aq-tags {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 8px;
-        }
-        .gb-aq-input-row {
+        .aq-dots {
             display: flex;
+            gap: 5px;
+        }
+        .aq-dots span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(0,113,227,0.22);
+        }
+        .aq-dots .active {
+            background: var(--accent);
+            box-shadow: 0 0 0 5px var(--accent-glow);
+        }
+        .aq-question-card,
+        .aq-answer-card {
+            position: relative;
+            border-radius: 28px;
+            padding: 18px;
+            overflow: hidden;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            box-shadow: var(--shadow-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+        }
+        .aq-question-card:after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            right: -70px;
+            bottom: -90px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow), transparent 72%);
+            pointer-events: none;
+        }
+        .aq-question-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             gap: 10px;
             margin-bottom: 12px;
         }
-        .gb-aq-input {
-            flex: 1;
-            background: rgba(255,255,255,0.9);
-            border: 1.5px solid rgba(99,184,255,0.4);
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-size: 15px;
-            font-family: "SF Mono","SFMono-Regular",Menlo,monospace;
+        .aq-question-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.045em;
+            text-transform: uppercase;
+        }
+        .aq-tier-headline {
+            margin: 0 0 12px;
+            font-size: clamp(22px, 6.4vw, 28px);
+            line-height: 1.12;
+            letter-spacing: -0.03em;
+            font-weight: 650;
             color: var(--text);
-            outline: none;
-            transition: border-color 250ms ease;
-            -webkit-appearance: none;
-            user-select: text;
         }
-        .gb-aq-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
+        .aq-tier-headline.tier-easy { color: #2d7a2f; }
+        .aq-tier-headline.tier-medium { color: #b3791f; }
+        .aq-tier-headline.tier-hard { color: #a02020; }
+        .aq-problem {
+            position: relative;
+            z-index: 1;
+            border-radius: 22px;
+            padding: 16px;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(20,28,44,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
         }
-        .gb-aq-capture-btn {
-            background: rgba(235,246,255,0.95);
-            border: 1.5px solid rgba(99,184,255,0.35);
-            border-radius: 14px;
-            padding: 0 14px;
-            font-size: 20px;
-            cursor: pointer;
-            transition: background 200ms ease, border-color 200ms ease;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .gb-aq-capture-btn.confirmed {
-            background: rgba(91,184,93,0.15);
-            border-color: #5bb85d;
-        }
-        .gb-aq-capture-status {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            min-height: 18px;
-            transition: color 250ms ease;
-        }
-        .gb-aq-capture-status.ok { color: #5bb85d; }
-        .gb-aq-feedback {
-            border-radius: 14px;
-            padding: 14px 16px;
-            font-size: 14px;
+        .aq-problem p {
+            margin: 0;
+            font-size: clamp(17px, 4.7vw, 19px);
             line-height: 1.5;
-            margin-bottom: 12px;
-            display: none;
+            font-weight: 620;
+            letter-spacing: -0.01em;
+            color: var(--text);
         }
-        .gb-aq-feedback.correct {
-            background: rgba(91,184,93,0.12);
-            border: 1px solid rgba(91,184,93,0.4);
-            color: #2d7a2f;
-            display: block;
-        }
-        .gb-aq-feedback.wrong {
-            background: rgba(217,83,79,0.10);
-            border: 1px solid rgba(217,83,79,0.35);
-            color: #a02020;
-            display: block;
-        }
-        .gb-aq-counter {
-            font-size: 12px;
+        .aq-tags {
+            margin-top: 10px;
+            font-size: 11px;
             color: var(--text-muted);
-            text-align: right;
-            margin-bottom: 8px;
+        }
+        .aq-answer-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .aq-answer-head h2 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 650;
+            letter-spacing: -0.015em;
+            color: var(--text);
+        }
+        .aq-answer-head p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.56;
+        }
+        .aq-status-pill {
+            flex: 0 0 auto;
+            border-radius: 999px;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(0,113,227,0.09);
+            border: 1px solid rgba(0,113,227,0.13);
+            white-space: nowrap;
+        }
+        .aq-status-pill.is-correct {
+            color: #2d7a2f;
+            background: rgba(52,199,89,0.10);
+            border-color: rgba(52,199,89,0.22);
+        }
+        .aq-status-pill.is-wrong {
+            color: #a02020;
+            background: rgba(255,69,58,0.09);
+            border-color: rgba(255,69,58,0.20);
+        }
+        .aq-upload-gate {
+            display: none;
+            margin-bottom: 12px;
+            border-radius: 22px;
+            border: 1.5px dashed rgba(0,113,227,0.28);
+            background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(246,250,255,0.76));
+            padding: 14px;
+            animation: aq-gate-in 260ms ease both;
+        }
+        .aq-upload-gate.show { display: block; }
+        @keyframes aq-gate-in {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to   { opacity: 1; transform: none; }
+        }
+        .aq-upload-gate-head {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .aq-upload-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: var(--accent);
+            font-size: 21px;
+            background: rgba(0,113,227,0.10);
+            flex: 0 0 auto;
+        }
+        .aq-upload-gate strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: var(--text);
+        }
+        .aq-upload-gate-sub {
+            display: block;
+            color: var(--text-muted);
+            font-size: 12px;
+            line-height: 1.38;
+        }
+        .aq-drop {
+            display: block;
+            cursor: pointer;
+            border-radius: 18px;
+            padding: 13px;
+            text-align: center;
+            background: rgba(255,255,255,0.76);
+            border: 1px solid rgba(0,113,227,0.16);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 750;
+            transition: transform 220ms ease, box-shadow 220ms ease;
+        }
+        .aq-drop:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 46px rgba(0,113,227,0.18);
+        }
+        .aq-drop:active { transform: scale(0.985); }
+        .aq-files {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .aq-file-pill {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 11px;
+            border-radius: 14px;
+            border: 1px solid rgba(20,28,44,0.08);
+            background: rgba(255,255,255,0.70);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .aq-result-box {
+            display: none;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            padding: 14px;
+            border: 1px solid rgba(52,199,89,0.18);
+            background: rgba(52,199,89,0.10);
+            color: #1f6f2e;
+            animation: aq-gate-in 220ms ease both;
+        }
+        .aq-result-box.show { display: block; }
+        .aq-result-box.wrong {
+            border-color: rgba(255,69,58,0.18);
+            background: rgba(255,69,58,0.09);
+            color: #9f241d;
+        }
+        .aq-result-box strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .aq-result-box span {
+            display: block;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .aq-textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            border: 1px solid rgba(0,113,227,0.18);
+            background: rgba(255,255,255,0.86);
+            color: var(--text);
+            border-radius: 20px;
+            padding: 14px 16px;
+            outline: none;
+            font-size: 15px;
+            line-height: 1.6;
+            font-family: inherit;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+            transition: border-color 220ms ease, box-shadow 220ms ease;
+            -webkit-appearance: none;
+        }
+        .aq-textarea:focus {
+            border-color: rgba(0,113,227,0.55);
+            box-shadow: 0 0 0 5px var(--accent-glow);
+        }
+        .aq-keyboard-hint {
+            margin: 10px 2px 0;
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.45;
+            text-align: center;
+        }
+        .aq-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 86px;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 60;
+            width: min(calc(100% - 28px), 420px);
+            padding: 13px 15px;
+            border-radius: 20px;
+            background: rgba(29,29,31,0.86);
+            color: #fff;
+            box-shadow: 0 24px 70px rgba(15,23,42,0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: opacity 240ms ease, transform 240ms ease;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .aq-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        @media (max-width: 370px) {
+            .aq-topbar {
+                grid-template-columns: 1fr;
+                border-radius: 22px;
+            }
+            .aq-count { justify-self: start; }
+            .aq-answer-head { flex-direction: column; }
         }
         /* ── WHY CHAIN ── */
         .gb-wc-chain-header {
@@ -2878,7 +3110,7 @@
            glyph is decorative — the screen-reader announcement comes
            from aria-label / textContent updated by the game logic. */
         .boss-feedback.correct::before,
-        .gb-aq-feedback.correct::before,
+        .aq-result-box:not(.wrong)::before,
         .gb-mb-feedback.correct::before {
             content: '\2713';
             display: inline-block;
@@ -2886,7 +3118,7 @@
             font-weight: 800;
         }
         .boss-feedback.wrong::before,
-        .gb-aq-feedback.wrong::before,
+        .aq-result-box.wrong::before,
         .gb-mb-feedback.wrong::before {
             content: '\2717';
             display: inline-block;
@@ -4303,21 +4535,74 @@
         }
 
         /* Adaptive Quiz (game break) -------------------------------- */
-        [data-theme="dark"] .gb-aq-input {
+        [data-theme="dark"] .aq-topbar,
+        [data-theme="dark"] .aq-question-card,
+        [data-theme="dark"] .aq-answer-card {
+            background: var(--surface);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .aq-phase,
+        [data-theme="dark"] .aq-count {
+            background: rgba(15, 23, 42, 0.55);
+            border-color: rgba(148, 163, 184, 0.18);
+        }
+        [data-theme="dark"] .aq-problem {
+            background: rgba(15, 23, 42, 0.62);
+            border-color: rgba(148, 163, 184, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+        [data-theme="dark"] .aq-textarea {
             background: rgba(15, 23, 42, 0.74);
             border-color: rgba(96, 165, 250, 0.42);
             color: var(--text);
         }
-        [data-theme="dark"] .gb-aq-capture-btn {
-            background: rgba(15, 23, 42, 0.74);
+        [data-theme="dark"] .aq-textarea:focus {
+            border-color: rgba(96, 165, 250, 0.85);
+            box-shadow: 0 0 0 5px rgba(96, 165, 250, 0.18);
+        }
+        [data-theme="dark"] .aq-status-pill {
+            background: rgba(96, 165, 250, 0.14);
+            border-color: rgba(96, 165, 250, 0.32);
+            color: #93c5fd;
+        }
+        [data-theme="dark"] .aq-status-pill.is-correct {
+            background: rgba(34, 197, 94, 0.18);
+            border-color: rgba(34, 197, 94, 0.42);
+            color: #86efac;
+        }
+        [data-theme="dark"] .aq-status-pill.is-wrong {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.42);
+            color: #fca5a5;
+        }
+        [data-theme="dark"] .aq-upload-gate {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.62));
             border-color: rgba(96, 165, 250, 0.42);
         }
-        [data-theme="dark"] .gb-aq-capture-btn.confirmed {
-            background: rgba(34, 197, 94, 0.18);
-            border-color: #5bb85d;
+        [data-theme="dark"] .aq-upload-icon {
+            background: rgba(96, 165, 250, 0.18);
+            color: #93c5fd;
         }
-        [data-theme="dark"] .gb-aq-feedback.correct { background: rgba(34, 197, 94, 0.18); color: #86efac; border-color: rgba(34, 197, 94, 0.45); }
-        [data-theme="dark"] .gb-aq-feedback.wrong   { background: rgba(239, 68, 68, 0.20); color: #fca5a5; border-color: rgba(239, 68, 68, 0.45); }
+        [data-theme="dark"] .aq-drop {
+            background: rgba(15, 23, 42, 0.74);
+            border-color: rgba(96, 165, 250, 0.32);
+            color: #93c5fd;
+        }
+        [data-theme="dark"] .aq-file-pill {
+            background: rgba(15, 23, 42, 0.62);
+            border-color: rgba(148, 163, 184, 0.18);
+            color: var(--text);
+        }
+        [data-theme="dark"] .aq-result-box:not(.wrong) {
+            background: rgba(34, 197, 94, 0.18);
+            color: #86efac;
+            border-color: rgba(34, 197, 94, 0.45);
+        }
+        [data-theme="dark"] .aq-result-box.wrong {
+            background: rgba(239, 68, 68, 0.20);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.45);
+        }
 
         /* Why Chain (game break) ----------------------------------- */
         [data-theme="dark"] .gb-wc-textarea {
@@ -4443,11 +4728,8 @@
         }
 
         /* ── T3 glass lift dark-mode parity (2026-05-01) ──
-           Newly tokenised game-break surfaces get explicit dark overrides. */
-        [data-theme="dark"] .gb-aq-prompt {
-            background: var(--surface);
-            border-color: var(--surface-border);
-        }
+           Newly tokenised game-break surfaces get explicit dark overrides.
+           AQ panel now uses .aq-* tokens (handled above). */
         [data-theme="dark"] .gb-tm-tile {
             background: var(--surface);
             border-color: var(--surface-border);
@@ -4755,21 +5037,58 @@
                     <div class="gb-progress-label" id="gb-plabel">1/3 Adaptive Quiz</div>
                 </div>
                 <div class="gb-game-area" id="gb-game-area">
-                    <!-- Sub-game 1: Adaptive Quiz -->
+                    <!-- Sub-game 1: Adaptive Quiz (Apple-glass redesign) -->
                     <div class="gb-game-panel" id="gb-panel-aq">
                         <div class="gb-section-title">O'YIN 1 — ADAPTIVE QUIZ</div>
-                        <div class="gb-aq-counter" id="gb-aq-counter">Savol 1 / 5</div>
-                        <div class="gb-aq-prompt" id="gb-aq-prompt-box">
-                            <div class="gb-aq-tier" id="gb-aq-tier">EASY</div>
-                            <div class="gb-aq-question" id="gb-aq-question"></div>
-                            <div class="gb-aq-tags" id="gb-aq-tags"></div>
+                        <div class="aq-stack">
+                            <header class="aq-topbar" id="aq-topbar">
+                                <div class="aq-phase">
+                                    <div class="aq-dots" id="aq-dots" aria-hidden="true">
+                                        <span></span><span></span><span></span>
+                                    </div>
+                                    <strong id="aq-phase-label">Adaptive Quiz</strong>
+                                </div>
+                                <div class="aq-count">
+                                    <strong><span id="aq-count-label">Savol</span> <span id="aq-q-now">1</span>/<span id="aq-q-total">5</span></strong>
+                                </div>
+                            </header>
+                            <article class="aq-question-card">
+                                <div class="aq-question-top">
+                                    <span class="aq-question-label" id="aq-tier-eyebrow">EASY</span>
+                                </div>
+                                <h1 class="aq-tier-headline tier-easy" id="aq-tier-headline">Easy</h1>
+                                <div class="aq-problem">
+                                    <p id="gb-aq-question"></p>
+                                </div>
+                                <div class="aq-tags" id="gb-aq-tags"></div>
+                            </article>
+                            <section class="aq-answer-card">
+                                <div class="aq-answer-head">
+                                    <div>
+                                        <h2 id="aq-answer-label">Javob</h2>
+                                        <p id="aq-answer-help">Yakuniy javobingizni kiriting.</p>
+                                    </div>
+                                    <div class="aq-status-pill" id="aq-status-pill" role="status" aria-live="polite">Step 1</div>
+                                </div>
+                                <section class="aq-upload-gate" id="aq-upload-gate" aria-live="polite">
+                                    <div class="aq-upload-gate-head">
+                                        <div class="aq-upload-icon" aria-hidden="true">✦</div>
+                                        <div>
+                                            <strong id="aq-upload-strong">Yechimingizni tasdiqlang</strong>
+                                            <span class="aq-upload-gate-sub" id="aq-upload-sub">Javobingiz saqlandi. Yechim daftarini biriktiring.</span>
+                                        </div>
+                                    </div>
+                                    <div class="aq-drop" id="aq-drop" tabindex="0" role="button" onclick="gbAQCapture()" aria-label="Yechim rasmini yuklash">📷 Yechimni yuklang</div>
+                                    <div class="aq-files" id="aq-files"></div>
+                                </section>
+                                <section class="aq-result-box" id="aq-result-box" role="status" aria-live="polite" aria-atomic="true">
+                                    <strong id="aq-result-title"></strong>
+                                    <span id="aq-result-text"></span>
+                                </section>
+                                <textarea id="gb-aq-textarea" class="aq-textarea" rows="4" placeholder="Javob kiriting..." autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+                            </section>
                         </div>
-                        <div class="gb-aq-input-row">
-                            <input class="gb-aq-input" id="gb-aq-input" type="text" inputmode="text" placeholder="Javob kiriting..." autocomplete="off" autocorrect="off" spellcheck="false" />
-                            <button class="gb-aq-capture-btn" id="gb-aq-capture-btn" type="button" onclick="gbAQCapture()" aria-label="Yechim rasmini yuklash"><span aria-hidden="true">📷</span></button>
-                        </div>
-                        <div class="gb-aq-capture-status" id="gb-aq-capture-status">Yechimingizni yuklang (📷)</div>
-                        <div class="gb-aq-feedback" id="gb-aq-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+                        <div class="aq-toast" id="aq-toast" role="status" aria-live="polite"></div>
                     </div>
                     <!-- Sub-game 2: Why Chain -->
                     <div class="gb-game-panel enter-right" id="gb-panel-wc">
@@ -5124,6 +5443,18 @@
                 'aq.upload_first':       'Avval yechimingizni yuklang!',
                 'aq.correct_prefix':     "To'g'ri! ",
                 'aq.wrong_prefix':       "Noto'g'ri. To'g'ri javob: ",
+                // adaptive quiz — Apple-glass redesign labels (2026-05-01)
+                'aq.tier_easy':          'Oson',
+                'aq.tier_medium':        "O'rtacha",
+                'aq.tier_hard':          'Qiyin',
+                'aq.answer_label':       'Javob',
+                'aq.answer_help':        'Yakuniy javobingizni yozing.',
+                'aq.status_step1':       '1-qadam',
+                'aq.status_upload_done': 'Yuklandi',
+                'aq.status_correct':     "To'g'ri",
+                'aq.status_review':      "Ko'rib chiqing",
+                'aq.upload_drop_label':  'Yechimingizni tasdiqlang',
+                'aq.upload_subtitle':    'Javobingiz saqlandi. Yechim daftarini biriktiring.',
                 // why-chain (sentence fill)
                 'wc.chain_label':        'Zanjir',
                 'wc.level_label':        'Daraja',
@@ -5259,6 +5590,18 @@
                 'aq.upload_first':       'Сначала загрузите решение!',
                 'aq.correct_prefix':     'Верно! ',
                 'aq.wrong_prefix':       'Неверно. Правильный ответ: ',
+                // adaptive quiz — Apple-glass redesign labels (2026-05-01)
+                'aq.tier_easy':          'Лёгкий',
+                'aq.tier_medium':        'Средний',
+                'aq.tier_hard':          'Сложный',
+                'aq.answer_label':       'Ответ',
+                'aq.answer_help':        'Запишите окончательный ответ.',
+                'aq.status_step1':       'Шаг 1',
+                'aq.status_upload_done': 'Загружено',
+                'aq.status_correct':     'Верно',
+                'aq.status_review':      'Проверьте',
+                'aq.upload_drop_label':  'Подтвердите решение',
+                'aq.upload_subtitle':    'Ответ сохранён. Прикрепите тетрадь с решением.',
                 'wc.chain_label':        'Цепочка',
                 'wc.level_label':        'Уровень',
                 'wc.checking':           'Проверяем…',
@@ -5386,6 +5729,18 @@
                 'aq.upload_first':       'Upload your solution first!',
                 'aq.correct_prefix':     'Correct! ',
                 'aq.wrong_prefix':       'Wrong. Correct answer: ',
+                // adaptive quiz — Apple-glass redesign labels (2026-05-01)
+                'aq.tier_easy':          'Easy',
+                'aq.tier_medium':        'Medium',
+                'aq.tier_hard':          'Hard',
+                'aq.answer_label':       'Answer',
+                'aq.answer_help':        'Write your final answer.',
+                'aq.status_step1':       'Step 1',
+                'aq.status_upload_done': 'Uploaded',
+                'aq.status_correct':     'Correct',
+                'aq.status_review':      'Review',
+                'aq.upload_drop_label':  'Confirm your solution',
+                'aq.upload_subtitle':    'Your answer is saved. Attach the worked solution.',
                 'wc.chain_label':        'Chain',
                 'wc.level_label':        'Level',
                 'wc.checking':           'Checking…',
@@ -7903,8 +8258,21 @@
             const aq = gbState.aq;
             aq.shown = 0; aq.correct = 0; aq.currentTier = 'easy'; aq.captureOk = false; aq.answered = false;
             aq.shownIds = [];
-            const fb = document.getElementById('gb-aq-feedback');
-            if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
+            // Reset visual scaffolding: result-box hidden, status pill back to step 1,
+            // upload-gate hidden, textarea cleared. New copy comes from i18n keys
+            // (RT) so the runtime language switch is preserved across phases.
+            const rb = document.getElementById('aq-result-box');
+            if (rb) { rb.classList.remove('show', 'wrong'); }
+            const rt = document.getElementById('aq-result-title'); if (rt) rt.textContent = '';
+            const rtxt = document.getElementById('aq-result-text'); if (rtxt) rtxt.textContent = '';
+            const gate = document.getElementById('aq-upload-gate');
+            if (gate) gate.classList.remove('show');
+            const sp = document.getElementById('aq-status-pill');
+            if (sp) { sp.classList.remove('is-correct', 'is-wrong'); sp.textContent = RT('aq.status_step1'); }
+            const ta = document.getElementById('gb-aq-textarea');
+            if (ta) ta.value = '';
+            const files = document.getElementById('aq-files');
+            if (files) files.innerHTML = '';
             gbAQShowNext();
         }
 
@@ -7935,10 +8303,39 @@
             // the gate and hide the camera UI so the student isn't forced through it.
             aq.captureOk = !item.capture;
             aq.answered = false;
-            const counter = document.getElementById('gb-aq-counter');
-            if (counter) counter.textContent = RT('aq.question_of') + ' ' + (aq.shown + 1) + ' / 5';
-            const tierEl = document.getElementById('gb-aq-tier');
-            if (tierEl) { tierEl.textContent = item.tier.toUpperCase(); tierEl.className = 'gb-aq-tier ' + item.tier; }
+            // Topbar counter: "Savol N/5" — reuse aq.question_of for the localized "Q" label.
+            const qNow = document.getElementById('aq-q-now');
+            if (qNow) qNow.textContent = String(aq.shown + 1);
+            const qTotal = document.getElementById('aq-q-total');
+            if (qTotal) qTotal.textContent = '5';
+            const cntLabel = document.getElementById('aq-count-label');
+            if (cntLabel) cntLabel.textContent = RT('aq.question_of');
+            // Phase label + dots: light up the current Stage-5 sub-game ordinal.
+            try {
+                const order = (typeof gbActiveGameOrder === 'function') ? gbActiveGameOrder() : [];
+                const total = order.length;
+                let idx = 0;
+                for (let i = 0; i < total; i++) { if (order[i] && order[i].id === 'aq') { idx = i; break; } }
+                const phaseLabel = document.getElementById('aq-phase-label');
+                if (phaseLabel) phaseLabel.textContent = (idx + 1) + '/' + (total || 1) + ' Adaptive Quiz';
+                const dotsHost = document.getElementById('aq-dots');
+                if (dotsHost) {
+                    const dots = dotsHost.querySelectorAll('span');
+                    for (let i = 0; i < dots.length; i++) {
+                        dots[i].classList.toggle('active', i === idx);
+                    }
+                }
+            } catch (_) { /* tolerate any registry hiccups */ }
+            // Tier headline + eyebrow: i18n-driven copy + tier color class.
+            const tierKey = 'aq.tier_' + (item.tier || 'easy');
+            const tierHead = document.getElementById('aq-tier-headline');
+            if (tierHead) {
+                tierHead.textContent = RT(tierKey);
+                tierHead.className = 'aq-tier-headline tier-' + (item.tier || 'easy');
+            }
+            const tierEyebrow = document.getElementById('aq-tier-eyebrow');
+            if (tierEyebrow) tierEyebrow.textContent = (item.tier || 'easy').toUpperCase();
+            // Question text — keep #gb-aq-question ID untouched (existing innerHTML write).
             const qEl = document.getElementById('gb-aq-question');
             // innerHTML — adaptive quiz prompt may contain inline images/SVGs/bold/italic.
             // Format inline MC option markers ("A)", "B)", "C)", "D)") onto separate
@@ -7948,24 +8345,62 @@
             if (qEl) qEl.innerHTML = formattedPrompt;
             const tags = document.getElementById('gb-aq-tags');
             if (tags) tags.textContent = '[Bloom: ' + item.bloom + ' | PISA: ' + item.pisa + ']';
-            const inp = document.getElementById('gb-aq-input');
+            // Answer-card copy from i18n.
+            const ansLbl = document.getElementById('aq-answer-label');
+            if (ansLbl) ansLbl.textContent = RT('aq.answer_label');
+            const ansHelp = document.getElementById('aq-answer-help');
+            if (ansHelp) ansHelp.textContent = RT('aq.answer_help');
+            // Textarea reset.
+            const inp = document.getElementById('gb-aq-textarea');
             if (inp) { inp.value = ''; inp.disabled = false; inp.style.borderColor = ''; }
-            const capBtn = document.getElementById('gb-aq-capture-btn');
-            if (capBtn) { capBtn.classList.remove('confirmed'); capBtn.style.display = item.capture ? '' : 'none'; }
-            const capStatus = document.getElementById('gb-aq-capture-status');
-            if (capStatus) { capStatus.style.display = item.capture ? '' : 'none'; capStatus.textContent = RT('aq.upload_solution'); capStatus.className = 'gb-aq-capture-status'; capStatus.style.color = ''; }
-            const fb = document.getElementById('gb-aq-feedback');
-            if (fb) { fb.className = 'gb-aq-feedback'; fb.textContent = ''; }
+            // Upload-gate visibility per item.capture.
+            const gate = document.getElementById('aq-upload-gate');
+            if (gate) gate.classList.toggle('show', !!item.capture);
+            const upStrong = document.getElementById('aq-upload-strong');
+            if (upStrong) upStrong.textContent = RT('aq.upload_drop_label');
+            const upSub = document.getElementById('aq-upload-sub');
+            if (upSub) upSub.textContent = RT('aq.upload_subtitle');
+            const drop = document.getElementById('aq-drop');
+            if (drop) drop.textContent = RT('aq.upload_solution');
+            const files = document.getElementById('aq-files');
+            if (files) files.innerHTML = '';
+            // Status pill back to "Step 1".
+            const sp = document.getElementById('aq-status-pill');
+            if (sp) { sp.classList.remove('is-correct', 'is-wrong'); sp.textContent = RT('aq.status_step1'); }
+            // Result-box cleared.
+            const rb = document.getElementById('aq-result-box');
+            if (rb) rb.classList.remove('show', 'wrong');
+            const rt = document.getElementById('aq-result-title'); if (rt) rt.textContent = '';
+            const rtxt = document.getElementById('aq-result-text'); if (rtxt) rtxt.textContent = '';
             gbSetButtonForAQ();
         }
 
         function gbAQCapture() {
             if (gbState.aq.answered) return;
             gbState.aq.captureOk = true;
-            const capBtn = document.getElementById('gb-aq-capture-btn');
-            if (capBtn) capBtn.classList.add('confirmed');
-            const capStatus = document.getElementById('gb-aq-capture-status');
-            if (capStatus) { capStatus.textContent = RT('aq.solution_uploaded'); capStatus.className = 'gb-aq-capture-status ok'; }
+            // Status pill flips to "upload done"; drop the gate's drop button into a
+            // single "file pill" affordance to confirm the action visually. Toast is
+            // optional — only fires if the host element is in the DOM.
+            const sp = document.getElementById('aq-status-pill');
+            if (sp) { sp.classList.remove('is-wrong'); sp.textContent = RT('aq.status_upload_done'); }
+            const files = document.getElementById('aq-files');
+            if (files) {
+                files.innerHTML = '';
+                const pill = document.createElement('div');
+                pill.className = 'aq-file-pill';
+                pill.innerHTML = '<span>' + RT('aq.solution_uploaded') + '</span><small>OK</small>';
+                files.appendChild(pill);
+            }
+            gbAQToast(RT('aq.solution_uploaded'));
+        }
+
+        function gbAQToast(msg) {
+            const t = document.getElementById('aq-toast');
+            if (!t) return;
+            t.textContent = msg || '';
+            t.classList.add('show');
+            if (t._timer) clearTimeout(t._timer);
+            t._timer = setTimeout(() => { t.classList.remove('show'); t._timer = null; }, 2200);
         }
 
         // List mirrors server/services/language.py — keep them in sync. Used to decide
@@ -8025,15 +8460,24 @@
                 aq.shown++; gbAQShowNext(); return;
             }
             if (!aq.captureOk) {
-                const capStatus = document.getElementById('gb-aq-capture-status');
-                if (capStatus) {
-                    capStatus.style.color = '#d9534f';
-                    capStatus.textContent = RT('aq.upload_first');
-                    setTimeout(() => { capStatus.style.color = ''; capStatus.textContent = RT('aq.upload_solution'); }, 1500);
+                // Surface the missing-upload requirement on the status pill (no
+                // capStatus element anymore). Toast also fires for redundancy.
+                const sp = document.getElementById('aq-status-pill');
+                if (sp) {
+                    const prev = sp.textContent;
+                    sp.classList.add('is-wrong');
+                    sp.textContent = RT('aq.upload_first');
+                    setTimeout(() => {
+                        sp.classList.remove('is-wrong');
+                        sp.textContent = prev || RT('aq.status_step1');
+                    }, 1500);
                 }
+                gbAQToast(RT('aq.upload_first'));
+                const gate = document.getElementById('aq-upload-gate');
+                if (gate) gate.classList.add('show');
                 return;
             }
-            const inp = document.getElementById('gb-aq-input');
+            const inp = document.getElementById('gb-aq-textarea');
             const userVal = inp ? inp.value.trim() : '';
             if (!userVal) { if (inp) { inp.style.borderColor = '#d9534f'; setTimeout(() => { inp.style.borderColor = ''; }, 1200); } return; }
             const item = aq.currentItem;
@@ -8067,7 +8511,10 @@
             }
             aq.answered = true;
             if (inp) inp.disabled = true;
-            const fb = document.getElementById('gb-aq-feedback');
+            const rb = document.getElementById('aq-result-box');
+            const rTitle = document.getElementById('aq-result-title');
+            const rText = document.getElementById('aq-result-text');
+            const sp = document.getElementById('aq-status-pill');
             const displayAnswer = acceptList.length ? acceptList[0] : (item.answer || '');
             // item.work holds the author's hint/explanation. Only append it when
             // non-empty — otherwise we'd print just a trailing ". " or duplicate
@@ -8075,11 +8522,21 @@
             const workSuffix = item.work ? ('. ' + item.work) : '';
             if (isCorrect) {
                 aq.correct++;
-                if (fb) { fb.className = 'gb-aq-feedback correct'; fb.textContent = RT('aq.correct_prefix') + (item.work || ''); }
+                // Result box: green tint (no .wrong class). Title + body split — same
+                // copy contract as the legacy single-string feedback (correct prefix
+                // + work). Wrong-feedback path remains the only place the correct
+                // answer appears in the DOM (no answer-leak before submit).
+                if (rb) { rb.classList.remove('wrong'); rb.classList.add('show'); }
+                if (rTitle) rTitle.textContent = RT('aq.correct_prefix').replace(/[!.\s]+$/, '');
+                if (rText)  rText.textContent  = (item.work || '');
+                if (sp) { sp.classList.remove('is-wrong'); sp.classList.add('is-correct'); sp.textContent = RT('aq.status_correct'); }
                 if (item.tier === 'easy') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'hard';
             } else {
-                if (fb) { fb.className = 'gb-aq-feedback wrong'; fb.textContent = RT('aq.wrong_prefix') + displayAnswer + workSuffix; }
+                if (rb) { rb.classList.add('wrong', 'show'); }
+                if (rTitle) rTitle.textContent = RT('aq.wrong_prefix').replace(/[:.\s]+$/, '');
+                if (rText)  rText.textContent  = displayAnswer + workSuffix;
+                if (sp) { sp.classList.remove('is-correct'); sp.classList.add('is-wrong'); sp.textContent = RT('aq.status_review'); }
                 if (item.tier === 'hard') aq.currentTier = 'medium';
                 else if (item.tier === 'medium') aq.currentTier = 'easy';
             }
@@ -12173,7 +12630,7 @@ Prezident ertaga hisobot kutmoqda.`,
                     // Fall back to the first one even if empty/disabled.
                     return inputs.length ? (inputs[0].value || null) : null;
                 },
-                'adaptive-quiz': () => get('#gb-aq-input'),
+                'adaptive-quiz': () => get('#gb-aq-textarea'),
                 'sentence-fill': () => get('#gb-wc-textarea'),
                 'mystery-box': () => {
                     const v = get('#gb-mb-solve-input');
