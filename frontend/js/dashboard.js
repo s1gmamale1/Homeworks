@@ -563,7 +563,6 @@
             <span class="hw-mode" data-mode="${escapeHtml(mode)}">${escapeHtml(modeLabel)}</span>
           </div>
 
-          ${progress > 0 ? `
           <div class="hw-progress" aria-hidden="true">
             <div class="hw-progress-head">
               <span>${escapeHtml(t("dashboard.card_progress", "Progress"))}</span>
@@ -573,7 +572,6 @@
               <div class="hw-progress-fill" style="width: ${progress}%"></div>
             </div>
           </div>
-          ` : ""}
 
           <div class="hw-foot">
             ${updatedDisplay}

@@ -91,32 +91,23 @@ def test_explicit_item_progress_override_still_honored(dashboard_source: str):
 
 
 # ---------------------------------------------------------------------------
-# Progress bar is conditional — hidden when 0
+# Progress bar is always rendered — consistent layout across cards
 # ---------------------------------------------------------------------------
 
-def test_progress_bar_hidden_when_progress_is_zero(dashboard_source: str):
-    """A 0% progress bar adds no information beyond the status pill, so the
-    `.hw-progress` block must be omitted entirely when progress === 0.
-    Otherwise the dashboard shows an empty track for every draft homework
-    and looks half-broken."""
-    # The conditional render uses a template-literal ternary on `progress`.
-    assert "progress > 0 ?" in dashboard_source or "progress > 0?" in dashboard_source, (
-        "progress bar render is no longer guarded by `progress > 0` — every "
-        "draft homework will show an empty 0% bar."
-    )
-
-
-def test_progress_label_only_inside_conditional(dashboard_source: str):
-    """The "Progress: 35%" / "Progress: 0%" text must be inside the
-    conditional, not always rendered. (If "0%" leaked outside the
-    conditional, every draft card would show a literal "0%" label.)"""
+def test_progress_bar_always_renders_for_consistent_layout(dashboard_source: str):
+    """The `.hw-progress` block must render unconditionally so every
+    homework card has the same height and the row reads consistently.
+    A 0% draft card shows an empty track ("nothing done yet"); a 100%
+    ready card shows a full track. Hiding the bar entirely on 0% (the
+    PR #114 approach) confused users — they expected to *see* the bar,
+    they just wanted the value to be honest."""
     src = dashboard_source
-    # Find the .hw-progress block region.
+    # The conditional ternary must be GONE from around the .hw-progress block.
     start = src.find('class="hw-progress"')
     assert start > 0, "could not locate .hw-progress block in dashboard.js"
-    # Walk back ~80 chars to find the opening of the conditional template.
     region = src[max(0, start - 100):start]
-    assert "progress > 0" in region, (
-        '`<div class="hw-progress">` is no longer wrapped in a `progress > 0` '
-        "ternary — the progress label/track will render even for draft cards."
+    assert "progress > 0" not in region, (
+        ".hw-progress is wrapped in a `progress > 0` ternary — that hides the "
+        "bar entirely on draft homeworks and the user reported confusion. "
+        "Remove the ternary; render the bar unconditionally with honest values."
     )
