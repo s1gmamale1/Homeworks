@@ -1104,9 +1104,12 @@
         }
         /* Gate-quote card (Stage 1) — translucent glass card with eyebrow pill + body text. */
         .quote-card {
-            background: var(--surface);
-            border: 1px solid var(--surface-border);
-            box-shadow: var(--shadow-card);
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46)),
+                radial-gradient(circle at 18% 0%, rgba(0, 102, 204, 0.08), transparent 34%),
+                repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 1px, rgba(255, 255, 255, 0) 1px 8px);
+            border: 1px solid rgba(255, 255, 255, 0.76);
+            box-shadow: 0 18px 48px rgba(29, 29, 31, 0.10);
             backdrop-filter: var(--glass-blur);
             -webkit-backdrop-filter: var(--glass-blur);
             padding: 48px 36px;
@@ -1144,6 +1147,7 @@
             line-height: 1.55;
             color: var(--text);
             font-style: italic;
+            text-shadow: none;
             max-width: 560px;
         }
         .quote-card .quote-type-icon {
@@ -4477,8 +4481,11 @@
             background: var(--surface-strong);
         }
         [data-theme="dark"] .quote-card {
-            background: var(--surface);
-            border-color: var(--surface-border);
+            background:
+                linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.52)),
+                radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.12), transparent 34%),
+                repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 1px, rgba(255, 255, 255, 0) 1px 8px);
+            border-color: rgba(148, 163, 184, 0.28);
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
         }
         [data-theme="dark"] .quote-card .quote-text-line,
@@ -6443,8 +6450,8 @@
             const gateLabels = { uz: 'Bilarmidingiz?', ru: 'Знаете ли вы?', en: 'Did you know?' };
             const gateLabel = gateLabels[_runtimeDetectLang()] || gateLabels.uz;
             // Facts use the localized label as the eyebrow (chrome).
-            // Quotes show the actual author from data; fall back to label only if author is empty.
-            authorNode.textContent = isFact ? gateLabel : (q.a || gateLabel);
+            // Quotes show the actual author from data; never reuse the fact label.
+            authorNode.textContent = isFact ? gateLabel : (q.a || 'Iqtibos');
             chip.appendChild(dot);
             chip.appendChild(authorNode);
             chipLine.appendChild(chip);
