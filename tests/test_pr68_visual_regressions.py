@@ -100,8 +100,14 @@ def test_reading_runtime_paginates_and_requires_checkpoint_answer():
     assert "function updateReadingContinueState" in html
     assert "READING.passage || READING.text || ''" in html
     assert "readingState.answered[i] = true" in html
-    assert "if (!readingIsComplete(checkpoints))" in html
-    assert "readingGoToPage(readingCheckpointPage(firstMissing" in html
+    # Updated for the segment-aware reading refactor (PR #127 Bug #3): the
+    # checkpoint-completeness guard inside finishReading now takes a `force`
+    # parameter so edge-swipe phase-skip can bypass the lock. The guard is
+    # still in place — just gated on `!force && ...` — and the geometric
+    # checkpoint→page mapping is still called as a legacy fallback when the
+    # segment-aware lookup misses.
+    assert "if (!force && !readingIsComplete(checkpoints))" in html
+    assert "readingCheckpointPage(firstMissing" in html
     assert "tier: 'HARD'" in html
     assert "tier: 'EASY'" not in html[html.index("function renderReading"):html.index("function renderConsolidation")]
 
