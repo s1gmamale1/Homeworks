@@ -368,12 +368,12 @@ def test_extract_real_life_reads_indexed_input():
 
 @pytest.mark.skipif(not _node_available(), reason="node binary not on PATH")
 def test_extract_adaptive_quiz_reads_input_value():
-    """adaptive-quiz: reads `#gb-aq-input` (the AQ text input the runtime defines)."""
+    """adaptive-quiz: reads `#gb-aq-textarea` (the AQ multi-line answer input the runtime defines)."""
     extract, sanitize = _read_helpers()
     fixture = r"""
-    var gbState = { aq: {} };  // present but no 'lastSelectedLabel' (text input)
+    var gbState = { aq: {} };  // present but no 'lastSelectedLabel' (textarea input)
     __ROOT__.appendChild(new FakeElement(
-        'input', { id: 'gb-aq-input' }, [], 'Option B'
+        'textarea', { id: 'gb-aq-textarea' }, [], 'Option B'
     ));
     """
     body = r"""
