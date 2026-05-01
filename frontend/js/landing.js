@@ -66,13 +66,13 @@
       heroBadge: "Aqlliroq uy vazifalari uchun beta loyiha",
       heroTitle: "Uy vazifasi endi majburiyatdek tuyilmaydi.",
       heroText:
-        "Reading panellar, adaptiv savollar, AI tutor yordami va toza student linklar bilan interaktiv darslar yarating.",
+        "Homeworks o‘qituvchiga oddiy topshiriq o‘rniga interaktiv dars yaratishga yordam beradi: tushuntirish, mashq, AI tutor va feedback bitta sahifada.",
       watchPreview: "Preview ko‘rish",
       seeWorkflow: "Jarayonni ko‘rish",
       stats: [
-        ["3", "o‘quv bosqichi"],
-        ["AI", "tutor + baholash"],
-        ["/h", "ulashiladigan homework linklar"],
+        ["1 link", "dars, mashq va AI yordam bir joyda"],
+        ["AI tutor", "o‘quvchini javobni aytmay, tushunishga yo‘naltiradi"],
+        ["Tezroq", "o‘qituvchi uchun tayyorlash va ulashish osonlashadi"],
       ],
       floating: { panels: "Panellar", tutor: "Tutor", grade: "Baholash" },
       overviewEyebrow: "Umumiy",
@@ -138,23 +138,23 @@
       features: [
         {
           icon: "wand",
-          title: "Template asosidagi builder",
-          body: "Tayyor fixturelarni yuklang, lesson contentni tahrirlang va student linkni qo‘lda hammasini qayta qurmasdan chiqaring.",
+          title: "O‘qituvchi uchun tez yaratish",
+          body: "Mavzu, sinf va tilni tanlang. Platforma uy vazifasini tushuntirish, mashq va tekshiruv bosqichlari bilan tayyorlashga yordam beradi.",
         },
         {
           icon: "layers",
-          title: "Panel-based darslar",
-          body: "Qiyinroq darslar ko‘proq panellarga ajraladi, student esa practice oldidan conceptni bosqichma-bosqich ko‘radi.",
+          title: "O‘quvchi uchun bosqichma-bosqich dars",
+          body: "O‘quvchi avval mavzuni ko‘radi, keyin savollarga javob beradi. Har bir qadam tartibli va tushunarli ko‘rinadi.",
         },
         {
           icon: "brain",
-          title: "AI baholash yordami",
-          body: "Flexible answer matching ma’noni tekshiradi, feedback beradi va teacherni nazoratda qoldiradi.",
+          title: "AI yordam va baholash",
+          body: "AI tutor o‘quvchiga savolni tushunishga yordam beradi, javobni tahlil qiladi va foydali feedback beradi.",
         },
         {
           icon: "message",
-          title: "Live tutor mode",
-          body: "Student Uzbek, English yoki aralash casual speechda yordam so‘rashi mumkin.",
+          title: "Bitta link orqali ulashish",
+          body: "Homeworkni alohida fayl yoki murakkab tizimsiz ulashish mumkin. O‘quvchi linkni ochadi va darhol ishlashni boshlaydi.",
         },
       ],
       workflow: [
@@ -179,13 +179,13 @@
       heroBadge: "Beta-проект для умных домашних заданий",
       heroTitle: "Домашка, которая не ощущается как наказание.",
       heroText:
-        "Создавайте интерактивные уроки с reading-панелями, адаптивными вопросами, AI-тьютором и чистыми ссылками для учеников.",
+        "Homeworks помогает учителю заменить обычное задание интерактивным уроком: объяснение, практика, AI-тьютор и feedback на одной странице.",
       watchPreview: "Смотреть превью",
       seeWorkflow: "Посмотреть процесс",
       stats: [
-        ["3", "этапа обучения"],
-        ["AI", "тьютор + оценка"],
-        ["/h", "ссылки на домашку"],
+        ["1 ссылка", "урок, практика и AI-помощь в одном месте"],
+        ["AI-тьютор", "ведёт ученика к пониманию, не выдавая готовый ответ"],
+        ["Быстрее", "учителю проще подготовить и поделиться"],
       ],
       floating: { panels: "Панели", tutor: "Тьютор", grade: "Оценка" },
       overviewEyebrow: "Обзор",
@@ -251,23 +251,23 @@
       features: [
         {
           icon: "wand",
-          title: "Builder на шаблонах",
-          body: "Загрузите готовые fixtures, отредактируйте lesson content и опубликуйте ссылку без ручной сборки всего заново.",
+          title: "Быстрая сборка для учителя",
+          body: "Выберите тему, класс и язык. Платформа поможет собрать домашку с этапами объяснения, практики и проверки.",
         },
         {
           icon: "layers",
-          title: "Panel-based уроки",
-          body: "Более сложные уроки делятся на больше панелей, чтобы ученик понял concept перед практикой.",
+          title: "Пошаговый урок для ученика",
+          body: "Сначала ученик видит тему, затем отвечает на вопросы. Каждый шаг идёт в чёткой и понятной последовательности.",
         },
         {
           icon: "brain",
-          title: "AI-помощь в оценке",
-          body: "Flexible answer matching проверяет смысл, дает feedback и оставляет учителя в контроле.",
+          title: "AI-помощь и оценка",
+          body: "AI-тьютор помогает понять вопрос, разбирает ответ и возвращает полезный feedback.",
         },
         {
           icon: "message",
-          title: "Live tutor mode",
-          body: "Ученик может спрашивать помощь на узбекском, английском или смешанной casual-речью.",
+          title: "Поделиться по одной ссылке",
+          body: "Не нужны отдельные файлы или сложные системы. Ученик открывает ссылку и сразу начинает работать.",
         },
       ],
       workflow: [
@@ -292,13 +292,13 @@
       heroBadge: "A beta project for smarter homework",
       heroTitle: "Homework that doesn’t feel like a chore.",
       heroText:
-        "Build interactive lessons with reading panels, adaptive questions, an AI tutor, and clean student links — all in one place.",
+        "Homeworks helps teachers turn a plain assignment into an interactive lesson — explanation, practice, an AI tutor and feedback, all on one page.",
       watchPreview: "Watch the preview",
       seeWorkflow: "See the flow",
       stats: [
-        ["3", "learning steps"],
-        ["AI", "tutor + grading"],
-        ["/h", "shareable homework links"],
+        ["One link", "lesson, practice and AI help in one place"],
+        ["AI tutor", "guides the student to understand, without giving away the answer"],
+        ["Faster", "easier for teachers to prepare and share"],
       ],
       floating: { panels: "Panels", tutor: "Tutor", grade: "Grading" },
       overviewEyebrow: "Overview",
@@ -364,23 +364,23 @@
       features: [
         {
           icon: "wand",
-          title: "Template-based builder",
-          body: "Load a ready fixture, edit the lesson content, and ship a student link without rebuilding everything by hand.",
+          title: "Quick to build, for teachers",
+          body: "Pick a topic, grade and language. The platform helps you set up homework with explanation, practice and a check stage.",
         },
         {
           icon: "layers",
-          title: "Panel-based lessons",
-          body: "Tougher lessons split into more panels, so the student sees the concept step by step before practice begins.",
+          title: "Step-by-step lesson for students",
+          body: "The student sees the topic first, then answers the questions. Every step is ordered and easy to follow.",
         },
         {
           icon: "brain",
-          title: "AI-assisted grading",
-          body: "Flexible answer matching checks the meaning, returns feedback, and keeps the teacher firmly in the loop.",
+          title: "AI help and grading",
+          body: "The AI tutor helps the student understand the question, analyses the answer, and returns useful feedback.",
         },
         {
           icon: "message",
-          title: "Live tutor mode",
-          body: "Students can ask for help in Uzbek, English, or messy mid-sentence code-switching — the tutor handles it.",
+          title: "Share with a single link",
+          body: "No separate files or complicated setup. The student opens the link and starts working right away.",
         },
       ],
       workflow: [
