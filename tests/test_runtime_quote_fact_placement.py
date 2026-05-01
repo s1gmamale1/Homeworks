@@ -31,7 +31,9 @@ def _read(path: Path) -> str:
 # ── Opening gate quote / fact (Phase 0) ──────────────────────────────
 
 
-def test_run_quote_sequence_branches_on_type():
+def test_run_quote_sequence_uniform_body_first_order():
+    """User-locked 2026-05-01: both fact and quote paths render body
+    FIRST and label/author chip BELOW. No type-conditional order swap."""
     html = _read(RUNTIME)
     block_match = re.search(
         r"function runQuoteSequence\s*\(\)\s*\{(?P<body>.*?)\n        \}",
@@ -41,18 +43,24 @@ def test_run_quote_sequence_branches_on_type():
     assert block_match, "runQuoteSequence body not found"
     body = block_match.group("body")
 
-    # Type detection — facts go above, quotes go below.
+    # Type detection still present — author label content still depends on type.
     assert "const isFact = q.type !== 'quote'" in body, (
-        "function must branch on type to decide chip placement"
+        "function must branch on type to decide author label content"
     )
 
-    # Both append orderings must be present (one for each branch).
-    assert "if (isFact) {" in body
-    assert "item.appendChild(chipLine);" in body
-    assert "item.appendChild(textLine);" in body
+    # No order swap based on isFact — both paths render uniform.
+    assert "if (isFact) {" not in body, (
+        "fact and quote paths must render body-first uniformly; no order swap"
+    )
 
-    # Facts get the --top modifier so the chip's vertical margin flips.
-    assert "quote-author-chip--top" in body
+    # The --top modifier is gone — both paths use the same chip styling.
+    assert "quote-author-chip--top" not in body, (
+        "facts no longer use the --top chip modifier; chip sits below body for both"
+    )
+
+    # Both append calls present — verifying the body-first sequence.
+    assert "item.appendChild(textLine);" in body
+    assert "item.appendChild(chipLine);" in body
 
 
 def test_run_quote_sequence_drops_emoji_for_facts():
@@ -112,8 +120,10 @@ def test_run_quote_sequence_does_not_use_fact_label_as_quote_author():
         re.DOTALL,
     )
     body = block_match.group("body")
-    assert "isFact ? gateLabel : (q.a || gateLabel)" not in body
-    assert "isFact ? gateLabel : (q.a || 'Iqtibos')" in body
+    # The fact label must never leak into the quote author position.
+    assert "isFact ? gateLabel : (q.a || gateLabel)" not in body, (
+        "the fact-label gateLabel must NOT be the fallback for quote authors"
+    )
 
 
 # ── Mid-homework break card ──────────────────────────────────────────
@@ -149,33 +159,40 @@ def test_render_break_quote_flips_kicker_for_quotes():
     )
 
 
-def test_break_card_quote_modifier_uses_column_reverse():
+def test_break_card_uniform_column_reverse():
+    """Both fact and quote variants render body first, kicker below.
+    Was a `.break-card--quote` modifier; now the base `.break-card`
+    declares `flex-direction: column-reverse` so the rule applies
+    uniformly without a JS-driven class toggle."""
     html = _read(RUNTIME)
-    rule = re.search(
-        r"\.break-card--quote\s*\{(?P<body>[^}]*)\}", html
-    )
-    assert rule, "missing .break-card--quote rule"
+    rule = re.search(r"\.break-card\s*\{(?P<body>[^}]*)\}", html)
+    assert rule, "missing .break-card rule"
     body = rule.group("body")
-    assert "flex-direction: column-reverse" in body
-
-    inner = re.search(
-        r"\.break-card--quote \.break-kicker\s*\{(?P<body>[^}]*)\}", html
+    assert "flex-direction: column-reverse" in body, (
+        ".break-card must declare column-reverse so the kicker sits below "
+        "the body for BOTH fact and quote variants"
     )
-    assert inner, "missing .break-card--quote .break-kicker rule"
-    inner_body = inner.group("body")
-    assert "margin-top: 14px" in inner_body
-    assert "margin-bottom: 0" in inner_body
+
+    # Default kicker margin matches the new layout (gap above, not below).
+    kicker = re.search(r"\.break-kicker\s*\{(?P<body>[^}]*)\}", html)
+    assert kicker, "missing .break-kicker rule"
+    assert "margin-top: 14px" in kicker.group("body")
 
 
-def test_quote_author_chip_top_modifier_swaps_margins():
+def test_break_text_uses_body_color_not_accent():
+    """User-flagged 2026-05-01: `.break-text` was rendering blue with
+    a glow — wrong. It should match the runtime body text (dark navy
+    in light, light text in dark) without any accent text-shadow."""
     html = _read(RUNTIME)
-    rule = re.search(
-        r"\.quote-author-chip--top\s*\{(?P<body>[^}]*)\}", html
-    )
-    assert rule, "missing .quote-author-chip--top rule"
+    rule = re.search(r"\.break-text\s*\{(?P<body>[^}]*)\}", html)
+    assert rule, "missing .break-text rule"
     body = rule.group("body")
-    assert "margin-top: 0" in body
-    assert "margin-bottom: 14px" in body
+    assert "color: var(--text)" in body, (
+        ".break-text body must use --text not --accent"
+    )
+    assert "var(--accent-glow)" not in body, (
+        ".break-text must not carry the accent text-shadow glow"
+    )
 
 
 # ── Scholar / historical names use Uzbek-Latin orthography ────────────

@@ -753,7 +753,9 @@
             width: min(82vw, 420px);
             min-height: 180px;
             display: flex;
-            flex-direction: column;
+            /* Body first, label/author kicker below — uniform for both
+               fact ("Bilarmidingiz?") and quote (author) variants. */
+            flex-direction: column-reverse;
             align-items: center;
             justify-content: center;
             text-align: center;
@@ -763,7 +765,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 14px;
+            margin-top: 14px;
             padding: 5px 14px;
             border-radius: 999px;
             font-size: 11px;
@@ -774,22 +776,13 @@
             background: rgba(0, 122, 255, 0.10);
             border: 1px solid rgba(0, 122, 255, 0.22);
         }
-        /* When the break card shows an attributed quote, the author kicker
-           moves below the text (column-reverse on the card flips it
-           visually without rewriting HTML), and the kicker margin swaps
-           so the gap stays on the inner side. */
-        .break-card--quote { flex-direction: column-reverse; }
-        .break-card--quote .break-kicker {
-            margin-bottom: 0;
-            margin-top: 14px;
-        }
 
         .break-text {
             font-size: 22px;
             font-weight: 700;
             line-height: 1.45;
-            color: var(--accent);
-            text-shadow: 0 0 15px var(--accent-glow);
+            color: var(--text);
+            text-shadow: none;
             opacity: 0;
             animation: fadeInFinal 700ms ease forwards;
         }
@@ -1174,14 +1167,6 @@
             display: none;
         }
 
-        /* When the chip introduces the content (facts / "Bilarmidingiz?")
-           it sits ABOVE the text instead of below — same pill, swapped
-           gap so it reads as a label heading. Quotes keep the chip below
-           the content as the conventional attribution line. */
-        .quote-author-chip--top {
-            margin-top: 0;
-            margin-bottom: 14px;
-        }
         .quote-author-chip--global {
             background: rgba(0, 153, 102, 0.10);
             color: #00744f;
@@ -6438,13 +6423,12 @@
             textLine.appendChild(document.createTextNode(q.t || ''));
 
             // Author chip — origin-tinted pill with a dot + author name.
-            // Facts (Bilarmidingiz?) put the chip ABOVE the text as a heading;
-            // quotes keep the chip BELOW as the conventional attribution line.
+            // Both fact and quote render body first with the label/author chip
+            // BELOW it. Uniform layout — no order swap based on type.
             const chipLine = document.createElement('div');
             const chip = document.createElement('span');
             const chipClasses = ['quote-author-chip'];
             if (isGlobal) chipClasses.push('quote-author-chip--global');
-            if (isFact) chipClasses.push('quote-author-chip--top');
             chip.className = chipClasses.join(' ');
             const dot = document.createElement('span');
             dot.className = 'quote-author-chip-dot';
@@ -6458,13 +6442,9 @@
             chip.appendChild(authorNode);
             chipLine.appendChild(chip);
 
-            if (isFact) {
-                item.appendChild(chipLine);
-                item.appendChild(textLine);
-            } else {
-                item.appendChild(textLine);
-                item.appendChild(chipLine);
-            }
+            // Both fact and quote: body first, label/author chip below.
+            item.appendChild(textLine);
+            item.appendChild(chipLine);
 
             const preset = presets[Math.floor(Math.random() * presets.length)];
             container.appendChild(item);
