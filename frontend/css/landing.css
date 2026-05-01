@@ -709,9 +709,10 @@ img, svg { display: block; max-width: 100%; }
 .phone-stage {
   position: relative;
   margin: 0 auto;
-  width: 280px;
+  width: min(280px, 78vw);
+  max-width: 390px;
 }
-@media (min-width: 640px) { .phone-stage { width: 340px; } }
+@media (min-width: 640px) { .phone-stage { width: min(340px, 60vw); } }
 @media (min-width: 1024px) { .phone-stage { width: 390px; } }
 
 .phone-glow {
