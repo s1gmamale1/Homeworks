@@ -251,16 +251,28 @@
   }
 
   // _progressFromStatus — derive 0..100 progress for the card progress-bar.
+  //
+  // The dashboard bar tracks the homework BUILD pipeline, not student
+  // completion. The pipeline has three real stages:
+  //   draft       → metadata exists, no content yet            → 0%
+  //   generating  → AI building content right now              → 50%
+  //   ready       → content done, link is shareable            → 100%
+  //   error       → build failed                               → 0%
+  //
+  // Earlier code returned magic numbers ("draft" → 35, "error" → 20) so
+  // every draft homework on the dashboard looked half-done — pure visual
+  // padding with no actual meaning. Honest pipeline values now; if the
+  // backend ever supplies an explicit `item.progress` field, that wins.
   function _progressFromStatus(item) {
     if (!item) return 0;
-    if (item.status === "ready") return 100;
     if (typeof item.progress === "number" && item.progress >= 0 && item.progress <= 100) {
       return Math.round(item.progress);
     }
     switch (item.status) {
+      case "ready":      return 100;
       case "generating": return 50;
-      case "draft":      return 35;
-      case "error":      return 20;
+      case "draft":      return 0;
+      case "error":      return 0;
       default:           return 0;
     }
   }
@@ -551,6 +563,7 @@
             <span class="hw-mode" data-mode="${escapeHtml(mode)}">${escapeHtml(modeLabel)}</span>
           </div>
 
+          ${progress > 0 ? `
           <div class="hw-progress" aria-hidden="true">
             <div class="hw-progress-head">
               <span>${escapeHtml(t("dashboard.card_progress", "Progress"))}</span>
@@ -560,6 +573,7 @@
               <div class="hw-progress-fill" style="width: ${progress}%"></div>
             </div>
           </div>
+          ` : ""}
 
           <div class="hw-foot">
             ${updatedDisplay}
