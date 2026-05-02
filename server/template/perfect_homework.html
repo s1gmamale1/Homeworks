@@ -3063,33 +3063,21 @@
             -webkit-backdrop-filter: blur(28px) saturate(170%);
         }
 
-        .gb-sf-segmented {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            padding: 5px;
+        /* Mode chip — read-only, mirrors AQ tier-eyebrow pattern.
+           The mode is author-set in the builder (per-item in content_json),
+           NOT a runtime toggle. Student sees what mode this item is. */
+        .gb-sf-mode-chip {
+            color: var(--accent);
+            padding: 7px 10px;
             border-radius: 999px;
-            background: rgba(255,255,255,.22);
-            border: 1px solid rgba(255,255,255,.38);
-            margin-bottom: 13px;
-        }
-
-        .gb-sf-mode-btn {
-            height: 39px;
-            border: 0;
-            border-radius: 999px;
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 580;
-            cursor: pointer;
-            transition: .2s ease;
-        }
-
-        .gb-sf-mode-btn.active {
-            background: rgba(255,255,255,.42);
-            color: var(--text);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.50), 0 8px 20px rgba(31,38,135,.05);
+            background: rgba(0,113,227,.08);
+            border: 1px solid rgba(0,113,227,.18);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.40);
+            white-space: nowrap;
+            font-size: 10.5px;
+            font-weight: 620;
+            letter-spacing: .04em;
+            text-transform: uppercase;
         }
 
         .gb-sf-microcopy {
@@ -5303,15 +5291,10 @@
             box-shadow: 0 20px 48px rgba(0,0,0,.48), inset 0 1px 0 rgba(148,163,184,.10);
         }
 
-        [data-theme="dark"] .gb-sf-segmented {
-            background: rgba(15,23,42,.64);
-            border-color: var(--surface-border);
-        }
-
-        [data-theme="dark"] .gb-sf-mode-btn.active {
-            background: rgba(30,41,59,.86);
-            color: var(--text);
-            box-shadow: inset 0 1px 0 rgba(148,163,184,.14), 0 8px 20px rgba(0,0,0,.24);
+        [data-theme="dark"] .gb-sf-mode-chip {
+            background: rgba(0,111,224,.18);
+            border-color: rgba(0,111,224,.36);
+            box-shadow: inset 0 1px 0 rgba(148,163,184,.10);
         }
 
         [data-theme="dark"] .gb-sf-word {
@@ -5892,6 +5875,7 @@
                         <article class="gb-sf-main-card">
                             <div class="gb-sf-meta">
                                 <span id="gb-sf-eyebrow-meta"></span>
+                                <span class="gb-sf-mode-chip" id="gb-sf-mode-chip"></span>
                                 <span class="gb-sf-xp-pill" id="gb-sf-xp-pill">0 XP</span>
                             </div>
                             <h1 class="gb-sf-h1" id="gb-sf-title"></h1>
@@ -5902,10 +5886,6 @@
                             </section>
                         </article>
                         <section class="gb-sf-control-card" aria-label="Sentence Fill controls">
-                            <div class="gb-sf-segmented" id="gb-sf-segmented">
-                                <button type="button" id="gb-sf-mode-bank" class="gb-sf-mode-btn"></button>
-                                <button type="button" id="gb-sf-mode-recall" class="gb-sf-mode-btn"></button>
-                            </div>
                             <p class="gb-sf-microcopy" id="gb-sf-microcopy"></p>
                             <div class="gb-sf-word-bank" id="gb-sf-word-bank"></div>
                             <div class="gb-sf-recall-grid" id="gb-sf-recall-grid"></div>
@@ -9816,18 +9796,9 @@
                 const total = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL.length : 0;
                 chainLabel.textContent = RT('sf.chain_label') + ' ' + (gbState.sf.idx + 1) + '/' + total;
             }
-            // Mode buttons + keyboard listeners — bind once.
+            // Keyboard listener — bind once. Mode is author-set in the
+            // builder per content_json item; there is no runtime mode toggle.
             if (!_gbSFListenersBound) {
-                const bankBtn = document.getElementById('gb-sf-mode-bank');
-                const recallBtn = document.getElementById('gb-sf-mode-recall');
-                if (bankBtn) bankBtn.addEventListener('click', () => {
-                    if (gbState.subGame !== 6 || gbState.sf.complete) return;
-                    gbSFApplyMode('word_bank');
-                });
-                if (recallBtn) recallBtn.addEventListener('click', () => {
-                    if (gbState.subGame !== 6 || gbState.sf.complete) return;
-                    gbSFApplyMode('free_recall');
-                });
                 document.addEventListener('keydown', (e) => {
                     if (gbState.subGame !== 6) return;
                     const sfPanel = document.getElementById('gb-panel-sf');
@@ -9963,16 +9934,13 @@
         }
 
         function gbSFApplyMode(mode) {
+            // Mode is author-set per item in the builder (content_json).
+            // Runtime renders the chosen mode only — no student toggle.
             gbState.sf.mode = mode;
-            const bankBtn = document.getElementById('gb-sf-mode-bank');
-            const recallBtn = document.getElementById('gb-sf-mode-recall');
-            if (bankBtn) {
-                bankBtn.textContent = RT('sf.mode_word_bank');
-                bankBtn.classList.toggle('active', mode === 'word_bank');
-            }
-            if (recallBtn) {
-                recallBtn.textContent = RT('sf.mode_free_recall');
-                recallBtn.classList.toggle('active', mode === 'free_recall');
+            const chip = document.getElementById('gb-sf-mode-chip');
+            if (chip) {
+                chip.textContent = mode === 'word_bank' ? RT('sf.mode_word_bank') : RT('sf.mode_free_recall');
+                chip.setAttribute('data-mode', mode);
             }
             const microcopy = document.getElementById('gb-sf-microcopy');
             if (microcopy) {

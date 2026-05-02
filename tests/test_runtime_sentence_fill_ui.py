@@ -63,14 +63,12 @@ def test_sf_panel_markup_hooks_present():
         "gb-sf-progress-label",
         "gb-sf-chain-label",
         "gb-sf-eyebrow-meta",
+        "gb-sf-mode-chip",
         "gb-sf-xp-pill",
         "gb-sf-title",
         "gb-sf-subtitle",
         "gb-sf-passage-label",
         "gb-sf-cloze-text",
-        "gb-sf-segmented",
-        "gb-sf-mode-bank",
-        "gb-sf-mode-recall",
         "gb-sf-microcopy",
         "gb-sf-word-bank",
         "gb-sf-recall-grid",
@@ -87,6 +85,33 @@ def test_sf_panel_markup_hooks_present():
             f"#{el_id} hook is missing from the SF panel — JS state machine "
             "depends on it. Was the markup edited or replaced?"
         )
+
+
+def test_sf_panel_has_no_runtime_mode_toggle():
+    """Mode is author-set in the builder (per content_json item). The
+    runtime must NOT expose a student-facing toggle. Pins that the old
+    segmented control + per-mode buttons are gone for good."""
+    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-NT", "subject": "math-algebra", "grade": 8})
+    forbidden_ids = ["gb-sf-segmented", "gb-sf-mode-bank", "gb-sf-mode-recall"]
+    for el_id in forbidden_ids:
+        assert f'id="{el_id}"' not in html, (
+            f"#{el_id} found in template — runtime mode toggle should have been "
+            "removed. Mode is author-set in the builder, not student-toggleable."
+        )
+    assert "gb-sf-mode-btn" not in html, (
+        "`.gb-sf-mode-btn` class found — toggle button styling should have been "
+        "removed in favor of read-only `.gb-sf-mode-chip`."
+    )
+
+
+def test_sf_mode_chip_is_read_only_span():
+    """The mode chip must be a `<span>`, not a `<button>` or other
+    interactive element. Mirrors AQ tier-eyebrow pattern."""
+    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-CH", "subject": "math-algebra", "grade": 8})
+    assert re.search(
+        r'<span\s+class="gb-sf-mode-chip"\s+id="gb-sf-mode-chip"',
+        html,
+    ), "gb-sf-mode-chip must be a non-interactive <span>"
 
 
 def test_sf_panel_uses_enter_right_class():
