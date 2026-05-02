@@ -21,9 +21,9 @@ Phase types covered (matches STATE.md + fixtures):
 7. reflection         — closing phase
 """
 
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 # --------------------------------------------------------------------------- #
@@ -243,6 +243,47 @@ class TttItem(_Permissive):
     distractors: Optional[List[str]] = None
 
 
+class SentenceFillItem(BaseModel):
+    """gb_sentence_fill — cloze passage with per-blank answers + optional word bank."""
+
+    model_config = ConfigDict(extra="allow")
+    id: str
+    mode: Literal["word_bank", "free_recall"]
+    passage: str
+    answers: List[str]
+    word_bank: Optional[List[str]] = None
+    explanations: Optional[List[Optional[str]]] = None
+    tags: Optional[str] = None
+    pisa_level: Optional[Literal["L1", "L2", "L3", "L4", "L5"]] = None
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    subject_hint: Optional[str] = None
+    color_hints: Optional[Dict[str, str]] = None
+    blank_icons: Optional[List[Optional[str]]] = None
+    tier: Literal["basic", "premium"] = "basic"
+
+    @model_validator(mode="after")
+    def _validate(self):
+        blanks = self.passage.count("___")
+        if blanks == 0:
+            raise ValueError("passage must contain at least one '___' blank marker")
+        if not (1 <= blanks <= 6):
+            raise ValueError(f"passage has {blanks} blanks; spec allows 1-6")
+        if len(self.answers) != blanks:
+            raise ValueError(f"answers length {len(self.answers)} != blanks {blanks}")
+        if self.mode == "word_bank":
+            if not self.word_bank:
+                raise ValueError("word_bank required when mode=='word_bank'")
+            if not set(self.answers).issubset(set(self.word_bank)):
+                raise ValueError("word_bank must contain every answer")
+            if len(self.word_bank) <= len(self.answers):
+                raise ValueError("word_bank must include at least one distractor")
+        if self.explanations is not None and len(self.explanations) != len(self.answers):
+            raise ValueError(f"explanations length {len(self.explanations)} != answers {len(self.answers)}")
+        if self.blank_icons is not None and len(self.blank_icons) != len(self.answers):
+            raise ValueError(f"blank_icons length {len(self.blank_icons)} != answers {len(self.answers)}")
+        return self
+
+
 # --------------------------------------------------------------------------- #
 # Phase 7 — Reflection (closing).
 # --------------------------------------------------------------------------- #
@@ -325,5 +366,6 @@ class ContentJSON(_Permissive):
     gb_puzzle_lock: Optional[List[PuzzleLockItem]] = None
     gb_mystery_box: Optional[List[MysteryBoxItem]] = None
     gb_ttt: Optional[List[TttItem]] = None
+    gb_sentence_fill: Optional[List[SentenceFillItem]] = None
     # Phase 7
     reflection: Optional[ReflectionPhase] = None

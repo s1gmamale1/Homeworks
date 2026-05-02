@@ -93,6 +93,32 @@ def _safe_js_json(value) -> str:
     )
 
 
+# Fields the client should NEVER see for sentence-fill items.
+_SF_SERVER_ONLY = {"answers", "explanations"}
+
+
+def _serialize_sentence_fill(items: list) -> str:
+    """Strip server-only fields from gb_sentence_fill items before JSON-encoding.
+
+    - `answers` and `explanations` are always stripped (answer-leak prevention).
+    - `word_bank` is also stripped for free_recall items (it's null anyway, but
+      belt-and-suspenders in case an author accidentally set it on a free_recall item).
+
+    Uses _safe_js_json for the final encoding so </script> injection vectors
+    are escaped consistently with all other inline constants.
+    """
+    cleaned = []
+    for item in (items or []):
+        if not isinstance(item, dict):
+            continue
+        clean_item = {k: v for k, v in item.items() if k not in _SF_SERVER_ONLY}
+        # word_bank is null in free_recall mode \u2014 strip too
+        if clean_item.get("mode") == "free_recall":
+            clean_item.pop("word_bank", None)
+        cleaned.append(clean_item)
+    return _safe_js_json(cleaned)
+
+
 def _find_js_const_statement_end(src: str, literal_start: int) -> int:
     opener = src[literal_start]
     closer = {"[": "]", "{": "}"}[opener]
@@ -962,6 +988,14 @@ def inject(
 
         replacement = f"const {const_name} = {_safe_js_json(normalized)};"
         html = _replace_js_const(html, const_name, replacement)
+
+    # Sentence Fill — strip answers/explanations/word_bank(free_recall) before
+    # JSON-encoding into __GB_SENTENCE_FILL__.  This constant is handled
+    # separately from _ARRAY_CONSTANTS because it needs custom field-stripping.
+    html = html.replace(
+        "__GB_SENTENCE_FILL__",
+        _serialize_sentence_fill(content_json.get("gb_sentence_fill")),
+    )
 
     # Always inject the AI tutor runtime hook before </body>.
     ctx_json = _safe_js_json(runtime_context)
