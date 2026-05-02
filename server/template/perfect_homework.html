@@ -9206,6 +9206,23 @@
             gbAQShowNext();
         }
 
+        // Forward padding-gap clicks on the answer card to the textarea. Without
+        // this, taps in the ~10px gap between the "Javob" heading and the
+        // textarea border land on the parent <section> and don't focus the
+        // input — students felt this as a dead band at the top of the textbox
+        // (regression 2026-05-02). Skips clicks that already hit an interactive
+        // child (the upload drop-zone, the textarea itself).
+        document.addEventListener('DOMContentLoaded', () => {
+            const card = document.querySelector('.aq-answer-card');
+            const ta = document.getElementById('gb-aq-textarea');
+            if (!card || !ta) return;
+            card.addEventListener('click', (e) => {
+                if (e.target === ta) return;
+                if (e.target.closest('button, a, [role="button"], input, select, textarea')) return;
+                ta.focus();
+            });
+        });
+
         function gbAQPickItem() {
             const aq = gbState.aq;
             if (!aq.shownIds) aq.shownIds = [];

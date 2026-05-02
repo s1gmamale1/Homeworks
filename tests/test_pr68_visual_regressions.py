@@ -201,6 +201,35 @@ def test_every_screen_div_carries_the_screen_class():
     )
 
 
+def test_aq_answer_card_padding_clicks_focus_the_textarea():
+    # The ~10px gap between the "Javob" heading and the textarea border
+    # used to land clicks on the parent <section class="aq-answer-card">,
+    # not the textarea — students felt this as a dead band at the top of
+    # the input (regression 2026-05-02). The runtime now forwards padding-
+    # area clicks to the textarea while skipping interactive children.
+    html = _read(RUNTIME)
+
+    # The forwarder must be wired up on DOMContentLoaded so it is present
+    # before the AQ phase first activates.
+    assert "querySelector('.aq-answer-card')" in html, (
+        "click forwarder must look up the answer card by class"
+    )
+    assert "getElementById('gb-aq-textarea')" in html, (
+        "click forwarder must focus the AQ textarea"
+    )
+
+    # Skip clicks that already hit an interactive child so the upload
+    # drop-zone, buttons, and the textarea itself keep working normally.
+    skip = re.search(
+        r"closest\(\s*['\"][^'\"]*\brole\s*=\s*\\?[\"']?button\\?[\"']?",
+        html,
+    )
+    assert skip is not None, (
+        "forwarder must bail on clicks that hit an interactive descendant "
+        "(upload drop-zone uses role='button')"
+    )
+
+
 def test_adaptive_quiz_mobile_layout_stacks_at_640px():
     css = _read(APP_CSS)
     media = re.search(
