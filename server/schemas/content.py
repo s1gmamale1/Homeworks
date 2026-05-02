@@ -171,6 +171,43 @@ class ReadingPhase(_Permissive):
 # Phase 5 — Boss (final, open-ended w/ answer_spec).
 # --------------------------------------------------------------------------- #
 
+# Taxonomy enums (forward-compat; runtime engine deferred for Big/Mythical).
+BossType = Literal["sub", "big", "mythical"]
+BossPisaLevel = Literal["L1", "L2", "L3", "L4", "L5", "L6"]
+BossBloomLevel = Literal["apply", "analyze", "evaluate", "create"]
+GradeBand = Literal["g1_4", "g5", "g6_8", "g9_11"]
+
+
+class BossAntiCheatPolicy(BaseModel):
+    """Anti-cheat signal fields. Schema-only in v1; runtime telemetry deferred."""
+    model_config = ConfigDict(extra="allow")
+    paste_detect: bool = False
+    response_time_floor_ms: int = 0
+
+
+class BossMeta(BaseModel):
+    """Optional metadata block for the boss phase.
+
+    All fields optional. Lives under content_json.boss_meta — never required.
+    Existing homeworks without boss_meta render unchanged.
+    """
+    model_config = ConfigDict(extra="allow")
+    boss_type: BossType = "sub"
+    grade_band: Optional[GradeBand] = None
+    attempts_max: Optional[int] = None             # None = unlimited (premium sub); 2 = basic sub default; 1 = big/mythical
+    anti_cheat: Optional[BossAntiCheatPolicy] = None
+    starting_hp_override: Optional[int] = None     # author override for unusual cases
+
+    @model_validator(mode="after")
+    def _validate(self) -> "BossMeta":
+        if self.attempts_max is not None and self.attempts_max < 1:
+            raise ValueError("attempts_max must be >= 1 (use None for unlimited)")
+        if self.starting_hp_override is not None and self.starting_hp_override < 10:
+            raise ValueError("starting_hp_override must be >= 10")
+        if self.boss_type == "mythical" and self.attempts_max not in (None, 1):
+            raise ValueError("Mythical boss has fixed attempts_max=1 per spec §3")
+        return self
+
 
 class BossQuestion(_Permissive):
     # `q` optional — variants pass `prompt` or carry extra rubric blocks.
@@ -182,6 +219,10 @@ class BossQuestion(_Permissive):
     dmg: Optional[Union[int, float]] = None
     answer_spec: Optional[AnswerSpec] = None
     accepted_answers: Optional[List[str]] = None
+    # New optional fields — additive only, existing rows unaffected.
+    pisa_level: Optional[BossPisaLevel] = None    # explicit per-q PISA enum (was implicit in tags)
+    bloom_level: Optional[BossBloomLevel] = None  # explicit Bloom level (was implicit in tags)
+    hint_cost_per_use: Optional[int] = None       # grade-banded default 10; spec §8 override
 
 
 # --------------------------------------------------------------------------- #
@@ -547,6 +588,7 @@ class ContentJSON(_Permissive):
     reading: Optional[ReadingPhase] = None
     # Phase 5
     boss_questions: Optional[List[BossQuestion]] = None
+    boss_meta: Optional[BossMeta] = None
     # Phase 6 — game breaks (each gb_* list lives at top level)
     gb_adaptive_quiz: Optional[List[AdaptiveQuizItem]] = None
     gb_why_chain: Optional[List[WhyChainItem]] = None
@@ -597,4 +639,25 @@ class ContentJSON(_Permissive):
         """
         # real_life_challenge structural validation is handled by
         # RealLifeChallengeCase._validate_structure; nothing to cross-validate here.
+        return self
+
+    @model_validator(mode="after")
+    def _validate_mythical_boss_hints(self) -> "ContentJSON":
+        """Mythical boss spec §11: zero hints per question.
+
+        If boss_meta.boss_type == 'mythical' and any question has non-empty
+        hints, raise ValidationError. This prevents accidental hint leakage
+        on the highest-difficulty boss type.
+        """
+        if self.boss_meta is None or self.boss_meta.boss_type != "mythical":
+            return self
+        questions = self.boss_questions or []
+        for q in questions:
+            q_dict = q if isinstance(q, dict) else q.model_dump()
+            hints = q_dict.get("hints") or []
+            if hints:
+                raise ValueError(
+                    "Mythical boss must have zero hints per spec §11 "
+                    "(found non-empty hints on at least one question)"
+                )
         return self

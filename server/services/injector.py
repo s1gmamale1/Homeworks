@@ -66,7 +66,8 @@ _ARRAY_CONSTANTS = [
     ("gb_puzzle_lock",   "GB_PUZZLE_LOCK"),
     ("gb_mystery_box",   "GB_MYSTERY_BOX"),
     ("gb_ttt",           "GB_TTT"),
-    ("boss_questions",   "BOSS_QUESTIONS"),
+    # boss_questions removed from _ARRAY_CONSTANTS — handled by _serialize_boss_questions
+    # (side-disjoint, answer-leak prevention). See inject() below.
 ]
 
 # Mapping: content_json key -> JS constant name in template, for OBJECT (non-array) constants.
@@ -104,6 +105,134 @@ _SF_SERVER_ONLY = {"answers", "explanations"}
 # Fields the client should NEVER see for real-life-challenge items.
 # Stripped at every nesting level (options, concept_chips, steps).
 _RLC_SERVER_ONLY = {"is_correct", "consequence", "acceptable_keywords"}
+
+# Fields the client should NEVER see for boss questions.
+# Strips the full grading contract + legacy accepted-list aliases from every
+# question in BOSS_QUESTIONS so the client-side state machine cannot do
+# deterministic local matching (all grading flows through /api/ai/check-answer).
+_BOSS_SERVER_ONLY = {"accepted", "ans", "accepted_answers", "answer_spec"}
+
+# Transitional flag for legacy compatibility tests only.
+# Set to True ONLY for transitional legacy compatibility tests; default False closes
+# the answer-leak by stripping accepted[] and aliases from the client JS global.
+# When False (default): strip — closes the leak.
+# When True: keep accepted[] so test/replay paths that depend on the old shape still work.
+_BOSS_LEGACY_CLIENT_MATCH = False
+
+
+def _serialize_boss_questions(items, boss_meta=None) -> str:
+    """Build the client-side BOSS_QUESTIONS array (side-disjoint, answer-leak prevention).
+
+    Runs the existing boss shape-adapter logic (editor shape → template shape),
+    then strips every key in _BOSS_SERVER_ONLY from each adapted question.
+
+    Strips (default, _BOSS_LEGACY_CLIENT_MATCH=False):
+      - accepted[] (legacy deterministic match list — now server-only)
+      - acceptable[] (template-shape deterministic match list — server-only)
+      - ans / accepted_answers (legacy aliases)
+      - answer_spec (the full grading contract — server uses, client never needs)
+
+    Preserves student-visible fields: id, tier, damage, bloom, pisa, prompt, hints[].
+    Hints stay client-side (spec §8: hints are pre-written for Sub Basic).
+
+    Legacy flag: if _BOSS_LEGACY_CLIENT_MATCH is True, accepted/acceptable are NOT
+    stripped. Use only for back-compat tests; never in production.
+
+    Returns _safe_js_json output so </script> injection vectors are escaped.
+    """
+    if not items:
+        return _safe_js_json([])
+
+    # Normalise items to list of dicts.
+    data = []
+    for i, item in enumerate(items):
+        if isinstance(item, dict):
+            data.append(item)
+        else:
+            try:
+                data.append(item.model_dump())
+            except AttributeError:
+                try:
+                    data.append(dict(item))
+                except Exception:
+                    continue
+
+    # Run the existing boss shape adapter (editor shape → template shape).
+    # Mirrors the logic in the _ARRAY_CONSTANTS loop for key=="boss_questions".
+    adapted = []
+    for i, item in enumerate(data):
+        if not isinstance(item, dict):
+            continue
+        # Already template shape? pass through (but still strip server-only keys below).
+        if "prompt" in item and "acceptable" in item:
+            adapted.append(item)
+            continue
+        dmg = int(item.get("dmg", 10) or 10)
+        tier = "easy" if dmg <= 10 else "medium" if dmg <= 20 else "hard"
+        bloom, pisa = _parse_bloom_pisa(item.get("tags", ""), "L3", "L3")
+        ans_list = item.get("ans") or [""]
+        if not isinstance(ans_list, list):
+            ans_list = [str(ans_list)]
+        hint_raw = item.get("hint") or ""
+        hint_plain = _strip_html(hint_raw)
+        hint_parts = [p.strip() for p in re.split(r"\n|\s\|\s|•", hint_plain) if p.strip()]
+        if not hint_parts:
+            hint_parts = [hint_plain or "—"]
+        while len(hint_parts) < 3:
+            hint_parts.append(hint_parts[-1])
+        adapted.append({
+            "id":         item.get("id", f"Q{i+1}"),
+            "tier":       tier,
+            "damage":     dmg,
+            "bloom":      bloom,
+            "pisa":       pisa,
+            "prompt":     item.get("q", ""),
+            "acceptable": [a for a in ans_list if a],
+            "hints":      hint_parts[:3],
+            # Forward-compat: carry through new optional fields if present.
+            **({"pisa_level": item["pisa_level"]} if item.get("pisa_level") else {}),
+            **({"bloom_level": item["bloom_level"]} if item.get("bloom_level") else {}),
+            **({"hint_cost_per_use": item["hint_cost_per_use"]} if item.get("hint_cost_per_use") is not None else {}),
+        })
+
+    # Strip server-only fields. The full _BOSS_SERVER_ONLY set covers both the
+    # editor-shape keys (ans, accepted_answers, answer_spec) and the template-shape
+    # key (acceptable). When _BOSS_LEGACY_CLIENT_MATCH=True we keep acceptable for
+    # back-compat (test/replay only — never production).
+    strip_set = _BOSS_SERVER_ONLY
+    if _BOSS_LEGACY_CLIENT_MATCH:
+        # Legacy: keep accepted[] alias; still strip ans/accepted_answers/answer_spec
+        strip_set = _BOSS_SERVER_ONLY - {"accepted", "acceptable"}
+    else:
+        # Default: also strip the template-shape list
+        strip_set = _BOSS_SERVER_ONLY | {"acceptable"}
+
+    cleaned = []
+    for item in adapted:
+        cleaned.append({k: v for k, v in item.items() if k not in strip_set})
+
+    return _safe_js_json(cleaned)
+
+
+def _serialize_boss_meta(meta) -> str:
+    """Build the client-side BOSS_META object.
+
+    If meta is None, returns 'null' (JS literal).
+    Otherwise serialises the BossMeta model dict.
+    Anti-cheat fields are included — they're config the client reads (not answers).
+    """
+    if meta is None:
+        return _safe_js_json(None)
+    # Normalise: accept Pydantic model or raw dict.
+    if not isinstance(meta, dict):
+        try:
+            meta = meta.model_dump()
+        except AttributeError:
+            try:
+                meta = dict(meta)
+            except Exception:
+                return _safe_js_json(None)
+    return _safe_js_json(meta)
 
 
 def _serialize_real_life_challenge(case) -> str:
@@ -1139,6 +1268,26 @@ def inject(
     html = html.replace(
         "__RLC_CASE__",
         _serialize_real_life_challenge(content_json.get("real_life_challenge")),
+    )
+
+    # Final Boss — side-disjoint serialization (answer-leak prevention).
+    # _serialize_boss_questions strips accepted[], ans, accepted_answers, answer_spec,
+    # and the template-shape acceptable[] from the client JS global.
+    # _BOSS_LEGACY_CLIENT_MATCH=False (default) closes the leak; True keeps acceptable[]
+    # for transitional back-compat tests only.
+    html = _replace_js_const(
+        html,
+        "BOSS_QUESTIONS",
+        "const BOSS_QUESTIONS = " + _serialize_boss_questions(
+            content_json.get("boss_questions"),
+            boss_meta=content_json.get("boss_meta"),
+        ) + ";",
+    )
+
+    # BOSS_META — null when boss_meta absent; populated otherwise.
+    html = html.replace(
+        "__BOSS_META__",
+        _serialize_boss_meta(content_json.get("boss_meta")),
     )
 
     # Always inject the AI tutor runtime hook before </body>.
