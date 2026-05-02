@@ -958,6 +958,19 @@
             filter: blur(0);
             position: relative;
         }
+        /* Reading + consolidation slides keep their own pointer-events: auto
+           so the active page is interactive. But when their parent screen is
+           inactive (e.g. user navigated past reading into the AQ phase), the
+           slide is visually hidden via the parent's opacity:0 yet remains a
+           click target — pointer-events doesn't cascade. The reading slide
+           sits at position:absolute/inset:0 and silently swallows clicks
+           meant for the active screen's inputs (regression 2026-05-03).
+           Force pointer-events:none on slides whose parent screen is not
+           active so they cannot intercept events from the active screen.
+           Specificity 0,0,3,0 beats .wave2-slide-page.wave2-active (0,0,2,0). */
+        .screen:not(.active) .wave2-slide-page {
+            pointer-events: none;
+        }
         .wave2-dot-row {
             display: flex;
             justify-content: center;

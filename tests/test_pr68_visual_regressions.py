@@ -230,6 +230,31 @@ def test_aq_answer_card_padding_clicks_focus_the_textarea():
     )
 
 
+def test_wave2_slides_become_pointer_inert_when_parent_screen_is_inactive():
+    # `.wave2-slide-page.wave2-active` declares its own `pointer-events: auto`
+    # so the visible reading/consolidation page stays interactive. CSS
+    # pointer-events doesn't cascade — when the parent screen is deactivated
+    # (e.g. user navigates past reading into AQ), the slide is visually
+    # hidden by the parent's opacity:0 but remains a click target at
+    # position:absolute/inset:0, swallowing clicks meant for the now-active
+    # screen's inputs (regression 2026-05-03 — surfaced as the AQ answer
+    # textarea silently rejecting clicks on prod).
+    html = _read(RUNTIME)
+
+    # The defensive override must exist and target slides whose parent
+    # screen lacks the `active` class.
+    pattern = re.search(
+        r"\.screen\s*:not\(\s*\.active\s*\)\s+\.wave2-slide-page\s*\{[^}]*"
+        r"pointer-events\s*:\s*none\s*;",
+        html,
+    )
+    assert pattern is not None, (
+        ".screen:not(.active) .wave2-slide-page must force pointer-events:none "
+        "so reading/consolidation slides cannot intercept clicks meant for the "
+        "active screen's inputs"
+    )
+
+
 def test_adaptive_quiz_mobile_layout_stacks_at_640px():
     css = _read(APP_CSS)
     media = re.search(
