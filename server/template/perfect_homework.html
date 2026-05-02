@@ -6303,6 +6303,27 @@
                 'game.pl':               "Qulf ochish",
                 'game.mb':               "Sirli quti",
                 'game.ttt':              "Krestiki-Nolikar",
+                'game.sf':               "Gap to'ldirish",
+                // Sentence Fill (sf.*) — new Stage-5 game (panel: gb-panel-sf)
+                'sf.title':              "Gap to'ldirish",
+                'sf.eyebrow':            "O'yin · Cloze",
+                'sf.passage_label':      'Matn',
+                'sf.mode_word_bank':     "So'z banki",
+                'sf.mode_free_recall':   'Esdan yozish',
+                'sf.subtitle_bank':      "Joyni tanlang, so'ng so'zni tanlang.",
+                'sf.subtitle_recall':    "Har bir so'zni eslab yozing.",
+                'sf.btn_check':          'Tekshirish',
+                'sf.btn_next':           'Keyingi savol',
+                'sf.result_perfect':     'Mukammal',
+                'sf.result_partial':     'Hali emas',
+                'sf.toast_perfect':      'Mukammal! Bonus XP.',
+                'sf.toast_partial':      "Tekshirildi. To'g'ri javoblar ko'rsatildi.",
+                'sf.toast_locked':       'Bu joy yopildi.',
+                'sf.score_label':        'Sentence Fill XP',
+                'sf.first_attempt_bonus':'+25 (birinchi urinish)',
+                'sf.perfect_fill_bonus': '+100 mukammal',
+                'sf.keyboard_hint':      "Tugmalar: Tab — joy/so'z · Enter — tekshirish · Backspace — tozalash",
+                'sf.chain_label':        'Zanjir',
             },
             ru: {
                 'skip.label':            '⏭ Пропустить фазу',
@@ -6442,6 +6463,27 @@
                 'game.pl':               'Замок-головоломка',
                 'game.mb':               'Загадочный ящик',
                 'game.ttt':              'Крестики-нолики',
+                'game.sf':               'Заполнение предложения',
+                // Sentence Fill (sf.*)
+                'sf.title':              'Заполни пропуск',
+                'sf.eyebrow':            'Игра · Cloze',
+                'sf.passage_label':      'Текст',
+                'sf.mode_word_bank':     'Из списка',
+                'sf.mode_free_recall':   'По памяти',
+                'sf.subtitle_bank':      'Выберите пропуск, затем слово.',
+                'sf.subtitle_recall':    'Введите слова по памяти.',
+                'sf.btn_check':          'Проверить',
+                'sf.btn_next':           'Дальше',
+                'sf.result_perfect':     'Идеально',
+                'sf.result_partial':     'Не совсем',
+                'sf.toast_perfect':      'Идеально! Бонус XP.',
+                'sf.toast_partial':      'Проверено. Ответы показаны.',
+                'sf.toast_locked':       'Пропуск заблокирован.',
+                'sf.score_label':        'XP',
+                'sf.first_attempt_bonus':'+25 (с первого раза)',
+                'sf.perfect_fill_bonus': '+100 идеально',
+                'sf.keyboard_hint':      'Клавиши: Tab — пропуск/слово · Enter — проверить · Backspace — очистить',
+                'sf.chain_label':        'Цепочка',
             },
             en: {
                 'skip.label':            '⏭ Skip phase',
@@ -6581,6 +6623,27 @@
                 'game.pl':               'Puzzle Lock',
                 'game.mb':               'Mystery Box',
                 'game.ttt':              'Tic Tac Toe',
+                'game.sf':               'Sentence Fill',
+                // Sentence Fill (sf.*)
+                'sf.title':              'Sentence Fill',
+                'sf.eyebrow':            'Game · Cloze',
+                'sf.passage_label':      'Passage',
+                'sf.mode_word_bank':     'Word bank',
+                'sf.mode_free_recall':   'Free recall',
+                'sf.subtitle_bank':      'Tap a blank, then pick a word.',
+                'sf.subtitle_recall':    'Type each word from memory.',
+                'sf.btn_check':          'Check',
+                'sf.btn_next':           'Next',
+                'sf.result_perfect':     'Perfect Fill',
+                'sf.result_partial':     'Not quite',
+                'sf.toast_perfect':      'Perfect. Bonus XP.',
+                'sf.toast_partial':      'Checked. Corrections revealed.',
+                'sf.toast_locked':       'Blank locked.',
+                'sf.score_label':        'Sentence Fill XP',
+                'sf.first_attempt_bonus':'+25 (first try)',
+                'sf.perfect_fill_bonus': '+100 perfect fill',
+                'sf.keyboard_hint':      'Keys: Tab — blanks/words · Enter — check · Backspace — clear',
+                'sf.chain_label':        'Chain',
             },
         };
 
@@ -8855,7 +8918,8 @@
             mm: { tiles:[], flipped:[], matched:0, pendingPair:null, busy:false, complete:false },
             pl: { size:3, cells:[], emptyIdx:0, tiles:[], selected:null, total:0, correct:0, wrongCount:0, complete:false, busy:false },
             mb: { boxes:[], opened:[], idx:-1, phase:'select', labels:[], pickedLabel:'', idCorrect:null, ansCorrect:null, complete:false, busy:false },
-            ttt: { gameIdx:0, wins:0, draws:0, losses:0, board:Array(9).fill(''), targetCell:-1, currentItem:null, itemCursor:0, phase:'await-tap', busy:false, complete:false, winLine:null }
+            ttt: { gameIdx:0, wins:0, draws:0, losses:0, board:Array(9).fill(''), targetCell:-1, currentItem:null, itemCursor:0, phase:'await-tap', busy:false, complete:false, winLine:null },
+            sf: { idx:0, mode:'word_bank', selectedBlank:0, blanks:[], xp:0, pendingFinalize:false, complete:false, busy:false }
         };
 
         // ── Registry-driven game-break order ─────────────────────────────
@@ -8878,6 +8942,8 @@
                 list.push({ id: 'mb', sub: 4, init: gbInitMB, panel: 'gb-panel-mb', label: 'Mystery Box', labelKey: 'game.mb', setupBtn: null });
             if (Array.isArray(GB_TTT) && GB_TTT.length > 0)
                 list.push({ id: 'ttt', sub: 5, init: gbInitTTT, panel: 'gb-panel-ttt', label: 'Tic Tac Toe', labelKey: 'game.ttt', setupBtn: null });
+            if (Array.isArray(GB_SENTENCE_FILL) && GB_SENTENCE_FILL.length > 0)
+                list.push({ id: 'sf', sub: 6, init: gbInitSF, panel: 'gb-panel-sf', label: 'Sentence Fill', labelKey: 'game.sf', setupBtn: gbSetButtonForSF });
             return list;
         }
 
@@ -8896,7 +8962,8 @@
             const idx = order.findIndex(g => g.sub === currentSub);
             if (idx < 0 || idx >= order.length - 1) {
                 // No more games in the registry — exit Stage 5.
-                gbState.subGame = 6;
+                // Sentinel 99 (not 6) — slot 6 is now Sentence Fill (gb-panel-sf).
+                gbState.subGame = 99;
                 gbExitToStage6();
                 return;
             }
@@ -9068,7 +9135,11 @@
 
         function gbHandleAction() {
             if (state.isAnimating) return;
-            if (gbState.subGame === 6) { gbExitToStage6(); return; }
+            if (gbState.subGame === 99) { gbExitToStage6(); return; }
+            if (gbState.subGame === 6) {
+                if (gbState.sf && gbState.sf.complete) { gbAdvanceFromGame(6, 'gb-panel-sf'); return; }
+                gbSFAction(); return;
+            }
             if (gbState.subGame === 5) {
                 if (gbState.ttt && gbState.ttt.complete) { gbAdvanceFromGame(5, 'gb-panel-ttt'); return; }
                 gbTTTAction(); return;
@@ -13536,11 +13607,12 @@ Prezident ertaga hisobot kutmoqda.`,
         // gbActiveGameOrder() at ~line 7019).
         const GB_SUBGAME_TO_SUBPHASE = {
             0: 'adaptive-quiz',
-            1: 'sentence-fill',
+            1: 'sentence-fill', // legacy mislabel — Why Chain panel still subscribes to 'sentence-fill' tutor context until renamed
             2: 'tile-match',
             3: 'puzzle-lock',
             4: 'mystery-box',
             5: 'tile-match', // ttt has no listed subphase; degrade to nearest game.
+            6: 'sentence-fill', // new Sentence Fill panel (gb-panel-sf)
         };
 
         function deriveSubphase(detail) {
@@ -13609,7 +13681,25 @@ Prezident ertaga hisobot kutmoqda.`,
                     return inputs.length ? (inputs[0].value || null) : null;
                 },
                 'adaptive-quiz': () => get('#gb-aq-textarea'),
-                'sentence-fill': () => get('#gb-wc-textarea'),
+                'sentence-fill': () => {
+                    // Slot 6 (new Sentence Fill panel) takes precedence when active.
+                    // Slot 1 (legacy Why Chain) still subscribes to 'sentence-fill'
+                    // until the WC subphase rename ships separately.
+                    const sfPanel = document.getElementById('gb-panel-sf');
+                    if (sfPanel && sfPanel.classList.contains('active')) {
+                        const focused = document.activeElement;
+                        if (focused && focused.classList && focused.classList.contains('gb-sf-recall-input')) {
+                            return focused.value || null;
+                        }
+                        const filled = sfPanel.querySelectorAll('.gb-sf-blank[data-value]:not([data-value=""])');
+                        if (filled.length) {
+                            const last = filled[filled.length - 1];
+                            return last.getAttribute('data-value') || null;
+                        }
+                        return null;
+                    }
+                    return get('#gb-wc-textarea');
+                },
                 'mystery-box': () => {
                     const v = get('#gb-mb-solve-input');
                     if (v) return v;
