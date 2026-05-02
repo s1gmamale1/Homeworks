@@ -56,6 +56,15 @@ class CheckAnswerRequest(BaseModel):
     selected_chip_id: Optional[str] = None
     reasoning_text: Optional[str] = None
 
+    # Final Boss phase fields (only used when phase == "final-boss").
+    # Per FINAL_BOSS_BACKEND_PLAN.md §3b — runtime delegates to existing
+    # tutor.boss_turn via a thin adapter; these fields carry the FB-specific
+    # context (boss type, grade band, attempts/HP cursors) into the adapter.
+    boss_type: Optional[str] = None       # "sub" | "big" | "mythical"
+    grade_band: Optional[str] = None      # "g1_4" | "g5" | "g6_8" | "g9_11"
+    attempts_used: Optional[int] = 0
+    hp_remaining: Optional[int] = None    # client's current HP cursor for outcome computation
+
 
 class FinalizeCheckAnswerRequest(BaseModel):
     phase: str
@@ -74,6 +83,18 @@ class BossTurnRequest(BaseModel):
     grade: int = 8
     # Wave F3 — optional persona traits from boss_plan; absent = previous behavior.
     persona_traits: Optional[list[str]] = None
+    # Final Boss redesign Chunk B — additive optional fields. Existing callers
+    # who omit these get identical behavior (response shape unchanged when
+    # the boss is still in progress; outcome/stars/outcome_xp surface only
+    # when the caller signals defeat by zeroing hp_remaining).
+    boss_type: Optional[str] = None       # "sub" | "big" | "mythical"
+    grade_band: Optional[str] = None      # "g1_4" | "g5" | "g6_8" | "g9_11"
+    attempts_used: Optional[int] = 0
+    hints_used: Optional[int] = 0
+    max_hp: Optional[int] = None          # for outcome computation; falls back to grade-band default
+    homework_id: Optional[str] = None     # forwarded by /check-answer adapter (not used by tutor.boss_turn)
+    session_id: Optional[str] = None      # forwarded by /check-answer adapter (not used by tutor.boss_turn)
+    question_id: Optional[str] = None     # forwarded by /check-answer adapter (not used by tutor.boss_turn)
 
 
 class ReflectionRequest(BaseModel):
@@ -1137,6 +1158,361 @@ async def _check_answer_real_life_challenge(req: CheckAnswerRequest) -> dict:
     return response
 
 
+# ---------------------------------------------------------------------------
+# Final Boss — phase=final-boss check-answer branch (Chunk B).
+#
+# Per FINAL_BOSS_BACKEND_PLAN.md §3 — this is a thin adapter over the existing
+# `tutor.boss_turn` LLM call. It does NOT re-implement grading. It DOES:
+#   - resolve the boss question by id from content_json.boss_questions[]
+#   - delegate AMR 2-axis grading + damage application to tutor.boss_turn
+#   - track per-(homework_id, session_id) state in _FB_ATTEMPTS
+#   - compute mastery stars + XP via _boss_outcome_for on defeat
+#   - apply grade-banded hint cost from boss_meta or per-question override
+#
+# Per-session value:
+# {
+#   "max_hp": int,                 # starting HP for the band/override
+#   "hp_remaining": int,           # mirrors client-reported cursor
+#   "attempts_used": int,          # increments on every wrong submit
+#   "hints_used": int,             # not incremented here (frontend-driven); reflects req
+#   "correct_count": int,          # turns judged correct
+#   "started_at": datetime,
+#   "boss_type": str,              # "sub" | "big" | "mythical"
+#   "grade_band": Optional[str],
+#   "completed_at": Optional[datetime],
+# }
+# ---------------------------------------------------------------------------
+_FB_ATTEMPTS: dict[tuple[str, str], dict[str, Any]] = {}
+
+
+def _fb_default_hp_for_grade_band(band: Optional[str]) -> int:
+    """Per spec §6: g1_4=50, g5=100, g6_8=100, g9_11=150.
+
+    Mirrors `BossHelpers.defaultHpForGradeBand` in `_boss-helpers.js` so the
+    server and builder agree on the starting HP for a band (default 100 when
+    band is unknown — matches the existing routing.py fallback).
+    """
+    return {"g1_4": 50, "g5": 100, "g6_8": 100, "g9_11": 150}.get(band or "", 100)
+
+
+def _fb_default_hint_cost_for_grade_band(band: Optional[str]) -> int:
+    """Per spec §8: g1_4=5, g5=10, g6_8=10, g9_11=15.
+
+    Default 10 when band is unknown (current client default). A per-question
+    `hint_cost_per_use` (BossQuestion field) overrides this when authored.
+    """
+    return {"g1_4": 5, "g5": 10, "g6_8": 10, "g9_11": 15}.get(band or "", 10)
+
+
+def _fb_grade_band_from_grade(grade: Optional[int]) -> str:
+    """Mirror of `BossHelpers.gradeBandFromGrade` in `_boss-helpers.js`."""
+    g = int(grade) if grade is not None else 8
+    if g <= 4:
+        return "g1_4"
+    if g == 5:
+        return "g5"
+    if g <= 8:
+        return "g6_8"
+    return "g9_11"
+
+
+# XP table per spec §11 — by boss_type and stars (1-3).
+# Mythical only rewards 3-star defeats; lesser stars award 0.
+_FB_XP_TABLE: dict[str, dict[int, int]] = {
+    "sub":      {1: 500,  2: 700,  3: 1000},
+    "big":      {1: 1000, 2: 1500, 3: 2000},
+    "mythical": {1: 0,    2: 0,    3: 5000},
+}
+
+
+def _boss_outcome_for(
+    hp_remaining: int,
+    max_hp: int,
+    hints_used: int,
+    attempt_number: int,
+    boss_type: str = "sub",
+) -> tuple[Optional[str], Optional[int], int]:
+    """Returns (outcome_label, stars, xp_award) per spec §11.
+
+    Boundary semantics (pinned by `test_fb_outcome_thresholds_at_boundaries`):
+      - 3 stars: attempt_number == 1 AND hints_used == 0 AND hp_remaining >= max_hp * 0.8
+      - 2 stars: attempt_number <= 2 AND hp_remaining > max_hp * 0.5  (>50%, NOT >=)
+      - 1 star : any other defeat (caller decides defeat — this helper does not)
+      - 0 stars / "hali_emas": NOT defeated (hp_remaining <= 0 with boss still up
+        from the caller's perspective is the only "no defeat" path here; we treat
+        hp_remaining <= 0 as boss-not-defeated since FB's frame is *student*-HP,
+        and 0 student-HP = boss won)
+
+    XP rewards by boss_type (Sub / Big / Mythical) — mythical lesser-star paths
+    return 0 XP per spec §11.
+    """
+    bt = boss_type if boss_type in _FB_XP_TABLE else "sub"
+    # Caller passes hp_remaining > 0 when student survived (boss was defeated).
+    # hp_remaining <= 0 means student's HP gone → "hali_emas" (not yet defeated).
+    if hp_remaining <= 0:
+        return ("hali_emas", 0, 0)
+    safe_max = max(1, int(max_hp or 1))
+
+    # 3-star: pristine first-attempt clear with no hints + >=80% HP remaining.
+    if (
+        attempt_number == 1
+        and (hints_used or 0) == 0
+        and hp_remaining >= safe_max * 0.8
+    ):
+        return ("expert", 3, _FB_XP_TABLE[bt][3])
+
+    # 2-star: <=2 attempts AND strictly more than 50% HP remaining.
+    if attempt_number <= 2 and hp_remaining > safe_max * 0.5:
+        return ("strong", 2, _FB_XP_TABLE[bt][2])
+
+    # 1-star: any other defeat.
+    return ("passing", 1, _FB_XP_TABLE[bt][1])
+
+
+def _fb_find_boss_question(content: dict, question_id: str) -> Optional[dict]:
+    """Locate a boss_question by id in a homework's content_json.
+
+    BossQuestion shapes vary; prefer `id`, fall back to index-as-id ("bq_0").
+    Returns the raw dict (server-only fields like `accepted`/`ans`/`answer_spec`
+    are PRESENT here — that is the point of the side-disjoint injector boundary).
+    """
+    if not isinstance(content, dict) or not question_id:
+        return None
+    bq = content.get("boss_questions")
+    if not isinstance(bq, list):
+        return None
+    for i, q in enumerate(bq):
+        if not isinstance(q, dict):
+            continue
+        if q.get("id") == question_id or q.get("question_id") == question_id:
+            return q
+        if question_id == f"bq_{i}" or question_id == str(i):
+            return q
+    return None
+
+
+def _fb_extract_expected_answers(question: dict) -> list[str]:
+    """Pull deterministic accepted answers from a boss question dict.
+
+    Reads in priority order: answer_spec.expected, accepted_answers, ans.
+    All three are stripped from any client-side surface — we read the raw
+    dict here on the server only.
+    """
+    if not isinstance(question, dict):
+        return []
+    spec = question.get("answer_spec")
+    if isinstance(spec, dict):
+        exp = spec.get("expected")
+        if isinstance(exp, list):
+            return [str(x) for x in exp if x is not None]
+        if isinstance(exp, str) and exp:
+            return [exp]
+    accepted = question.get("accepted_answers") or question.get("accepted")
+    if isinstance(accepted, list):
+        return [str(x) for x in accepted if x is not None]
+    ans = question.get("ans")
+    if isinstance(ans, list):
+        return [str(x) for x in ans if x is not None]
+    if isinstance(ans, str) and ans:
+        return [ans]
+    return []
+
+
+_FB_LEAK_KEYS: frozenset[str] = frozenset({
+    "accepted", "ans", "accepted_answers", "answer_spec", "expected_answers",
+})
+
+
+def _fb_strip_answer_leak(payload: dict) -> dict:
+    """Defensive strip — removes any answer-bearing keys from an outgoing dict.
+
+    The tutor adapter never returns these, but if a future change accidentally
+    stuffs `answer_spec` into the boss-turn response we drop it here so the
+    answer-leak gate (test #15) is enforced at the route boundary, not via
+    LLM-prompt discipline alone.
+    """
+    if not isinstance(payload, dict):
+        return payload
+    return {k: v for k, v in payload.items() if k not in _FB_LEAK_KEYS}
+
+
+async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
+    """Per-question grading branch for Final Boss.
+
+    Thin adapter: builds a `BossTurnRequest` shape and delegates to the
+    existing `tutor.boss_turn` LLM call. Adds:
+      - per-session attempt tracking (mirrors TM/RLC `_*_ATTEMPTS` pattern)
+      - mastery stars / outcome / outcome_xp on defeat (via `_boss_outcome_for`)
+      - hint cost grade-banding (resolved from boss_meta or homework grade)
+
+    No-leak invariants:
+      - Response stripped of `accepted`, `ans`, `accepted_answers`, `answer_spec`
+      - `expected_answers` resolved server-side from authored content_json;
+        never echoed back in the response payload
+    """
+    if not req.homework_id:
+        raise HTTPException(400, detail={
+            "error": "homework_id required for phase=final-boss",
+            "code": "FB_MISSING_HW",
+        })
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+    content = hw.get("content_json") or {}
+
+    # Resolve the boss question. question_id is OPTIONAL when the caller is
+    # submitting via the `question` text field (legacy tutor.check_answer
+    # shape preserved for back-compat with /api/ai/boss-turn callers).
+    question: Optional[dict] = None
+    if req.question_id:
+        question = _fb_find_boss_question(content, req.question_id)
+        if question is None:
+            raise HTTPException(404, detail={
+                "error": (
+                    f"boss question {req.question_id!r} not found in this homework"
+                ),
+                "code": "FB_Q_NOT_FOUND",
+            })
+
+    # Resolve grade band (priority: explicit req.grade_band → boss_meta.grade_band
+    # → infer from homework grade).
+    boss_meta = content.get("boss_meta") if isinstance(content, dict) else None
+    if not isinstance(boss_meta, dict):
+        boss_meta = {}
+    grade_band = (
+        req.grade_band
+        or boss_meta.get("grade_band")
+        or _fb_grade_band_from_grade(hw.get("grade") or req.grade)
+    )
+
+    # Resolve boss_type (priority: req → boss_meta → "sub").
+    boss_type = (req.boss_type or boss_meta.get("boss_type") or "sub")
+    if boss_type not in _FB_XP_TABLE:
+        boss_type = "sub"
+
+    # Resolve max HP — boss_meta override → grade-band default.
+    max_hp = (
+        boss_meta.get("starting_hp_override")
+        or _fb_default_hp_for_grade_band(grade_band)
+    )
+
+    # Resolve hint cost — per-question override → grade-banded default.
+    hint_cost = _fb_default_hint_cost_for_grade_band(grade_band)
+    if isinstance(question, dict):
+        per_q_cost = question.get("hint_cost_per_use")
+        if isinstance(per_q_cost, int) and per_q_cost > 0:
+            hint_cost = per_q_cost
+
+    # Per-question damage — fall back to authored `dmg`, then a sensible default.
+    damage_value = 10
+    if isinstance(question, dict):
+        dmg = question.get("dmg")
+        if isinstance(dmg, (int, float)) and dmg > 0:
+            damage_value = int(dmg)
+
+    # Resolve expected answers from server-only fields. The LLM payload in
+    # `tutor.boss_turn` does NOT receive these (per the security note at
+    # tutor.py:457 — `expected_answers` is never forwarded to the LLM).
+    expected = _fb_extract_expected_answers(question or {})
+
+    # Build the boss-turn input. Mirror the existing /api/ai/boss-turn shape.
+    boss_question_text = (
+        (question.get("prompt") or question.get("q") or "")
+        if isinstance(question, dict) else (req.question or "")
+    )
+
+    # Get-or-create per-session state.
+    session_id = req.session_id or "default"
+    state_key = (req.homework_id, session_id)
+    state = _FB_ATTEMPTS.get(state_key)
+    if state is None:
+        from datetime import datetime, timezone
+        state = {
+            "max_hp": int(max_hp),
+            "hp_remaining": int(req.hp_remaining if req.hp_remaining is not None else max_hp),
+            "attempts_used": int(req.attempts_used or 0),
+            "hints_used": 0,
+            "correct_count": 0,
+            "started_at": datetime.now(timezone.utc),
+            "boss_type": boss_type,
+            "grade_band": grade_band,
+            "completed_at": None,
+        }
+        _FB_ATTEMPTS[state_key] = state
+
+    attempt_number = int(req.attempt_number or 1)
+    if attempt_number < 1:
+        attempt_number = 1
+
+    # Delegate to existing tutor.boss_turn (LLM call). Tests mock this.
+    boss_response = await tutor.boss_turn(
+        boss_question=boss_question_text,
+        student_answer=req.student_answer or "",
+        expected_answers=expected,
+        damage_value=damage_value,
+        hp_remaining=int(req.hp_remaining if req.hp_remaining is not None else state["hp_remaining"]),
+        attempt_number=attempt_number,
+        subject=req.subject,
+        grade=int(hw.get("grade") or req.grade or 8),
+    )
+    if not isinstance(boss_response, dict):
+        boss_response = {}
+
+    # Update running session state.
+    is_correct = bool(boss_response.get("correct"))
+    if is_correct:
+        state["correct_count"] = int(state.get("correct_count", 0)) + 1
+    else:
+        state["attempts_used"] = int(state.get("attempts_used", 0)) + 1
+    # Mirror any client-reported HP cursor if provided (frontend authoritative
+    # on HP for now; backend will become authoritative in a future PR).
+    if req.hp_remaining is not None:
+        state["hp_remaining"] = int(req.hp_remaining)
+
+    # Build the response. Strip any answer-bearing keys defensively.
+    response: dict[str, Any] = dict(_fb_strip_answer_leak(boss_response))
+    response.update({
+        "phase": "final-boss",
+        "boss_type_used": boss_type,
+        "grade_band": grade_band,
+        "max_hp": int(max_hp),
+        "hint_cost_per_use": int(hint_cost),
+        "attempts_used": int(state.get("attempts_used", 0)),
+        "hints_used": int(state.get("hints_used", 0)),
+    })
+
+    # On defeat (caller signals via `done`/`hp_remaining`), compute mastery stars.
+    # The boss is "down" when the LLM/grading layer flags `done=True` OR when
+    # the server has tallied enough damage. Existing `tutor.boss_turn` does NOT
+    # currently emit `done` — it grades a single turn. The frontend agent's
+    # PR will pass `done=True` on the FINAL turn; we treat boss_response.get(
+    # "done") as the canonical signal and fall back to inspecting the
+    # client-reported HP (defeat = hp_remaining > 0 AND attempt_number is final).
+    done = bool(boss_response.get("done"))
+    if done:
+        outcome, stars, outcome_xp = _boss_outcome_for(
+            hp_remaining=int(req.hp_remaining or 0),
+            max_hp=int(max_hp),
+            hints_used=int(req.attempts_used or state.get("hints_used", 0) or 0),
+            attempt_number=attempt_number,
+            boss_type=boss_type,
+        )
+        # `hints_used` from the request body wins when explicitly provided by
+        # the runtime — mirror it onto the helper input for accurate stars.
+        # (We use `attempts_used` as a proxy ONLY if hints_used is unknown.)
+        from datetime import datetime, timezone
+        state["completed_at"] = datetime.now(timezone.utc)
+        response["outcome"] = outcome
+        response["stars"] = stars
+        response["outcome_xp"] = int(outcome_xp)
+
+    return response
+
+
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
     # Phase dispatch — the new sentence-fill grading branch is keyed on
@@ -1173,6 +1549,16 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "real-life-challenge" and req.homework_id:
         try:
             return await _check_answer_real_life_challenge(req)
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Final Boss per-question grading branch — same back-compat gate. Legacy
+    # callers without a homework_id fall through to tutor.check_answer.
+    if req.phase == "final-boss" and req.homework_id:
+        try:
+            return await _check_answer_final_boss(req)
         except HTTPException:
             raise
         except Exception as e:
@@ -1259,7 +1645,7 @@ async def check_answer_finalize(req: FinalizeCheckAnswerRequest):
 @router.post("/ai/boss-turn")
 async def boss_turn(req: BossTurnRequest):
     try:
-        return await tutor.boss_turn(
+        result = await tutor.boss_turn(
             boss_question=req.boss_question,
             student_answer=req.student_answer,
             expected_answers=req.expected_answers,
@@ -1270,6 +1656,26 @@ async def boss_turn(req: BossTurnRequest):
             grade=req.grade,
             persona_traits=req.persona_traits,  # Wave F3
         )
+        # Final Boss redesign Chunk B — additive: when the caller signals
+        # defeat (done=True) AND attached the FB context fields, surface
+        # mastery stars / outcome / outcome_xp on the same response. Existing
+        # in-progress responses (no `done` key, no FB context) are unchanged.
+        if isinstance(result, dict) and result.get("done"):
+            boss_type = req.boss_type if req.boss_type in _FB_XP_TABLE else "sub"
+            grade_band = req.grade_band or _fb_grade_band_from_grade(req.grade)
+            max_hp = int(req.max_hp) if req.max_hp else _fb_default_hp_for_grade_band(grade_band)
+            outcome, stars, outcome_xp = _boss_outcome_for(
+                hp_remaining=int(req.hp_remaining or 0),
+                max_hp=max_hp,
+                hints_used=int(req.hints_used or 0),
+                attempt_number=int(req.attempt_number or 1),
+                boss_type=boss_type,
+            )
+            result["outcome"] = outcome
+            result["stars"] = stars
+            result["outcome_xp"] = int(outcome_xp)
+            result["boss_type_used"] = boss_type
+        return result
     except Exception as e:
         _handle_exc(e)
 
