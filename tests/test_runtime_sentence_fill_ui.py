@@ -184,6 +184,29 @@ def test_sf_grade_blank_posts_phase_sentence_fill():
     )
 
 
+def test_sf_grade_blank_reads_hwid_from_nets_ctx():
+    """gbSFGradeBlank must probe `ctx.hwId` first when reading the homework id.
+
+    NETS_CTX exposes `hwId` (camelCase) per server/routes/homework_page.py
+    runtime_ctx — not `homework_id` or `homeworkId`. Without `ctx.hwId` in
+    the lookup chain, the request body sends homework_id=null and the
+    /api/ai/check-answer endpoint can't grade. PR #140 added this fix to
+    gbTMCheckPair; SF must mirror it.
+    """
+    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-HWID", "subject": "math-algebra", "grade": 8})
+    grade_fn = re.search(
+        r"async function gbSFGradeBlank\([^)]*\)\s*\{[\s\S]*?(?=\n\s{8}(?:async\s+)?function )",
+        html,
+    )
+    assert grade_fn, "gbSFGradeBlank function body not found"
+    body = grade_fn.group(0)
+    assert "ctx.hwId" in body, (
+        "gbSFGradeBlank must probe `ctx.hwId` — NETS_CTX exposes hwId, "
+        "not homework_id/homeworkId. Without it the endpoint receives "
+        "homework_id=null and grading silently fails."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Registry / lifecycle wiring
 # ---------------------------------------------------------------------------

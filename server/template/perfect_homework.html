@@ -10277,7 +10277,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         phase: 'sentence-fill',
-                        homework_id: ctx.homework_id || ctx.homeworkId || null,
+                        // NETS_CTX exposes `hwId` per server/routes/homework_page.py
+                        // runtime_ctx; probe homework_id / homeworkId for forward-compat.
+                        // Mirrors gbTMCheckPair's lookup chain (PR #140).
+                        homework_id: ctx.hwId || ctx.homework_id || ctx.homeworkId || null,
                         question_id: itemId,
                         student_answer: studentValue,
                         // Forward-compat fields:
