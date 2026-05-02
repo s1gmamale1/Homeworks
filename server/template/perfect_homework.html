@@ -9809,10 +9809,13 @@
             const progressLabel = document.getElementById('gb-sf-progress-label');
             if (progressLabel) {
                 const total = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL.length : 0;
-                progressLabel.textContent = (gbState.sf.idx + 1) + ' / ' + total;
+                progressLabel.textContent = (gbState.sf.idx + 1) + '/' + total + ' ' + RT('sf.title');
             }
             const chainLabel = document.getElementById('gb-sf-chain-label');
-            if (chainLabel) chainLabel.textContent = RT('sf.chain_label');
+            if (chainLabel) {
+                const total = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL.length : 0;
+                chainLabel.textContent = RT('sf.chain_label') + ' ' + (gbState.sf.idx + 1) + '/' + total;
+            }
             // Mode buttons + keyboard listeners — bind once.
             if (!_gbSFListenersBound) {
                 const bankBtn = document.getElementById('gb-sf-mode-bank');
@@ -9893,7 +9896,9 @@
                 spans.forEach((s, i) => { s.classList.toggle('active', i === gbState.sf.idx); });
             }
             const progressLabel = document.getElementById('gb-sf-progress-label');
-            if (progressLabel) progressLabel.textContent = (gbState.sf.idx + 1) + ' / ' + items.length;
+            if (progressLabel) progressLabel.textContent = (gbState.sf.idx + 1) + '/' + items.length + ' ' + RT('sf.title');
+            const chainLabel = document.getElementById('gb-sf-chain-label');
+            if (chainLabel) chainLabel.textContent = RT('sf.chain_label') + ' ' + (gbState.sf.idx + 1) + '/' + items.length;
             // Hide result card.
             const resultCard = document.getElementById('gb-sf-result-card');
             if (resultCard) resultCard.classList.remove('show');
