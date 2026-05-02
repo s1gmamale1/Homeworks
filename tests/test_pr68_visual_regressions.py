@@ -173,6 +173,34 @@ def test_adaptive_quiz_question_host_is_not_a_paragraph():
     )
 
 
+def test_every_screen_div_carries_the_screen_class():
+    # Every <div id="screen-..."> must carry the `screen` class so the
+    # runtime's many `document.querySelectorAll('.screen')` cleanup loops
+    # actually find it. Missing the class on screen-5 left the game-break
+    # screen un-deactivated when navigation moved past it, allowing it to
+    # overlap subsequent phases and swallow pointer events from the AQ
+    # answer textarea inside (regression 2026-05-02).
+    html = _read(RUNTIME)
+
+    matches = re.findall(
+        r'<div\s+id\s*=\s*"(screen-[\w-]+)"\s*([^>]*)>',
+        html,
+    )
+    assert matches, "no screen div definitions found in runtime template"
+
+    missing = []
+    for screen_id, attrs in matches:
+        cls = re.search(r'\bclass\s*=\s*"([^"]*)"', attrs)
+        classes = (cls.group(1).split() if cls else [])
+        if "screen" not in classes:
+            missing.append(screen_id)
+
+    assert not missing, (
+        f"these screen divs are missing the `screen` class: {missing}; "
+        "runtime navigation cleanup uses .screen as the enumeration selector"
+    )
+
+
 def test_adaptive_quiz_mobile_layout_stacks_at_640px():
     css = _read(APP_CSS)
     media = re.search(
