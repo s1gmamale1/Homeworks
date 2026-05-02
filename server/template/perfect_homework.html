@@ -5741,7 +5741,12 @@
                                 </div>
                                 <h1 class="aq-tier-headline tier-easy" id="aq-tier-headline">Easy</h1>
                                 <div class="aq-problem">
-                                    <p id="gb-aq-question"></p>
+                                    <!-- Host is a <div>, NOT a <p>. RichField wraps prompt
+                                         content in <p>; assigning that to a <p>'s innerHTML
+                                         triggers HTML5 auto-closing and hoists the prompt
+                                         out of .aq-problem, hiding the answer textarea
+                                         (regression 2026-05-02). -->
+                                    <div id="gb-aq-question"></div>
                                 </div>
                                 <div class="aq-tags" id="gb-aq-tags"></div>
                             </article>

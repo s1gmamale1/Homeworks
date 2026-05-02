@@ -140,6 +140,39 @@ def test_adaptive_quiz_builder_has_grouped_grading_ui():
     assert ".aq-section-eyebrow" in css
 
 
+def test_adaptive_quiz_question_host_is_not_a_paragraph():
+    # RichField wraps prompt content in <p>...</p>. Hosting that inside a
+    # <p id="gb-aq-question"> triggers HTML5 auto-closing of the outer <p>
+    # and hoists the prompt out of .aq-problem, hiding the answer textarea
+    # (regression 2026-05-02).
+    html = _read(RUNTIME)
+
+    paragraph_host = re.search(
+        r"<p\s[^>]*\bid\s*=\s*['\"]gb-aq-question['\"][^>]*>",
+        html,
+    )
+    assert paragraph_host is None, (
+        "AQ question host must not be a <p>; RichField's <p> output "
+        "is not a legal child of <p>."
+    )
+
+    div_host = re.search(
+        r"<div\s[^>]*\bid\s*=\s*['\"]gb-aq-question['\"][^>]*>",
+        html,
+    )
+    assert div_host is not None, "missing <div id='gb-aq-question'> host"
+
+    wrapped = re.search(
+        r"<div\s[^>]*\bclass\s*=\s*['\"][^'\"]*\baq-problem\b[^'\"]*['\"][^>]*>"
+        r"[\s\S]*?<div\s[^>]*\bid\s*=\s*['\"]gb-aq-question['\"][^>]*>"
+        r"[\s\S]*?</div>\s*</div>",
+        html,
+    )
+    assert wrapped is not None, (
+        "<div id='gb-aq-question'> must remain inside <div class='aq-problem'>"
+    )
+
+
 def test_adaptive_quiz_mobile_layout_stacks_at_640px():
     css = _read(APP_CSS)
     media = re.search(
