@@ -26,6 +26,7 @@ GAME_KEYS = [
     ("gb_puzzle_lock",   "GB_PUZZLE_LOCK"),
     ("gb_mystery_box",   "GB_MYSTERY_BOX"),
     ("gb_ttt",           "GB_TTT"),
+    ("gb_sentence_fill", "GB_SENTENCE_FILL"),
 ]
 
 
@@ -47,6 +48,7 @@ def _empty_content():
         "gb_puzzle_lock": [],
         "gb_mystery_box": [],
         "gb_ttt": [],
+        "gb_sentence_fill": [],
         "boss_questions": [],
         "real_life": None,
         "reading": None,
@@ -139,6 +141,12 @@ def test_advancement_uses_registry_not_hardcoded_subgame_indices():
     assert "gbAdvanceFromGame(3, 'gb-panel-pl')" in html, "PL completion must call gbAdvanceFromGame(3, 'gb-panel-pl')"
     assert "gbAdvanceFromGame(4, 'gb-panel-mb')" in html, "MB completion must call gbAdvanceFromGame(4, 'gb-panel-mb')"
     assert "gbAdvanceFromGame(5, 'gb-panel-ttt')" in html, "TTT completion must call gbAdvanceFromGame(5, 'gb-panel-ttt')"
+    # Sentence Fill (slot 6) — gbSFFinish must call gbAdvanceFromGame(6, 'gb-panel-sf').
+    sf_finish = re.search(r"function gbSFFinish\(\)\s*\{[^}]*\}", html, re.DOTALL)
+    assert sf_finish, "gbSFFinish not found"
+    assert "gbAdvanceFromGame(6, 'gb-panel-sf')" in sf_finish.group(0), (
+        "gbSFFinish must call gbAdvanceFromGame(6, 'gb-panel-sf')."
+    )
 
 
 def test_empty_homework_preview_renders_without_game_placeholders(client):
