@@ -9706,6 +9706,529 @@
             gbAdvanceFromGame(1, 'gb-panel-wc');
         }
 
+        // ── Sentence Fill (Stage-5 sub-game 6) ──────────────────────────
+        // Cloze-style fill-in-the-blank with two modes: word_bank (pick chips)
+        // and free_recall (type into inputs). Each blank is graded independently
+        // via /api/ai/check-answer with phase='sentence-fill'. After 2 wrong
+        // attempts, the blank locks and the correct answer is revealed only via
+        // result.correct_answer from the backend (never embedded in client data).
+        let _gbSFListenersBound = false;
+        let _gbSFToastTimer = null;
+
+        function gbSetButtonForSF() {
+            btn.classList.remove('pulse','state-pill','state-line');
+            btn.classList.add('state-pill');
+            setBtnText(RT('sf.btn_check'));
+            btn.classList.add('pulse');
+        }
+
+        async function gbSFGradeBlank(itemId, blankIdx, studentValue, attemptNumber) {
+            try {
+                const ctx = window.NETS_CTX || {};
+                const resp = await fetch('/api/ai/check-answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phase: 'sentence-fill',
+                        homework_id: ctx.homework_id || ctx.homeworkId || null,
+                        question_id: itemId,
+                        student_answer: studentValue,
+                        // Forward-compat fields:
+                        blank_idx: blankIdx,
+                        attempt_number: attemptNumber,
+                        item_id: itemId,
+                        student_value: studentValue,
+                        subject: ctx.subject || 'general',
+                        grade: ctx.grade || 8,
+                        expected_answers: [],
+                        answer_spec: {
+                            type: 'semantic',
+                            expected: '',
+                            canonical_display: '',
+                            allow_ai_fallback: true,
+                            amr: false
+                        },
+                        allow_ai_fallback: true
+                    })
+                });
+                if (!resp.ok) {
+                    return {
+                        correct: false,
+                        lock: attemptNumber >= 2,
+                        correct_answer: null,
+                        explanation: null,
+                        xp: { base: 0, first_attempt_bonus: 0, total: 0 },
+                        error: 'http ' + resp.status
+                    };
+                }
+                const data = await resp.json();
+                const isCorrect = !!(data.is_correct === true || data.correct === true);
+                const lock = isCorrect || attemptNumber >= 2;
+                const revealedAnswer = (!isCorrect && attemptNumber >= 2)
+                    ? (data.expected || data.canonical_display || data.correct_answer || null)
+                    : null;
+                return {
+                    correct: isCorrect,
+                    lock: lock,
+                    correct_answer: revealedAnswer,
+                    explanation: data.explanation || null,
+                    xp: {
+                        base: isCorrect ? 100 : 0,
+                        first_attempt_bonus: (isCorrect && attemptNumber === 1) ? 25 : 0,
+                        total: isCorrect ? (attemptNumber === 1 ? 125 : 100) : 0
+                    }
+                };
+            } catch (e) {
+                return {
+                    correct: false,
+                    lock: attemptNumber >= 2,
+                    correct_answer: null,
+                    explanation: null,
+                    xp: { base: 0, first_attempt_bonus: 0, total: 0 },
+                    error: String(e)
+                };
+            }
+        }
+
+        function gbInitSF() {
+            // Reset state for slot 6.
+            gbState.sf = { idx:0, mode:(gbState.sf && gbState.sf.mode) || 'word_bank', selectedBlank:0, blanks:[], xp:0, pendingFinalize:false, complete:false, busy:false };
+            // Eyebrow + chain label + dots (one per item).
+            const eyebrow = document.getElementById('gb-sf-eyebrow');
+            if (eyebrow) eyebrow.textContent = (RT('sf.eyebrow') || '').toUpperCase();
+            const dots = document.getElementById('gb-sf-dots');
+            if (dots) {
+                dots.innerHTML = '';
+                const total = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL.length : 0;
+                for (let i = 0; i < total; i++) {
+                    const d = document.createElement('span');
+                    if (i === 0) d.classList.add('active');
+                    dots.appendChild(d);
+                }
+            }
+            const progressLabel = document.getElementById('gb-sf-progress-label');
+            if (progressLabel) {
+                const total = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL.length : 0;
+                progressLabel.textContent = (gbState.sf.idx + 1) + ' / ' + total;
+            }
+            const chainLabel = document.getElementById('gb-sf-chain-label');
+            if (chainLabel) chainLabel.textContent = RT('sf.chain_label');
+            // Mode buttons + keyboard listeners — bind once.
+            if (!_gbSFListenersBound) {
+                const bankBtn = document.getElementById('gb-sf-mode-bank');
+                const recallBtn = document.getElementById('gb-sf-mode-recall');
+                if (bankBtn) bankBtn.addEventListener('click', () => {
+                    if (gbState.subGame !== 6 || gbState.sf.complete) return;
+                    gbSFApplyMode('word_bank');
+                });
+                if (recallBtn) recallBtn.addEventListener('click', () => {
+                    if (gbState.subGame !== 6 || gbState.sf.complete) return;
+                    gbSFApplyMode('free_recall');
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (gbState.subGame !== 6) return;
+                    const sfPanel = document.getElementById('gb-panel-sf');
+                    if (!sfPanel || !sfPanel.classList.contains('active')) return;
+                    if (gbState.sf.complete || gbState.sf.busy) return;
+                    const focused = document.activeElement;
+                    const isInput = focused && focused.classList && focused.classList.contains('gb-sf-recall-input');
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        gbSFAction();
+                        return;
+                    }
+                    if (e.key === 'Backspace' && !isInput) {
+                        const idx = gbState.sf.selectedBlank;
+                        const blank = gbState.sf.blanks[idx];
+                        if (blank && !blank.locked && blank.value) {
+                            e.preventDefault();
+                            blank.value = '';
+                            const blankEl = document.querySelector('.gb-sf-blank[data-index="' + idx + '"]');
+                            if (blankEl) {
+                                blankEl.removeAttribute('data-value');
+                                blankEl.textContent = '';
+                                blankEl.classList.add('empty');
+                            }
+                            gbSFSyncUsedWords();
+                        }
+                    }
+                });
+                _gbSFListenersBound = true;
+            }
+            // Hide result card from any prior render.
+            const resultCard = document.getElementById('gb-sf-result-card');
+            if (resultCard) resultCard.classList.remove('show');
+            gbSFRenderItem();
+        }
+
+        function gbSFRenderItem() {
+            const items = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL : [];
+            const item = items[gbState.sf.idx];
+            if (!item) { gbSFFinish(); return; }
+            // Default mode if missing on item.
+            const mode = item.mode || gbState.sf.mode || 'word_bank';
+            // Init blanks array based on '___' count.
+            const blankCount = (item.passage || '').split('___').length - 1;
+            gbState.sf.blanks = [];
+            for (let i = 0; i < blankCount; i++) {
+                gbState.sf.blanks.push({ value:'', attempts:0, locked:false, correct:false, revealed:null });
+            }
+            gbState.sf.selectedBlank = 0;
+            // Reset XP pill + score line.
+            const xpPill = document.getElementById('gb-sf-xp-pill');
+            if (xpPill) xpPill.textContent = '0 XP';
+            const scoreLabel = document.getElementById('gb-sf-score-label');
+            if (scoreLabel) scoreLabel.textContent = RT('sf.score_label');
+            const scoreValue = document.getElementById('gb-sf-score-value');
+            if (scoreValue) scoreValue.textContent = '0 XP';
+            // Title + meta.
+            const titleEl = document.getElementById('gb-sf-title');
+            if (titleEl) titleEl.textContent = RT('sf.title');
+            const metaEl = document.getElementById('gb-sf-eyebrow-meta');
+            if (metaEl) metaEl.textContent = item.tags || '';
+            // Update progress dots + label.
+            const dots = document.getElementById('gb-sf-dots');
+            if (dots) {
+                const spans = dots.querySelectorAll('span');
+                spans.forEach((s, i) => { s.classList.toggle('active', i === gbState.sf.idx); });
+            }
+            const progressLabel = document.getElementById('gb-sf-progress-label');
+            if (progressLabel) progressLabel.textContent = (gbState.sf.idx + 1) + ' / ' + items.length;
+            // Hide result card.
+            const resultCard = document.getElementById('gb-sf-result-card');
+            if (resultCard) resultCard.classList.remove('show');
+            // Render passage + apply mode + select first blank.
+            gbSFRenderPassage(item);
+            gbSFApplyMode(mode);
+            gbSFSelectBlank(0);
+            // Reset action button.
+            setBtnText(RT('sf.btn_check'));
+        }
+
+        function gbSFRenderPassage(item) {
+            const cloze = document.getElementById('gb-sf-cloze-text');
+            if (!cloze) return;
+            cloze.innerHTML = '';
+            const passage = item.passage || '';
+            const segments = passage.split('___');
+            const blankIcons = Array.isArray(item.blank_icons) ? item.blank_icons : [];
+            const colorHints = (item.color_hints && typeof item.color_hints === 'object') ? item.color_hints : {};
+            const iconMap = { lightbulb: '💡', star: '⭐' };
+            const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const appendTextSeg = (text) => {
+                if (!text) return;
+                let html = text;
+                try {
+                    const words = Object.keys(colorHints);
+                    if (words.length) {
+                        html = html.replace(/[<>&]/g, (c) => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
+                        words.forEach((w) => {
+                            if (!w) return;
+                            const re = new RegExp('\\b(' + escapeRe(w) + ')\\b', 'g');
+                            html = html.replace(re, '<span class="gb-sf-color-hint" style="color: var(--accent)">$1</span>');
+                        });
+                        const span = document.createElement('span');
+                        span.innerHTML = html;
+                        cloze.appendChild(span);
+                        return;
+                    }
+                } catch (_) { /* fall through to plain text */ }
+                cloze.appendChild(document.createTextNode(text));
+            };
+            for (let i = 0; i < segments.length; i++) {
+                appendTextSeg(segments[i]);
+                if (i < segments.length - 1) {
+                    const blankBtn = document.createElement('button');
+                    blankBtn.type = 'button';
+                    blankBtn.className = 'gb-sf-blank empty';
+                    blankBtn.setAttribute('data-index', String(i));
+                    blankBtn.setAttribute('data-number', String(i + 1));
+                    const iconKey = blankIcons[i];
+                    const iconChar = iconKey && iconMap[iconKey] ? iconMap[iconKey] + ' ' : '';
+                    if (iconChar) blankBtn.textContent = iconChar;
+                    const idxLocal = i;
+                    blankBtn.addEventListener('click', () => gbSFSelectBlank(idxLocal));
+                    cloze.appendChild(blankBtn);
+                }
+            }
+            const passageLabel = document.getElementById('gb-sf-passage-label');
+            if (passageLabel) {
+                passageLabel.textContent = RT('sf.passage_label') + (item.tags ? ' · ' + item.tags : '');
+            }
+        }
+
+        function gbSFApplyMode(mode) {
+            gbState.sf.mode = mode;
+            const bankBtn = document.getElementById('gb-sf-mode-bank');
+            const recallBtn = document.getElementById('gb-sf-mode-recall');
+            if (bankBtn) {
+                bankBtn.textContent = RT('sf.mode_word_bank');
+                bankBtn.classList.toggle('active', mode === 'word_bank');
+            }
+            if (recallBtn) {
+                recallBtn.textContent = RT('sf.mode_free_recall');
+                recallBtn.classList.toggle('active', mode === 'free_recall');
+            }
+            const microcopy = document.getElementById('gb-sf-microcopy');
+            if (microcopy) {
+                microcopy.textContent = mode === 'word_bank' ? RT('sf.subtitle_bank') : RT('sf.subtitle_recall');
+            }
+            const subtitle = document.getElementById('gb-sf-subtitle');
+            if (subtitle) {
+                subtitle.textContent = mode === 'word_bank' ? RT('sf.subtitle_bank') : RT('sf.subtitle_recall');
+            }
+            const wordBank = document.getElementById('gb-sf-word-bank');
+            const recallGrid = document.getElementById('gb-sf-recall-grid');
+            const items = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL : [];
+            const item = items[gbState.sf.idx] || {};
+            if (mode === 'word_bank') {
+                if (wordBank) {
+                    wordBank.style.display = 'flex';
+                    wordBank.innerHTML = '';
+                    const bank = Array.isArray(item.word_bank) ? item.word_bank : [];
+                    bank.forEach((word) => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'gb-sf-word';
+                        chip.setAttribute('data-word', String(word));
+                        chip.textContent = String(word);
+                        chip.addEventListener('click', () => gbSFPickWord(String(word)));
+                        wordBank.appendChild(chip);
+                    });
+                }
+                if (recallGrid) {
+                    recallGrid.classList.remove('show');
+                    recallGrid.innerHTML = '';
+                }
+                gbSFSyncUsedWords();
+            } else {
+                if (wordBank) {
+                    wordBank.style.display = 'none';
+                }
+                if (recallGrid) {
+                    recallGrid.classList.add('show');
+                    recallGrid.innerHTML = '';
+                    gbState.sf.blanks.forEach((blank, idx) => {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'gb-sf-recall-input';
+                        input.id = 'gb-sf-recall-' + idx;
+                        input.setAttribute('data-index', String(idx));
+                        input.setAttribute('autocomplete', 'off');
+                        input.placeholder = 'Blank ' + (idx + 1);
+                        input.value = blank.value || '';
+                        if (blank.locked) input.disabled = true;
+                        input.addEventListener('input', (e) => {
+                            const i = parseInt(e.target.getAttribute('data-index'), 10);
+                            if (gbState.sf.blanks[i] && !gbState.sf.blanks[i].locked) {
+                                gbState.sf.blanks[i].value = e.target.value;
+                                // Reflect into the cloze blank as well so sync visuals stay coherent.
+                                const blankEl = document.querySelector('.gb-sf-blank[data-index="' + i + '"]');
+                                if (blankEl) {
+                                    if (e.target.value) {
+                                        blankEl.setAttribute('data-value', e.target.value);
+                                        blankEl.textContent = e.target.value;
+                                        blankEl.classList.remove('empty');
+                                    } else {
+                                        blankEl.removeAttribute('data-value');
+                                        blankEl.textContent = '';
+                                        blankEl.classList.add('empty');
+                                    }
+                                }
+                            }
+                        });
+                        recallGrid.appendChild(input);
+                    });
+                }
+            }
+            const kbHint = document.getElementById('gb-sf-keyboard-hint');
+            if (kbHint) kbHint.textContent = RT('sf.keyboard_hint');
+        }
+
+        function gbSFSelectBlank(idx) {
+            const blanks = gbState.sf.blanks || [];
+            if (!blanks.length) return;
+            // If target blank is locked, advance to first non-locked.
+            let target = idx;
+            if (blanks[target] && blanks[target].locked) {
+                let scan = -1;
+                for (let i = 0; i < blanks.length; i++) {
+                    if (!blanks[i].locked) { scan = i; break; }
+                }
+                if (scan === -1) return;
+                target = scan;
+            }
+            gbState.sf.selectedBlank = target;
+            const all = document.querySelectorAll('.gb-sf-blank');
+            all.forEach((el) => {
+                const i = parseInt(el.getAttribute('data-index'), 10);
+                const isLocked = blanks[i] && blanks[i].locked;
+                if (!isLocked) el.classList.toggle('active', i === target);
+                else el.classList.remove('active');
+            });
+        }
+
+        function gbSFPickWord(word) {
+            if (gbState.sf.mode !== 'word_bank') return;
+            const idx = gbState.sf.selectedBlank;
+            const blank = gbState.sf.blanks[idx];
+            if (!blank || blank.locked) return;
+            blank.value = word;
+            const blankEl = document.querySelector('.gb-sf-blank[data-index="' + idx + '"]');
+            if (blankEl) {
+                blankEl.setAttribute('data-value', word);
+                blankEl.textContent = word;
+                blankEl.classList.remove('empty');
+            }
+            gbSFSyncUsedWords();
+            // Auto-advance to next non-locked, non-filled blank.
+            const blanks = gbState.sf.blanks;
+            for (let step = 1; step <= blanks.length; step++) {
+                const nxt = (idx + step) % blanks.length;
+                const b = blanks[nxt];
+                if (b && !b.locked && !b.value) {
+                    gbSFSelectBlank(nxt);
+                    return;
+                }
+            }
+        }
+
+        function gbSFSyncUsedWords() {
+            const used = new Set();
+            (gbState.sf.blanks || []).forEach((b) => {
+                if (b && b.value) used.add(String(b.value));
+            });
+            const chips = document.querySelectorAll('.gb-sf-word');
+            chips.forEach((chip) => {
+                const w = chip.getAttribute('data-word');
+                chip.classList.toggle('used', used.has(w));
+            });
+        }
+
+        async function gbSFAction() {
+            if (gbState.sf.busy) return;
+            const items = Array.isArray(GB_SENTENCE_FILL) ? GB_SENTENCE_FILL : [];
+            const item = items[gbState.sf.idx];
+            if (!item) { gbSFFinish(); return; }
+            const resultCard = document.getElementById('gb-sf-result-card');
+            // If result card is showing, this click means "next".
+            if (resultCard && resultCard.classList.contains('show')) {
+                if (gbState.sf.idx < items.length - 1) {
+                    gbState.sf.idx += 1;
+                    gbSFRenderItem();
+                    setBtnText(RT('sf.btn_check'));
+                } else {
+                    gbSFFinish();
+                }
+                return;
+            }
+            // Free-recall mode: pull current values from inputs (defensive sync).
+            if (gbState.sf.mode === 'free_recall') {
+                (gbState.sf.blanks || []).forEach((b, i) => {
+                    if (!b.locked) {
+                        const input = document.getElementById('gb-sf-recall-' + i);
+                        if (input) b.value = (input.value || '').trim();
+                    }
+                });
+            }
+            // Validate: every non-locked blank must have a value.
+            const missing = (gbState.sf.blanks || []).some((b) => !b.locked && !String(b.value || '').trim());
+            if (missing) {
+                gbSFShowToast(RT('sf.subtitle_recall'));
+                return;
+            }
+            gbState.sf.busy = true;
+            let totalXp = 0;
+            const blanks = gbState.sf.blanks;
+            for (let i = 0; i < blanks.length; i++) {
+                const b = blanks[i];
+                if (b.locked) continue;
+                const attemptNumber = b.attempts + 1;
+                const result = await gbSFGradeBlank(item.id, i, b.value, attemptNumber);
+                b.attempts = attemptNumber;
+                const blankEl = document.querySelector('.gb-sf-blank[data-index="' + i + '"]');
+                if (result.correct) {
+                    b.correct = true;
+                    b.locked = true;
+                    if (blankEl) {
+                        blankEl.classList.remove('wrong','active','empty');
+                        blankEl.classList.add('correct','locked');
+                    }
+                } else {
+                    if (blankEl) {
+                        blankEl.classList.remove('correct','active');
+                        blankEl.classList.add('wrong');
+                    }
+                    if (result.lock) {
+                        b.locked = true;
+                        if (result.correct_answer) {
+                            b.revealed = result.correct_answer;
+                            b.value = result.correct_answer;
+                            if (blankEl) {
+                                blankEl.setAttribute('data-value', result.correct_answer);
+                                blankEl.textContent = result.correct_answer;
+                                blankEl.classList.remove('empty','wrong');
+                                blankEl.classList.add('locked');
+                            }
+                            // Reflect reveal into recall input if shown.
+                            const input = document.getElementById('gb-sf-recall-' + i);
+                            if (input) { input.value = result.correct_answer; input.disabled = true; }
+                        }
+                    }
+                }
+                totalXp += (result.xp && typeof result.xp.total === 'number') ? result.xp.total : 0;
+            }
+            // Compute perfect fill: all correct AND every attempts === 1.
+            const perfect = blanks.every((b) => b.correct === true && b.attempts === 1);
+            if (perfect) totalXp += 100;
+            gbState.sf.xp = totalXp;
+            // Update XP pill + score line.
+            const xpPill = document.getElementById('gb-sf-xp-pill');
+            if (xpPill) xpPill.textContent = totalXp + ' XP';
+            const scoreValue = document.getElementById('gb-sf-score-value');
+            if (scoreValue) scoreValue.textContent = totalXp + ' XP';
+            // Toast + result card.
+            gbSFShowToast(perfect ? RT('sf.toast_perfect') : RT('sf.toast_partial'));
+            const resultTitle = document.getElementById('gb-sf-result-title');
+            const resultText = document.getElementById('gb-sf-result-text');
+            if (resultTitle) resultTitle.textContent = perfect ? RT('sf.result_perfect') : RT('sf.result_partial');
+            if (resultText) resultText.textContent = perfect ? RT('sf.perfect_fill_bonus') : RT('sf.first_attempt_bonus');
+            if (resultCard) resultCard.classList.add('show');
+            // Set button to Next.
+            setBtnText(RT('sf.btn_next'));
+            // Session log.
+            if (window.__sessionLog) {
+                const correctCount = blanks.filter((b) => b.correct).length;
+                window.__sessionLog.push({
+                    phase: 'sentence-fill',
+                    id: item.id || ('sf-' + (gbState.sf.idx + 1)),
+                    correct: correctCount === blanks.length,
+                    score: blanks.length ? (correctCount / blanks.length) : 0,
+                    first_try: perfect,
+                    closed: true,
+                    xp: totalXp
+                });
+            }
+            gbState.sf.busy = false;
+        }
+
+        function gbSFShowToast(text) {
+            const toast = document.getElementById('gb-sf-toast');
+            if (!toast) return;
+            toast.textContent = text || '';
+            toast.classList.add('show');
+            if (_gbSFToastTimer) clearTimeout(_gbSFToastTimer);
+            _gbSFToastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                _gbSFToastTimer = null;
+            }, 2000);
+        }
+
+        function gbSFFinish() {
+            gbState.sf.complete = true;
+            gbAdvanceFromGame(6, 'gb-panel-sf');
+        }
+
         // Tile Match — left/right column matching.
         // Left column shows all `a` sides in order; right column shows all
         // `b` sides shuffled. Click a left tile, then click a right tile to
