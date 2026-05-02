@@ -4,6 +4,7 @@ AI Runtime Tutor Endpoints.
 Called by the homework playback frontend during student sessions.
 All stateless. Request/response JSON, no SSE.
 """
+import logging
 from fastapi import APIRouter, HTTPException, Path as PathParam, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Any
@@ -15,13 +16,17 @@ from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
 
+_log = logging.getLogger("nets.sentence_fill")
+
 
 # --- Request models ---
 
 class CheckAnswerRequest(BaseModel):
+    # Legacy free-form fields (made optional so sentence-fill phase callers
+    # can submit a minimal payload without forcing dummy values).
     question_id: str = ""
-    question: str
-    student_answer: str
+    question: str = ""
+    student_answer: str = ""
     expected_answers: list[str] = []
     answer_spec: Optional[dict[str, Any]] = None
     allow_ai_fallback: bool = True
@@ -30,6 +35,19 @@ class CheckAnswerRequest(BaseModel):
     tier: str = "MEDIUM"
     context: Optional[str] = None
     phase: Optional[str] = None
+
+    # Sentence-fill phase fields (only used when phase == "sentence-fill").
+    homework_id: Optional[str] = None
+    item_id: Optional[str] = None
+    blank_idx: Optional[int] = None
+    student_value: Optional[str] = None
+    attempt_number: Optional[int] = None
+
+
+class FinalizeCheckAnswerRequest(BaseModel):
+    phase: str
+    homework_id: str
+    item_id: str
 
 
 class BossTurnRequest(BaseModel):
@@ -212,8 +230,199 @@ async def preview_answer_spec(req: PreviewAnswerSpecRequest):
     return {"examples": examples}
 
 
+# ---------------------------------------------------------------------------
+# Sentence-Fill — per-blank attempt tracking + grading
+# ---------------------------------------------------------------------------
+#
+# Storage: Option A (in-memory module-global dict). The persisted
+# alternative (`tutor_attempts` table) does not yet exist in this DB schema
+# (see `server/db/migrations.py`); per the Chunk B brief, we fall back to
+# in-memory tracking and add a TODO for a future migration. Refresh-resilience
+# is therefore best-effort — a hard browser refresh resets attempt counts for
+# blanks the student had already touched. Acceptable for v1; spec §5 puts the
+# bonus on PERFECT fill, which is detected at finalize time from the same
+# in-memory dict, so a refresh can only relax the bonus, never inflate it.
+#
+# Key shape: (homework_id, item_id, blank_idx) -> {"attempts": int, "correct_at": Optional[int]}
+# `correct_at` records the attempt number on which the blank was first
+# answered correctly (1, 2, ...) — used by /finalize to compute perfect_fill.
+# `attempts` is the count of times the student has submitted for that blank.
+#
+# TODO(future migration): persist as a `tutor_attempts` table keyed by
+# (session_id, hw_id, item_id, blank_idx) so attempts survive a refresh.
+_SF_ATTEMPTS: dict[tuple[str, str, int], dict[str, Any]] = {}
+
+
+def _sf_normalize(text: str) -> str:
+    """Lowercase + strip whitespace for word-bank deterministic equality."""
+    if text is None:
+        return ""
+    return str(text).strip().lower()
+
+
+def _find_sf_item(content_json: dict, item_id: str) -> Optional[dict]:
+    """Locate a sentence-fill item by id within content_json.gb_sentence_fill."""
+    if not isinstance(content_json, dict):
+        return None
+    items = content_json.get("gb_sentence_fill")
+    if not isinstance(items, list):
+        return None
+    for item in items:
+        if isinstance(item, dict) and item.get("id") == item_id:
+            return item
+    return None
+
+
+async def _ai_grade_sentence_fill(
+    student_value: str,
+    expected: str,
+    *,
+    subject_hint: Optional[str],
+    passage: str,
+) -> bool:
+    """Free-recall grader: routes through the existing AI semantic answer-checker.
+
+    Builds an answer_spec of type "semantic" and reuses tutor.check_answer so
+    we inherit caching + low-confidence review-queue handling without
+    duplicating prompt-building here.
+    """
+    # Use language rubric if subject_hint hints at language; otherwise default.
+    subject = subject_hint or "language"
+    answer_spec = {
+        "type": "semantic",
+        "expected": expected,
+        # `amr: false` — we want meaning-match without the rubric scoring.
+        "amr": False,
+    }
+    result = await tutor.check_answer(
+        question_id="",
+        question=passage,
+        student_answer=student_value,
+        expected_answers=[expected],
+        answer_spec=answer_spec,
+        allow_ai_fallback=True,
+        subject=subject,
+        grade=8,
+        tier="MEDIUM",
+        context=None,
+        phase=None,
+    )
+    return bool(result.get("correct"))
+
+
+async def _check_answer_sentence_fill(req: CheckAnswerRequest) -> dict:
+    """Per-blank grading branch. See SENTENCE_FILL_BACKEND_PLAN.md §4."""
+    # Validate required sentence-fill fields. Pydantic only enforces shape;
+    # business-required-ness for this phase is enforced here.
+    if not req.homework_id or not req.item_id:
+        raise HTTPException(400, detail={
+            "error": "homework_id and item_id required for phase=sentence-fill",
+            "code": "SF_MISSING_IDS",
+        })
+    if req.blank_idx is None:
+        raise HTTPException(400, detail={
+            "error": "blank_idx required for phase=sentence-fill",
+            "code": "SF_MISSING_BLANK",
+        })
+    attempt_number = req.attempt_number if req.attempt_number is not None else 1
+    if attempt_number < 1:
+        raise HTTPException(400, detail={
+            "error": "attempt_number must be >= 1",
+            "code": "SF_BAD_ATTEMPT",
+        })
+    student_value = req.student_value if req.student_value is not None else ""
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+    content = hw.get("content_json") or {}
+    item = _find_sf_item(content, req.item_id)
+    if item is None:
+        raise HTTPException(404, detail={
+            "error": f"sentence-fill item {req.item_id} not found",
+            "code": "SF_ITEM_NOT_FOUND",
+        })
+
+    answers = item.get("answers") or []
+    if not isinstance(req.blank_idx, int) or req.blank_idx < 0 or req.blank_idx >= len(answers):
+        raise HTTPException(400, detail={
+            "error": f"blank_idx {req.blank_idx} out of range for item with {len(answers)} blanks",
+            "code": "SF_BAD_BLANK_IDX",
+        })
+
+    expected = answers[req.blank_idx]
+    mode = item.get("mode", "word_bank")
+
+    # Grade.
+    if mode == "word_bank":
+        is_correct = _sf_normalize(student_value) == _sf_normalize(expected)
+    else:
+        # Free recall: semantic grader.
+        is_correct = await _ai_grade_sentence_fill(
+            student_value,
+            expected,
+            subject_hint=item.get("subject_hint"),
+            passage=item.get("passage", ""),
+        )
+
+    # Update attempt tracking. Lock once: attempt_number >= 2 OR is_correct.
+    attempt_key = (req.homework_id, req.item_id, req.blank_idx)
+    record = _SF_ATTEMPTS.get(attempt_key) or {"attempts": 0, "correct_at": None}
+    record["attempts"] = max(record["attempts"], attempt_number)
+    if is_correct and record["correct_at"] is None:
+        record["correct_at"] = attempt_number
+    _SF_ATTEMPTS[attempt_key] = record
+
+    locked = bool(is_correct or attempt_number >= 2)
+
+    # Per spec §4: explanation + correct_answer revealed only on lock-and-wrong.
+    revealed_answer: Optional[str] = None
+    revealed_explanation: Optional[str] = None
+    if locked and not is_correct:
+        revealed_answer = expected
+        explanations = item.get("explanations")
+        if isinstance(explanations, list) and 0 <= req.blank_idx < len(explanations):
+            entry = explanations[req.blank_idx]
+            if entry:
+                revealed_explanation = entry
+
+    xp_base = 100 if is_correct else 0
+    xp_first = 25 if (is_correct and attempt_number == 1) else 0
+
+    return {
+        "correct": is_correct,
+        "lock": locked,
+        "correct_answer": revealed_answer,
+        "explanation": revealed_explanation,
+        "xp": {
+            "base": xp_base,
+            "first_attempt_bonus": xp_first,
+            "total": xp_base + xp_first,
+        },
+    }
+
+
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
+    # Phase dispatch — the new sentence-fill grading branch is keyed on
+    # phase=="sentence-fill" AND presence of `homework_id`. The phase string
+    # alone is insufficient because pre-existing tests/clients submit
+    # phase="sentence-fill" with the legacy {question, student_answer,
+    # answer_spec} shape (no homework_id field). Detecting on `homework_id`
+    # preserves backward compatibility for those callers while routing the
+    # new per-blank contract to its own handler. Within the SF handler,
+    # `item_id` and `blank_idx` are then validated strictly (400 on missing).
+    if req.phase == "sentence-fill" and req.homework_id:
+        try:
+            return await _check_answer_sentence_fill(req)
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
     try:
         return await tutor.check_answer(
             question_id=req.question_id,
@@ -230,6 +439,66 @@ async def check_answer(req: CheckAnswerRequest):
         )
     except Exception as e:
         _handle_exc(e)
+
+
+@router.post("/ai/check-answer/finalize")
+async def check_answer_finalize(req: FinalizeCheckAnswerRequest):
+    """Per-item perfect-fill bonus query. See plan §4."""
+    if req.phase != "sentence-fill":
+        raise HTTPException(400, detail={
+            "error": f"phase {req.phase!r} unsupported on /finalize",
+            "code": "SF_BAD_PHASE",
+        })
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+    item = _find_sf_item(hw.get("content_json") or {}, req.item_id)
+    if item is None:
+        raise HTTPException(404, detail={
+            "error": f"sentence-fill item {req.item_id} not found",
+            "code": "SF_ITEM_NOT_FOUND",
+        })
+
+    answers = item.get("answers") or []
+    blanks_total = len(answers)
+
+    # Aggregate per-blank state from in-memory attempts dict.
+    blanks_correct = 0
+    first_attempt_correct = 0
+    for b_idx in range(blanks_total):
+        rec = _SF_ATTEMPTS.get((req.homework_id, req.item_id, b_idx))
+        if rec is None:
+            # No attempts logged — treat as missing (graceful default per brief).
+            _log.warning(
+                "sf finalize: missing attempts for hw=%s item=%s blank=%d (cold call or session lost)",
+                req.homework_id, req.item_id, b_idx,
+            )
+            continue
+        if rec.get("correct_at") is not None:
+            blanks_correct += 1
+            if rec["correct_at"] == 1:
+                first_attempt_correct += 1
+
+    perfect_fill = (
+        blanks_total > 0
+        and blanks_correct == blanks_total
+        and first_attempt_correct == blanks_total
+    )
+    xp_bonus = 100 if perfect_fill else 0
+
+    return {
+        "perfect_fill": perfect_fill,
+        "xp_bonus": xp_bonus,
+        "summary": {
+            "blanks_correct": blanks_correct,
+            "blanks_total": blanks_total,
+            "first_attempt_correct": first_attempt_correct,
+        },
+    }
 
 
 @router.post("/ai/boss-turn")
