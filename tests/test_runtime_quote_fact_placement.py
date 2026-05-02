@@ -113,9 +113,20 @@ def test_gate_quote_card_keeps_body_text_visible():
 
 
 def test_gate_quote_card_uses_premium_window_treatment():
-    """Pin the requested Apple-style glass window treatment for Stage 1."""
+    """Pin the requested Apple-style glass window treatment for Stage 1.
+
+    The base, ::before, and ::after rules are now shared between
+    .quote-card and .break-card via combined selectors, so the regex
+    tolerates anything between the .quote-card lead-in and the opening
+    brace (a comma plus the .break-card sibling selector lives there
+    on this branch).
+    """
     html = _read(RUNTIME)
-    card = re.search(r"\.quote-card\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    card = re.search(
+        r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
     assert card, "missing .quote-card rule"
     card_body = card.group("body")
     assert "radial-gradient(circle at 12% 8%" in card_body
@@ -124,17 +135,142 @@ def test_gate_quote_card_uses_premium_window_treatment():
     assert "overflow: hidden" in card_body
     assert "isolation: isolate" in card_body
 
-    before = re.search(r"\.quote-card::before\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    before = re.search(
+        r"\.quote-card::before(?:\s*,\s*\.break-card::before)?\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
     assert before, "missing inner window highlight layer"
     before_body = before.group("body")
     assert "inset: 12px" in before_body
     assert "pointer-events: none" in before_body
 
-    after = re.search(r"\.quote-card::after\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    after = re.search(
+        r"\.quote-card::after(?:\s*,\s*\.break-card::after)?\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
     assert after, "missing window control dots layer"
     after_body = after.group("body")
     assert "radial-gradient(circle at 6px 6px" in after_body
     assert "radial-gradient(circle at 40px 6px" in after_body
+
+
+def test_break_card_inherits_premium_glass_window_treatment():
+    """Phase fact/quote break cards (later in the homework, between
+    phases) must visually match the Stage 1 Gate quote: shared frosted
+    glass background + window-pane ::before + macOS-style dots ::after.
+    Wired via combined selectors so the visual is identical."""
+    html = _read(RUNTIME)
+
+    # Combined-selector base rule must list both card classes.
+    base = re.search(
+        r"\.quote-card\s*,\s*\.break-card\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert base, (
+        "expected a combined `.quote-card, .break-card { ... }` rule so the "
+        "frosted-glass base is shared between the gate quote and later break cards"
+    )
+    base_body = base.group("body")
+    assert "radial-gradient(circle at 12% 8%" in base_body
+    assert "linear-gradient(145deg" in base_body
+    assert "backdrop-filter: blur(46px) saturate(190%)" in base_body
+    assert "isolation: isolate" in base_body
+
+    # Inner pane.
+    pane = re.search(
+        r"\.quote-card::before\s*,\s*\.break-card::before\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert pane, ".break-card::before must share the inner-window highlight"
+    assert "inset: 12px" in pane.group("body")
+
+    # Macos-style window-control dots row.
+    dots = re.search(
+        r"\.quote-card::after\s*,\s*\.break-card::after\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert dots, ".break-card::after must share the window-control dots row"
+    dots_body = dots.group("body")
+    assert "radial-gradient(circle at 6px 6px" in dots_body
+    assert "radial-gradient(circle at 40px 6px" in dots_body
+
+
+def test_break_card_dark_mode_keeps_glass_window():
+    """Dark mode must reach the break card too, otherwise it falls back
+    to the bundled `var(--surface)` default and looks plain."""
+    html = _read(RUNTIME)
+
+    dark_base = re.search(
+        r"\[data-theme=\"dark\"\]\s*\.quote-card\s*,\s*"
+        r"\[data-theme=\"dark\"\]\s*\.break-card\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert dark_base, (
+        "expected a dark-mode rule that targets both .quote-card and .break-card "
+        "so the break card gets the dark glass background, not the default surface"
+    )
+    body = dark_base.group("body")
+    assert "linear-gradient(145deg, rgba(15, 23, 42" in body, (
+        "dark glass must use the dark navy linear-gradient body, not light surface"
+    )
+
+    dark_pane = re.search(
+        r"\[data-theme=\"dark\"\]\s*\.quote-card::before\s*,\s*"
+        r"\[data-theme=\"dark\"\]\s*\.break-card::before\s*\{",
+        html,
+        re.DOTALL,
+    )
+    assert dark_pane, "dark-mode inner pane override must apply to .break-card too"
+
+
+def test_break_card_no_longer_in_default_dark_surface_bundle():
+    """The bundled `[data-theme="dark"] .card, .panel-card, .break-card,
+    .final-card, ...` rule used to flatten .break-card to var(--surface)
+    in dark mode, which would override our glass background. Make sure
+    .break-card is no longer in that bundled list so the dedicated dark
+    glass rule wins."""
+    html = _read(RUNTIME)
+
+    bundle_match = re.search(
+        r"\[data-theme=\"dark\"\]\s*\.card,\s*[\s\S]*?\{[^}]*var\(--surface\)[^}]*\}",
+        html,
+    )
+    assert bundle_match, "the bundled dark-surface rule must still exist"
+    bundle_text = bundle_match.group(0)
+    assert ".break-card" not in bundle_text, (
+        "remove .break-card from the bundled dark-surface rule — the dedicated "
+        "dark glass rule has to win without specificity arms races"
+    )
+
+
+def test_break_text_stays_var_text_in_both_themes():
+    """The break body text must keep `color: var(--text)` so the
+    paragraph stays readable on the new glass surface in both modes.
+    Don't let it default to accent or get hidden by opacity."""
+    html = _read(RUNTIME)
+
+    light = re.search(r"\.break-text\s*\{(?P<body>[^}]*)\}", html, re.DOTALL)
+    assert light, "missing .break-text rule"
+    light_body = light.group("body")
+    assert "color: var(--text)" in light_body, (
+        "break body text must use var(--text), not accent-only color"
+    )
+
+    dark = re.search(
+        r"\[data-theme=\"dark\"\]\s*\.break-text\s*\{(?P<body>[^}]*)\}",
+        html,
+        re.DOTALL,
+    )
+    assert dark, "missing dark-mode .break-text override"
+    assert "color: var(--text)" in dark.group("body"), (
+        "dark-mode break text must keep var(--text) so it stays readable on the dark glass"
+    )
 
 
 def test_run_quote_sequence_does_not_use_fact_label_as_quote_author():
@@ -281,7 +417,9 @@ def test_quote_card_drops_linen_repeating_gradient():
     """PR #128's repeating-linear-gradient linen layer was removed (user-flagged "weird inner light")."""
     src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
     import re
-    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    block = re.search(
+        r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
+    ).group(0)
     assert "repeating-linear-gradient" not in block, (
         "quote-card no longer ships the linen-texture 3rd layer — keep this assertion"
     )
@@ -290,14 +428,18 @@ def test_quote_card_drops_linen_repeating_gradient():
 def test_quote_card_uses_premium_radius():
     src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
     import re
-    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    block = re.search(
+        r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
+    ).group(0)
     assert "border-radius: 34px" in block
 
 
 def test_quote_card_uses_explicit_blur_46():
     src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
     import re
-    block = re.search(r"\.quote-card\s*\{[^}]*\}", src, re.S).group(0)
+    block = re.search(
+        r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
+    ).group(0)
     assert "blur(46px)" in block
 
 

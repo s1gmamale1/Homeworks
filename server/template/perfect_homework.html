@@ -750,16 +750,15 @@
             padding: 0 24px;
         }
 
+        /* Phase fact/quote break card — shares the Stage 1 Gate quote glass
+           window base (see .quote-card below). This block keeps only the
+           layout differences from .quote-card: narrower width, slightly
+           smaller min-height, and column-reverse so the kicker pill
+           ("Bilarmidingiz?" / quote author) renders below the body text. */
         .break-card {
             width: min(82vw, 420px);
-            min-height: 180px;
-            display: flex;
-            /* Body first, label/author kicker below — uniform for both
-               fact ("Bilarmidingiz?") and quote (author) variants. */
+            min-height: 240px;
             flex-direction: column-reverse;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
         }
 
         .break-kicker {
@@ -1165,8 +1164,15 @@
             color: var(--accent);
             border: 1px solid rgba(0, 122, 255, 0.22);
         }
-        /* Gate-quote card (Stage 1) - premium frosted window with eyebrow pill + body text. */
-        .quote-card {
+        /* Premium frosted window — shared by the Stage 1 Gate quote
+           (.quote-card) and the later phase fact/quote break cards
+           (.break-card). Same glass base, same window-pane ::before, same
+           macOS-style dot row in ::after. Per-card differences (narrower
+           width on break, column-reverse for break's kicker-below layout,
+           typography for quote-text-line vs break-text) live in their own
+           blocks above and below. */
+        .quote-card,
+        .break-card {
             background:
                 radial-gradient(circle at 12% 8%, rgba(96, 165, 250, 0.26), transparent 34%),
                 radial-gradient(circle at 88% 4%, rgba(168, 85, 247, 0.17), transparent 30%),
@@ -1191,7 +1197,8 @@
             overflow: hidden;
             isolation: isolate;
         }
-        .quote-card::before {
+        .quote-card::before,
+        .break-card::before {
             content: "";
             position: absolute;
             inset: 12px;
@@ -1204,7 +1211,8 @@
             pointer-events: none;
             z-index: 0;
         }
-        .quote-card::after {
+        .quote-card::after,
+        .break-card::after {
             content: "";
             position: absolute;
             top: 24px;
@@ -5213,7 +5221,6 @@
         }
         [data-theme="dark"] .card,
         [data-theme="dark"] .panel-card,
-        [data-theme="dark"] .break-card,
         [data-theme="dark"] .final-card,
         [data-theme="dark"] .screen-wave2-card,
         [data-theme="dark"] .screen-reading-passage,
@@ -5847,7 +5854,8 @@
         [data-theme="dark"] .gb-ttt-cell:hover:not(.filled):not(.locked) {
             background: var(--surface-strong);
         }
-        [data-theme="dark"] .quote-card {
+        [data-theme="dark"] .quote-card,
+        [data-theme="dark"] .break-card {
             background:
                 radial-gradient(circle at 12% 8%, rgba(96, 165, 250, 0.24), transparent 34%),
                 radial-gradient(circle at 88% 4%, rgba(168, 85, 247, 0.18), transparent 30%),
@@ -5860,12 +5868,17 @@
                 0 18px 70px rgba(0, 0, 0, 0.42),
                 0 42px 120px rgba(37, 99, 235, 0.18);
         }
-        [data-theme="dark"] .quote-card::before {
+        [data-theme="dark"] .quote-card::before,
+        [data-theme="dark"] .break-card::before {
             background:
                 linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04) 42%, transparent),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent 48%, rgba(255, 255, 255, 0.08));
             border-color: rgba(148, 163, 184, 0.22);
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.10) inset;
+        }
+        [data-theme="dark"] .break-text {
+            color: var(--text);
+            text-shadow: 0 1px 18px rgba(96, 165, 250, 0.16);
         }
         [data-theme="dark"] .quote-card .quote-text-line,
         [data-theme="dark"] .quote-card .quote-item {
