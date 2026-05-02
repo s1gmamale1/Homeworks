@@ -692,7 +692,84 @@ Per-step grading for the 5-step Real-Life Challenge mechanic. Same URL as the re
 
 ---
 
+### POST /api/ai/check-answer  *(phase = `"final-boss"`, PR #N)*
+
+Per-turn grading for the Final Boss mechanic. Same URL as the regular `/check-answer`; dispatch is gated on `phase="final-boss"` AND `homework_id` present (legacy callers without `homework_id` fall through to the regular handler). Internally adapts the `CheckAnswerRequest` shape into a `BossTurnRequest` and delegates grading to `tutor.boss_turn` — same AMR 2-axis output.
+
+**Request**
+```json
+{
+  "phase": "final-boss",
+  "homework_id": "string",
+  "question_id": "E1",
+  "student_answer": "string",
+  "session_id": "string|null",
+  "boss_type": "sub|big|mythical",
+  "grade_band": "g1_4|g5|g6_8|g9_11|null",
+  "hp_remaining": 100,
+  "attempt_number": 1,
+  "attempts_used": 0,
+  "subject": "math-algebra",
+  "grade": 8
+}
+```
+
+- `question_id` references one of the homework's `boss_questions[].id` values.
+- `boss_type` defaults to `"sub"` (current production mechanic). `"big"` and `"mythical"` are forward-compat schema-recognized but their full runtime engines are deferred (see "Out of scope" in the FB plan).
+- `grade_band` drives default starting HP (g1_4: 50, g5: 100, g6_8: 100, g9_11: 150 per spec §6) and hint cost (g1_4: +5, g5: +10, g6_8: +10, g9_11: +15 per spec §8). Per-question `hint_cost_per_use` overrides the band default if authored.
+- `session_id` keys the in-memory `_FB_ATTEMPTS` tracker. Refreshing the runtime resets the session.
+
+**200**
+```json
+{
+  "correct": bool,
+  "damage_dealt": int,
+  "boss_response": "string|null",
+  "hint": "string|null",
+  "score": 0.0..1.0,
+  "axis_1": int,
+  "axis_2": int,
+  "hp_remaining": int,
+  "outcome": "expert|strong|passing|hali_emas|null",
+  "stars": "1|2|3|null",
+  "outcome_xp": int,
+  "boss_type_used": "sub|big|mythical",
+  "done": bool
+}
+```
+
+- **`damage_dealt`**: applied on correct match; doubled when the boss is in a 3-streak combo state (server-tracked).
+- **`hp_remaining`** is server-authoritative; clients echo their last-known value but the server's value is canonical.
+- **`outcome` / `stars` / `outcome_xp`** populated ONLY when `done=true` (boss defeated OR HP depleted). Per spec §11:
+
+| Condition | `outcome` | `stars` | `outcome_xp` (Sub / Big / Mythical) |
+|---|---|---|---|
+| First attempt + zero hints + `hp >= max_hp * 0.8` | `expert` | 3 | 1000 / 2000 / 5000 |
+| Attempt ≤ 2 + `hp > max_hp * 0.5` | `strong` | 2 | 700 / 1500 / 0 |
+| Boss defeated, any other path | `passing` | 1 | 500 / 1000 / 0 |
+| Boss not defeated (HP depleted) | `hali_emas` | 0 | 0 |
+
+- **Mythical Boss** rewards XP only on a 3-star defeat (per spec §11). Lesser star outcomes return `outcome_xp: 0`.
+- **`done`** is set true on the final turn; runtime trips end-of-fight transition.
+
+**Errors**
+
+| Status | code | When |
+|---|---|---|
+| 400 | `FB_MISSING_HW` | `homework_id` missing on a `phase=final-boss` request |
+| 404 | `HW_NOT_FOUND` | homework_id does not resolve |
+| 404 | `FB_NO_CONTENT` | homework has no `boss_questions` |
+| 404 | `FB_QUESTION_NOT_FOUND` | `question_id` is not one of the homework's boss-question ids |
+
+**Answer-leak protection**: the rendered runtime constant `BOSS_QUESTIONS` is **stripped server-side** of `accepted[]`, `ans`, `accepted_answers`, and `answer_spec` before client injection. Grading happens exclusively at this endpoint (or its legacy sibling `/api/ai/boss-turn`). The transitional `_BOSS_LEGACY_CLIENT_MATCH` flag (default `False`) preserves the leak fix; only test/replay paths that need the old shape may toggle it.
+
+The optional sibling field `content_json.boss_meta` carries phase-level metadata (boss_type, grade_band, attempts_max, anti_cheat policy, starting_hp_override) and is injected into the runtime as `BOSS_META` (or `null` if absent). Existing homework rows without `boss_meta` continue to render unchanged.
+
+---
+
 ### POST /api/ai/boss-turn
+
+Legacy canonical endpoint for the Final Boss mechanic. The `phase=final-boss` branch on `/api/ai/check-answer` (above) adapts to this same grading path; both endpoints coexist.
 
 ```json
 {
@@ -703,12 +780,34 @@ Per-step grading for the 5-step Real-Life Challenge mechanic. Same URL as the re
   "hp_remaining": 100,
   "attempt_number": 1,
   "subject": "math-algebra",
-  "grade": 8
+  "grade": 8,
+  "boss_type": "sub|big|mythical|null",
+  "grade_band": "g1_4|g5|g6_8|g9_11|null",
+  "attempts_used": 0,
+  "session_id": "string|null"
 }
 ```
-`damage_value`: 0–50. `attempt_number`: ≥ 1.
+`damage_value`: 0–50. `attempt_number`: ≥ 1. The four trailing fields (`boss_type`, `grade_band`, `attempts_used`, `session_id`) are optional — added in the FB redesign; legacy callers may omit them safely.
 
-**200** `{ "correct": bool, "damage_dealt": int, "boss_response": "string", "hint": "string|null", "score": float }`
+**200**
+```json
+{
+  "correct": bool,
+  "damage_dealt": int,
+  "boss_response": "string",
+  "hint": "string|null",
+  "score": float,
+  "axis_1": int,
+  "axis_2": int,
+  "hp_remaining": int,
+  "outcome": "expert|strong|passing|hali_emas|null",
+  "stars": "1|2|3|null",
+  "outcome_xp": int,
+  "done": bool
+}
+```
+
+`outcome` / `stars` / `outcome_xp` populate only on the final turn (`done=true`). See the table under `phase=final-boss` above for the rubric.
 
 ---
 
