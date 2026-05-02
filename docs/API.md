@@ -56,6 +56,10 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 
 **200** `{ "items": [...], "total": N, "limit": L, "offset": O }`. With `legacy=true`: bare array.
 
+**List-payload enrichments (PR #118):**
+- Each item has a computed `progress` field (`int 0..100`) derived from `compute_progress()` over the canonical content sections (see `server/services/progress.py`). Status overrides: `ready → 100`, `error → 0`, `generating` capped at 90.
+- `content_json` is **dropped** from the list payload to keep the dashboard response small. The single-item endpoint `GET /api/homeworks/{hw_id}` still returns it in full.
+
 ---
 
 ### GET /api/homeworks/{hw_id}
@@ -481,6 +485,47 @@ All AI endpoints accept and return JSON. On failure: `500` with `{ "error": "...
 - Only `question` and `student_answer` are required; all others have defaults
 
 **200** `{ "correct": bool, "score": float, "feedback": "string", "matched_expected": "string|null" }`
+
+---
+
+### POST /api/ai/check-answer/finalize  *(PR #132 — Sentence Fill)*
+
+Per-item perfect-fill bonus query. Aggregates the per-blank attempt log built up by prior `POST /api/ai/check-answer` calls during the same sentence-fill item, returns the `xp_bonus` and a per-blank summary.
+
+```json
+{
+  "phase": "sentence-fill",
+  "homework_id": "string",
+  "item_id": "string"
+}
+```
+
+- `phase` must be `"sentence-fill"` — other values return **400** `SF_BAD_PHASE`.
+- `homework_id` / `item_id` reference the homework row and the specific sentence-fill item under `content_json`. The server reads the per-blank attempt history from in-memory state populated by earlier `/check-answer` calls.
+
+**200**
+```json
+{
+  "perfect_fill": bool,
+  "xp_bonus": 100 | 0,
+  "summary": {
+    "blanks_correct": int,
+    "blanks_total": int,
+    "first_attempt_correct": int
+  }
+}
+```
+
+- `perfect_fill` is `true` only when **every** blank was solved AND **every** blank was solved on the first attempt. `xp_bonus` is `100` in that case, else `0`.
+- `summary.first_attempt_correct` reflects how many blanks the student got right on attempt #1 (used by the runtime to surface a "perfect fill" badge). Missing per-blank attempt records (e.g., cold-call without prior `/check-answer` activity) are treated as missing — they don't count toward `blanks_correct`.
+
+**Errors**
+
+| Status | code | When |
+|---|---|---|
+| 400 | `SF_BAD_PHASE` | `phase` is not `"sentence-fill"` |
+| 404 | `HW_NOT_FOUND` | homework_id does not resolve |
+| 404 | `SF_ITEM_NOT_FOUND` | item_id does not resolve under that homework's content |
 
 ---
 
