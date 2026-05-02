@@ -529,6 +529,86 @@ Per-item perfect-fill bonus query. Aggregates the per-blank attempt log built up
 
 ---
 
+### POST /api/ai/check-answer  *(phase = `"tile-match"`, PR #137)*
+
+Per-pair grading for the Tile Match mechanic. Same URL as the regular `/check-answer`; dispatch is gated on `phase="tile-match"` AND `homework_id` present (legacy AMR-shape callers without `homework_id` fall through to the regular handler).
+
+**Request**
+```json
+{
+  "phase": "tile-match",
+  "homework_id": "string",
+  "left_id": "tm_001",
+  "right_id": "tm_002",
+  "session_id": "string|null",
+  "grade": 8
+}
+```
+
+- `left_id` / `right_id` are pair ids the student selected from the side-disjoint `GB_TILE_MATCH` runtime global. Server matches a correct pair when `left_id == right_id` (the same pair-id is shared across each side's tile).
+- `session_id` keys the in-memory `_TM_ATTEMPTS` tracker. Refreshing the runtime resets the session — XP/streak/timer all start over.
+- `grade` is optional; falls back to the homework's authored grade. Drives the timer + recommended pair-count band (G1-2: 4 pairs / 180s, G3-4: 5 / 165s, G5-7: 6 / 150s, G8-11: 8 / 120s).
+
+**200**
+```json
+{
+  "correct": bool,
+  "hint": "string|null",
+  "explanation": "string|null",
+  "xp": {
+    "base": 100,
+    "speed_bonus": 0 | 10 | 30 | 50,
+    "streak_bonus": 0 | 50 | 75,
+    "palace_bonus": 0 | 50,
+    "branch_bonus": 0 | 100,
+    "total": int
+  },
+  "timer": {
+    "remaining_seconds": int,
+    "delta_seconds": -5 | 0 | 3
+  },
+  "matched_count": int,
+  "total_pairs": int,
+  "complete": bool,
+  "outcome": "perfect_clear|flawless|cleared|below_threshold|partial|null",
+  "completion_bonus_xp": 0 | 100 | 200
+}
+```
+
+- **Correct match**: `correct=true`, `xp.base=100`, `timer.delta_seconds=+3`. Speed bonus computed from POST-delta `remaining_seconds` per spec §5C: ≥50s → +50, 30–49s → +30, 1–29s → +10, ≤0 → 0.
+- **Wrong match**: `correct=false`, `xp.base=0`, `timer.delta_seconds=-5`. `hint` returns the LEFT-side concept text of the right-tile's TRUE partner (the student already sees that left tile in the DOM, so this is not a new leak surface). Streak resets.
+- **Streak bonus**: every 3rd consecutive correct match — `+50` (basic tier) or `+75` (premium tier) added to `xp.streak_bonus`.
+- **Memory Palace bonus**: matching a pair authored with `is_palace_tile=true` (premium-only authoring) adds `+50` to `xp.palace_bonus`.
+- **Branch-complete bonus**: matching the final pair of a `concept_family` adds `+100` to `xp.branch_bonus` (one-shot per family per session).
+- **Already-matched defensive path**: claiming the same pair twice returns `correct=false` with all XP fields zero AND `timer.delta_seconds=0` (no penalty for double-clicks).
+- **Premium `explanation`** field surfaces the authored teaching note when matching a `tier="premium"` pair correctly. Never echoes any other pair's right-side text.
+
+**Outcome computation** (per spec §5A/5B, fires when `matched_count == total_pairs` OR `timer.remaining_seconds == 0`):
+
+| Condition | `outcome` | `completion_bonus_xp` |
+|---|---|---|
+| `matched == total` AND `wrong_count == 0` | `perfect_clear` | 200 |
+| `matched == total` AND `wrong_count == 1` | `flawless` | 100 |
+| `matched == total` AND `wrong_count >= 2` | `cleared` | 0 |
+| timer expired AND `matched/total < 0.6` | `below_threshold` | 0 (replay flagged) |
+| timer expired AND `0.6 <= matched/total < 1.0` | `partial` | 0 |
+| game in progress | `null` | 0 |
+
+**Errors**
+
+| Status | code | When |
+|---|---|---|
+| 400 | `TM_MISSING_HW` | `homework_id` missing on a `phase=tile-match` request |
+| 400 | `TM_MISSING_IDS` | `left_id` or `right_id` missing |
+| 400 | `TM_BAD_LEFT_ID` | `left_id` not in this homework's tile-match board |
+| 400 | `TM_BAD_RIGHT_ID` | `right_id` not in this homework's tile-match board |
+| 404 | `HW_NOT_FOUND` | homework_id does not resolve |
+| 404 | `TM_NO_CONTENT` | homework has no `gb_tile_match` (or legacy `gb_memory_match`) content |
+
+**Answer-leak protection**: the rendered runtime constant `GB_TILE_MATCH` is **side-disjoint** — every pair contributes two separate entries (`{id, side: "left", text}` and `{id, side: "right", text}`); left-tile entries never carry right text and vice versa. Cross-side matching happens exclusively at this endpoint; the client only ever sees IDs and prompts.
+
+---
+
 ### POST /api/ai/check-answer  *(phase = `"real-life-challenge"`, PR #143)*
 
 Per-step grading for the 5-step Real-Life Challenge mechanic. Same URL as the regular `/check-answer`; dispatch is gated on `phase="real-life-challenge"` AND `homework_id` present (legacy callers without `homework_id` fall through to the regular handler).
