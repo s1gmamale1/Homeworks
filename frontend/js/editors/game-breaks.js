@@ -2,7 +2,8 @@
 // Game Breaks coordinator: routes each production game to its own editor module.
 // Requires:
 // - /js/editors/games/adaptive-quiz.js
-// - /js/editors/games/sentence-fill.js
+// - /js/editors/games/why-chain.js     (legacy "Why Chain" — gb_why_chain)
+// - /js/editors/games/sentence-fill.js (real cloze Sentence Fill — gb_sentence_fill)
 // - /js/editors/games/tile-match.js
 // - /js/editors/games/puzzle-lock.js
 // - /js/editors/games/mystery-box.js
@@ -24,10 +25,17 @@
     },
     {
       id: "why_chain",
-      label: "Sentence Fill",
+      label: "Why Chain",
       icon: "🧩",
+      editor: "whyChain",
+      description: "Legacy Why-Chain game mapped to gb_why_chain: q, inv, reprompts[], expects[].",
+    },
+    {
+      id: "sentence_fill",
+      label: "Sentence Fill",
+      icon: "📝",
       editor: "sentenceFill",
-      description: "Production cloze/fill game mapped to gb_why_chain: q, inv, reprompts[].",
+      description: "Cloze passage with multi-blank fill. Modes: word_bank (G2-7) | free_recall (G8+). Maps to gb_sentence_fill.",
     },
     {
       id: "memory_match",
@@ -84,13 +92,65 @@
       : [];
   }
 
-  function normalizeSentenceFill(items) {
+  function normalizeWhyChain(items) {
+    // Legacy why-chain shape (data key: gb_why_chain).
     return Array.isArray(items)
       ? items.map((item) => ({
           q: item?.q || "",
           inv: item?.inv || "",
           reprompts: Array.isArray(item?.reprompts) && item.reprompts.length ? item.reprompts : [""],
         }))
+      : [];
+  }
+
+  function normalizeSentenceFill(items) {
+    // Real Sentence Fill cloze shape (data key: gb_sentence_fill). Schema: §1
+    // of SENTENCE_FILL_BACKEND_PLAN.md. Only normalises shape — hard validation
+    // (blank count, distractor count, length matching) lives in the editor's
+    // save-time validator and on the server in Pydantic.
+    return Array.isArray(items)
+      ? items.map((item) => {
+          const mode = item?.mode === "free_recall" ? "free_recall" : "word_bank";
+          const tier = item?.tier === "premium" ? "premium" : "basic";
+          const passage = typeof item?.passage === "string" ? item.passage : "";
+          const answers = Array.isArray(item?.answers)
+            ? item.answers.map((a) => String(a ?? ""))
+            : [];
+          const wordBank = Array.isArray(item?.word_bank)
+            ? item.word_bank.map((w) => String(w ?? ""))
+            : (mode === "word_bank" ? [] : null);
+          const explanations = Array.isArray(item?.explanations)
+            ? item.explanations.map((e) => (e == null ? null : String(e)))
+            : null;
+          const blankIcons = Array.isArray(item?.blank_icons)
+            ? item.blank_icons.map((b) => (b == null ? null : String(b)))
+            : null;
+          const colorHints =
+            item?.color_hints && typeof item.color_hints === "object" && !Array.isArray(item.color_hints)
+              ? Object.fromEntries(
+                  Object.entries(item.color_hints).map(([k, v]) => [String(k), String(v ?? "")])
+                )
+              : null;
+          return {
+            id: typeof item?.id === "string" && item.id ? item.id : "",
+            mode,
+            passage,
+            answers,
+            word_bank: wordBank,
+            explanations,
+            tags: typeof item?.tags === "string" ? item.tags : "",
+            pisa_level: ["L1", "L2", "L3", "L4", "L5"].includes(item?.pisa_level)
+              ? item.pisa_level
+              : "",
+            difficulty: ["easy", "medium", "hard"].includes(item?.difficulty)
+              ? item.difficulty
+              : "",
+            subject_hint: typeof item?.subject_hint === "string" ? item.subject_hint : "",
+            color_hints: colorHints,
+            blank_icons: blankIcons,
+            tier,
+          };
+        })
       : [];
   }
 
@@ -144,7 +204,8 @@
     // Emit unprefixed — builder.js maps these back to CONTRACTS' gb_* keys on save.
     return {
       adaptive_quiz: normalizeAdaptiveQuiz(safe.adaptive_quiz ?? safe.gb_adaptive_quiz),
-      why_chain: normalizeSentenceFill(safe.why_chain ?? safe.gb_why_chain),
+      why_chain: normalizeWhyChain(safe.why_chain ?? safe.gb_why_chain),
+      sentence_fill: normalizeSentenceFill(safe.sentence_fill ?? safe.gb_sentence_fill),
       memory_match: normalizeTileMatch(safe.memory_match ?? safe.gb_memory_match),
       puzzle_lock: normalizePuzzleLock(safe.puzzle_lock ?? safe.gb_puzzle_lock),
       mystery_box: normalizeMysteryBox(safe.mystery_box ?? safe.gb_mystery_box),
@@ -164,6 +225,7 @@
   function getTabData(state, tabId) {
     if (tabId === "adaptive_quiz") return state.adaptive_quiz;
     if (tabId === "why_chain") return state.why_chain;
+    if (tabId === "sentence_fill") return state.sentence_fill;
     if (tabId === "memory_match") return state.memory_match;
     if (tabId === "puzzle_lock") return state.puzzle_lock;
     if (tabId === "mystery_box") return state.mystery_box;
@@ -173,7 +235,8 @@
 
   function setTabData(state, tabId, value) {
     if (tabId === "adaptive_quiz") state.adaptive_quiz = normalizeAdaptiveQuiz(value);
-    if (tabId === "why_chain") state.why_chain = normalizeSentenceFill(value);
+    if (tabId === "why_chain") state.why_chain = normalizeWhyChain(value);
+    if (tabId === "sentence_fill") state.sentence_fill = normalizeSentenceFill(value);
     if (tabId === "memory_match") state.memory_match = normalizeTileMatch(value);
     if (tabId === "puzzle_lock") state.puzzle_lock = normalizePuzzleLock(value);
     if (tabId === "mystery_box") state.mystery_box = normalizeMysteryBox(value);
@@ -219,7 +282,7 @@
               </div>
             </div>
             <p class="muted-text">
-              Split by production game: Adaptive Quiz, Sentence Fill, Tile Match, Puzzle Lock, Mystery Box, and Tic Tac Toe. Each game owns its own JS editor.
+              Split by production game: Adaptive Quiz, Why Chain, Sentence Fill, Tile Match, Puzzle Lock, Mystery Box, and Tic Tac Toe. Each game owns its own JS editor.
             </p>
           </section>
 
