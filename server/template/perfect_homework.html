@@ -6720,6 +6720,533 @@
             -webkit-backdrop-filter: blur(28px);
         }
 
+        /* ── STAGE 5 · MEMORY PALACE (gb-panel-mp, .gb-mp-*) ────
+           Method of Loci 4-step flow. Apple-glass tokens mirror the
+           reference design (Downloads/memory-palace-subject-specific-preview.html).
+           Panel sub-slot 7 in gbActiveGameOrder. */
+        .gb-mp-topbar {
+            position: sticky;
+            top: 10px;
+            z-index: 20;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.20));
+            border: 1px solid rgba(255,255,255,.42);
+            box-shadow: 0 14px 44px rgba(31,38,135,.08), inset 0 1px 0 rgba(255,255,255,.50);
+            backdrop-filter: blur(28px) saturate(170%);
+            -webkit-backdrop-filter: blur(28px) saturate(170%);
+        }
+        .gb-mp-top-pill {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.24);
+            border: 1px solid rgba(255,255,255,.42);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
+        }
+        .gb-mp-top-pill strong {
+            font-size: 10.5px;
+            font-weight: 620;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gb-mp-dots { display: flex; gap: 5px; }
+        .gb-mp-dots span {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: rgba(0,113,227,.18);
+            transition: width .2s ease, border-radius .2s ease, background .2s ease;
+        }
+        .gb-mp-dots span.active {
+            width: 18px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 0 5px rgba(0,113,227,.10);
+        }
+        .gb-mp-hero {
+            border-radius: 32px;
+            padding: 18px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.20));
+            border: 1px solid rgba(255,255,255,.42);
+            box-shadow: 0 14px 44px rgba(31,38,135,.08), inset 0 1px 0 rgba(255,255,255,.50);
+            backdrop-filter: blur(28px) saturate(170%);
+            -webkit-backdrop-filter: blur(28px) saturate(170%);
+            margin-bottom: 12px;
+        }
+        .gb-mp-hero:after {
+            content: "";
+            position: absolute;
+            width: 210px; height: 210px;
+            right: -82px; bottom: -100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,113,227,.15), transparent 72%);
+            pointer-events: none;
+        }
+        .gb-mp-meta {
+            position: relative; z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .gb-mp-meta span {
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 620;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .gb-mp-xp-pill {
+            color: var(--accent) !important;
+            padding: 7px 9px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.23);
+            border: 1px solid rgba(255,255,255,.38);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.40);
+            white-space: nowrap;
+            font-size: 10.5px;
+            font-weight: 620;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .gb-mp-hero-title {
+            position: relative; z-index: 1;
+            margin: 0 0 8px;
+            font-size: clamp(20px, 5.7vw, 24px);
+            line-height: 1.18;
+            letter-spacing: -.02em;
+            font-weight: 590;
+            color: var(--text);
+        }
+        .gb-mp-hero-sub {
+            position: relative; z-index: 1;
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 12.8px;
+            line-height: 1.64;
+            font-weight: 400;
+        }
+        .gb-mp-step {
+            display: none;
+            animation: gbMPFadeUp .25s ease;
+        }
+        .gb-mp-step.active { display: block; }
+        @keyframes gbMPFadeUp {
+            from { opacity: 0; transform: translateY(8px) scale(.98); }
+            to   { opacity: 1; transform: none; }
+        }
+        .gb-mp-panel {
+            border-radius: 30px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.20));
+            border: 1px solid rgba(255,255,255,.42);
+            box-shadow: 0 14px 44px rgba(31,38,135,.08), inset 0 1px 0 rgba(255,255,255,.50);
+            backdrop-filter: blur(28px) saturate(170%);
+            -webkit-backdrop-filter: blur(28px) saturate(170%);
+            margin-bottom: 12px;
+        }
+        .gb-mp-stage-label {
+            margin: 0 0 11px;
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 620;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .gb-mp-panel-title {
+            margin: 0 0 7px;
+            font-size: 16px;
+            font-weight: 590;
+            letter-spacing: -.01em;
+            color: var(--text);
+        }
+        .gb-mp-panel-copy {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.56;
+        }
+        .gb-mp-palace-grid,
+        .gb-mp-location-grid,
+        .gb-mp-recall-options {
+            display: grid;
+            gap: 9px;
+            margin-top: 14px;
+        }
+        .gb-mp-palace-card,
+        .gb-mp-location-card,
+        .gb-mp-recall-option {
+            width: 100%;
+            border: 1px solid rgba(255,255,255,.42);
+            border-radius: 22px;
+            background: rgba(255,255,255,.25);
+            color: var(--text);
+            padding: 13px;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.44);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            transition: .18s ease;
+            font: inherit;
+        }
+        .gb-mp-palace-card:hover:not([disabled]),
+        .gb-mp-location-card:hover:not([disabled]),
+        .gb-mp-recall-option:hover:not([disabled]) {
+            transform: translateY(-1px);
+            box-shadow: 0 9px 22px rgba(31,38,135,.07), inset 0 1px 0 rgba(255,255,255,.46);
+        }
+        .gb-mp-palace-card.selected,
+        .gb-mp-location-card.occupied,
+        .gb-mp-recall-option.selected {
+            border-color: rgba(0,113,227,.32);
+            background: linear-gradient(135deg, rgba(0,113,227,.13), rgba(255,255,255,.20));
+            box-shadow: 0 10px 26px rgba(0,113,227,.11), inset 0 1px 0 rgba(255,255,255,.46);
+        }
+        .gb-mp-palace-card strong,
+        .gb-mp-location-card strong,
+        .gb-mp-recall-option strong {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600;
+            line-height: 1.35;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+        .gb-mp-palace-card span,
+        .gb-mp-location-card span,
+        .gb-mp-recall-option span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 11.5px;
+            line-height: 1.42;
+        }
+        .gb-mp-palace-card .gb-mp-icon,
+        .gb-mp-location-card .gb-mp-icon {
+            width: 38px; height: 38px;
+            border-radius: 15px;
+            margin-bottom: 9px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.14));
+            border: 1px solid rgba(255,255,255,.38);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
+            font-size: 20px;
+        }
+        .gb-mp-recall-option.correct {
+            color: #1f6f2e;
+            border-color: rgba(52,199,89,.28);
+            background: linear-gradient(135deg, rgba(52,199,89,.15), rgba(255,255,255,.18));
+        }
+        .gb-mp-recall-option.wrong {
+            color: #9f241d;
+            border-color: rgba(255,69,58,.25);
+            background: linear-gradient(135deg, rgba(255,69,58,.12), rgba(255,255,255,.18));
+        }
+        .gb-mp-recall-option[disabled] { cursor: default; opacity: .9; }
+        .gb-mp-focus-card {
+            margin-top: 14px;
+            border-radius: 26px;
+            padding: 16px;
+            background:
+                radial-gradient(circle at 88% 20%, rgba(0,113,227,.14), transparent 28%),
+                linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.14));
+            border: 1px solid rgba(255,255,255,.38);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
+        }
+        .gb-mp-focus-kicker {
+            margin: 0 0 8px;
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 620;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .gb-mp-focus-title {
+            margin: 0 0 8px;
+            font-size: 19px;
+            line-height: 1.18;
+            font-weight: 600;
+            letter-spacing: -.02em;
+            color: var(--text);
+        }
+        .gb-mp-focus-copy {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.56;
+        }
+        .gb-mp-image-line {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            color: #1f6f2e;
+            background: linear-gradient(135deg, rgba(52,199,89,.13), rgba(255,255,255,.18));
+            border: 1px solid rgba(52,199,89,.20);
+            border-radius: 18px;
+            padding: 11px;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .gb-mp-walk-card {
+            text-align: center;
+            min-height: 320px;
+            display: grid;
+            align-content: center;
+            gap: 14px;
+            background:
+                radial-gradient(circle at 50% 10%, rgba(0,113,227,.12), transparent 30%),
+                linear-gradient(135deg, rgba(255,255,255,.36), rgba(255,255,255,.18));
+        }
+        .gb-mp-walk-icon {
+            width: 92px; height: 92px;
+            margin: 0 auto;
+            border-radius: 32px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.14));
+            border: 1px solid rgba(255,255,255,.40);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.46), 0 10px 30px rgba(0,113,227,.08);
+            font-size: 40px;
+        }
+        .gb-mp-walk-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -.025em;
+            color: var(--text);
+        }
+        .gb-mp-walk-copy {
+            margin: 0 auto;
+            max-width: 34ch;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.62;
+        }
+        .gb-mp-recall-card {
+            border-radius: 26px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.14));
+            border: 1px solid rgba(255,255,255,.38);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
+            margin-top: 14px;
+        }
+        .gb-mp-recall-location {
+            margin: 0 0 8px;
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 620;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .gb-mp-recall-question {
+            margin: 0 0 12px;
+            font-size: 18px;
+            line-height: 1.3;
+            font-weight: 590;
+            letter-spacing: -.015em;
+            color: var(--text);
+        }
+        .gb-mp-result-card {
+            display: none;
+            border-radius: 30px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.20));
+            border: 1px solid rgba(255,255,255,.42);
+            box-shadow: 0 14px 44px rgba(31,38,135,.08), inset 0 1px 0 rgba(255,255,255,.50);
+            backdrop-filter: blur(28px) saturate(170%);
+            -webkit-backdrop-filter: blur(28px) saturate(170%);
+            margin-bottom: 12px;
+        }
+        .gb-mp-result-card.show {
+            display: block;
+            animation: gbMPFadeUp .22s ease;
+        }
+        .gb-mp-result-card.outcome-perfect { border-color: rgba(52,199,89,.45); }
+        .gb-mp-result-card.outcome-yaxshi  { border-color: rgba(0,113,227,.40); }
+        .gb-mp-result-card.outcome-hali_emas_partial,
+        .gb-mp-result-card.outcome-hali_emas_fail {
+            border-color: rgba(255,159,10,.42);
+        }
+        .gb-mp-result-title {
+            margin: 0 0 7px;
+            font-size: 16px;
+            font-weight: 590;
+            letter-spacing: -.01em;
+            color: var(--text);
+        }
+        .gb-mp-result-text {
+            margin: 0 0 10px;
+            color: var(--text-muted);
+            font-size: 12.5px;
+            line-height: 1.56;
+        }
+        .gb-mp-score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+            margin-top: 13px;
+        }
+        .gb-mp-score-box {
+            border-radius: 18px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.14));
+            border: 1px solid rgba(255,255,255,.38);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.42);
+        }
+        .gb-mp-score-box span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 10.5px;
+            font-weight: 620;
+            text-transform: uppercase;
+            letter-spacing: .035em;
+            margin-bottom: 4px;
+        }
+        .gb-mp-score-box strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -.01em;
+            color: var(--text);
+        }
+        .gb-mp-retry-btn {
+            display: none;
+            margin-top: 13px;
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid rgba(0,113,227,.32);
+            border-radius: 22px;
+            background: rgba(0,113,227,.10);
+            color: var(--accent);
+            font-size: 13.5px;
+            font-weight: 600;
+            letter-spacing: -.005em;
+            cursor: pointer;
+            transition: .18s ease;
+            font-family: inherit;
+        }
+        .gb-mp-retry-btn.show { display: block; }
+        .gb-mp-retry-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 9px 22px rgba(0,113,227,.12);
+        }
+        .gb-mp-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 86px;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 60;
+            width: min(calc(100% - 28px), 420px);
+            padding: 13px 15px;
+            border-radius: 20px;
+            background: rgba(29,29,31,.86);
+            color: #fff;
+            box-shadow: 0 24px 70px rgba(15,23,42,.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: .24s ease;
+            font-size: 13px;
+            font-weight: 620;
+            text-align: center;
+        }
+        .gb-mp-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .gb-mp-counter {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            font-weight: 620;
+            color: var(--text-muted);
+            letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+
+        /* Memory Palace — dark-mode parity (≥10 selectors) */
+        [data-theme="dark"] .gb-mp-topbar,
+        [data-theme="dark"] .gb-mp-hero,
+        [data-theme="dark"] .gb-mp-panel,
+        [data-theme="dark"] .gb-mp-result-card {
+            background: linear-gradient(135deg, rgba(30,41,59,.68), rgba(15,23,42,.52));
+            border-color: var(--surface-border);
+            box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        [data-theme="dark"] .gb-mp-top-pill {
+            background: rgba(15,23,42,.64);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-mp-xp-pill {
+            background: rgba(0,113,227,.18);
+            border-color: rgba(0,113,227,.35);
+        }
+        [data-theme="dark"] .gb-mp-palace-card,
+        [data-theme="dark"] .gb-mp-location-card,
+        [data-theme="dark"] .gb-mp-recall-option {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(255,255,255,.10);
+            color: var(--text-primary);
+        }
+        [data-theme="dark"] .gb-mp-palace-card.selected,
+        [data-theme="dark"] .gb-mp-location-card.occupied,
+        [data-theme="dark"] .gb-mp-recall-option.selected {
+            background: linear-gradient(135deg, rgba(0,113,227,.20), rgba(255,255,255,.04));
+            border-color: rgba(0,113,227,.45);
+        }
+        [data-theme="dark"] .gb-mp-recall-option.correct {
+            color: #6ee398;
+            background: linear-gradient(135deg, rgba(52,199,89,.20), rgba(255,255,255,.04));
+            border-color: rgba(52,199,89,.45);
+        }
+        [data-theme="dark"] .gb-mp-recall-option.wrong {
+            color: #ff8a82;
+            background: linear-gradient(135deg, rgba(255,69,58,.20), rgba(255,255,255,.04));
+            border-color: rgba(255,69,58,.45);
+        }
+        [data-theme="dark"] .gb-mp-focus-card,
+        [data-theme="dark"] .gb-mp-recall-card,
+        [data-theme="dark"] .gb-mp-score-box,
+        [data-theme="dark"] .gb-mp-walk-card {
+            background: rgba(15,23,42,.64);
+            border-color: var(--surface-border);
+        }
+        [data-theme="dark"] .gb-mp-walk-icon {
+            background: rgba(15,23,42,.74);
+            border-color: rgba(96,165,250,.35);
+        }
+        [data-theme="dark"] .gb-mp-image-line {
+            color: #6ee398;
+            background: linear-gradient(135deg, rgba(52,199,89,.14), rgba(255,255,255,.04));
+            border-color: rgba(52,199,89,.30);
+        }
+        [data-theme="dark"] .gb-mp-retry-btn {
+            background: rgba(0,113,227,.20);
+            border-color: rgba(0,113,227,.45);
+            color: #7eb6ff;
+        }
+        [data-theme="dark"] .gb-mp-toast {
+            background: rgba(15,23,42,.92);
+            box-shadow: 0 24px 70px rgba(0,0,0,.48);
+        }
+
         /* Real Life screen ----------------------------------------- */
         [data-theme="dark"] .rl-capture-btn {
             background: rgba(15, 23, 42, 0.50);
@@ -7450,6 +7977,109 @@
                         </section>
                         <div class="gb-sf-toast" id="gb-sf-toast" role="status" aria-live="polite"></div>
                     </div>
+                    <!-- ─────────── Memory Palace (gb-panel-mp) ───────────
+                         Sub-slot 7. Method of Loci 4-step state machine.
+                         All content (palaces + concepts) populated at runtime
+                         from GB_MEMORY_PALACE; nothing hardcoded here. -->
+                    <div class="gb-game-panel enter-right" id="gb-panel-mp">
+                        <header class="gb-mp-topbar">
+                            <div class="gb-mp-top-pill">
+                                <div class="gb-mp-dots" id="gb-mp-dots" aria-hidden="true">
+                                    <span class="active"></span><span></span><span></span><span></span>
+                                </div>
+                                <strong id="gb-mp-phase-label">Select Palace</strong>
+                            </div>
+                            <div class="gb-mp-top-pill">
+                                <strong id="gb-mp-step-label">1/4</strong>
+                            </div>
+                        </header>
+                        <article class="gb-mp-hero">
+                            <div class="gb-mp-meta">
+                                <span id="gb-mp-hero-kicker">Method of Loci</span>
+                                <span class="gb-mp-xp-pill" id="gb-mp-xp-pill">0 XP</span>
+                            </div>
+                            <h1 class="gb-mp-hero-title" id="gb-mp-hero-title">Build a mental route.</h1>
+                            <p class="gb-mp-hero-sub" id="gb-mp-hero-sub">Pick a relevant palace, place concepts into locations, walk through it, then recall from space.</p>
+                        </article>
+
+                        <!-- Step 1 — Choose palace -->
+                        <section class="gb-mp-step active" id="gb-mp-step-1" data-step="1">
+                            <div class="gb-mp-panel">
+                                <p class="gb-mp-stage-label" id="gb-mp-step1-label">Step 1 · Choose palace</p>
+                                <h2 class="gb-mp-panel-title" id="gb-mp-step1-title">Where will your memory live?</h2>
+                                <p class="gb-mp-panel-copy" id="gb-mp-step1-copy">Choose one route. Keep it relevant to the topic so each location feels natural for the lesson.</p>
+                                <div class="gb-mp-palace-grid" id="gb-mp-palace-grid"></div>
+                            </div>
+                        </section>
+
+                        <!-- Step 2 — Place concepts -->
+                        <section class="gb-mp-step" id="gb-mp-step-2" data-step="2">
+                            <div class="gb-mp-panel">
+                                <p class="gb-mp-stage-label" id="gb-mp-step2-label">Step 2 · Place concepts</p>
+                                <h2 class="gb-mp-panel-title" id="gb-mp-step2-title">Put each concept somewhere memorable.</h2>
+                                <p class="gb-mp-panel-copy" id="gb-mp-step2-copy">Tap an empty location to bind the current concept to it.</p>
+                                <div class="gb-mp-focus-card" id="gb-mp-focus-card">
+                                    <p class="gb-mp-focus-kicker" id="gb-mp-focus-kicker">Current concept</p>
+                                    <h3 class="gb-mp-focus-title" id="gb-mp-focus-title"></h3>
+                                    <p class="gb-mp-focus-copy" id="gb-mp-focus-copy"></p>
+                                    <div class="gb-mp-image-line" id="gb-mp-focus-image-cue"></div>
+                                </div>
+                                <p class="gb-mp-counter" id="gb-mp-concept-counter"></p>
+                                <div class="gb-mp-location-grid" id="gb-mp-location-grid"></div>
+                            </div>
+                        </section>
+
+                        <!-- Step 3 — Walk -->
+                        <section class="gb-mp-step" id="gb-mp-step-3" data-step="3">
+                            <div class="gb-mp-panel gb-mp-walk-card" id="gb-mp-walk-card">
+                                <div class="gb-mp-walk-icon" id="gb-mp-walk-icon">🕌</div>
+                                <h2 class="gb-mp-walk-title" id="gb-mp-walk-title">Close your eyes.</h2>
+                                <p class="gb-mp-walk-copy" id="gb-mp-walk-copy">We will walk through your palace in order and strengthen each location-concept bond.</p>
+                                <p class="gb-mp-counter" id="gb-mp-walk-counter"></p>
+                            </div>
+                        </section>
+
+                        <!-- Step 4 — Recall -->
+                        <section class="gb-mp-step" id="gb-mp-step-4" data-step="4">
+                            <div class="gb-mp-panel">
+                                <p class="gb-mp-stage-label" id="gb-mp-step4-label">Step 4 · Recall test</p>
+                                <h2 class="gb-mp-panel-title" id="gb-mp-step4-title">Walk back through memory.</h2>
+                                <p class="gb-mp-panel-copy" id="gb-mp-step4-copy">Answer from the location cue. Strong spatial anchors make recall feel like navigation.</p>
+                                <div class="gb-mp-recall-card" id="gb-mp-recall-card">
+                                    <p class="gb-mp-recall-location" id="gb-mp-recall-location"></p>
+                                    <p class="gb-mp-recall-question" id="gb-mp-recall-question"></p>
+                                    <div class="gb-mp-recall-options" id="gb-mp-recall-options"></div>
+                                </div>
+                                <p class="gb-mp-counter" id="gb-mp-recall-counter"></p>
+                            </div>
+                        </section>
+
+                        <!-- Result -->
+                        <section class="gb-mp-result-card" id="gb-mp-result-card" aria-live="polite">
+                            <h2 class="gb-mp-result-title" id="gb-mp-result-title"></h2>
+                            <p class="gb-mp-result-text" id="gb-mp-result-text"></p>
+                            <div class="gb-mp-score-grid" id="gb-mp-result-stats">
+                                <div class="gb-mp-score-box">
+                                    <span id="gb-mp-accuracy-label">Accuracy</span>
+                                    <strong id="gb-mp-accuracy-value">0%</strong>
+                                </div>
+                                <div class="gb-mp-score-box">
+                                    <span id="gb-mp-speed-label">Recall Speed</span>
+                                    <strong id="gb-mp-speed-value">0s</strong>
+                                </div>
+                                <div class="gb-mp-score-box">
+                                    <span id="gb-mp-level-label">Level</span>
+                                    <strong id="gb-mp-level-value">Apprentice</strong>
+                                </div>
+                                <div class="gb-mp-score-box">
+                                    <span id="gb-mp-xp-label">XP</span>
+                                    <strong id="gb-mp-xp-value">0 XP</strong>
+                                </div>
+                            </div>
+                            <button type="button" class="gb-mp-retry-btn" id="gb-mp-retry-btn">Retry</button>
+                        </section>
+                        <div class="gb-mp-toast" id="gb-mp-toast" role="status" aria-live="polite"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -8091,6 +8721,48 @@
                 'ttt.dockResult':        'Sessiya natijasi',
                 'ttt.dockComplete':      'Sessiya tugadi',
                 'ttt.duolingoToast':     "Mashqlarni takrorlash kerak — qisqa mashqlardan boshlaymiz.",
+                // Memory Palace (mp.*) — 4-step Method of Loci flow, panel: gb-panel-mp
+                'game.mp':               "Xotira saroyi",
+                'mp.heroKicker':         "Loci usuli",
+                'mp.heroTitleStep1':     "Aqliy yo'l quring.",
+                'mp.heroTitleStep2':     "Tushunchani joyga bog'lang.",
+                'mp.heroTitleStep3':     "Saroy bo'ylab yuring.",
+                'mp.heroTitleStep4':     "Xotirangizdan qaytaring.",
+                'mp.heroSubStep1':       "Mavzuga mos saroyni tanlang — har joy darsning bir qismiga mos kelsin.",
+                'mp.heroSubStep2':       "Har bir tushunchani jonli, kuchli tasvir bilan joylashtiring.",
+                'mp.heroSubStep3':       "Saroyingiz bo'ylab tartibli yuring. Har joy-tushuncha bog'ini mustahkamlang.",
+                'mp.heroSubStep4':       "Joy ishorasidan eslab javob bering. Kuchli fazoviy bog' — yengil eslash.",
+                'mp.step1Label':         "1-bosqich · Saroy tanlash",
+                'mp.step2Label':         "2-bosqich · Tushuncha joylashtirish",
+                'mp.step3Label':         "3-bosqich · Aqliy sayr",
+                'mp.step4Label':         "4-bosqich · Eslash sinovi",
+                'mp.placementOccupied':  "Saqlanmoqda: {term}",
+                'mp.conceptCounter':     "Tushuncha {n}/{total}",
+                'mp.walkCounter':        "Bekat {n}/{total}",
+                'mp.recallCounter':      "Savol {n}/{total}",
+                'mp.recallQuestion':     "Bu joyga qaysi tushunchani bog'lagansiz?",
+                'mp.feedbackCorrect':    "To'g'ri. Joy-tushuncha bog'i mustahkam.",
+                'mp.feedbackWrong':      "Hali emas. Bu bog'ni qayta sayr qilamiz.",
+                'mp.outcome.perfect':    "Ajoyib!",
+                'mp.outcome.yaxshi':     "Yaxshi!",
+                'mp.outcome.hali_emas_partial': "Hali emas",
+                'mp.outcome.hali_emas_fail':    "Hali emas",
+                'mp.level.apprentice':   "Shogird",
+                'mp.level.proficient':   "Bilimdon",
+                'mp.level.mastered':     "Ustoz",
+                'mp.level.pending':      "Boshlovchi",
+                'mp.accuracyLabel':      "Aniqlik",
+                'mp.speedLabel':         "Eslash tezligi",
+                'mp.levelLabel':         "Daraja",
+                'mp.xpLabel':            "Sessiya XP",
+                'mp.dockChoosePalace':   "Saroyni tanlang",
+                'mp.dockPlaceConcept':   "Tushunchani joylashtiring",
+                'mp.dockStartWalk':      "Sayrni boshlash",
+                'mp.dockNextStop':       "Keyingi joy",
+                'mp.dockAnswerRecall':   "Eslab javob bering",
+                'mp.dockComplete':       "Saroy tugatildi",
+                'mp.dockRetry':          "Qayta urinish",
+                'mp.toastNetwork':       "Tarmoqda muammo. Mahalliy natija ko'rsatilmoqda.",
             },
             ru: {
                 'skip.label':            '⏭ Пропустить фазу',
@@ -8372,6 +9044,48 @@
                 'ttt.dockResult':        'Итог сессии',
                 'ttt.dockComplete':      'Сессия завершена',
                 'ttt.duolingoToast':     'Нужно повторить упражнения — начнём с коротких.',
+                // Memory Palace (mp.*) — 4-step Method of Loci flow, panel: gb-panel-mp
+                'game.mp':               'Дворец памяти',
+                'mp.heroKicker':         'Метод локусов',
+                'mp.heroTitleStep1':     'Постройте мысленный маршрут.',
+                'mp.heroTitleStep2':     'Привяжите понятие к месту.',
+                'mp.heroTitleStep3':     'Пройдитесь по дворцу.',
+                'mp.heroTitleStep4':     'Извлеките из памяти.',
+                'mp.heroSubStep1':       'Выберите дворец, релевантный теме — каждое место должно сочетаться с уроком.',
+                'mp.heroSubStep2':       'Поместите каждое понятие в место с ярким, преувеличенным образом.',
+                'mp.heroSubStep3':       'Пройдите маршрут по порядку. Усильте каждую связь место—понятие.',
+                'mp.heroSubStep4':       'Отвечайте по подсказке локации. Сильная пространственная привязка — лёгкое извлечение.',
+                'mp.step1Label':         '1-й шаг · Выбрать дворец',
+                'mp.step2Label':         '2-й шаг · Разместить понятия',
+                'mp.step3Label':         '3-й шаг · Мысленная прогулка',
+                'mp.step4Label':         '4-й шаг · Тест на воспоминание',
+                'mp.placementOccupied':  'Хранится: {term}',
+                'mp.conceptCounter':     'Понятие {n}/{total}',
+                'mp.walkCounter':        'Остановка {n}/{total}',
+                'mp.recallCounter':      'Вопрос {n}/{total}',
+                'mp.recallQuestion':     'Какое понятие вы привязали к этому месту?',
+                'mp.feedbackCorrect':    'Верно. Связь место—понятие крепкая.',
+                'mp.feedbackWrong':      'Пока нет. Эту связь нужно ещё раз пройти.',
+                'mp.outcome.perfect':    'Отлично!',
+                'mp.outcome.yaxshi':     'Хорошо!',
+                'mp.outcome.hali_emas_partial': 'Пока нет',
+                'mp.outcome.hali_emas_fail':    'Пока нет',
+                'mp.level.apprentice':   'Ученик',
+                'mp.level.proficient':   'Уверенно',
+                'mp.level.mastered':     'Мастер',
+                'mp.level.pending':      'Начинающий',
+                'mp.accuracyLabel':      'Точность',
+                'mp.speedLabel':         'Скорость воспоминания',
+                'mp.levelLabel':         'Уровень',
+                'mp.xpLabel':            'XP сессии',
+                'mp.dockChoosePalace':   'Выберите дворец',
+                'mp.dockPlaceConcept':   'Разместите понятие',
+                'mp.dockStartWalk':      'Начать прогулку',
+                'mp.dockNextStop':       'Следующее место',
+                'mp.dockAnswerRecall':   'Ответить на вопрос',
+                'mp.dockComplete':       'Дворец готов',
+                'mp.dockRetry':          'Попробовать снова',
+                'mp.toastNetwork':       'Проблема с сетью. Показан локальный результат.',
             },
             en: {
                 'skip.label':            '⏭ Skip phase',
@@ -8653,6 +9367,48 @@
                 'ttt.dockResult':        'Session result',
                 'ttt.dockComplete':      'Session complete',
                 'ttt.duolingoToast':     'Time to revisit fundamentals — micro-drills coming up.',
+                // Memory Palace (mp.*) — 4-step Method of Loci flow, panel: gb-panel-mp
+                'game.mp':               'Memory Palace',
+                'mp.heroKicker':         'Method of Loci',
+                'mp.heroTitleStep1':     'Build a mental route.',
+                'mp.heroTitleStep2':     'Anchor a concept to a place.',
+                'mp.heroTitleStep3':     'Walk through your palace.',
+                'mp.heroTitleStep4':     'Retrieve from memory.',
+                'mp.heroSubStep1':       'Pick a palace relevant to the topic — each location should fit the lesson naturally.',
+                'mp.heroSubStep2':       'Place each concept in a vivid, exaggerated image you cannot forget.',
+                'mp.heroSubStep3':       'Walk the route in order. Reinforce each location-concept bond.',
+                'mp.heroSubStep4':       'Answer from the location cue. Strong spatial anchors make recall feel easy.',
+                'mp.step1Label':         'Step 1 · Choose palace',
+                'mp.step2Label':         'Step 2 · Place concepts',
+                'mp.step3Label':         'Step 3 · Walkthrough',
+                'mp.step4Label':         'Step 4 · Recall test',
+                'mp.placementOccupied':  'Holding: {term}',
+                'mp.conceptCounter':     'Concept {n}/{total}',
+                'mp.walkCounter':        'Stop {n}/{total}',
+                'mp.recallCounter':      'Question {n}/{total}',
+                'mp.recallQuestion':     'What concept did you place here?',
+                'mp.feedbackCorrect':    'Correct. Location bond is strong.',
+                'mp.feedbackWrong':      'Not yet. This bond needs another walkthrough.',
+                'mp.outcome.perfect':    'Excellent!',
+                'mp.outcome.yaxshi':     'Good work!',
+                'mp.outcome.hali_emas_partial': 'Not yet',
+                'mp.outcome.hali_emas_fail':    'Not yet',
+                'mp.level.apprentice':   'Apprentice',
+                'mp.level.proficient':   'Proficient',
+                'mp.level.mastered':     'Mastered',
+                'mp.level.pending':      'Pending',
+                'mp.accuracyLabel':      'Accuracy',
+                'mp.speedLabel':         'Recall Speed',
+                'mp.levelLabel':         'Level',
+                'mp.xpLabel':            'Session XP',
+                'mp.dockChoosePalace':   'Choose palace',
+                'mp.dockPlaceConcept':   'Place concept',
+                'mp.dockStartWalk':      'Start walk',
+                'mp.dockNextStop':       'Next location',
+                'mp.dockAnswerRecall':   'Answer recall',
+                'mp.dockComplete':       'Palace complete',
+                'mp.dockRetry':          'Retry palace',
+                'mp.toastNetwork':       'Network issue. Showing local result.',
             },
         };
 
@@ -10934,7 +11690,25 @@
             mb: { boxes:[], opened:[], idx:-1, phase:'select', labels:[], pickedLabel:'', idCorrect:null, ansCorrect:null, complete:false, busy:false },
             ttt: { sessionId:null, board:Array(9).fill(''), games:[], gameNum:0, draws:0, losses:0, correct:0, pendingCellIdx:-1, currentItemIdx:0, currentItemId:null, phase:'await-tap', busy:false, complete:false, winLine:null },
             sf: { idx:0, mode:'word_bank', selectedBlank:0, blanks:[], xp:0, pendingFinalize:false, complete:false, busy:false },
-            tm: { tiles:[], pairsTotal:0, matched:0, wrong:0, streak:0, xp:0, selectedLeft:null, busy:false, complete:false, startedAt:null, outcome:null }
+            tm: { tiles:[], pairsTotal:0, matched:0, wrong:0, streak:0, xp:0, selectedLeft:null, busy:false, complete:false, startedAt:null, outcome:null },
+            // Memory Palace (gb-panel-mp, sub-slot 7) — Method of Loci 4-step flow.
+            mp: {
+                step: 1,                  // 1..4 (5 = result)
+                selectedPalace: null,     // palace object once chosen
+                filteredPalaces: [],      // tier-filtered subset of GB_MEMORY_PALACE.palaces
+                conceptIndex: 0,          // pointer into concepts[] during Step 2
+                placements: [],           // [{location_idx, concept_id}] (length = locations.length)
+                walkIndex: 0,             // pointer during Step 3
+                recallIndex: 0,           // pointer during Step 4
+                recallResults: [],        // [{location_idx, picked_concept_id, is_correct, elapsed_ms}]
+                recallStartAt: null,      // ms timestamp per question
+                recallOptions: [],        // shuffled MC options for current Step 4 question
+                hintsUsed: 0,
+                result: null,             // server response from gbMPSubmitSession
+                sessionId: null,          // minted on init
+                busy: false,
+                complete: false,
+            }
         };
 
         // ── Registry-driven game-break order ─────────────────────────────
@@ -10959,6 +11733,11 @@
                 list.push({ id: 'ttt', sub: 5, init: gbInitTTT, panel: 'gb-panel-ttt', label: 'Tic Tac Toe', labelKey: 'game.ttt', setupBtn: null });
             if (Array.isArray(GB_SENTENCE_FILL) && GB_SENTENCE_FILL.length > 0)
                 list.push({ id: 'sf', sub: 6, init: gbInitSF, panel: 'gb-panel-sf', label: 'Sentence Fill', labelKey: 'game.sf', setupBtn: gbSetButtonForSF });
+            // Memory Palace (sub-slot 7). Gate on non-null wire + ≥1 palace + ≥3 concepts
+            // (mirrors TM/SF/TTT empty-content gating). content lives in GB_MEMORY_PALACE.
+            if (GB_MEMORY_PALACE && Array.isArray(GB_MEMORY_PALACE.palaces) && GB_MEMORY_PALACE.palaces.length > 0
+                && Array.isArray(GB_MEMORY_PALACE.concepts) && GB_MEMORY_PALACE.concepts.length >= 3)
+                list.push({ id: 'mp', sub: 7, init: gbInitMP, panel: 'gb-panel-mp', label: 'Memory Palace', labelKey: 'game.mp', setupBtn: null });
             return list;
         }
 
@@ -11151,6 +11930,10 @@
         function gbHandleAction() {
             if (state.isAnimating) return;
             if (gbState.subGame === 99) { gbExitToStage6(); return; }
+            if (gbState.subGame === 7) {
+                if (gbState.mp && gbState.mp.complete) { gbAdvanceFromGame(7, 'gb-panel-mp'); return; }
+                gbMPAction(); return;
+            }
             if (gbState.subGame === 6) {
                 if (gbState.sf && gbState.sf.complete) { gbAdvanceFromGame(6, 'gb-panel-sf'); return; }
                 gbSFAction(); return;
@@ -14269,6 +15052,567 @@
                 return;
             }
             // 'await-tap' / 'awaiting-answer' / 'ai-thinking' — button is inert; clicks come from cells / options.
+        }
+
+        /* ───────────────── MEMORY PALACE (gb-panel-mp, sub-slot 7) ─────────────────
+           Method of Loci 4-step state machine. Author content (palaces + concepts +
+           imagery cues) ships in GB_MEMORY_PALACE — pedagogical hint material, NOT
+           an answer key. The "answer" for the recall test is the student's own
+           Step 2 placement map, server-validated in gbMPSubmitSession. NO hardcoded
+           palace/concept content here. ───────────────────────────────────────── */
+
+        function gbMPShowToast(msg, kind) {
+            const t = document.getElementById('gb-mp-toast');
+            if (!t) return;
+            t.textContent = msg || '';
+            t.classList.add('show');
+            if (kind === 'error') t.setAttribute('data-kind', 'error');
+            else t.removeAttribute('data-kind');
+            clearTimeout(gbState.mp._toastTimer);
+            gbState.mp._toastTimer = setTimeout(() => {
+                t.classList.remove('show');
+            }, 1800);
+        }
+
+        function gbMPRenderStaticI18n() {
+            // Map static labels to i18n keys. Hero kicker + step labels.
+            const setText = (id, key) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = RT(key);
+            };
+            setText('gb-mp-hero-kicker', 'mp.heroKicker');
+            setText('gb-mp-accuracy-label', 'mp.accuracyLabel');
+            setText('gb-mp-speed-label', 'mp.speedLabel');
+            setText('gb-mp-level-label', 'mp.levelLabel');
+            setText('gb-mp-xp-label', 'mp.xpLabel');
+            setText('gb-mp-step1-label', 'mp.step1Label');
+            setText('gb-mp-step2-label', 'mp.step2Label');
+            setText('gb-mp-step4-label', 'mp.step4Label');
+            const retry = document.getElementById('gb-mp-retry-btn');
+            if (retry) retry.textContent = RT('mp.dockRetry');
+        }
+
+        function gbInitMP() {
+            // Reset state. Only run when GB_MEMORY_PALACE is non-null and has palaces+concepts.
+            const wire = (typeof GB_MEMORY_PALACE === 'object' && GB_MEMORY_PALACE) ? GB_MEMORY_PALACE : null;
+            const palaces = (wire && Array.isArray(wire.palaces)) ? wire.palaces.slice() : [];
+            const concepts = (wire && Array.isArray(wire.concepts)) ? wire.concepts.slice() : [];
+            const ctx = window.NETS_CTX || {};
+            const isPremium = (ctx.tier === 'premium');
+            // Tier filter — keep premium palaces only when student tier is premium.
+            const filtered = palaces.filter(p => {
+                if (!p || typeof p !== 'object') return false;
+                const ptier = (p.tier || 'basic').toLowerCase();
+                return (ptier !== 'premium') || isPremium;
+            });
+            const sessionId = 'mp-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+            gbState.mp = Object.assign(gbState.mp || {}, {
+                step: 1,
+                selectedPalace: null,
+                filteredPalaces: filtered,
+                conceptIndex: 0,
+                placements: [],
+                walkIndex: 0,
+                recallIndex: 0,
+                recallResults: [],
+                recallStartAt: null,
+                recallOptions: [],
+                hintsUsed: 0,
+                result: null,
+                sessionId: sessionId,
+                busy: false,
+                complete: false,
+            });
+            gbMPRenderStaticI18n();
+            gbMPRenderStep(1);
+            gbMPRenderPalaceGrid();
+            // Update XP pill cosmetic baseline.
+            const xpPill = document.getElementById('gb-mp-xp-pill');
+            if (xpPill) xpPill.textContent = '0 XP';
+            // Result card hidden + retry hidden on init.
+            const result = document.getElementById('gb-mp-result-card');
+            if (result) { result.classList.remove('show', 'outcome-perfect', 'outcome-yaxshi', 'outcome-hali_emas_partial', 'outcome-hali_emas_fail'); }
+            const retry = document.getElementById('gb-mp-retry-btn');
+            if (retry) {
+                retry.classList.remove('show');
+                retry.onclick = gbMPRetry;
+            }
+        }
+
+        function gbMPRenderStep(step) {
+            gbState.mp.step = step;
+            // Toggle .active among the 4 step sections.
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('gb-mp-step-' + i);
+                if (el) el.classList.toggle('active', i === step);
+            }
+            // Topbar dots
+            const dots = document.querySelectorAll('#gb-mp-dots span');
+            dots.forEach((d, i) => d.classList.toggle('active', i === (step - 1)));
+            // Step counter
+            const stepLabel = document.getElementById('gb-mp-step-label');
+            if (stepLabel) stepLabel.textContent = step + '/4';
+            // Phase label + hero copy via i18n keys.
+            const phaseKeyByStep = { 1: 'mp.step1Label', 2: 'mp.step2Label', 3: 'mp.step3Label', 4: 'mp.step4Label' };
+            const titleKeyByStep = { 1: 'mp.heroTitleStep1', 2: 'mp.heroTitleStep2', 3: 'mp.heroTitleStep3', 4: 'mp.heroTitleStep4' };
+            const subKeyByStep   = { 1: 'mp.heroSubStep1',   2: 'mp.heroSubStep2',   3: 'mp.heroSubStep3',   4: 'mp.heroSubStep4'   };
+            const phaseEl = document.getElementById('gb-mp-phase-label');
+            const titleEl = document.getElementById('gb-mp-hero-title');
+            const subEl   = document.getElementById('gb-mp-hero-sub');
+            if (phaseEl) phaseEl.textContent = RT(phaseKeyByStep[step] || 'mp.step1Label');
+            if (titleEl) titleEl.textContent = RT(titleKeyByStep[step] || 'mp.heroTitleStep1');
+            if (subEl)   subEl.textContent   = RT(subKeyByStep[step]   || 'mp.heroSubStep1');
+            // Update dock label (uses global #gb-action-btn via setBtnText helper if available).
+            const dockKeyByStep = { 1: 'mp.dockChoosePalace', 2: 'mp.dockPlaceConcept', 3: 'mp.dockNextStop', 4: 'mp.dockAnswerRecall' };
+            const dockKey = dockKeyByStep[step] || 'mp.dockChoosePalace';
+            if (typeof btn !== 'undefined' && btn) {
+                btn.classList.remove('pulse');
+                btn.classList.add('state-pill');
+                if (typeof btnText !== 'undefined' && btnText) {
+                    btnText.textContent = RT(dockKey);
+                    btnText.style.opacity = '1';
+                }
+            }
+        }
+
+        function gbMPRenderPalaceGrid() {
+            const grid = document.getElementById('gb-mp-palace-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const palaces = gbState.mp.filteredPalaces || [];
+            palaces.forEach(p => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'gb-mp-palace-card';
+                if (gbState.mp.selectedPalace && gbState.mp.selectedPalace.key === p.key) {
+                    card.classList.add('selected');
+                }
+                const icon = document.createElement('div');
+                icon.className = 'gb-mp-icon';
+                icon.textContent = p.icon || '🏛️';
+                const title = document.createElement('strong');
+                title.textContent = p.name || '';
+                const desc = document.createElement('span');
+                desc.textContent = p.description || '';
+                card.appendChild(icon);
+                card.appendChild(title);
+                card.appendChild(desc);
+                card.onclick = () => gbMPSelectPalace(p.key, card);
+                grid.appendChild(card);
+            });
+        }
+
+        function gbMPSelectPalace(palaceKey, btnEl) {
+            const palace = (gbState.mp.filteredPalaces || []).find(p => p && p.key === palaceKey);
+            if (!palace) return;
+            gbState.mp.selectedPalace = palace;
+            // Re-render to update .selected highlight.
+            gbMPRenderPalaceGrid();
+            // Update dock label to invite next step.
+            if (typeof btnText !== 'undefined' && btnText) {
+                btnText.textContent = RT('mp.dockPlaceConcept');
+            }
+        }
+
+        function gbMPStartPlacement() {
+            const palace = gbState.mp.selectedPalace;
+            const wire = (typeof GB_MEMORY_PALACE === 'object' && GB_MEMORY_PALACE) ? GB_MEMORY_PALACE : null;
+            if (!palace || !wire) return;
+            const locCount = (palace.locations || []).length;
+            gbState.mp.conceptIndex = 0;
+            gbState.mp.placements = new Array(locCount).fill(null);
+            gbMPRenderStep(2);
+            gbMPRenderFocusCard();
+            gbMPRenderLocationGrid();
+        }
+
+        function gbMPRenderFocusCard() {
+            const wire = GB_MEMORY_PALACE;
+            const concepts = (wire && wire.concepts) ? wire.concepts : [];
+            const idx = gbState.mp.conceptIndex || 0;
+            const c = concepts[idx];
+            if (!c) return;
+            const titleEl = document.getElementById('gb-mp-focus-title');
+            const copyEl  = document.getElementById('gb-mp-focus-copy');
+            const cueEl   = document.getElementById('gb-mp-focus-image-cue');
+            const counter = document.getElementById('gb-mp-concept-counter');
+            const kicker  = document.getElementById('gb-mp-focus-kicker');
+            if (titleEl) titleEl.textContent = c.term || '';
+            if (copyEl)  copyEl.textContent  = c.description || '';
+            if (cueEl)   cueEl.textContent   = c.image_cue || '';
+            if (kicker)  kicker.textContent  = RT('mp.heroKicker');
+            if (counter) {
+                const tmpl = RT('mp.conceptCounter');
+                counter.textContent = (tmpl || 'Concept {n}/{total}')
+                    .replace('{n}', String(idx + 1))
+                    .replace('{total}', String(concepts.length));
+            }
+        }
+
+        function gbMPRenderLocationGrid() {
+            const grid = document.getElementById('gb-mp-location-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const palace = gbState.mp.selectedPalace;
+            if (!palace) return;
+            const wire = GB_MEMORY_PALACE;
+            const concepts = (wire && wire.concepts) ? wire.concepts : [];
+            const locations = palace.locations || [];
+            locations.forEach((loc, i) => {
+                const placement = gbState.mp.placements[i];
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'gb-mp-location-card';
+                if (placement) card.classList.add('occupied');
+                const icon = document.createElement('div');
+                icon.className = 'gb-mp-icon';
+                icon.textContent = String(i + 1);
+                const name = document.createElement('strong');
+                name.textContent = loc.name || '';
+                const sub = document.createElement('span');
+                if (placement) {
+                    const placedConcept = concepts.find(c => c && c.id === placement.concept_id);
+                    const term = placedConcept ? placedConcept.term : '';
+                    const tmpl = RT('mp.placementOccupied') || 'Holding: {term}';
+                    sub.textContent = tmpl.replace('{term}', term);
+                } else {
+                    sub.textContent = loc.sensory_cue || '';
+                }
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.appendChild(sub);
+                if (!placement) {
+                    card.onclick = () => gbMPPlace(i, card);
+                } else {
+                    card.disabled = true;
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function gbMPPlace(locationIdx, btnEl) {
+            const wire = GB_MEMORY_PALACE;
+            const concepts = (wire && wire.concepts) ? wire.concepts : [];
+            const ci = gbState.mp.conceptIndex || 0;
+            const concept = concepts[ci];
+            if (!concept) return;
+            if (gbState.mp.placements[locationIdx]) {
+                gbMPShowToast(RT('mp.placementOccupied').replace('{term}', ''));
+                return;
+            }
+            gbState.mp.placements[locationIdx] = {
+                location_idx: locationIdx,
+                concept_id: concept.id,
+            };
+            gbState.mp.conceptIndex = ci + 1;
+            if (gbState.mp.conceptIndex >= concepts.length) {
+                // All concepts placed — advance to walk.
+                gbMPRenderLocationGrid();
+                setTimeout(() => gbMPStartWalk(), 380);
+                return;
+            }
+            gbMPRenderFocusCard();
+            gbMPRenderLocationGrid();
+        }
+
+        function gbMPStartWalk() {
+            gbState.mp.walkIndex = 0;
+            gbMPRenderStep(3);
+            gbMPRenderWalkCard();
+        }
+
+        function gbMPRenderWalkCard() {
+            const palace = gbState.mp.selectedPalace;
+            if (!palace) return;
+            const wire = GB_MEMORY_PALACE;
+            const concepts = (wire && wire.concepts) ? wire.concepts : [];
+            const locations = palace.locations || [];
+            const idx = gbState.mp.walkIndex || 0;
+            const loc = locations[idx];
+            const placement = gbState.mp.placements[idx];
+            const placedConcept = placement ? concepts.find(c => c && c.id === placement.concept_id) : null;
+            const iconEl  = document.getElementById('gb-mp-walk-icon');
+            const titleEl = document.getElementById('gb-mp-walk-title');
+            const copyEl  = document.getElementById('gb-mp-walk-copy');
+            const counter = document.getElementById('gb-mp-walk-counter');
+            if (iconEl)  iconEl.textContent  = palace.icon || '🕌';
+            if (titleEl) titleEl.textContent = (loc && loc.name) || '';
+            if (copyEl) {
+                const term = placedConcept ? placedConcept.term : '';
+                const cue  = placedConcept ? (placedConcept.image_cue || '') : '';
+                const sens = (loc && loc.sensory_cue) || '';
+                copyEl.textContent = (term ? term + ' — ' : '') + cue + (sens ? ' · ' + sens : '');
+            }
+            if (counter) {
+                const tmpl = RT('mp.walkCounter') || 'Stop {n}/{total}';
+                counter.textContent = tmpl.replace('{n}', String(idx + 1)).replace('{total}', String(locations.length));
+            }
+            // Dock label
+            const isLast = (idx >= locations.length - 1);
+            if (typeof btnText !== 'undefined' && btnText) {
+                btnText.textContent = isLast ? RT('mp.dockAnswerRecall') : RT('mp.dockNextStop');
+            }
+        }
+
+        function gbMPAdvanceWalk() {
+            const palace = gbState.mp.selectedPalace;
+            if (!palace) return;
+            const locations = palace.locations || [];
+            gbState.mp.walkIndex = (gbState.mp.walkIndex || 0) + 1;
+            if (gbState.mp.walkIndex >= locations.length) {
+                gbMPStartRecall();
+                return;
+            }
+            gbMPRenderWalkCard();
+        }
+
+        function gbMPStartRecall() {
+            gbState.mp.recallIndex = 0;
+            gbState.mp.recallResults = [];
+            gbState.mp.recallStartAt = Date.now();
+            gbMPRenderStep(4);
+            gbMPRenderRecall();
+        }
+
+        function gbMPRenderRecall() {
+            const palace = gbState.mp.selectedPalace;
+            if (!palace) return;
+            const wire = GB_MEMORY_PALACE;
+            const concepts = (wire && wire.concepts) ? wire.concepts : [];
+            const idx = gbState.mp.recallIndex || 0;
+            const loc = (palace.locations || [])[idx];
+            const placement = gbState.mp.placements[idx];
+            const correctConcept = placement ? concepts.find(c => c && c.id === placement.concept_id) : null;
+            const locEl  = document.getElementById('gb-mp-recall-location');
+            const qEl    = document.getElementById('gb-mp-recall-question');
+            const opts   = document.getElementById('gb-mp-recall-options');
+            const counter = document.getElementById('gb-mp-recall-counter');
+            if (locEl) locEl.textContent = (loc && loc.name) || '';
+            if (qEl)   qEl.textContent   = RT('mp.recallQuestion');
+            if (counter) {
+                const tmpl = RT('mp.recallCounter') || 'Question {n}/{total}';
+                counter.textContent = tmpl.replace('{n}', String(idx + 1)).replace('{total}', String((palace.locations || []).length));
+            }
+            // Build 4 MC options: 1 correct + 3 distractors. NEVER reveal correctness in DOM
+            // until user picks (only via button.onclick comparison post-pick).
+            if (!opts) return;
+            opts.innerHTML = '';
+            if (!correctConcept) return;
+            const distractors = concepts
+                .filter(c => c && c.id !== correctConcept.id)
+                .slice();
+            // Fisher-Yates shuffle distractors (avoid fixed ordering exposing answer).
+            for (let i = distractors.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = distractors[i]; distractors[i] = distractors[j]; distractors[j] = t;
+            }
+            const picks = [correctConcept].concat(distractors.slice(0, 3));
+            for (let i = picks.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const t = picks[i]; picks[i] = picks[j]; picks[j] = t;
+            }
+            gbState.mp.recallOptions = picks.map(p => p.id);
+            gbState.mp.recallStartAt = Date.now();
+            picks.forEach(opt => {
+                const btnEl = document.createElement('button');
+                btnEl.type = 'button';
+                btnEl.className = 'gb-mp-recall-option';
+                btnEl.setAttribute('data-concept-id', opt.id);
+                const term = document.createElement('strong');
+                term.textContent = opt.term || '';
+                btnEl.appendChild(term);
+                btnEl.onclick = () => gbMPAnswerRecall(opt.id, btnEl);
+                opts.appendChild(btnEl);
+            });
+        }
+
+        function gbMPAnswerRecall(pickedConceptId, btnEl) {
+            const palace = gbState.mp.selectedPalace;
+            if (!palace) return;
+            const idx = gbState.mp.recallIndex || 0;
+            const placement = gbState.mp.placements[idx];
+            const expectedId = placement ? placement.concept_id : null;
+            // Client-side `is_correct` is informational only — server recomputes
+            // authoritatively from the submitted placement map in gbMPSubmitSession.
+            const isCorrect = (pickedConceptId === expectedId) && (pickedConceptId !== null);
+            const elapsedMs = Math.max(0, Date.now() - (gbState.mp.recallStartAt || Date.now()));
+            // Disable all options + visual feedback (correct/wrong).
+            const opts = document.getElementById('gb-mp-recall-options');
+            if (opts) {
+                Array.from(opts.children).forEach(child => {
+                    child.disabled = true;
+                    const cid = child.getAttribute('data-concept-id');
+                    if (cid === expectedId) child.classList.add('correct');
+                });
+                if (!isCorrect && btnEl) btnEl.classList.add('wrong');
+            }
+            gbState.mp.recallResults.push({
+                location_idx: idx,
+                picked_concept_id: pickedConceptId,
+                is_correct: isCorrect,
+                elapsed_ms: elapsedMs,
+            });
+            // Advance after brief pause.
+            setTimeout(() => {
+                gbState.mp.recallIndex = idx + 1;
+                const total = (palace.locations || []).length;
+                if (gbState.mp.recallIndex >= total) {
+                    gbMPSubmitSession();
+                } else {
+                    gbMPRenderRecall();
+                }
+            }, 700);
+        }
+
+        // Single network swap-point. Reads ctx.hwId FIRST per TM #140 / SF / TTT lesson,
+        // then snake_case alternates (homework_id, homeworkId). Fail-soft on any HTTP /
+        // network error: render a locally-computed approximate result + show toast.
+        async function gbMPSubmitSession() {
+            const ctx = window.NETS_CTX || {};
+            const homeworkId = ctx.hwId || ctx.homework_id || ctx.homeworkId || null;
+            const palace = gbState.mp.selectedPalace;
+            const palaceKey = palace ? palace.key : null;
+            const placements = (gbState.mp.placements || []).filter(p => p && typeof p.location_idx !== 'undefined');
+            const recallResults = gbState.mp.recallResults || [];
+            const hintsUsed = gbState.mp.hintsUsed || 0;
+            // Local fallback outcome computation for fail-soft only.
+            const localCorrect = recallResults.filter(r => r && r.is_correct).length;
+            const localTotal = recallResults.length || 1;
+            const fallback = {
+                outcome: localCorrect === localTotal ? 'perfect' : (localCorrect >= localTotal - 1 ? 'yaxshi' : (localCorrect >= Math.ceil(localTotal * 0.6) ? 'hali_emas_partial' : 'hali_emas_fail')),
+                outcome_title: '',
+                outcome_text: '',
+                accuracy_pct: Math.round((localCorrect / localTotal) * 100),
+                correct_count: localCorrect,
+                total_count: localTotal,
+                recall_speed_avg_s: 0,
+                level_label: 'pending',
+                session_xp_display: localCorrect * 50,
+                retry_offered: localCorrect < localTotal,
+                missed_location_indices: recallResults.filter(r => r && !r.is_correct).map(r => r.location_idx),
+            };
+            if (!homeworkId) {
+                gbMPShowToast(RT('mp.toastNetwork'), 'error');
+                gbMPRenderResult(fallback);
+                return;
+            }
+            try {
+                const res = await fetch('/api/ai/check-answer?phase=memory-palace', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phase: 'memory-palace',
+                        homework_id: homeworkId,
+                        palace_key: palaceKey,
+                        placements: placements,
+                        recall_results: recallResults,
+                        hints_used: hintsUsed,
+                    }),
+                });
+                if (!res.ok) {
+                    gbMPShowToast(RT('mp.toastNetwork'), 'error');
+                    gbMPRenderResult(fallback);
+                    return;
+                }
+                const resp = await res.json();
+                gbState.mp.result = resp;
+                gbMPRenderResult(resp);
+            } catch (err) {
+                gbMPShowToast(RT('mp.toastNetwork'), 'error');
+                gbMPRenderResult(fallback);
+            }
+        }
+
+        function gbMPRenderResult(resp) {
+            // Server-authoritative — read outcome / accuracy / xp / level from response.
+            // Locally-computed fallback only on network failure (handled in gbMPSubmitSession).
+            if (!resp) return;
+            const card = document.getElementById('gb-mp-result-card');
+            const title = document.getElementById('gb-mp-result-title');
+            const text  = document.getElementById('gb-mp-result-text');
+            const acc   = document.getElementById('gb-mp-accuracy-value');
+            const speed = document.getElementById('gb-mp-speed-value');
+            const lvl   = document.getElementById('gb-mp-level-value');
+            const xp    = document.getElementById('gb-mp-xp-value');
+            const xpPill = document.getElementById('gb-mp-xp-pill');
+            const retry = document.getElementById('gb-mp-retry-btn');
+            const outcome = resp.outcome || 'hali_emas_partial';
+            if (title) {
+                const localTitle = RT('mp.outcome.' + outcome);
+                title.textContent = localTitle && localTitle !== ('mp.outcome.' + outcome)
+                    ? localTitle
+                    : (resp.outcome_title || '');
+            }
+            if (text) text.textContent = resp.outcome_text || '';
+            if (acc)  acc.textContent  = (resp.accuracy_pct != null ? resp.accuracy_pct : 0) + '%';
+            if (speed) speed.textContent = (resp.recall_speed_avg_s != null ? resp.recall_speed_avg_s : 0) + 's';
+            if (lvl) {
+                // Try i18n translation of level_label first; fall back to raw string.
+                const lvlKey = resp.level_label || 'pending';
+                const tx = RT('mp.level.' + String(lvlKey).toLowerCase().replace(/[^a-z0-9]/g, '_'));
+                lvl.textContent = (tx && tx.indexOf('mp.level.') === -1) ? tx : (resp.level_label || RT('mp.level.pending'));
+            }
+            const xpVal = (resp.session_xp_display != null) ? resp.session_xp_display : 0;
+            // session_xp_display is COSMETIC-ONLY (plan §1.3 + §7 #9). Show on card +
+            // top-right XP pill. DO NOT write to window.__sessionLog or any persistent counter.
+            if (xp) xp.textContent = xpVal + ' XP';
+            if (xpPill) xpPill.textContent = xpVal + ' XP';
+            if (card) {
+                card.classList.add('show');
+                card.classList.remove('outcome-perfect', 'outcome-yaxshi', 'outcome-hali_emas_partial', 'outcome-hali_emas_fail');
+                card.classList.add('outcome-' + outcome);
+            }
+            if (retry) {
+                if (resp.retry_offered) retry.classList.add('show');
+                else retry.classList.remove('show');
+                retry.textContent = RT('mp.dockRetry');
+                retry.onclick = gbMPRetry;
+            }
+            gbState.mp.complete = true;
+            // Update dock label.
+            if (typeof btnText !== 'undefined' && btnText) {
+                btnText.textContent = RT('mp.dockComplete');
+            }
+        }
+
+        function gbMPAction() {
+            const mp = gbState.mp;
+            if (!mp) return;
+            if (mp.complete) {
+                // Game-break registry hook — DO NOT change signature.
+                gbAdvanceFromGame(7, 'gb-panel-mp');
+                return;
+            }
+            if (mp.busy) return;
+            if (mp.step === 1) {
+                if (!mp.selectedPalace) {
+                    gbMPShowToast(RT('mp.dockChoosePalace'));
+                    return;
+                }
+                gbMPStartPlacement();
+                return;
+            }
+            if (mp.step === 2) {
+                // Step 2 auto-advances on location click; dock is informational.
+                gbMPShowToast(RT('mp.dockPlaceConcept'));
+                return;
+            }
+            if (mp.step === 3) {
+                gbMPAdvanceWalk();
+                return;
+            }
+            if (mp.step === 4) {
+                // Step 4 auto-advances on option pick; dock no-ops.
+                return;
+            }
+        }
+
+        function gbMPRetry() {
+            // Restart from Step 1 — clear placements + recall but keep sessionId
+            // so the server can correlate retry attempts (future mastery feature).
+            const sid = (gbState.mp && gbState.mp.sessionId) || null;
+            gbInitMP();
+            if (sid) gbState.mp.sessionId = sid;
         }
 
         function gbExitToStage6() {
