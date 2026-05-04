@@ -974,16 +974,46 @@
     }
   }
 
+  // Surgically flip .is-open + aria-expanded on a single card's menu.
+  // Returns true if the DOM was found and updated.
+  // We do this instead of re-rendering the whole grid because every
+  // renderHomeworks() wipes #homework-grid innerHTML, which makes the
+  // IntersectionObserver-driven .hw-card opacity stagger replay — and
+  // the user sees the entire grid flash on every menu toggle.
+  function _setCardMenuOpen(homeworkId, open) {
+    if (!els.homeworkGrid || !homeworkId) return false;
+    const card = els.homeworkGrid.querySelector(
+      `.homework-card[data-id="${CSS.escape(String(homeworkId))}"]`
+    );
+    if (!card) return false;
+    const menu = card.querySelector(".hw-card-menu");
+    if (!menu) return false;
+    menu.classList.toggle("is-open", open);
+    const toggle = menu.querySelector(".js-menu-toggle");
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    return true;
+  }
+
   function toggleCardMenu(homeworkId) {
-    state.openMenuId = state.openMenuId === homeworkId ? null : homeworkId;
-    renderHomeworks();
+    const previousId = state.openMenuId;
+    const nextId = previousId === homeworkId ? null : homeworkId;
+    state.openMenuId = nextId;
+
+    // Close the previously-open menu (if any), then open the new one.
+    // We DO NOT re-render the grid here — see _setCardMenuOpen for why.
+    if (previousId && previousId !== nextId) {
+      _setCardMenuOpen(previousId, false);
+    }
+    if (nextId) {
+      _setCardMenuOpen(nextId, true);
+    }
   }
 
   function closeAllMenus() {
-    if (state.openMenuId !== null) {
-      state.openMenuId = null;
-      renderHomeworks();
-    }
+    if (state.openMenuId === null) return;
+    const id = state.openMenuId;
+    state.openMenuId = null;
+    _setCardMenuOpen(id, false);
   }
 
   function bindEvents() {
