@@ -2651,28 +2651,95 @@
             to   { opacity: 1; transform: none; }
         }
 
-        /* ── 370px mobile breakpoint ── */
-        @media (max-width: 370px) {
+        /* ── Narrow-viewport breakpoint (covers builder preview iframe @ ~360–440px
+              AND mobile portrait). Without this tier, the 3-stat grid + sticky
+              topbar pill + hero meta row collide when the runtime is iframed
+              below ~480px and the user sees overlapping/cramped cards.
+              The 370px tier below tightens further for true mobile portrait. */
+        @media (max-width: 480px) {
             .gb-game-panel#gb-panel-tm {
-                padding-inline: 10px;
+                padding-inline: 12px;
+                gap: 10px;
             }
             .gb-tm-topbar {
-                grid-template-columns: 1fr;
+                padding: 8px 10px;
+                gap: 8px;
+            }
+            .gb-tm-top-pill {
+                font-size: 10px;
+                padding: 5px 9px;
+            }
+            .gb-tm-hero {
+                padding: 14px;
+                border-radius: 26px;
+            }
+            .gb-tm-hero::after {
+                width: 160px;
+                height: 160px;
+                right: -60px;
+                bottom: -80px;
+            }
+            .gb-tm-meta {
+                margin-bottom: 10px;
+                flex-wrap: wrap;
+            }
+            .gb-tm-h1 {
+                font-size: clamp(18px, 5.4vw, 22px);
+            }
+            .gb-tm-subtitle {
+                font-size: 12.2px;
+            }
+            /* 3 stat cards squeezed below ~480px wrap awkwardly — drop to 2 cols
+               and let the third span the row, mirroring the 370px rule. */
+            .gb-tm-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 7px;
+            }
+            .gb-tm-stat {
+                padding: 10px;
+                border-radius: 16px;
+            }
+            .gb-tm-stat:last-child {
+                grid-column: 1 / -1;
+            }
+            .gb-tm-stat-value {
+                font-size: 15px;
+            }
+            .gb-tm-board-card {
+                padding: 13px;
                 border-radius: 24px;
             }
             .gb-tm-board {
                 gap: 8px;
             }
             .gb-tm-tile {
-                font-size: 12.5px;
+                font-size: 12.6px;
                 padding: 11px;
-                min-height: 55px;
+                min-height: 56px;
+                border-radius: 16px;
             }
-            .gb-tm-stats {
-                grid-template-columns: 1fr 1fr;
+            .gb-tm-result-card {
+                padding: 13px;
+                border-radius: 22px;
             }
-            .gb-tm-stat:last-child {
-                grid-column: 1 / -1;
+        }
+        /* ── 370px tier — true mobile portrait (and the smallest preview iframe
+              width). Stack the topbar and squeeze tiles further. */
+        @media (max-width: 370px) {
+            .gb-game-panel#gb-panel-tm {
+                padding-inline: 10px;
+            }
+            .gb-tm-topbar {
+                grid-template-columns: 1fr;
+                border-radius: 22px;
+            }
+            .gb-tm-board {
+                gap: 7px;
+            }
+            .gb-tm-tile {
+                font-size: 12px;
+                padding: 10px;
+                min-height: 52px;
             }
         }
         /* ─────────────────────────────────────────────────────────────────
@@ -3428,6 +3495,61 @@
         .gb-pl-win-sub {
             font-size: 14px;
             color: var(--text-muted);
+        }
+        /* ── Narrow-viewport breakpoint for Puzzle Lock (qulf ochish).
+              The builder preview iframe is ~360–440px wide, and Puzzle Lock
+              had no responsive rules at all — cells, the question box, and
+              the win banner all assumed desktop padding so they overlapped /
+              wrapped in the preview pane. */
+        @media (max-width: 480px) {
+            .gb-pl-status {
+                font-size: 12.5px;
+                margin-bottom: 8px;
+            }
+            .gb-pl-grid {
+                gap: 5px;
+                padding: 5px;
+                border-radius: 14px;
+            }
+            .gb-pl-cell {
+                padding: 4px;
+                font-size: 11.5px;
+                border-radius: 12px;
+                line-height: 1.18;
+            }
+            .gb-pl-question-box {
+                padding: 12px 13px;
+                border-radius: 18px;
+                margin-bottom: 12px;
+            }
+            .gb-pl-question {
+                font-size: 13.2px;
+            }
+            .gb-pl-input {
+                padding: 9px 11px;
+                font-size: 13.5px;
+            }
+            .gb-pl-win-banner {
+                padding: 16px 14px;
+                border-radius: 16px;
+                margin-bottom: 12px;
+            }
+            .gb-pl-win-text {
+                font-size: 18px;
+            }
+            .gb-pl-win-sub {
+                font-size: 12.5px;
+            }
+        }
+        @media (max-width: 370px) {
+            .gb-pl-cell {
+                font-size: 10.8px;
+                padding: 3px;
+            }
+            .gb-pl-grid {
+                gap: 4px;
+                padding: 4px;
+            }
         }
 
         /* Mystery Box (sub-game 5) — interleaved category recognition */
