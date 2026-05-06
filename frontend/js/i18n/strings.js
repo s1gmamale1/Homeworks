@@ -194,6 +194,27 @@ window.STRINGS = {
     'builder.boss_name_placeholder_template': 'Boss name (defaults to: {default})',
     'builder.boss_name_help': 'Leave blank to use the subject default. Shown on the final-boss screen.',
 
+    // Sidebar phase tab labels — must mirror PHASE_NAMES keys in builder.js.
+    'builder.phase_preview': 'Preview',
+    'builder.phase_flashcards': 'Flashcards',
+    'builder.phase_memory_sprint': 'Memory Sprint',
+    'builder.phase_reading': 'Reading',
+    'builder.phase_game_breaks': 'Game Breaks',
+    'builder.phase_real_life': 'Real Life',
+    'builder.phase_real_life_challenge': 'Real Life Challenge',
+    'builder.phase_consolidation': 'Consolidation',
+    'builder.phase_final_challenge': 'Final Challenge',
+    'builder.phase_reflection': 'Reflection',
+
+    // FAB short labels — singular noun shown after the "+" icon, per phase.
+    'builder.fab_short_panel': 'Panel',
+    'builder.fab_short_card': 'Card',
+    'builder.fab_short_question': 'Question',
+    'builder.fab_short_checkpoint': 'Checkpoint',
+    'builder.fab_short_field': 'Field',
+    'builder.fab_short_bullet': 'Bullet',
+    'builder.fab_short_boss_question': 'Boss Question',
+
     // ── library (library.html) ───────────────────────────────────────────
     'library.page_title': 'NETS Builder · Library',
     'library.h1': 'Browse Library',
@@ -464,6 +485,27 @@ window.STRINGS = {
     'builder.boss_name_placeholder_template': 'Boss nomi (avtomatik: {default})',
     'builder.boss_name_help': "Bo'sh qoldirsangiz, fan bo'yicha standart nom ishlatiladi. Final bosqichda ko'rinadi.",
 
+    // Sidebar phase tab labels — must mirror PHASE_NAMES keys in builder.js.
+    'builder.phase_preview': "Ko'rib chiqish",
+    'builder.phase_flashcards': 'Flesh-kartalar',
+    'builder.phase_memory_sprint': 'Xotira Sprint',
+    'builder.phase_reading': "O'qish",
+    'builder.phase_game_breaks': "O'yin tanaffus",
+    'builder.phase_real_life': 'Hayotiy vazifa',
+    'builder.phase_real_life_challenge': 'Hayotiy chaqiruv',
+    'builder.phase_consolidation': 'Mustahkamlash',
+    'builder.phase_final_challenge': 'Yakuniy jang',
+    'builder.phase_reflection': 'Xulosa',
+
+    // FAB short labels — singular noun shown after the "+" icon, per phase.
+    'builder.fab_short_panel': 'Panel',
+    'builder.fab_short_card': 'Karta',
+    'builder.fab_short_question': 'Savol',
+    'builder.fab_short_checkpoint': "Nazorat nuqtasi",
+    'builder.fab_short_field': 'Maydon',
+    'builder.fab_short_bullet': 'Punkt',
+    'builder.fab_short_boss_question': 'Boss savoli',
+
     // ── library ──────────────────────────────────────────────────────────
     'library.page_title': 'NETS Konstruktor · Kutubxona',
     'library.h1': "Kutubxonani ko'rish",
@@ -733,6 +775,27 @@ window.STRINGS = {
     'builder.boss_name_label': 'Имя босса',
     'builder.boss_name_placeholder_template': 'Имя босса (по умолчанию: {default})',
     'builder.boss_name_help': 'Оставьте пустым, чтобы использовать стандартное имя для предмета. Показывается на экране финального босса.',
+
+    // Sidebar phase tab labels — must mirror PHASE_NAMES keys in builder.js.
+    'builder.phase_preview': 'Превью',
+    'builder.phase_flashcards': 'Флеш-карты',
+    'builder.phase_memory_sprint': 'Спринт памяти',
+    'builder.phase_reading': 'Чтение',
+    'builder.phase_game_breaks': 'Игровые перерывы',
+    'builder.phase_real_life': 'Жизненная задача',
+    'builder.phase_real_life_challenge': 'Жизненный вызов',
+    'builder.phase_consolidation': 'Закрепление',
+    'builder.phase_final_challenge': 'Финальный бой',
+    'builder.phase_reflection': 'Рефлексия',
+
+    // FAB short labels — singular noun shown after the "+" icon, per phase.
+    'builder.fab_short_panel': 'Панель',
+    'builder.fab_short_card': 'Карточка',
+    'builder.fab_short_question': 'Вопрос',
+    'builder.fab_short_checkpoint': 'Чекпоинт',
+    'builder.fab_short_field': 'Поле',
+    'builder.fab_short_bullet': 'Пункт',
+    'builder.fab_short_boss_question': 'Босс-вопрос',
 
     // ── library ──────────────────────────────────────────────────────────
     'library.page_title': 'NETS Конструктор · Библиотека',

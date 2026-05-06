@@ -2719,6 +2719,8 @@ textarea:disabled {
 }
 .fab-add .fab-label {
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* Keep FAB out of the way on narrow screens — still visible, smaller */
@@ -3296,6 +3298,13 @@ body:has(.preview-panel:not([hidden])) .fab-add {
 [data-theme="dark"] select:disabled {
   background: rgba(30, 41, 59, 0.60);
   color: var(--text-muted);
+}
+
+/* The native <option> popup ignores rgba/transparent backgrounds, so set a
+   solid colour so dropdown items stay readable in dark theme. */
+[data-theme="dark"] select option {
+  background-color: #1e293b;
+  color: var(--text);
 }
 
 /* Inline panels that hardcode rgba(255,255,255,…) at lines 1325/1405/1435. */

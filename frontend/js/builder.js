@@ -169,7 +169,19 @@
   }
 
   function getPhaseNames() {
-    return (window.BUILDER_STATE.meta && window.BUILDER_STATE.meta.phase_names) || PHASE_NAMES;
+    // Prefer i18n strings so the sidebar phase tabs respond to language changes.
+    // Backend-supplied phase_names and the hardcoded PHASE_NAMES (Uzbek) remain
+    // as fallbacks when an i18n key is missing.
+    const backend = (window.BUILDER_STATE.meta && window.BUILDER_STATE.meta.phase_names) || {};
+    const out = {};
+    Object.keys(PHASE_NAMES).forEach((phase) => {
+      const i18nKey = `builder.phase_${phase}`;
+      const translated = t(i18nKey, "");
+      out[phase] = translated && translated !== i18nKey
+        ? translated
+        : (backend[phase] || PHASE_NAMES[phase]);
+    });
+    return out;
   }
 
   function getPhaseIcons() {
@@ -1097,6 +1109,19 @@
     return candidates[0] || null;
   }
 
+  // Per-phase i18n keys for the FAB short label (singular noun shown after "+").
+  // Phases without a single primary "Add X" button (e.g. game_breaks with sub-tabs,
+  // reflection) are absent — those fall back to the source-button text.
+  const FAB_PHASE_I18N = {
+    preview: "builder.fab_short_panel",
+    flashcards: "builder.fab_short_card",
+    memory_sprint: "builder.fab_short_question",
+    reading: "builder.fab_short_checkpoint",
+    real_life: "builder.fab_short_field",
+    consolidation: "builder.fab_short_bullet",
+    final_challenge: "builder.fab_short_boss_question",
+  };
+
   function syncFab() {
     const fab = document.getElementById("fab-add");
     if (!fab) return;
@@ -1106,9 +1131,19 @@
       fab.dataset.label = "";
       return;
     }
-    // Derive a short label from the target button text ("Add panel" -> "Panel").
-    const raw = (target.textContent || "").trim();
-    const short = raw.replace(/^add\s*/i, "").trim() || t("builder.fab_add");
+    // Prefer a per-phase i18n string so the FAB tracks language changes; fall
+    // back to deriving from the source button text ("Add panel" -> "panel").
+    const phase = window.BUILDER_STATE && window.BUILDER_STATE.activePhase;
+    const i18nKey = FAB_PHASE_I18N[phase];
+    let short = "";
+    if (i18nKey) {
+      const translated = t(i18nKey, "");
+      if (translated && translated !== i18nKey) short = translated;
+    }
+    if (!short) {
+      const raw = (target.textContent || "").trim();
+      short = raw.replace(/^add\s*/i, "").trim() || t("builder.fab_add");
+    }
     const labelEl = fab.querySelector(".fab-label");
     if (labelEl) labelEl.textContent = short;
     fab.hidden = false;
@@ -1161,6 +1196,7 @@
         updateSaveState(cur);
         if (window.BUILDER_STATE && window.BUILDER_STATE.homework) {
           renderMeta();
+          renderPhases();
           renderActiveEditor();
         }
         syncFab();
