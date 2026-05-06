@@ -133,6 +133,26 @@ def test_search_box_clear_button_styled():
     assert "display: inline-flex" in visible
 
 
+def test_search_box_empty_state_matches_filled_right_inset():
+    """SEARCH-PAD-01: when the input has no `.is-filled` class the
+    wrapper's effective right inset should match the filled state's
+    inset (8px), so the bar doesn't look like it has dead space on
+    the right when empty.
+
+    The base `.search-box` keeps its `padding: 0 10px 0 12px` for the
+    filled state (the X button's `margin-right: -2px` shaves the right
+    inset down to 8px). For the empty state, an explicit
+    `:not(.is-filled)` rule must drop padding-right to 8px so both
+    states feel balanced."""
+    css = _read(APP_CSS)
+    empty = _css_block(css, ".search-box:not(.is-filled)")
+    assert re.search(r"padding-right\s*:\s*8px", empty), (
+        "expected `.search-box:not(.is-filled) { padding-right: 8px; }` "
+        "to balance the empty-state right inset against the filled-state "
+        "inset (which is 8px after the X button's negative margin)."
+    )
+
+
 def test_search_box_wiring_script_is_loaded_by_pages():
     assert SEARCH_BOX_JS.exists(), "frontend/js/search-box.js is missing"
     js = _read(SEARCH_BOX_JS)

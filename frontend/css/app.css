@@ -564,6 +564,17 @@ a.brand-mark:focus-visible {
     display: inline-flex;
 }
 
+/* SEARCH-PAD-01: When the input is empty the X button is display:none, so the
+   wrapper's 10px padding-right is the only thing inside the right edge. With
+   the X visible the button's `margin-right: -2px` makes the effective right
+   inset 8px — that 2px difference reads as "extra padding when empty". Match
+   the empty-state inset to the filled-state inset so the bar feels balanced
+   in both states. Applies to every .search-box (dashboard / library / quote
+   picker), since the asymmetry is in the shared component. */
+.search-box:not(.is-filled) {
+    padding-right: 8px;
+}
+
 .search-box .search-box__clear:hover {
     color: var(--text);
     background: var(--accent-light);

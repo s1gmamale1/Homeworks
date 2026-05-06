@@ -637,6 +637,14 @@
       const { items } = await fetchAllItems();
       hide(loadingEl);
 
+      // Always render the stats — even for an empty result set we want
+      // Total / Subjects / Hard / Uzbek to read 0 instead of vanishing
+      // (LIB-counter-01: prior code early-returned before renderStats so
+      // the whole strip disappeared on a no-results search, leaving the
+      // user with no readout that the filter dropped everything to zero).
+      renderStats(items);
+      reveal(statsEl);
+
       if (!items.length) {
         show(emptyEl);
         return;
@@ -644,9 +652,7 @@
 
       const groups = groupBySubject(items);
       lastGroups = groups;
-      renderStats(items);
       renderTiles(groups);
-      reveal(statsEl);
       reveal(stageEl);
     } catch (err) {
       hide(loadingEl);
