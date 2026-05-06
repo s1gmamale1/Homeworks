@@ -2499,14 +2499,9 @@
         /* ── Stats row ── */
         .gb-tm-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-        .gb-tm-stats.demo-no-timer {
+
             grid-template-columns: 1fr 1fr;
-        }
-        .gb-tm-stats.demo-no-timer #gb-tm-stat-timer-card {
-            display: none;
+            gap: 8px;
         }
         .gb-tm-stat {
             border-radius: 20px;
@@ -8175,10 +8170,6 @@
                             <p class="gb-tm-subtitle" id="gb-tm-subtitle"></p>
                         </article>
                         <section class="gb-tm-stats" aria-label="Tile Match stats">
-                            <div class="gb-tm-stat" id="gb-tm-stat-timer-card">
-                                <span class="gb-tm-stat-label" id="gb-tm-stat-timer-label"></span>
-                                <strong class="gb-tm-stat-value" id="gb-tm-timer">02:00</strong>
-                            </div>
                             <div class="gb-tm-stat" id="gb-tm-stat-matched-card">
                                 <span class="gb-tm-stat-label" id="gb-tm-stat-matched-label"></span>
                                 <strong class="gb-tm-stat-value" id="gb-tm-matched-stat">0/0</strong>
@@ -8874,12 +8865,11 @@
                 'tm.subtitle':           "Chapdan bitta plitkani, so'ng o'ngdan unga mos keluvchini tanlang. To'g'ri juftliklar yo'qoladi, noto'g'rilari titraydi.",
                 'tm.col_left':           'Tushuncha',
                 'tm.col_right':          "Ma'no",
-                'tm.stats_timer':        'Vaqt',
                 'tm.stats_matched':      'Topildi',
                 'tm.stats_wrong':        'Xato',
-                'tm.toast_correct':      '+100 XP. Vaqt +3s.',
+                'tm.toast_correct':      "To'g'ri! +100 XP.",
                 'tm.toast_streak':       '3 ta ketma-ket! +50 XP',
-                'tm.toast_wrong':        'Mos kelmadi. Vaqt -5s.',
+                'tm.toast_wrong':        'Mos kelmadi.',
                 'tm.toast_pick_left':    "Avval chap plitkadan tanlang.",
                 'tm.toast_perfect_clear': "Mukammal! Birorta xato yo'q.",
                 'tm.result_perfect':     'Mukammal!',
@@ -9207,12 +9197,11 @@
                 'tm.subtitle':           'Выберите плитку слева, затем ту, что подходит ей справа. Верные пары исчезают, неверные мягко вздрагивают.',
                 'tm.col_left':           'Понятие',
                 'tm.col_right':          'Значение',
-                'tm.stats_timer':        'Время',
                 'tm.stats_matched':      'Совпало',
                 'tm.stats_wrong':        'Ошибки',
-                'tm.toast_correct':      '+100 XP. Время +3 сек.',
+                'tm.toast_correct':      'Верно! +100 XP.',
                 'tm.toast_streak':       '3 подряд! +50 XP',
-                'tm.toast_wrong':        'Не совпало. Время -5 сек.',
+                'tm.toast_wrong':        'Не совпало.',
                 'tm.toast_pick_left':    'Сначала выберите плитку слева.',
                 'tm.toast_perfect_clear': 'Идеально! Без ошибок.',
                 'tm.result_perfect':     'Идеально!',
@@ -9534,12 +9523,11 @@
                 'tm.subtitle':           'Pick one tile from the left, then one from the right. Correct pairs fade away, wrong pairs gently shake.',
                 'tm.col_left':           'Concept',
                 'tm.col_right':          'Definition',
-                'tm.stats_timer':        'Timer',
                 'tm.stats_matched':      'Matched',
                 'tm.stats_wrong':        'Wrong',
-                'tm.toast_correct':      '+100 XP. Timer +3s.',
+                'tm.toast_correct':      'Correct! +100 XP.',
                 'tm.toast_streak':       '3-match streak! +50 XP',
-                'tm.toast_wrong':        'Not a match. Timer -5s.',
+                'tm.toast_wrong':        'Not a match.',
                 'tm.toast_pick_left':    'Pick a left tile first.',
                 'tm.toast_perfect_clear': 'Perfect! Zero wrong.',
                 'tm.result_perfect':     'Perfect Clear',
@@ -13882,8 +13870,6 @@
                 gbSetButtonNext(RT('tm.dock_select'));
             }
 
-            const stats = document.querySelector('#gb-panel-tm .gb-tm-stats');
-            if (stats) stats.classList.toggle('demo-no-timer', gbIsGrade8MathDemo());
 
             tm.startedAt = Date.now();
         }
@@ -13896,7 +13882,6 @@
             setText('gb-tm-eyebrow', 'tm.eyebrow');
             setText('gb-tm-title', 'tm.title');
             setText('gb-tm-subtitle', 'tm.subtitle');
-            setText('gb-tm-stat-timer-label', 'tm.stats_timer');
             setText('gb-tm-stat-matched-label', 'tm.stats_matched');
             setText('gb-tm-stat-wrong-label', 'tm.stats_wrong');
             setText('gb-tm-board-copy', 'tm.subtitle');
@@ -14043,10 +14028,7 @@
                 return;
             }
 
-            // Sync timer + XP from server truth (defensive against missing fields).
-            if (resp.timer && typeof resp.timer.remaining_seconds === 'number') {
-                gbTMSetTimerDisplay(resp.timer.remaining_seconds);
-            }
+            // Sync XP from server truth (defensive against missing fields).
             if (resp.xp && typeof resp.xp.total === 'number') {
                 // Server returns per-attempt sum (base+bonuses on correct, 0 on
                 // wrong). Accumulate locally so the pill shows session total.
@@ -14167,16 +14149,6 @@
         function gbTMUpdateXp(total) {
             const pill = document.getElementById('gb-tm-xp-pill');
             if (pill) pill.textContent = (total || 0) + ' XP';
-        }
-
-        function gbTMSetTimerDisplay(seconds) {
-            const el = document.getElementById('gb-tm-timer');
-            if (!el) return;
-            const s = Math.max(0, Math.floor(seconds || 0));
-            const mm = Math.floor(s / 60);
-            const ss = s % 60;
-            const pad = function (n) { return n < 10 ? '0' + n : String(n); };
-            el.textContent = pad(mm) + ':' + pad(ss);
         }
 
         function gbTMRenderResult(outcome, completionBonus) {

@@ -67,11 +67,15 @@ def test_tile_match_xp_pill_cannot_clip_text_mid_character():
     assert "text-overflow: ellipsis" in body
 
 
-def test_tile_match_timer_hidden_for_g8_math_demo():
+def test_tile_match_timer_removed_from_visible_runtime():
     html = _read()
-    css = _css_block(html, ".gb-tm-stats.demo-no-timer #gb-tm-stat-timer-card")
-    assert "display: none" in css
-    assert "stats.classList.toggle('demo-no-timer', gbIsGrade8MathDemo())" in html
+    stats_body = _css_block(html, ".gb-tm-stats")
+    assert "grid-template-columns: 1fr 1fr" in stats_body
+    assert 'id="gb-tm-timer"' not in html
+    assert 'id="gb-tm-stat-timer-card"' not in html
+    assert "tm.stats_timer" not in html
+    assert "gbTMSetTimerDisplay" not in html
+    assert "remaining_seconds" not in html
 
 
 def test_tile_match_matched_tiles_remain_solved_placeholders():

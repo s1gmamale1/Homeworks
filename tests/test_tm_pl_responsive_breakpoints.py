@@ -193,22 +193,20 @@ def test_puzzle_lock_has_370px_breakpoint_for_mobile() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_tile_match_desktop_layout_still_three_column_stats() -> None:
-    """Outside any @media block, .gb-tm-stats must still default to a
-    3-column grid for desktop. The responsive tier overrides it; the
-    base rule must remain."""
-    # Find the FIRST occurrence of `.gb-tm-stats {` in the template — the
-    # base rule sits at the top of the Tile Match CSS section, before
-    # any @media tier (which appears later in the file).
+def test_tile_match_desktop_layout_keeps_two_column_stats() -> None:
+    """Outside any @media block, .gb-tm-stats must declare a 2-column grid
+    for desktop. The timer card was removed in PR #178 follow-up (the timer
+    was server-tick-only, not real-time, so it misled users); the remaining
+    matched + wrong stats fill a 2-column row.
+
+    The responsive tier may override for very narrow widths; the base rule
+    must stay 2 columns post-removal."""
     base_idx = TEMPLATE.find(".gb-tm-stats {")
     assert base_idx >= 0, ".gb-tm-stats base rule missing entirely"
-    # Confirm we're outside any @media block by checking that there is
-    # no `@media` between this position and the matching closing brace.
     base_block = TEMPLATE[base_idx : base_idx + 600]
-    assert "1fr 1fr 1fr" in base_block, (
-        "base .gb-tm-stats rule no longer declares 3-column grid. The "
-        "responsive tier overrides this for narrow widths — but the "
-        "desktop default must stay 3 columns. Found: "
+    assert "1fr 1fr" in base_block and "1fr 1fr 1fr" not in base_block, (
+        "base .gb-tm-stats rule should declare a 2-column grid (matched + wrong) "
+        "after the fake-realtime timer was removed. Found: "
         + base_block.split("}")[0]
     )
 

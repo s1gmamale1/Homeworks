@@ -104,13 +104,13 @@ def test_tm_hero_has_eyebrow_title_subtitle_xp():
 # ---------------------------------------------------------------------------
 
 
-def test_tm_stats_grid_has_three_cards():
-    """Stats section must have timer, matched, and wrong stat cards + labels."""
+def test_tm_stats_grid_has_no_fake_timer():
+    """Timer is intentionally hidden: it was server-tick only, not real-time."""
     html = inject(_empty_content(), runtime_context={"hw_id": "HW-TM-4", "subject": "math-algebra", "grade": 8})
-    assert 'id="gb-tm-timer"' in html, "#gb-tm-timer missing"
+    assert 'id="gb-tm-timer"' not in html, "#gb-tm-timer should stay removed from visible UI"
+    assert 'id="gb-tm-stat-timer-label"' not in html, "#gb-tm timer label should stay removed"
     assert 'id="gb-tm-matched-stat"' in html, "#gb-tm-matched-stat missing"
     assert 'id="gb-tm-wrong-stat"' in html, "#gb-tm-wrong-stat missing"
-    assert 'id="gb-tm-stat-timer-label"' in html, "#gb-tm-stat-timer-label missing"
     assert 'id="gb-tm-stat-matched-label"' in html, "#gb-tm-stat-matched-label missing"
     assert 'id="gb-tm-stat-wrong-label"' in html, "#gb-tm-stat-wrong-label missing"
 
@@ -283,7 +283,6 @@ REQUIRED_TM_FUNCTIONS = [
     "gbTMShowToast",
     "gbTMUpdateStats",
     "gbTMUpdateXp",
-    "gbTMSetTimerDisplay",
     "gbTMRenderResult",
     "gbTMFinish",
     "gbTMAction",
@@ -330,7 +329,6 @@ TM_I18N_KEYS = [
     "tm.subtitle",
     "tm.col_left",
     "tm.col_right",
-    "tm.stats_timer",
     "tm.stats_matched",
     "tm.stats_wrong",
     "tm.toast_correct",
