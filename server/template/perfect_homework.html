@@ -1038,6 +1038,18 @@
             transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 500ms ease;
         }
 
+        /* Screen-0 title block — flex-centered above the start CTA. The
+           start button now anchors itself in the lower third
+           (.state-start.bottom:22vh) so we no longer need the legacy
+           140px / 18vh spacer to clear it; a small buffer keeps a long
+           title comfortably above the CTA on short viewports. */
+        .screen-0-title {
+            text-align: center;
+            padding: 0 24px;
+            max-width: 92vw;
+            margin-bottom: 6vh;
+        }
+
         /* MORPH BUTTON */
         #action-button {
             position: fixed;
@@ -1067,8 +1079,13 @@
             background: var(--accent);
             border-radius: 29px;
             box-shadow: 0 4px 16px rgba(0,122,255,0.36);
-            bottom: 50vh;
-            transform: translate(-50%, 50%);
+            /* Anchor the start CTA to the lower third instead of dead-center.
+               Centering it (bottom: 50vh + translateY 50%) overlapped the
+               flex-centered title block on screen-0 once injector.py rewrote
+               the h1 with longer real-homework titles. Bottom: 22vh keeps it
+               visually prominent without colliding with the subject name. */
+            bottom: 22vh;
+            transform: translateX(-50%);
         }
         .state-start .btn-text { opacity: 1; }
 
@@ -1093,6 +1110,17 @@
             box-shadow: 0 4px 20px rgba(0,122,255,0.38);
         }
         .state-pill .btn-text { opacity: 1; }
+
+        /* AI-pending lock — visually mute the morph button + block clicks
+           while a real-life tutor verdict is in flight. Animation is
+           preserved from .pulse if present; we only dim opacity and stop
+           pointer events so the student must wait for the AI feedback. */
+        #action-button.is-ai-pending {
+            opacity: 0.55;
+            cursor: progress;
+            pointer-events: none;
+            animation: none;
+        }
 
         @keyframes pulse {
             0%   { transform: translateX(-50%) scale(1.00); box-shadow: 0 4px 20px rgba(0,122,255,0.38); }
@@ -7902,7 +7930,10 @@
     <main id="app" aria-label="NETS Homework Player">
         <!-- Stage 0 -->
         <div id="screen-0" class="screen active">
-            <div style="margin-bottom: 140px;">
+            <!-- Title block sits in the upper area; the start CTA owns the
+                 lower third (bottom: 22vh) so a 3-4 line title cannot bleed
+                 into the button. -->
+            <div class="screen-0-title">
                 <h1>NETS · Kvadrat tenglama</h1>
                 <div class="caption">8-sinf Algebra · 22-§</div>
             </div>
@@ -10415,6 +10446,9 @@
 
         function handleAction() {
             if (state.isAnimating) return;
+            // Real-Life: block "Keyingi" while the AI tutor is still grading
+            // the open-ended response so students can't bypass the verdict.
+            if (btn && btn.classList.contains('is-ai-pending')) return;
             if (state.stage === 0) startStage1();
             else if (state.stage === 1 && btn.classList.contains('state-pill')) startStage2();
             else if (state.stage === 2) {
@@ -11035,8 +11069,14 @@
                 // Bug #6: also early-return on cardSwitching guard so rapid
                 // horizontal swipes can't queue a second switch mid-transition.
                 if (state.cardSwitching) return;
-                if (dir === 'left') switchCard(getWrappedCardIndex(state.cardIndex + 1), 1);
-                else if (dir === 'right') switchCard(getWrappedCardIndex(state.cardIndex - 1), -1);
+                // Clamp at boundaries — swiping past first/last card stays in
+                // place instead of wrapping (UX: backward at card 1 must NOT
+                // jump to the last card).
+                if (dir === 'left' && state.cardIndex < FLASHCARDS.length - 1) {
+                    switchCard(state.cardIndex + 1, 1);
+                } else if (dir === 'right' && state.cardIndex > 0) {
+                    switchCard(state.cardIndex - 1, -1);
+                }
                 return;
             }
             if (state.stage !== 2) return;
@@ -11103,7 +11143,10 @@
                 state.flashcardsSeen.add(0);  // first card on screen
                 setPhaseRequired('flashcards', fcCount);
                 setPhaseProgress('flashcards', state.flashcardsSeen.size, fcCount);
-                renderFlashcard(false);
+                // Single-card phase: the only card on screen IS the last
+                // card, so the Yakunlash CTA must be live from the first
+                // paint — there's no swipe target to advance through.
+                renderFlashcard(fcCount <= 1);
                 document.getElementById('fc-inner').addEventListener('click', handleCardTap);
                 setupFlashcardCarouselControls();
                 document.getElementById('screen-3').classList.add('active');
@@ -11288,8 +11331,14 @@
         function renderFlashcardSides() {
             const total = FLASHCARDS.length;
             const currentCard = FLASHCARDS[state.cardIndex];
-            const prevIndex = getWrappedCardIndex(state.cardIndex - 1);
-            const nextIndex = getWrappedCardIndex(state.cardIndex + 1);
+            // Boundary-aware: at the first card there is no previous; at the
+            // last card there is no next. We hide those side rails (and their
+            // mirror twins) instead of wrapping, so clicking them can't jump
+            // the carousel to the opposite end.
+            const atFirst = state.cardIndex <= 0;
+            const atLast = state.cardIndex >= total - 1;
+            const prevIndex = atFirst ? state.cardIndex : state.cardIndex - 1;
+            const nextIndex = atLast ? state.cardIndex : state.cardIndex + 1;
             setSideCardContent('fc-prev', FLASHCARDS[prevIndex], prevIndex, total);
             setSideCardContent('fc-next', FLASHCARDS[nextIndex], nextIndex, total);
             const prevEl = document.getElementById('fc-prev-card');
@@ -11297,11 +11346,25 @@
             const prevMirror = document.getElementById('fc-mirror-prev');
             const mainMirror = document.getElementById('fc-mirror-main');
             const nextMirror = document.getElementById('fc-mirror-next');
-            if (prevEl) fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevEl);
-            if (nextEl) fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextEl);
-            if (prevMirror) fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevMirror);
+            if (prevEl) {
+                fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevEl);
+                prevEl.style.visibility = atFirst ? 'hidden' : '';
+                prevEl.setAttribute('aria-hidden', atFirst ? 'true' : 'false');
+            }
+            if (nextEl) {
+                fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextEl);
+                nextEl.style.visibility = atLast ? 'hidden' : '';
+                nextEl.setAttribute('aria-hidden', atLast ? 'true' : 'false');
+            }
+            if (prevMirror) {
+                fcApplySideGradient(FLASHCARDS[prevIndex].cluster, prevMirror);
+                prevMirror.style.visibility = atFirst ? 'hidden' : '';
+            }
             fcApplyMainMirror(currentCard, mainMirror);
-            if (nextMirror) fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextMirror);
+            if (nextMirror) {
+                fcApplySideGradient(FLASHCARDS[nextIndex].cluster, nextMirror);
+                nextMirror.style.visibility = atLast ? 'hidden' : '';
+            }
         }
 
         function setupFlashcardCarouselControls() {
@@ -11313,11 +11376,15 @@
             // returns so a second switch can't hide the center face mid-fade.
             const rotateToPrev = () => {
                 if (state.stage !== 3 || state.isAnimating || state.cardSwitching) return;
-                switchCard(getWrappedCardIndex(state.cardIndex - 1), -1);
+                // Stay at first card — clicking the prev side card on card 1
+                // must NOT wrap to the last card.
+                if (state.cardIndex <= 0) return;
+                switchCard(state.cardIndex - 1, -1);
             };
             const rotateToNext = () => {
                 if (state.stage !== 3 || state.isAnimating || state.cardSwitching) return;
-                switchCard(getWrappedCardIndex(state.cardIndex + 1), 1);
+                if (state.cardIndex >= FLASHCARDS.length - 1) return;
+                switchCard(state.cardIndex + 1, 1);
             };
             if (prevEl) {
                 prevEl.onclick = rotateToPrev;
@@ -16670,10 +16737,46 @@ Prezident ertaga hisobot kutmoqda.`,
         // question index — guards against stale responses overwriting the
         // current view.
         let rlPendingAi = null;
+        let rlPendingAiTimer = null;
+
+        // While AI is grading the student's open-ended response we must NOT
+        // let them tap "Keyingi" and skip past the verdict. setRlAiLock(true)
+        // dims #action-button and routes its clicks to a no-op until either
+        // the `nets:result` listener clears it, or the safety timeout fires
+        // (so a dropped event can't permanently freeze the button).
+        const RL_AI_LOCK_TIMEOUT_MS = 12000;
+        function setRlAiLock(locked) {
+            const el = document.getElementById('action-button');
+            if (!el) return;
+            if (locked) {
+                el.classList.add('is-ai-pending');
+                el.setAttribute('aria-busy', 'true');
+            } else {
+                el.classList.remove('is-ai-pending');
+                el.removeAttribute('aria-busy');
+            }
+        }
+
+        function rlClearAiPending() {
+            if (rlPendingAiTimer) {
+                clearTimeout(rlPendingAiTimer);
+                rlPendingAiTimer = null;
+            }
+            rlPendingAi = null;
+            setRlAiLock(false);
+        }
 
         function rlDispatchTutorAi(idx, q, val) {
             const ticket = { qIndex: idx };
             rlPendingAi = ticket;
+            setRlAiLock(true);
+            // Safety net: if the tutor pipeline never fires `nets:result`
+            // (transport drop, widget crash, etc.) the button must still
+            // recover so the student isn't stuck on this question.
+            if (rlPendingAiTimer) clearTimeout(rlPendingAiTimer);
+            rlPendingAiTimer = setTimeout(() => {
+                if (rlPendingAi === ticket) rlClearAiPending();
+            }, RL_AI_LOCK_TIMEOUT_MS);
             try {
                 document.dispatchEvent(new CustomEvent('nets:submit', { detail: {
                     kind: 'tutor',
@@ -16685,7 +16788,7 @@ Prezident ertaga hisobot kutmoqda.`,
                     },
                 }}));
             } catch (e) {
-                rlPendingAi = null;
+                rlClearAiPending();
             }
             return ticket;
         }
@@ -16821,12 +16924,12 @@ Prezident ertaga hisobot kutmoqda.`,
             const ticket = rlPendingAi;
             if (!ticket) return;
             // User moved on to the next question already — drop stale response.
-            if (ticket.qIndex !== stage6State.qIndex) { rlPendingAi = null; return; }
+            if (ticket.qIndex !== stage6State.qIndex) { rlClearAiPending(); return; }
             const result = detail.result || {};
             const fbId = 'rl-q' + (ticket.qIndex + 1) + '-fb';
             const fbEl = document.getElementById(fbId);
             // Graceful degrade — keep whatever local feedback is already shown.
-            if (result._fallback || result._error || result._offline) { rlPendingAi = null; return; }
+            if (result._fallback || result._error || result._offline) { rlClearAiPending(); return; }
             // Tutor endpoint returns {response, guidance_type}. There's no canonical
             // "correct" boolean — we infer correctness from guidance_type if it's
             // explicitly "validation" with a positive response, otherwise treat
@@ -16834,7 +16937,7 @@ Prezident ertaga hisobot kutmoqda.`,
             const response = result.response || '';
             const guidance = (result.guidance_type || '').toLowerCase();
             const aiCorrect = guidance === 'validation' || guidance === 'correct';
-            if (!fbEl) { rlPendingAi = null; return; }
+            if (!fbEl) { rlClearAiPending(); return; }
             if (aiCorrect) {
                 stage6State.correct[ticket.qIndex] = true;
                 stage6State.submitted[ticket.qIndex] = true;
@@ -16860,7 +16963,7 @@ Prezident ertaga hisobot kutmoqda.`,
                 fbEl.className = 'rl-feedback ' + cls;
                 fbEl.innerHTML = response + ' <span class="screen-reading-ai-badge">AI baho</span>';
             }
-            rlPendingAi = null;
+            rlClearAiPending();
         });
 
         function rlAdvanceFromQuestion() {
