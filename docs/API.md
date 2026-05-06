@@ -1290,3 +1290,93 @@ curl http://localhost:8000/h/HW-20260427-001
 - **ID format**: `HW-YYYYMMDD-NNN` — sequential per day; always a string.
 - **`/h/{id}` vs `/preview`**: same HTML, different cache headers and error format.
 - **Library slimmed row**: adds `chapter`, drops `content_json`, `family`, `language`, `status`, `deleted_at`.
+
+## Taskboard
+
+### GET /api/taskboard/users
+
+**200** array of `{ id, name, position, task_count, created_at }`. Non-archived only, ordered by position.
+
+---
+
+### POST /api/taskboard/users
+
+```json
+{ "name": "string" }
+```
+
+**200** created User. **400** validation error.
+
+---
+
+### PATCH /api/taskboard/users/{user_id}
+
+```json
+{ "name": "string", "position": 0 }
+```
+
+All fields optional. **200** updated User. **404** `NOT_FOUND`.
+
+---
+
+### DELETE /api/taskboard/users/{user_id}
+
+Archive (soft-delete). Any assigned tasks are bounced back to Issues (`assignee_id = NULL`).
+
+**200** `{ "ok": true }`. **404** `NOT_FOUND`.
+
+---
+
+### GET /api/taskboard/tasks
+
+| Param | Type | Default | Notes |
+|-------|------|---------|-------|
+| `assignee_id` | int / "null" | — | Omit for all; `"null"` for Issues backlog; integer for a user's tab |
+
+**200** array of Task objects, ordered by position.
+
+---
+
+### POST /api/taskboard/tasks
+
+```json
+{ "title": "string", "description": "string" }
+```
+
+`description` optional (default `""`). Always lands on Issues (`assignee_id = NULL`).
+
+**200** created Task. **400** validation error.
+
+---
+
+### PATCH /api/taskboard/tasks/{task_id}
+
+```json
+{ "title": "string", "description": "string", "assignee_id": 1, "position": 0 }
+```
+
+All fields optional. `assignee_id: null` explicitly moves the task to Issues. Omitting `assignee_id` leaves it untouched.
+
+**200** updated Task. **404** `NOT_FOUND`.
+
+---
+
+### DELETE /api/taskboard/tasks/{task_id}
+
+Archive (soft-delete).
+
+**200** `{ "ok": true }`. **404** `NOT_FOUND`.
+
+---
+
+### Taskboard Record shapes
+
+User:
+```json
+{ "id": 1, "name": "Karim", "position": 0, "task_count": 3, "created_at": "2026-05-06T10:00:00.000Z" }
+```
+
+Task:
+```json
+{ "id": 1, "title": "Fix typo", "description": "", "assignee_id": null, "position": 0, "status": "open", "created_at": "2026-05-06T10:00:00.000Z", "updated_at": "2026-05-06T10:00:00.000Z" }
+```

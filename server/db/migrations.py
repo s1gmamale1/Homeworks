@@ -123,6 +123,29 @@ CREATE TABLE IF NOT EXISTS notebook_captures (
 );
 CREATE INDEX IF NOT EXISTS idx_captures_session ON notebook_captures(session_id, hw_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_captures_question ON notebook_captures(hw_id, question_id);
+
+CREATE TABLE IF NOT EXISTS taskboard_users (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  name        TEXT NOT NULL,
+  position    INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  archived_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_tb_users_position ON taskboard_users(position);
+
+CREATE TABLE IF NOT EXISTS taskboard_tasks (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  title       TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  assignee_id INTEGER REFERENCES taskboard_users(id) ON DELETE SET NULL,
+  position    INTEGER NOT NULL DEFAULT 0,
+  status      TEXT NOT NULL DEFAULT 'open',
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  archived_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_tb_tasks_assignee ON taskboard_tasks(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_tb_tasks_position ON taskboard_tasks(position);
 """
 
 

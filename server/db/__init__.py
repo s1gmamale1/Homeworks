@@ -79,6 +79,19 @@ from .notebook_repo import (
     latest_capture,
 )
 
+# taskboard
+from .taskboard_repo import (
+    list_users as list_taskboard_users,
+    create_user as create_taskboard_user,
+    update_user as update_taskboard_user,
+    archive_user as archive_taskboard_user,
+    list_tasks as list_taskboard_tasks,
+    create_task as create_taskboard_task,
+    update_task as update_taskboard_task,
+    archive_task as archive_taskboard_task,
+    NULL_SENTINEL,
+)
+
 __all__ = [
     # connection
     "connect",
@@ -134,4 +147,14 @@ __all__ = [
     "list_captures_for_session",
     "count_captures_for_question",
     "latest_capture",
+    # taskboard
+    "list_taskboard_users",
+    "create_taskboard_user",
+    "update_taskboard_user",
+    "archive_taskboard_user",
+    "list_taskboard_tasks",
+    "create_taskboard_task",
+    "update_taskboard_task",
+    "archive_taskboard_task",
+    "NULL_SENTINEL",
 ]

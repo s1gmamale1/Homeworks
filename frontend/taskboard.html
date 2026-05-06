@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Taskboard · NETS</title>
+  <link rel="stylesheet" href="/css/app.css?v=__VERSION__">
+  <link rel="stylesheet" href="/css/taskboard.css?v=__VERSION__">
+</head>
+<body data-page="taskboard">
+  <div class="app-shell">
+    <header class="topbar glass-card">
+      <div class="brand-block">
+        <a class="brand-mark" href="/landing.html" data-i18n-aria-label="common.landing_aria" aria-label="Open landing page">N</a>
+        <div>
+          <p class="eyebrow" data-i18n="common.brand_eyebrow">NETS Homework Builder</p>
+          <h1 data-i18n="taskboard.page_title">Taskboard</h1>
+        </div>
+      </div>
+
+      <nav class="topbar-nav" aria-label="Site navigation">
+        <a class="btn btn-ghost" href="/index.html" data-i18n="common.dashboard">Dashboard</a>
+        <a class="btn btn-ghost" href="/library.html" data-i18n="common.library">Library</a>
+        <a class="btn btn-ghost is-active" href="/taskboard.html" aria-current="page" data-i18n="common.taskboard">Taskboard</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="lang-switch" role="group" data-i18n-aria-label="common.lang_aria" aria-label="Language">
+          <button type="button" class="lang-pill" data-lang="uz">UZ</button>
+          <button type="button" class="lang-pill" data-lang="ru">RU</button>
+          <button type="button" class="lang-pill" data-lang="en">EN</button>
+        </div>
+        <button class="btn btn-ghost theme-toggle" data-theme-toggle type="button" aria-label="Switch to dark mode" aria-pressed="false">🌙</button>
+      </div>
+    </header>
+
+    <main class="taskboard-shell">
+      <div class="taskboard-header glass-card">
+        <div class="taskboard-header-text">
+          <h1 class="taskboard-title" data-i18n="taskboard.h1">Taskboard</h1>
+          <p class="eyebrow muted-text" data-i18n="taskboard.subtitle">Internal task board · drag to assign</p>
+        </div>
+        <div class="taskboard-actions">
+          <button class="btn btn-primary" id="tb-new-task" data-i18n="taskboard.new_task">+ New task</button>
+          <button class="btn btn-ghost" id="tb-new-user" data-i18n="taskboard.new_user">+ New person</button>
+        </div>
+      </div>
+
+      <div class="library-tabs taskboard-tabs" role="tablist" aria-label="Taskboard tabs" id="tb-tabs">
+        <!-- rendered by JS: pinned "Issues" tab + one tab per user -->
+      </div>
+
+      <section class="taskboard-panel glass-card" id="tb-panel" data-i18n-aria-label="taskboard.panel_aria" aria-label="Task list">
+        <!-- the ACTIVE tab's task list — vertical card stack with HTML5 drag/drop -->
+      </section>
+    </main>
+
+    <dialog id="tb-task-modal" class="tb-modal glass-card">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="tb-task-modal-title" data-i18n="taskboard.task_modal_title">New task</h2>
+          <button class="icon-btn" id="tb-close-task-modal" type="button" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <label class="field-label" data-i18n="taskboard.task_title_label">Title</label>
+          <input type="text" class="text-input" id="tb-task-title" data-i18n-placeholder="taskboard.task_title_placeholder" placeholder="What needs to be done?">
+          <label class="field-label" data-i18n="taskboard.task_desc_label">Description</label>
+          <textarea class="text-input" id="tb-task-desc" rows="3" data-i18n-placeholder="taskboard.task_desc_placeholder" placeholder="Optional details…"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="tb-cancel-task" type="button" data-i18n="common.cancel">Cancel</button>
+          <button class="btn btn-primary" id="tb-save-task" type="button" data-i18n="taskboard.save_task">Save</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="tb-user-modal" class="tb-modal glass-card">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="tb-user-modal-title" data-i18n="taskboard.user_modal_title">New person</h2>
+          <button class="icon-btn" id="tb-close-user-modal" type="button" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body">
+          <label class="field-label" data-i18n="taskboard.user_name_label">Name</label>
+          <input type="text" class="text-input" id="tb-user-name" data-i18n-placeholder="taskboard.user_name_placeholder" placeholder="e.g. Karim">
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="tb-cancel-user" type="button" data-i18n="common.cancel">Cancel</button>
+          <button class="btn btn-primary" id="tb-save-user" type="button" data-i18n="taskboard.save_user">Save</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script src="/js/i18n/strings.js?v=__VERSION__"></script>
+  <script src="/js/i18n.js?v=__VERSION__"></script>
+  <script src="/js/api.js?v=__VERSION__"></script>
+  <script src="/js/theme.js?v=__VERSION__"></script>
+  <script src="/js/taskboard.js?v=__VERSION__" type="module"></script>
+</body>
+</html>

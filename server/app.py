@@ -14,6 +14,7 @@ from server.routes.ai import router as ai_router
 from server.routes.library import router as library_router
 from server.routes.grading import router as grading_router
 from server.routes.notebook import router as notebook_router
+from server.routes.taskboard import router as taskboard_router
 from server import db
 from server.config import BASE_DIR
 
@@ -112,6 +113,7 @@ app.include_router(ai_router, prefix="/api")
 app.include_router(library_router, prefix="/api")
 app.include_router(grading_router, prefix="/api")
 app.include_router(notebook_router, prefix="/api")
+app.include_router(taskboard_router, prefix="/api")
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
@@ -124,6 +126,7 @@ _HTML_PAGES: dict[str, str] = {
     "/builder.html":  "builder.html",
     "/library.html":  "library.html",
     "/landing.html":  "landing.html",
+    "/taskboard.html": "taskboard.html",
 }
 
 def _render_html_with_version(filename: str) -> str:

@@ -1,0 +1,208 @@
+/* Page shell */
+.taskboard-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Header card */
+.taskboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.taskboard-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.taskboard-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+.taskboard-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Tabs */
+.taskboard-tabs {
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+.taskboard-tabs .library-tab {
+  cursor: pointer;
+  user-select: none;
+}
+.taskboard-tabs .library-tab.is-drop-target {
+  outline: 2px dashed var(--accent, #007aff);
+  outline-offset: 2px;
+}
+
+/* Panel */
+.taskboard-panel {
+  min-height: 300px;
+  padding: 1rem 1.5rem;
+}
+
+/* Cards */
+.taskboard-card {
+  background: var(--surface, rgba(255,255,255,0.7));
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  border-radius: 12px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.625rem;
+  cursor: grab;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.taskboard-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.taskboard-card.is-dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+.taskboard-card.is-drop-above {
+  border-top: 2px solid var(--accent, #007aff);
+}
+.taskboard-card.is-drop-below {
+  border-bottom: 2px solid var(--accent, #007aff);
+}
+.taskboard-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.taskboard-card-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+.taskboard-card-desc {
+  color: var(--text-muted, #6b7280);
+  font-size: 0.8125rem;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.taskboard-card-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  line-height: 1;
+  color: var(--text-muted, #6b7280);
+}
+
+/* Empty state */
+.taskboard-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #6b7280);
+}
+.taskboard-empty p {
+  margin: 0;
+}
+
+/* Modal */
+.tb-modal {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 480px;
+  width: 90vw;
+  background: transparent;
+  box-shadow: none;
+}
+.tb-modal::backdrop {
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(4px);
+}
+.tb-modal .modal-card {
+  padding: 1.25rem;
+}
+.tb-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.tb-modal .modal-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.tb-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.tb-modal .field-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary, #374151);
+}
+.tb-modal .text-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--border, rgba(0,0,0,0.1));
+  background: var(--input-bg, rgba(255,255,255,0.6));
+  font-size: 0.9375rem;
+  outline: none;
+}
+.tb-modal .text-input:focus {
+  border-color: var(--accent, #007aff);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+}
+.tb-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Action menu dropdown */
+.tb-card-actions {
+  position: relative;
+}
+.tb-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--surface, rgba(255,255,255,0.9));
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  min-width: 140px;
+  z-index: 10;
+  overflow: hidden;
+}
+.tb-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.875rem;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--text-primary, #111827);
+}
+.tb-dropdown button:hover {
+  background: var(--hover-bg, rgba(0,0,0,0.04));
+}
+.tb-dropdown button.danger {
+  color: var(--danger, #dc2626);
+}
