@@ -52,6 +52,11 @@ class KimiProvider(AIProvider):
     def vision_model(self) -> str:  # type: ignore[override]
         return os.environ.get("KIMI_MODEL_VISION", "kimi-k2.6")
 
+    @staticmethod
+    def _is_k2x_model(model_id: str) -> bool:
+        mid_lower = model_id.lower()
+        return mid_lower.startswith("kimi-k2") or "k2." in mid_lower
+
     def _get_client(self) -> httpx.AsyncClient:
         if self._client is None:
             api_key = os.environ.get("KIMI_API_KEY", "")
@@ -72,12 +77,14 @@ class KimiProvider(AIProvider):
         """Send *prompt* to Kimi and return a normalised envelope."""
         temperature: float = kw.get("temperature", 0.3)
         json_mode: bool = kw.get("json_mode", True)
+        is_k2x = self._is_k2x_model(model)
+        effective_temperature = 1.0 if is_k2x else temperature
 
         client = self._get_client()
         payload: dict = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": temperature,
+            "temperature": effective_temperature,
         }
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
@@ -130,8 +137,7 @@ class KimiProvider(AIProvider):
             # K2.X agentic/thinking models pin temperature=1; only the
             # `moonshot-v1-*` line accepts arbitrary temperatures. Passing 0.1
             # to K2.X yields HTTP 400 "only 1 is allowed for this model".
-            mid_lower = model_id.lower()
-            is_k2x = mid_lower.startswith("kimi-k2") or "k2." in mid_lower
+            is_k2x = self._is_k2x_model(model_id)
             effective_temperature = 1.0 if is_k2x else temperature
             payload: dict = {
                 "model": model_id,

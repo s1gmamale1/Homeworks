@@ -143,3 +143,39 @@ async def test_kimi_envelope_shape(monkeypatch):
     assert result["model"] == "moonshot-v1-32k"
     assert isinstance(result["raw"], dict)
     assert isinstance(result["text"], str)
+
+
+@pytest.mark.asyncio
+async def test_kimi_k2_generate_json_uses_native_json_mode(monkeypatch):
+    """K2.X non-vision calls must request native JSON mode at the API layer."""
+    monkeypatch.setenv("KIMI_API_KEY", "fake-key")
+
+    from server.services.ai_providers.kimi import KimiProvider
+
+    fake_response_body = {
+        "choices": [
+            {"message": {"content": '{"answer": 42}'}}
+        ]
+    }
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = fake_response_body
+    mock_response.raise_for_status = MagicMock()
+
+    mock_client = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    provider = KimiProvider()
+    provider._client = mock_client
+
+    await provider.generate_json(
+        '{"answer": 42}',
+        "kimi-k2.6",
+        temperature=0.3,
+    )
+
+    _, kwargs = mock_client.post.call_args
+    payload = kwargs["json"]
+    assert payload["model"] == "kimi-k2.6"
+    assert payload["temperature"] == 1.0
+    assert payload["response_format"] == {"type": "json_object"}

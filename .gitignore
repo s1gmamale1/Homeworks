@@ -46,6 +46,9 @@ notes/
 # Claude Code local state (worktrees, agents, plans)
 .claude/
 
+# Codex local memory / rule bundle
+.codex/
+
 # Build / cache
 .pytest_cache/
 .mypy_cache/
