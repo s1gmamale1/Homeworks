@@ -511,7 +511,20 @@ a.brand-mark:focus-visible {
     color: var(--accent);
 }
 
-.search-box input {
+/* SEARCH-INNER-BOX-01: the global `input[type="search"]` / `[type="text"]`
+   rules below at app.css:886 set their own background, 1px border, padding,
+   and border-radius — they tie on specificity with `.search-box input`
+   (both (0,1,1)) and win by source order, so the input ends up painting
+   a SECOND visible box inside the wrapper pill (a faint inner border on
+   the right side, a subtle background mismatch). The `[data-theme=dark]
+   input[type="search"]` override at app.css:3292 ties at (0,2,1) with
+   `.search-box input[type="search"]` and wins by source order too — so
+   we also need a dark-mode-scoped reset below to keep the inside flush.
+   Selector here uses `[type=…]` to bump specificity to (0,2,1)
+   regardless of theme. */
+.search-box input,
+.search-box input[type="search"],
+.search-box input[type="text"] {
     flex: 1;
     min-width: 0;
     border: 0;
@@ -522,6 +535,8 @@ a.brand-mark:focus-visible {
     color: var(--text);
     height: 100%;
     padding: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .search-box input::placeholder {
@@ -3300,6 +3315,17 @@ body:has(.preview-panel:not([hidden])) .fab-add {
   background: rgba(15, 23, 42, 0.90);
   color: var(--text);
   border-color: var(--border);
+}
+
+/* SEARCH-INNER-BOX-01 (dark-mode tail): the rule directly above has
+   specificity (0,2,1) — same as `.search-box input[type="search"]` —
+   and re-paints a dark background + visible border on the inner input.
+   This wrapper-scoped reset is (0,3,1) so the input inside the
+   `.search-box` pill stays transparent + borderless in dark mode too. */
+[data-theme="dark"] .search-box input[type="search"],
+[data-theme="dark"] .search-box input[type="text"] {
+  background: transparent;
+  border: 0;
 }
 
 [data-theme="dark"] input:disabled,
