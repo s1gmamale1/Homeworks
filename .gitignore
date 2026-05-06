@@ -79,3 +79,6 @@ SENTENCE_FILL_BACKEND_PLAN.md
 /extract_lesson.py
 /pip_err.txt
 /pip_out.txt
+
+# Architectural rework planning docs (kept local; not part of the codebase)
+/homeworks_ai_architecture_plan_pr169_adjusted/

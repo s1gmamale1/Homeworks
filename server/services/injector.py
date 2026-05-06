@@ -326,7 +326,12 @@ def _serialize_boss_questions(items, boss_meta=None) -> str:
         while len(hint_parts) < 3:
             hint_parts.append(hint_parts[-1])
         adapted.append({
-            "id":         item.get("id", f"Q{i+1}"),
+            # Synthetic id matches the route's recognized format in
+            # routes/ai.py::_fb_find_boss_question (bq_{i}); keeping these in
+            # sync is what stops boss grading from silently 404-ing on rows
+            # that lack an authored id. See migrate_boss_question_ids.py
+            # for the one-time backfill of pre-existing rows.
+            "id":         item.get("id") or f"bq_{i}",
             "tier":       tier,
             "damage":     dmg,
             "bloom":      bloom,
@@ -1192,47 +1197,6 @@ def inject(
                         "bullets": [],
                         "hook": card.get("hint") or "",
                     },
-                })
-            data = adapted
-
-        # Shape adapter: Boss editor emits {q, tags, ans[], hint, dmg} but the
-        # template expects {id, tier, damage, bloom, pisa, prompt, acceptable[], hints[]}.
-        # We parse Bloom/PISA/Damage from tags, split hint into an array (by newline/pipe),
-        # and map damage → tier (10→easy, 20→medium, 30→hard).
-        if key == "boss_questions":
-            adapted = []
-            for i, item in enumerate(data):
-                if not isinstance(item, dict):
-                    continue
-                # Already template shape? pass through.
-                if "prompt" in item and "acceptable" in item:
-                    adapted.append(item)
-                    continue
-                dmg = int(item.get("dmg", 10) or 10)
-                tier = "easy" if dmg <= 10 else "medium" if dmg <= 20 else "hard"
-                bloom, pisa = _parse_bloom_pisa(item.get("tags", ""), "L3", "L3")
-                ans_list = item.get("ans") or [""]
-                if not isinstance(ans_list, list):
-                    ans_list = [str(ans_list)]
-                # Split the single hint into hint array on newlines or ' | '.
-                hint_raw = item.get("hint") or ""
-                # Strip HTML and split on lines / bullet separators.
-                hint_plain = _strip_html(hint_raw)
-                hint_parts = [p.strip() for p in re.split(r"\n|\s\|\s|•", hint_plain) if p.strip()]
-                if not hint_parts:
-                    hint_parts = [hint_plain or "—"]
-                # Provide up to 3 progressive hints.
-                while len(hint_parts) < 3:
-                    hint_parts.append(hint_parts[-1])
-                adapted.append({
-                    "id":         item.get("id", f"Q{i+1}"),
-                    "tier":       tier,
-                    "damage":     dmg,
-                    "bloom":      bloom,
-                    "pisa":       pisa,
-                    "prompt":     item.get("q", ""),
-                    "acceptable": [a for a in ans_list if a],
-                    "hints":      hint_parts[:3],
                 })
             data = adapted
 

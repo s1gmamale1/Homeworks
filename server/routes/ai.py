@@ -1299,6 +1299,14 @@ def _fb_find_boss_question(content: dict, question_id: str) -> Optional[dict]:
     BossQuestion shapes vary; prefer `id`, fall back to index-as-id ("bq_0").
     Returns the raw dict (server-only fields like `accepted`/`ans`/`answer_spec`
     are PRESENT here — that is the point of the side-disjoint injector boundary).
+
+    Recognized id forms (in priority order):
+      - q["id"] / q["question_id"]   (authored)
+      - "bq_{i}" / "{i}"             (canonical synthetic — what the injector emits)
+      - "Q{i+1}"                     (legacy synthetic — older rendered pages may
+                                      still send this until they reload after deploy;
+                                      remove in a follow-up PR once cache window has
+                                      elapsed).
     """
     if not isinstance(content, dict) or not question_id:
         return None
@@ -1310,7 +1318,9 @@ def _fb_find_boss_question(content: dict, question_id: str) -> Optional[dict]:
             continue
         if q.get("id") == question_id or q.get("question_id") == question_id:
             return q
-        if question_id == f"bq_{i}" or question_id == str(i):
+        if (question_id == f"bq_{i}"
+                or question_id == str(i)
+                or question_id == f"Q{i+1}"):
             return q
     return None
 

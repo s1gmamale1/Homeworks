@@ -121,6 +121,30 @@ def _check_no_inline_bloat(content: Any, path: str = "content_json") -> None:
                 },
             )
 
+
+def _normalize_boss_question_ids(content: Any) -> None:
+    """Ensure every `content.boss_questions[i]` carries a non-empty `id`.
+
+    Author-supplied `id` is preserved; missing/empty/None gets ``f"bq_{i}"``.
+    Mutates in place. Idempotent. Safe to call on any content_json shape;
+    no-op when `boss_questions` is missing / not a list.
+
+    Why this is at the write boundary: keeping ids canonical here (vs. only
+    in the injector) means every persisted row is self-describing, which is
+    what stops the boss-grading 404 documented in the migration script.
+    """
+    if not isinstance(content, dict):
+        return
+    bq = content.get("boss_questions")
+    if not isinstance(bq, list):
+        return
+    for i, item in enumerate(bq):
+        if not isinstance(item, dict):
+            continue
+        if not item.get("id"):
+            item["id"] = f"bq_{i}"
+
+
 class HomeworkCreate(BaseModel):
     title: str
     subject: str
@@ -221,6 +245,10 @@ async def create_homework(hw: HomeworkCreate):
     # on POST/PUT/PATCH).
     _check_no_inline_bloat(final_content)
 
+    # Stamp synthetic ids on any id-less boss_questions before persist so the
+    # row is self-describing for the FB question lookup.
+    _normalize_boss_question_ids(final_content)
+
     result = await db.create_homework({
         "title": hw.title,
         "subject": hw.subject,
@@ -259,6 +287,7 @@ async def update_homework(hw_id: str, hw_update: HomeworkUpdate):
         _validate_content_json(updates["content_json"])
         # PR 2 — bloat check on the FULL content_json (PUT is full overwrite).
         _check_no_inline_bloat(updates["content_json"])
+        _normalize_boss_question_ids(updates["content_json"])
 
     return await db.update_homework(hw_id, updates)
 
@@ -287,6 +316,10 @@ async def patch_homework_content(hw_id: str, body: ContentPatch):
     # Existing rows may carry pre-fix bloat; we don't want to block authors
     # from patching them with clean values. Only NEW bloat is rejected.
     _check_no_inline_bloat(body.content_json, path="content_json (patch)")
+    # Normalize on the merged result so any id-less boss_questions get stable
+    # ids on save — both freshly-patched questions and any pre-existing
+    # id-less ones the author touched indirectly.
+    _normalize_boss_question_ids(merged)
     return await db.update_homework(hw_id, {"content_json": merged})
 
 @router.delete("/{hw_id}")
