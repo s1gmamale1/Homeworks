@@ -533,6 +533,64 @@ def _serialize_tile_match(
 _TTT_ANSWER_KEY: dict = {}
 
 
+def _is_grade8_math_demo_context(runtime_context: dict | None) -> bool:
+    """Temporary showcase rule: Grade 8 algebra/geometriya demos avoid text-heavy games."""
+    if not isinstance(runtime_context, dict):
+        return False
+    subject = str(runtime_context.get("subject") or "").strip().lower()
+    try:
+        grade = int(runtime_context.get("grade") or 0)
+    except (TypeError, ValueError):
+        grade = 0
+    return grade == 8 and subject in {"math-algebra", "geometriya-g7-11"}
+
+
+def _ttt_from_why_chain(items: list) -> list:
+    """Convert legacy Why Chain fill-items into TTT items for the G8 math demo.
+
+    Why Chain is visually close to sentence filling ("Zanjir"), which is too
+    writing-heavy for the current math showcase. The original items are kept
+    in content_json, but the rendered demo gets quick multiple-choice TTT
+    questions instead.
+    """
+    symbol_bank = ["/", "×", "+", "−", "=", "%", "|x − a|", "|a|", "a"]
+    authored_answers: list[str] = []
+    for raw in items or []:
+        if not isinstance(raw, dict):
+            continue
+        ans = raw.get("inv") or raw.get("correct") or raw.get("answer")
+        if ans is not None and str(ans).strip():
+            authored_answers.append(str(ans).strip())
+
+    out: list[dict] = []
+    for idx, raw in enumerate(items or []):
+        if not isinstance(raw, dict):
+            continue
+        q = str(raw.get("q") or raw.get("prompt") or "").strip()
+        correct = str(raw.get("inv") or raw.get("correct") or raw.get("answer") or "").strip()
+        if not q or not correct:
+            continue
+        q = q.replace("___", "_____")
+        distractors: list[str] = []
+        for candidate in [*authored_answers, *symbol_bank]:
+            candidate = str(candidate).strip()
+            if candidate and candidate != correct and candidate not in distractors:
+                distractors.append(candidate)
+            if len(distractors) >= 3:
+                break
+        if len(distractors) < 3:
+            continue
+        out.append(
+            {
+                "id": f"demo-ttt-{idx + 1}",
+                "q": q,
+                "correct": correct,
+                "distractors": distractors[:3],
+            }
+        )
+    return out[:6]
+
+
 def _serialize_ttt(items: list, config: dict) -> tuple:
     """Build the client-side GB_TTT wire format (side-disjoint, answer-leak prevention).
 
@@ -1321,6 +1379,8 @@ def inject(
         # in _TTT_ANSWER_KEY[hw_id] for the /api/ai/check-answer?phase=ttt handler.
         if key == "gb_ttt":
             hw_id = (runtime_context or {}).get("hwId") or (runtime_context or {}).get("hw_id") or ""
+            if _is_grade8_math_demo_context(runtime_context) and not data:
+                data = _ttt_from_why_chain(content_json.get("gb_why_chain") or [])
             wire, key_map = _serialize_ttt(data, content_json.get("gb_ttt_config") or {})
             if hw_id:
                 _TTT_ANSWER_KEY[hw_id] = key_map

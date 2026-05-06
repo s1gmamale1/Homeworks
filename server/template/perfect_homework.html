@@ -2538,11 +2538,11 @@
         .gb-tm-board-card {
             border-radius: 30px;
             padding: 16px;
-            background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.20));
-            border: 1px solid var(--surface-border);
-            box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,.50);
-            backdrop-filter: blur(28px) saturate(170%);
-            -webkit-backdrop-filter: blur(28px) saturate(170%);
+            background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(248,251,255,.82));
+            border: 1px solid rgba(15,23,42,.10);
+            box-shadow: 0 18px 40px rgba(24,38,64,.12), inset 0 1px 0 rgba(255,255,255,.82);
+            backdrop-filter: blur(18px) saturate(145%);
+            -webkit-backdrop-filter: blur(18px) saturate(145%);
         }
         .gb-tm-board-head {
             display: flex;
@@ -2581,25 +2581,28 @@
         .gb-tm-col-tiles {
             display: grid;
             gap: 9px;
+            grid-auto-rows: minmax(64px, auto);
         }
 
         /* ── Tiles ── */
         .gb-tm-tile {
             width: 100%;
-            min-height: 58px;
-            border: 1px solid rgba(255,255,255,.42);
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            border: 1px solid rgba(15,23,42,.12);
             border-radius: 19px;
-            background: rgba(255,255,255,.25);
+            background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,249,255,.94));
             color: var(--text);
             padding: 12px 13px;
             text-align: left;
-            font-size: 13.2px;
+            font-size: 13.8px;
             line-height: 1.35;
-            font-weight: 500;
+            font-weight: 590;
+            overflow-wrap: anywhere;
             cursor: pointer;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.44);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 9px 18px rgba(24,38,64,.08), inset 0 1px 0 rgba(255,255,255,.95);
             transition:
                 transform .18s ease,
                 box-shadow .18s ease,
@@ -2617,31 +2620,33 @@
 
         .gb-tm-tile:hover:not(.matched):not(.correct):not(.wrong) {
             transform: translateY(-1px);
-            box-shadow: 0 9px 22px rgba(31,38,135,.07), inset 0 1px 0 rgba(255,255,255,.46);
+            border-color: rgba(0,102,204,.22);
+            background: linear-gradient(180deg, #ffffff, rgba(239,247,255,.98));
+            box-shadow: 0 12px 24px rgba(24,38,64,.12), inset 0 1px 0 rgba(255,255,255,.98);
         }
         .gb-tm-tile.selected {
-            border-color: rgba(0,102,204,.32);
-            background: linear-gradient(135deg, rgba(0,102,204,.12), rgba(255,255,255,.22));
-            box-shadow: 0 10px 26px rgba(0,102,204,.11), inset 0 1px 0 rgba(255,255,255,.46);
+            border-color: rgba(0,102,204,.72);
+            background: linear-gradient(180deg, rgba(235,246,255,.98), rgba(215,236,255,.94));
+            box-shadow: 0 0 0 3px rgba(0,102,204,.14), 0 12px 28px rgba(0,102,204,.18), inset 0 1px 0 rgba(255,255,255,.98);
         }
         .gb-tm-tile.correct {
             color: #1f6f2e;
-            border-color: rgba(52,199,89,.28);
-            background: linear-gradient(135deg, rgba(52,199,89,.15), rgba(255,255,255,.18));
+            border-color: rgba(36,138,61,.46);
+            background: linear-gradient(180deg, rgba(232,250,238,.98), rgba(211,245,222,.94));
         }
         .gb-tm-tile.wrong {
             color: #9f241d;
-            border-color: rgba(255,69,58,.25);
-            background: linear-gradient(135deg, rgba(255,69,58,.12), rgba(255,255,255,.18));
+            border-color: rgba(213,55,48,.42);
+            background: linear-gradient(180deg, rgba(255,239,238,.98), rgba(255,225,223,.94));
             animation: gbTmShake .32s ease;
         }
         .gb-tm-tile.matched {
-            opacity: 0.34;
+            opacity: 0.52;
             pointer-events: none;
             overflow: hidden;
             position: relative;
-            border-color: rgba(52,199,89,.30);
-            background: linear-gradient(135deg, rgba(52,199,89,.10), rgba(255,255,255,.16));
+            border-color: rgba(36,138,61,.38);
+            background: linear-gradient(180deg, rgba(232,250,238,.78), rgba(211,245,222,.70));
         }
         .gb-tm-hint {
             display: block;
@@ -7693,24 +7698,24 @@
             color: var(--text);
         }
         [data-theme="dark"] .gb-tm-board-card {
-            background: linear-gradient(135deg, rgba(30,41,59,.68), rgba(15,23,42,.52));
-            border-color: var(--surface-border);
-            box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,.06);
+            background: linear-gradient(135deg, rgba(15,23,42,.94), rgba(23,37,61,.86));
+            border-color: rgba(148,163,184,.24);
+            box-shadow: 0 18px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.07);
         }
         [data-theme="dark"] .gb-tm-tile {
-            background: var(--surface);
-            border-color: var(--surface-border);
+            background: linear-gradient(180deg, rgba(30,41,59,.96), rgba(20,31,50,.92));
+            border-color: rgba(148,163,184,.30);
             color: var(--text);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+            box-shadow: 0 10px 22px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.08);
         }
         [data-theme="dark"] .gb-tm-tile:hover:not(.matched):not(.correct):not(.wrong) {
-            background: rgba(0, 111, 224, 0.14);
-            border-color: rgba(0, 111, 224, 0.38);
+            background: linear-gradient(180deg, rgba(35,53,83,.98), rgba(25,40,65,.94));
+            border-color: rgba(76,201,240,.45);
         }
         [data-theme="dark"] .gb-tm-tile.selected {
-            border-color: rgba(0,111,224,.48);
-            background: linear-gradient(135deg, rgba(0,111,224,.18), rgba(30,41,59,.36));
-            box-shadow: 0 10px 26px rgba(0,111,224,.18), inset 0 1px 0 rgba(255,255,255,.08);
+            border-color: rgba(76,201,240,.72);
+            background: linear-gradient(180deg, rgba(0,111,224,.34), rgba(30,41,59,.92));
+            box-shadow: 0 0 0 3px rgba(76,201,240,.18), 0 12px 28px rgba(0,111,224,.22), inset 0 1px 0 rgba(255,255,255,.10);
         }
         [data-theme="dark"] .gb-tm-tile.correct {
             color: #86efac;
@@ -7721,6 +7726,10 @@
             color: #fca5a5;
             border-color: rgba(255,69,58,.30);
             background: linear-gradient(135deg, rgba(255,69,58,.16), rgba(15,23,42,.40));
+        }
+        [data-theme="dark"] .gb-tm-tile.matched {
+            border-color: rgba(52,199,89,.36);
+            background: linear-gradient(180deg, rgba(22,101,52,.28), rgba(20,31,50,.72));
         }
         [data-theme="dark"] .gb-tm-result-card {
             background: linear-gradient(135deg, rgba(30,41,59,.68), rgba(15,23,42,.52));
@@ -12250,6 +12259,7 @@
         };
 
         // ── Registry-driven game-break order ─────────────────────────────
+
         // Every Phase-3 game is OPTIONAL: it appears only when its content
         // array has items. The runtime walks gbActiveGameOrder() in order,
         // skipping any empty slot. If all five are empty, Stage 5 is skipped
@@ -12263,7 +12273,7 @@
         }
 
         function gbDemoSkippedGames() {
-            return gbIsGrade8MathDemo() ? new Set(['aq', 'pl']) : new Set();
+            return gbIsGrade8MathDemo() ? new Set(['aq', 'wc', 'pl']) : new Set();
         }
 
         function gbActiveGameOrder() {
