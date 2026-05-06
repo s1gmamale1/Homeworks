@@ -18,6 +18,7 @@ async def list_users() -> list[dict]:
                 u.id,
                 u.name,
                 u.position,
+                u.color,
                 u.created_at,
                 COUNT(t.id) AS task_count
             FROM taskboard_users u
@@ -34,7 +35,7 @@ async def list_users() -> list[dict]:
         await db.close()
 
 
-async def create_user(name) -> dict:
+async def create_user(name, color=None) -> dict:
     db = await connect()
     try:
         cursor = await db.execute(
@@ -44,8 +45,8 @@ async def create_user(name) -> dict:
         position = (row[0] + 1) if row[0] is not None else 0
 
         cursor = await db.execute(
-            "INSERT INTO taskboard_users (name, position, created_at) VALUES (?, ?, ?)",
-            (name, position, _now()),
+            "INSERT INTO taskboard_users (name, position, color, created_at) VALUES (?, ?, ?, ?)",
+            (name, position, color, _now()),
         )
         user_id = cursor.lastrowid
         await db.commit()
@@ -56,6 +57,7 @@ async def create_user(name) -> dict:
                 u.id,
                 u.name,
                 u.position,
+                u.color,
                 u.created_at,
                 COUNT(t.id) AS task_count
             FROM taskboard_users u
@@ -72,7 +74,7 @@ async def create_user(name) -> dict:
         await db.close()
 
 
-async def update_user(user_id, *, name=None, position=None) -> Optional[dict]:
+async def update_user(user_id, *, name=None, position=None, color=None) -> Optional[dict]:
     db = await connect()
     try:
         cursor = await db.execute(
@@ -87,6 +89,13 @@ async def update_user(user_id, *, name=None, position=None) -> Optional[dict]:
             await db.execute(
                 "UPDATE taskboard_users SET name = ? WHERE id = ?",
                 (name, user_id),
+            )
+            await db.commit()
+
+        if color is not None:
+            await db.execute(
+                "UPDATE taskboard_users SET color = ? WHERE id = ?",
+                (color, user_id),
             )
             await db.commit()
 
@@ -114,6 +123,7 @@ async def update_user(user_id, *, name=None, position=None) -> Optional[dict]:
                 u.id,
                 u.name,
                 u.position,
+                u.color,
                 u.created_at,
                 COUNT(t.id) AS task_count
             FROM taskboard_users u
@@ -156,7 +166,9 @@ async def list_tasks(assignee_id=NULL_SENTINEL) -> list[dict]:
         if assignee_id is NULL_SENTINEL:
             cursor = await db.execute(
                 """
-                SELECT id, title, description, assignee_id, position, status, created_at, updated_at
+                SELECT id, title, description, assignee_id, position, status,
+                       task_type, subtask_total, subtask_done, attachment_count, cover_url,
+                       created_at, updated_at
                 FROM taskboard_tasks
                 WHERE archived_at IS NULL
                 ORDER BY position ASC, id ASC
@@ -165,7 +177,9 @@ async def list_tasks(assignee_id=NULL_SENTINEL) -> list[dict]:
         elif assignee_id is None:
             cursor = await db.execute(
                 """
-                SELECT id, title, description, assignee_id, position, status, created_at, updated_at
+                SELECT id, title, description, assignee_id, position, status,
+                       task_type, subtask_total, subtask_done, attachment_count, cover_url,
+                       created_at, updated_at
                 FROM taskboard_tasks
                 WHERE archived_at IS NULL AND assignee_id IS NULL
                 ORDER BY position ASC, id ASC
@@ -174,7 +188,9 @@ async def list_tasks(assignee_id=NULL_SENTINEL) -> list[dict]:
         else:
             cursor = await db.execute(
                 """
-                SELECT id, title, description, assignee_id, position, status, created_at, updated_at
+                SELECT id, title, description, assignee_id, position, status,
+                       task_type, subtask_total, subtask_done, attachment_count, cover_url,
+                       created_at, updated_at
                 FROM taskboard_tasks
                 WHERE archived_at IS NULL AND assignee_id = ?
                 ORDER BY position ASC, id ASC
@@ -187,29 +203,63 @@ async def list_tasks(assignee_id=NULL_SENTINEL) -> list[dict]:
         await db.close()
 
 
-async def create_task(title, description="") -> dict:
+async def create_task(
+    title,
+    description="",
+    *,
+    task_type="general",
+    subtask_total=0,
+    subtask_done=0,
+    attachment_count=0,
+    cover_url=None,
+    assignee_id=None,
+) -> dict:
     db = await connect()
     try:
-        cursor = await db.execute(
-            "SELECT MAX(position) FROM taskboard_tasks WHERE archived_at IS NULL AND assignee_id IS NULL"
-        )
+        if assignee_id is None:
+            cursor = await db.execute(
+                "SELECT MAX(position) FROM taskboard_tasks WHERE archived_at IS NULL AND assignee_id IS NULL"
+            )
+        else:
+            cursor = await db.execute(
+                "SELECT MAX(position) FROM taskboard_tasks WHERE archived_at IS NULL AND assignee_id = ?",
+                (assignee_id,),
+            )
         row = await cursor.fetchone()
         position = (row[0] + 1) if row[0] is not None else 0
 
         now = _now()
         cursor = await db.execute(
             """
-            INSERT INTO taskboard_tasks (title, description, assignee_id, position, status, created_at, updated_at)
-            VALUES (?, ?, NULL, ?, 'open', ?, ?)
+            INSERT INTO taskboard_tasks (
+              title, description, assignee_id, position, status,
+              task_type, subtask_total, subtask_done, attachment_count, cover_url,
+              created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?)
             """,
-            (title, description, position, now, now),
+            (
+                title,
+                description,
+                assignee_id,
+                position,
+                task_type,
+                subtask_total,
+                subtask_done,
+                attachment_count,
+                cover_url,
+                now,
+                now,
+            ),
         )
         task_id = cursor.lastrowid
         await db.commit()
 
         cursor = await db.execute(
             """
-            SELECT id, title, description, assignee_id, position, status, created_at, updated_at
+            SELECT id, title, description, assignee_id, position, status,
+                       task_type, subtask_total, subtask_done, attachment_count, cover_url,
+                       created_at, updated_at
             FROM taskboard_tasks
             WHERE id = ?
             """,
@@ -309,6 +359,24 @@ async def update_task(task_id, **patch) -> Optional[dict]:
             if "position" in patch:
                 fields.append("position = ?")
                 values.append(patch["position"])
+            if "status" in patch:
+                fields.append("status = ?")
+                values.append(patch["status"])
+            if "task_type" in patch:
+                fields.append("task_type = ?")
+                values.append(patch["task_type"])
+            if "subtask_total" in patch:
+                fields.append("subtask_total = ?")
+                values.append(patch["subtask_total"])
+            if "subtask_done" in patch:
+                fields.append("subtask_done = ?")
+                values.append(patch["subtask_done"])
+            if "attachment_count" in patch:
+                fields.append("attachment_count = ?")
+                values.append(patch["attachment_count"])
+            if "cover_url" in patch:
+                fields.append("cover_url = ?")
+                values.append(patch["cover_url"])
 
             if fields:
                 fields.append("updated_at = ?")
@@ -327,7 +395,9 @@ async def update_task(task_id, **patch) -> Optional[dict]:
 
         cursor = await db.execute(
             """
-            SELECT id, title, description, assignee_id, position, status, created_at, updated_at
+            SELECT id, title, description, assignee_id, position, status,
+                       task_type, subtask_total, subtask_done, attachment_count, cover_url,
+                       created_at, updated_at
             FROM taskboard_tasks
             WHERE id = ?
             """,

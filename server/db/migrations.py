@@ -128,21 +128,27 @@ CREATE TABLE IF NOT EXISTS taskboard_users (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   name        TEXT NOT NULL,
   position    INTEGER NOT NULL DEFAULT 0,
+  color       TEXT,
   created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   archived_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_tb_users_position ON taskboard_users(position);
 
 CREATE TABLE IF NOT EXISTS taskboard_tasks (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  title       TEXT NOT NULL,
-  description TEXT NOT NULL DEFAULT '',
-  assignee_id INTEGER REFERENCES taskboard_users(id) ON DELETE SET NULL,
-  position    INTEGER NOT NULL DEFAULT 0,
-  status      TEXT NOT NULL DEFAULT 'open',
-  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  archived_at TEXT
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  title            TEXT NOT NULL,
+  description      TEXT NOT NULL DEFAULT '',
+  assignee_id      INTEGER REFERENCES taskboard_users(id) ON DELETE SET NULL,
+  position         INTEGER NOT NULL DEFAULT 0,
+  status           TEXT NOT NULL DEFAULT 'open',
+  task_type        TEXT NOT NULL DEFAULT 'general',
+  subtask_total    INTEGER NOT NULL DEFAULT 0,
+  subtask_done     INTEGER NOT NULL DEFAULT 0,
+  attachment_count INTEGER NOT NULL DEFAULT 0,
+  cover_url        TEXT,
+  created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  archived_at      TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_tb_tasks_assignee ON taskboard_tasks(assignee_id);
 CREATE INDEX IF NOT EXISTS idx_tb_tasks_position ON taskboard_tasks(position);
@@ -165,6 +171,13 @@ async def init_db() -> None:
         for migration in (
             "ALTER TABLE review_queue ADD COLUMN decision_json TEXT NULL",
             "ALTER TABLE review_queue ADD COLUMN resolved_at TEXT NULL",
+            # Taskboard kanban polish — extra task metadata + per-user accent.
+            "ALTER TABLE taskboard_users ADD COLUMN color TEXT",
+            "ALTER TABLE taskboard_tasks ADD COLUMN task_type TEXT NOT NULL DEFAULT 'general'",
+            "ALTER TABLE taskboard_tasks ADD COLUMN subtask_total INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE taskboard_tasks ADD COLUMN subtask_done INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE taskboard_tasks ADD COLUMN attachment_count INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE taskboard_tasks ADD COLUMN cover_url TEXT",
         ):
             try:
                 await db.execute(migration)

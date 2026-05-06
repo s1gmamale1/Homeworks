@@ -45,14 +45,35 @@
         </div>
       </div>
 
-      <div class="library-tabs taskboard-tabs" role="tablist" aria-label="Taskboard tabs" id="tb-tabs">
-        <!-- rendered by JS: pinned "Issues" tab + one tab per user -->
-      </div>
-
-      <section class="taskboard-panel glass-card" id="tb-panel" data-i18n-aria-label="taskboard.panel_aria" aria-label="Task list">
-        <!-- the ACTIVE tab's task list — vertical card stack with HTML5 drag/drop -->
+      <section
+        class="tb-board"
+        id="tb-board"
+        role="list"
+        data-i18n-aria-label="taskboard.board_aria"
+        aria-label="Kanban board"
+      >
+        <!-- rendered by JS: pinned "Issues" column + one column per user -->
       </section>
     </main>
+
+    <nav class="tb-bottom-dock glass-card" aria-label="Taskboard navigation dock">
+      <a class="tb-dock-btn" href="/index.html" data-i18n-aria-label="taskboard.dock.inbox" aria-label="Inbox">
+        <span class="tb-dock-icon" aria-hidden="true">📥</span>
+        <span class="tb-dock-label" data-i18n="taskboard.dock.inbox">Inbox</span>
+      </a>
+      <a class="tb-dock-btn" href="/library.html" data-i18n-aria-label="taskboard.dock.planner" aria-label="Planner">
+        <span class="tb-dock-icon" aria-hidden="true">🗓️</span>
+        <span class="tb-dock-label" data-i18n="taskboard.dock.planner">Planner</span>
+      </a>
+      <a class="tb-dock-btn is-active" href="/taskboard.html" aria-current="page" data-i18n-aria-label="taskboard.dock.board" aria-label="Board">
+        <span class="tb-dock-icon" aria-hidden="true">📋</span>
+        <span class="tb-dock-label" data-i18n="taskboard.dock.board">Board</span>
+      </a>
+      <button class="tb-dock-btn" id="tb-switch-boards" type="button" data-i18n-aria-label="taskboard.dock.switch" aria-label="Switch boards">
+        <span class="tb-dock-icon" aria-hidden="true">🔀</span>
+        <span class="tb-dock-label" data-i18n="taskboard.dock.switch">Switch boards</span>
+      </button>
+    </nav>
 
     <dialog id="tb-task-modal" class="tb-modal glass-card">
       <div class="modal-card">
@@ -61,10 +82,48 @@
           <button class="icon-btn" id="tb-close-task-modal" type="button" data-i18n-aria-label="common.close" aria-label="Close">×</button>
         </div>
         <div class="modal-body">
-          <label class="field-label" data-i18n="taskboard.task_title_label">Title</label>
+          <label class="field-label" for="tb-task-title" data-i18n="taskboard.task_title_label">Title</label>
           <input type="text" class="text-input" id="tb-task-title" data-i18n-placeholder="taskboard.task_title_placeholder" placeholder="What needs to be done?">
-          <label class="field-label" data-i18n="taskboard.task_desc_label">Description</label>
+
+          <label class="field-label" for="tb-task-desc" data-i18n="taskboard.task_desc_label">Description</label>
           <textarea class="text-input" id="tb-task-desc" rows="3" data-i18n-placeholder="taskboard.task_desc_placeholder" placeholder="Optional details…"></textarea>
+
+          <div class="tb-modal-row">
+            <div class="tb-modal-col">
+              <label class="field-label" for="tb-task-type" data-i18n="taskboard.task_type_label">Type</label>
+              <select class="text-input" id="tb-task-type">
+                <option value="general" data-i18n="taskboard.type.general">General</option>
+                <option value="development" data-i18n="taskboard.type.development">Development</option>
+                <option value="design" data-i18n="taskboard.type.design">Design</option>
+                <option value="research" data-i18n="taskboard.type.research">Research</option>
+                <option value="ops" data-i18n="taskboard.type.ops">Ops</option>
+              </select>
+            </div>
+            <div class="tb-modal-col">
+              <label class="field-label" for="tb-task-assignee" data-i18n="taskboard.task_assignee_label">Assigned to</label>
+              <select class="text-input" id="tb-task-assignee">
+                <!-- rendered by JS: Issues + each active user -->
+              </select>
+            </div>
+          </div>
+
+          <div class="tb-modal-row">
+            <div class="tb-modal-col">
+              <label class="field-label" for="tb-task-subtotal" data-i18n="taskboard.task_subtask_total_label">Sub-tasks total</label>
+              <input type="number" class="text-input" id="tb-task-subtotal" min="0" max="999" step="1" placeholder="0">
+            </div>
+            <div class="tb-modal-col">
+              <label class="field-label" for="tb-task-subdone" data-i18n="taskboard.task_subtask_done_label">Sub-tasks done</label>
+              <input type="number" class="text-input" id="tb-task-subdone" min="0" max="999" step="1" placeholder="0">
+            </div>
+            <div class="tb-modal-col">
+              <label class="field-label" for="tb-task-attach" data-i18n="taskboard.task_attach_label">Attachments</label>
+              <input type="number" class="text-input" id="tb-task-attach" min="0" max="999" step="1" placeholder="0">
+            </div>
+          </div>
+
+          <label class="field-label" for="tb-task-cover" data-i18n="taskboard.task_cover_label">Cover image URL (optional)</label>
+          <input type="text" class="text-input" id="tb-task-cover" data-i18n-placeholder="taskboard.task_cover_placeholder" placeholder="https://…">
         </div>
         <div class="modal-actions">
           <button class="btn btn-ghost" id="tb-cancel-task" type="button" data-i18n="common.cancel">Cancel</button>
@@ -80,8 +139,13 @@
           <button class="icon-btn" id="tb-close-user-modal" type="button" data-i18n-aria-label="common.close" aria-label="Close">×</button>
         </div>
         <div class="modal-body">
-          <label class="field-label" data-i18n="taskboard.user_name_label">Name</label>
+          <label class="field-label" for="tb-user-name" data-i18n="taskboard.user_name_label">Name</label>
           <input type="text" class="text-input" id="tb-user-name" data-i18n-placeholder="taskboard.user_name_placeholder" placeholder="e.g. Karim">
+
+          <label class="field-label" data-i18n="taskboard.user_color_label">Accent colour</label>
+          <div class="tb-color-swatches" id="tb-user-color-swatches" role="radiogroup" aria-label="Accent colour">
+            <!-- rendered by JS -->
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn btn-ghost" id="tb-cancel-user" type="button" data-i18n="common.cancel">Cancel</button>

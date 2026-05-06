@@ -1295,27 +1295,32 @@ curl http://localhost:8000/h/HW-20260427-001
 
 ### GET /api/taskboard/users
 
-**200** array of `{ id, name, position, task_count, created_at }`. Non-archived only, ordered by position.
+**200** array of User records (see [Taskboard Record shapes](#taskboard-record-shapes)). Non-archived only, ordered by `position` ascending.
 
 ---
 
 ### POST /api/taskboard/users
 
 ```json
-{ "name": "string" }
+{ "name": "string", "color": "#22c55e" }
 ```
 
-**200** created User. **400** validation error.
+| Field   | Type           | Required | Notes |
+|---------|----------------|----------|-------|
+| `name`  | string         | yes      | 1–64 chars |
+| `color` | string \| null | no       | 6-digit hex (`^#[0-9a-fA-F]{6}$`); `null` / omitted = no accent |
+
+**200** created User. **422** validation error (invalid hex pattern).
 
 ---
 
 ### PATCH /api/taskboard/users/{user_id}
 
 ```json
-{ "name": "string", "position": 0 }
+{ "name": "string", "position": 0, "color": "#a855f7" }
 ```
 
-All fields optional. **200** updated User. **404** `NOT_FOUND`.
+All fields optional (`exclude_unset`). `color` accepts the same `^#[0-9a-fA-F]{6}$` pattern as POST. **200** updated User. **404** `NOT_FOUND`. **422** invalid color.
 
 ---
 
@@ -1331,39 +1336,74 @@ Archive (soft-delete). Any assigned tasks are bounced back to Issues (`assignee_
 
 | Param | Type | Default | Notes |
 |-------|------|---------|-------|
-| `assignee_id` | int / "null" | — | Omit for all; `"null"` for Issues backlog; integer for a user's tab |
+| `assignee_id` | int / "null" | — | Omit for all; `"null"` for Issues backlog; integer for a user's column |
 
-**200** array of Task objects, ordered by position.
+**200** array of Task records (see [Taskboard Record shapes](#taskboard-record-shapes)), ordered by `position` ascending. `archived_at IS NULL` is always implicit.
 
 ---
 
 ### POST /api/taskboard/tasks
 
 ```json
-{ "title": "string", "description": "string" }
+{
+  "title": "string",
+  "description": "string",
+  "task_type": "development",
+  "assignee_id": 1,
+  "subtask_total": 5,
+  "subtask_done": 2,
+  "attachment_count": 3,
+  "cover_url": "https://example.com/cover.png"
+}
 ```
 
-`description` optional (default `""`). Always lands on Issues (`assignee_id = NULL`).
+| Field              | Type           | Required | Notes |
+|--------------------|----------------|----------|-------|
+| `title`            | string         | yes      | 1–200 chars |
+| `description`      | string         | no       | default `""`, max 2000 chars |
+| `task_type`        | string         | no       | one of `"general"` (default), `"development"`, `"design"`, `"research"`, `"ops"`. Unknown → **422** |
+| `assignee_id`      | int \| null    | no       | omit / `null` lands on Issues backlog; integer assigns to a user (no `404` if user is archived — task ends up orphaned, callers must verify) |
+| `subtask_total`    | int            | no       | 0–999, default 0 |
+| `subtask_done`     | int            | no       | 0–999, default 0 |
+| `attachment_count` | int            | no       | 0–999, default 0 |
+| `cover_url`        | string \| null | no       | max 500 chars; renderer only displays http(s) URLs |
 
-**200** created Task. **400** validation error.
+`status` is server-set on create (`"open"`); use PATCH to mark `"done"`. `position` is auto-assigned to the end of the target bucket.
+
+**200** created Task. **422** validation error.
 
 ---
 
 ### PATCH /api/taskboard/tasks/{task_id}
 
 ```json
-{ "title": "string", "description": "string", "assignee_id": 1, "position": 0 }
+{
+  "title": "string",
+  "description": "string",
+  "assignee_id": 1,
+  "position": 0,
+  "status": "done",
+  "task_type": "design",
+  "subtask_total": 5,
+  "subtask_done": 5,
+  "attachment_count": 3,
+  "cover_url": null
+}
 ```
 
-All fields optional. `assignee_id: null` explicitly moves the task to Issues. Omitting `assignee_id` leaves it untouched.
+All fields optional (`exclude_unset`). Validation rules + bounds are identical to POST (`status` is `Literal["open","done"]`; bad values → **422**). Behaviour notes:
 
-**200** updated Task. **404** `NOT_FOUND`.
+- Omitting `assignee_id` leaves the existing assignee untouched. Sending `null` explicitly moves the task to Issues.
+- Sending `position` alone reorders within the current bucket and repacks neighbours. Sending `assignee_id` + `position` cross-moves to the new bucket at that slot. Sending `assignee_id` alone appends to the end of the new bucket.
+- `cover_url: null` clears an existing cover.
+
+**200** updated Task. **404** `NOT_FOUND`. **422** validation error.
 
 ---
 
 ### DELETE /api/taskboard/tasks/{task_id}
 
-Archive (soft-delete).
+Archive (soft-delete). Sibling positions in the same bucket are repacked to keep the column compact.
 
 **200** `{ "ok": true }`. **404** `NOT_FOUND`.
 
@@ -1373,10 +1413,35 @@ Archive (soft-delete).
 
 User:
 ```json
-{ "id": 1, "name": "Karim", "position": 0, "task_count": 3, "created_at": "2026-05-06T10:00:00.000Z" }
+{
+  "id": 1,
+  "name": "Karim",
+  "position": 0,
+  "color": "#22c55e",
+  "task_count": 3,
+  "created_at": "2026-05-06T10:00:00.000Z"
+}
 ```
+
+`color` is `null` for users created/migrated before per-user accents existed.
 
 Task:
 ```json
-{ "id": 1, "title": "Fix typo", "description": "", "assignee_id": null, "position": 0, "status": "open", "created_at": "2026-05-06T10:00:00.000Z", "updated_at": "2026-05-06T10:00:00.000Z" }
+{
+  "id": 1,
+  "title": "Fix typo",
+  "description": "",
+  "assignee_id": null,
+  "position": 0,
+  "status": "open",
+  "task_type": "general",
+  "subtask_total": 0,
+  "subtask_done": 0,
+  "attachment_count": 0,
+  "cover_url": null,
+  "created_at": "2026-05-06T10:00:00.000Z",
+  "updated_at": "2026-05-06T10:00:00.000Z"
+}
 ```
+
+`status` is one of `"open" | "done"`. `task_type` is one of `"general" | "development" | "design" | "research" | "ops"`. Counts are bounded `0 ≤ n ≤ 999`. `cover_url` may be `null`; renderer (frontend) only displays http(s) URLs even though the server stores any string ≤ 500 chars.

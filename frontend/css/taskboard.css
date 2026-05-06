@@ -1,11 +1,15 @@
-/* Page shell */
+/* =================================================================== */
+/* Taskboard — Trello-style Kanban with glassmorphic columns and cards. */
+/* =================================================================== */
+
+/* Page shell — full-width so the board can scroll horizontally. */
 .taskboard-shell {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 6rem;  /* bottom padding clears floating dock */
 }
 
-/* Header card */
+/* Header bar (Title + actions) */
 .taskboard-header {
   display: flex;
   align-items: center;
@@ -29,105 +33,352 @@
   gap: 0.5rem;
 }
 
-/* Tabs */
-.taskboard-tabs {
-  margin-bottom: 1rem;
-  overflow-x: auto;
-}
-.taskboard-tabs .library-tab {
-  cursor: pointer;
-  user-select: none;
-}
-.taskboard-tabs .library-tab.is-drop-target {
-  outline: 2px dashed var(--accent, #007aff);
-  outline-offset: 2px;
-}
-
-/* Panel */
-.taskboard-panel {
-  min-height: 300px;
-  padding: 1rem 1.5rem;
-}
-
-/* Cards */
-.taskboard-card {
-  background: var(--surface, rgba(255,255,255,0.7));
-  border: 1px solid var(--border, rgba(0,0,0,0.06));
-  border-radius: 12px;
-  padding: 0.875rem 1rem;
-  margin-bottom: 0.625rem;
-  cursor: grab;
+/* ── Board: horizontal flex of columns ─────────────────────────────── */
+.tb-board {
   display: flex;
+  gap: 1rem;
   align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0.5rem 0.25rem 1rem;
+  scroll-snap-type: x proximity;
+}
+.tb-board::-webkit-scrollbar { height: 10px; }
+.tb-board::-webkit-scrollbar-track { background: transparent; }
+.tb-board::-webkit-scrollbar-thumb {
+  background: var(--border, rgba(255,255,255,0.08));
+  border-radius: 8px;
+}
+
+/* ── Column: glassmorphic surface, color-coded accent ─────────────── */
+.tb-column {
+  flex: 0 0 290px;
+  max-height: calc(100vh - 240px);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: var(--surface, rgba(255,255,255,0.04));
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  box-shadow: var(--shadow-mid, 0 8px 24px rgba(0,0,0,0.18));
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark"] .tb-column,
+[data-page="taskboard"][data-theme="dark"] .tb-column {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+/* Accent strip at the top of each column (uses --tb-accent inline var) */
+.tb-column::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--tb-accent, var(--accent, #006FE0));
+  opacity: 0.95;
+}
+
+/* Column header */
+.tb-col-header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem 0.625rem;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
 }
-.taskboard-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+.tb-col-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.taskboard-card.is-dragging {
-  opacity: 0.4;
+.tb-col-title .tb-col-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tb-accent, var(--accent, #006FE0));
+  box-shadow: 0 0 8px var(--tb-accent, var(--accent, #006FE0));
+}
+.tb-col-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted, #86868b);
+  background: var(--accent-light, rgba(255,255,255,0.06));
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+}
+.tb-col-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+.tb-col-action {
+  background: none;
+  border: none;
+  color: var(--text-muted, #86868b);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tb-col-action:hover {
+  color: var(--text, #1d1d1f);
+  background: var(--accent-light, rgba(255,255,255,0.06));
+}
+.tb-col-action.danger:hover {
+  color: var(--danger, #ef4444);
+}
+
+/* Column body — scrollable list of cards */
+.tb-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.625rem 0.625rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 60px;
+}
+.tb-col-body.is-drop-target {
+  background: var(--accent-light, rgba(255,255,255,0.04));
+}
+
+/* Footer: Add card */
+.tb-col-footer {
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+.tb-add-card {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px dashed var(--border, rgba(255,255,255,0.1));
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted, #86868b);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.tb-add-card:hover {
+  background: var(--accent-light, rgba(255,255,255,0.05));
+  border-color: var(--tb-accent, var(--accent, #006FE0));
+  color: var(--text, #1d1d1f);
+}
+
+/* ── Card ──────────────────────────────────────────────────────────── */
+.tb-card {
+  position: relative;
+  background: var(--surface-elevated, rgba(255,255,255,0.06));
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-left: 3px solid var(--tb-accent, var(--accent, #006FE0));
+  border-radius: 10px;
+  padding: 0.5rem 0.625rem 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+.tb-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18), 0 0 0 1px var(--tb-accent, var(--accent));
+}
+.tb-card.is-dragging {
+  opacity: 0.45;
   cursor: grabbing;
 }
-.taskboard-card.is-drop-above {
-  border-top: 2px solid var(--accent, #007aff);
+.tb-card.is-drop-above { box-shadow: inset 0 2px 0 0 var(--tb-accent, var(--accent)); }
+.tb-card.is-drop-below { box-shadow: inset 0 -2px 0 0 var(--tb-accent, var(--accent)); }
+.tb-card.is-done {
+  opacity: 0.55;
 }
-.taskboard-card.is-drop-below {
-  border-bottom: 2px solid var(--accent, #007aff);
+.tb-card.is-done .tb-card-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
-.taskboard-card-body {
-  flex: 1;
-  min-width: 0;
+
+/* Cover image (optional) */
+.tb-card-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.125rem;
+  background: var(--accent-light, rgba(255,255,255,0.06));
 }
-.taskboard-card-title {
-  font-weight: 600;
-  font-size: 0.9375rem;
-  margin: 0 0 0.25rem;
-  line-height: 1.3;
+
+/* Top row: type pill + status check */
+.tb-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
-.taskboard-card-desc {
-  color: var(--text-muted, #6b7280);
-  font-size: 0.8125rem;
+.tb-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.0625rem 0.4rem;
+  border-radius: 4px;
+  background: var(--accent-light, rgba(255,255,255,0.06));
+  color: var(--text-muted, #86868b);
+}
+.tb-card-check {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--border, rgba(255,255,255,0.18));
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  padding: 0;
+  line-height: 1;
+}
+.tb-card-check:hover {
+  border-color: var(--tb-accent, var(--accent));
+}
+.tb-card-check.is-done {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #ffffff;
+}
+
+/* Title + (optional) description */
+.tb-card-title {
+  font-weight: 500;
+  font-size: 0.875rem;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
+  color: var(--text, #1d1d1f);
+  word-break: break-word;
+}
+.tb-card-desc {
+  color: var(--text-muted, #86868b);
+  font-size: 0.78rem;
+  margin: 0;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.taskboard-card-menu {
+
+/* Meta row: subtask count + attachments + actions */
+.tb-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.75rem;
+  color: var(--text-muted, #86868b);
+}
+.tb-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.tb-card-actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.125rem;
+}
+.tb-card-action {
   background: none;
   border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 0.25rem;
+  color: var(--text-muted, #86868b);
+  font-size: 0.85rem;
   line-height: 1;
-  color: var(--text-muted, #6b7280);
+  padding: 0.125rem 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
 }
+.tb-card-action:hover {
+  color: var(--text, #1d1d1f);
+  background: var(--accent-light, rgba(255,255,255,0.06));
+}
+.tb-card-action.danger:hover { color: var(--danger, #ef4444); }
 
-/* Empty state */
-.taskboard-empty {
+/* ── Empty state on Issues column when nothing exists ────────────── */
+.tb-empty-row {
   text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-muted, #6b7280);
-}
-.taskboard-empty p {
-  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted, #86868b);
+  padding: 1.25rem 0.5rem;
 }
 
-/* Modal */
+/* ── Bottom dock ──────────────────────────────────────────────────── */
+.tb-bottom-dock {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem;
+  border-radius: 999px;
+  z-index: 30;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+}
+.tb-dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #86868b);
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.12s, color 0.12s;
+}
+.tb-dock-btn:hover {
+  background: var(--accent-light, rgba(255,255,255,0.06));
+  color: var(--text, #1d1d1f);
+}
+.tb-dock-btn.is-active {
+  background: var(--accent, #006FE0);
+  color: #ffffff;
+}
+.tb-dock-icon { font-size: 0.95rem; line-height: 1; }
+@media (max-width: 560px) {
+  .tb-dock-label { display: none; }
+}
+
+/* ── Modal ────────────────────────────────────────────────────────── */
 .tb-modal {
   border: none;
   border-radius: 16px;
   padding: 0;
-  max-width: 480px;
-  width: 90vw;
+  max-width: 520px;
+  width: 92vw;
   background: transparent;
   box-shadow: none;
 }
 .tb-modal::backdrop {
-  background: rgba(0,0,0,0.25);
+  background: rgba(0,0,0,0.45);
   backdrop-filter: blur(4px);
 }
 .tb-modal .modal-card {
@@ -143,66 +394,80 @@
   margin: 0;
   font-size: 1.125rem;
 }
+.tb-modal .icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-muted, #86868b);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+.tb-modal .icon-btn:hover {
+  color: var(--text, #1d1d1f);
+  background: var(--accent-light, rgba(255,255,255,0.06));
+}
 .tb-modal .modal-body {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.625rem;
   margin-bottom: 1.25rem;
 }
 .tb-modal .field-label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--text-secondary, #374151);
+  color: var(--text, #1d1d1f);
 }
 .tb-modal .text-input {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border-radius: 10px;
-  border: 1px solid var(--border, rgba(0,0,0,0.1));
-  background: var(--input-bg, rgba(255,255,255,0.6));
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  background: var(--surface-elevated, rgba(255,255,255,0.92));
+  color: var(--text, #1d1d1f);
   font-size: 0.9375rem;
   outline: none;
+  font-family: inherit;
 }
 .tb-modal .text-input:focus {
-  border-color: var(--accent, #007aff);
-  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+  border-color: var(--accent, #006FE0);
+  box-shadow: 0 0 0 3px var(--accent-glow, rgba(0,111,224,0.25));
 }
 .tb-modal .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
 }
+.tb-modal-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+.tb-modal-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
 
-/* Action menu dropdown */
-.tb-card-actions {
-  position: relative;
+/* Color swatches */
+.tb-color-swatches {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
-.tb-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background: var(--surface, rgba(255,255,255,0.9));
-  border: 1px solid var(--border, rgba(0,0,0,0.08));
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-  min-width: 140px;
-  z-index: 10;
-  overflow: hidden;
-}
-.tb-dropdown button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.5rem 0.875rem;
-  background: none;
-  border: none;
-  font-size: 0.875rem;
+.tb-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid transparent;
   cursor: pointer;
-  color: var(--text-primary, #111827);
+  padding: 0;
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+  transition: transform 0.1s, border-color 0.1s;
 }
-.tb-dropdown button:hover {
-  background: var(--hover-bg, rgba(0,0,0,0.04));
-}
-.tb-dropdown button.danger {
-  color: var(--danger, #dc2626);
+.tb-color-swatch:hover { transform: scale(1.08); }
+.tb-color-swatch.is-selected {
+  border-color: var(--text, #1d1d1f);
 }
