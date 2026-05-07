@@ -91,8 +91,20 @@
   // <span class="math-block" contenteditable="false"> so the browser
   // treats the equation as a single atomic unit (delete-as-one,
   // selectable-as-one). Returns the math-field element.
+  //
+  // Caller MUST have awaited netsMathLive.ensureLoaded() — without that,
+  // document.createElement("math-field") returns a generic unknown
+  // element with no MathLive API surface, and subsequent executeCommand
+  // calls throw silently. The async insertSymbol() path below is the
+  // only safe entry point for callers that aren't sure MathLive is up.
   function insertNewFieldAtCaret(editor) {
     if (!editor) return null;
+    if (!window.netsMathLive || !window.netsMathLive.isLoaded()) {
+      // Fail-soft: defer to the async path. Callers that hit this branch
+      // have a bug — but we'd rather no-op than mount a dead widget.
+      // The async insertSymbol() awaits ensureLoaded() and never falls here.
+      return null;
+    }
     const wrap = document.createElement("span");
     wrap.className = "math-block";
     wrap.setAttribute("contenteditable", "false");
@@ -137,8 +149,43 @@
   // is active (e.g. picker opened on plain text and user clicked a tile
   // before placing caret in any equation), mount a new field first then
   // insert the symbol into it.
-  function insertSymbol(entry, useUnicode) {
+  //
+  // Async because field creation MUST wait for the MathLive Web Component
+  // to register — `customElements.get("math-field")` is what makes a
+  // <math-field> element actually have the .executeCommand() / .value
+  // properties. If a tile click races the CDN download (~150KB), we'd
+  // create a dead element. The await on ensureLoaded() is the gate.
+  //
+  // While the load is pending the picker shows a loading hint. If the
+  // load fails (CDN down, SRI mismatch, network), we surface an error
+  // banner instead of silently no-op'ing.
+  async function insertSymbol(entry, useUnicode) {
     if (!STATE.editor) return;
+    if (!window.netsMathLive) return;
+
+    // Gate: wait for MathLive to register the custom element. On first
+    // tile click this resolves after the CDN download completes; on
+    // subsequent clicks ensureLoaded() is a microtask no-op (cached).
+    setHintLoading(true);
+    try {
+      await window.netsMathLive.ensureLoaded();
+    } catch (err) {
+      // CDN unreachable, SRI mismatch, or network error. Surface to the
+      // user and abort the insert — they'll see why nothing happened.
+      setHintError(
+        "Equation editor failed to load. Check your network and try again.",
+      );
+      return;
+    } finally {
+      setHintLoading(false);
+    }
+    if (!window.netsMathLive.isLoaded()) {
+      // Defensive: ensureLoaded resolved but MathfieldElement isn't
+      // registered for some reason. Treat as failure.
+      setHintError("Equation editor failed to initialize.");
+      return;
+    }
+
     let field = STATE.activeMathField;
     if (!field || !field.isConnected) {
       field = insertNewFieldAtCaret(STATE.editor);
@@ -151,7 +198,6 @@
     }
     try {
       if (useUnicode && entry.unicode) {
-        // Insert the literal Unicode glyph as text inside the math expression.
         field.executeCommand(["insert", entry.unicode]);
       } else {
         field.executeCommand([
@@ -161,15 +207,52 @@
         ]);
       }
     } catch (e) {
-      // Fallback: just append the LaTeX to the field's value.
-      field.value = (field.value || "") + entry.latex;
+      // executeCommand failed — should never happen post-ensureLoaded, but
+      // fall back to assigning .value so the user gets *something* rather
+      // than a silent no-op. (.value triggers MathLive's setter which DOES
+      // re-render once the element is registered.)
+      try { field.value = (field.value || "") + entry.latex; } catch (_) {}
     }
     saveRecent(entry.latex);
     if (typeof STATE.onInsert === "function") {
       try { STATE.onInsert(entry.latex, useUnicode ? "unicode" : "latex"); } catch (_) {}
     }
-    // Re-focus the field so the next typing keystroke lands in it.
     try { field.focus(); } catch (_) {}
+  }
+
+  // ── Hint banner ────────────────────────────────────────────────
+  // Helpers that toggle a small status line below the picker grid.
+  // Used during the MathLive lazy-load gate (loading) and on CDN
+  // failure (error). Idempotent — safe to call before the panel is
+  // mounted (no-ops then).
+
+  function setHintLoading(on) {
+    if (!STATE.panel) return;
+    const hint = STATE.panel.querySelector(".equation-picker-hint");
+    if (!hint) return;
+    if (on) {
+      hint.dataset.netsBanner = "loading";
+      hint.innerHTML =
+        '<span class="equation-picker-loading">Loading equation editor…</span>';
+    } else if (hint.dataset.netsBanner === "loading") {
+      delete hint.dataset.netsBanner;
+      restoreDefaultHint(hint);
+    }
+  }
+
+  function setHintError(message) {
+    if (!STATE.panel) return;
+    const hint = STATE.panel.querySelector(".equation-picker-hint");
+    if (!hint) return;
+    hint.dataset.netsBanner = "error";
+    hint.innerHTML =
+      '<span class="equation-picker-error" role="alert">' + escHtml(message) + "</span>";
+  }
+
+  function restoreDefaultHint(hint) {
+    hint.innerHTML =
+      '<span>Click to insert · <kbd>Shift</kbd>+click for Unicode glyph · ' +
+      '<kbd>Esc</kbd> exits the equation · <kbd>Tab</kbd> jumps to next placeholder</span>';
   }
 
   // ── Math-field <-> editor lifecycle wiring ──────────────────────
@@ -589,6 +672,13 @@
 
   function open(opts) {
     const o = opts || {};
+    // Idempotency: if the picker is already open (e.g. user clicked Σ a
+    // second time without closing first), tear down the prior listener
+    // set before attaching new ones. Without this, a sequence of clicks
+    // stacks document-level keydown / mousedown / resize listeners and
+    // close() only removes the latest stored references — earlier
+    // listener instances leak until page reload.
+    if (STATE.isOpen) closePicker();
     if (!STATE.root) renderRoot();
 
     STATE.anchor = o.anchor || null;

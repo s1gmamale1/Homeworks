@@ -378,3 +378,122 @@ def test_serializer_strips_zero_width_spacers():
         "serializer must strip zero-width spacers (U+200B) inserted as "
         "caret targets — otherwise they accumulate in saved block.text"
     )
+
+
+# ── Lazy-load race + listener-leak fixes (review feedback) ──────────
+
+
+def test_insertSymbol_awaits_mathlive_load():
+    """BLOCKING fix from PR #196 review: the picker must `await
+    netsMathLive.ensureLoaded()` BEFORE creating or commanding the
+    math-field. Without the await, a tile click that races the ~150KB
+    MathLive CDN download mounts a generic unknown <math-field> element
+    with no executeCommand / value API, then silently fails.
+
+    Pin three properties of the fix:
+      1. insertSymbol is declared `async`
+      2. insertSymbol contains `await window.netsMathLive.ensureLoaded()`
+      3. insertSymbol checks `window.netsMathLive.isLoaded()` after the await
+         (defensive — the promise can resolve while customElements
+         registration is still pending)
+    """
+    src = _read(PICKER_JS)
+    m = re.search(
+        r"async\s+function\s+insertSymbol\s*\([^)]*\)\s*\{(?P<body>[\s\S]*?)\n\s{2}\}",
+        src,
+    )
+    assert m, "insertSymbol must be declared `async function`"
+    body = m.group("body")
+    assert "await window.netsMathLive.ensureLoaded()" in body, (
+        "insertSymbol must `await window.netsMathLive.ensureLoaded()` "
+        "BEFORE creating or commanding the math-field — otherwise the "
+        "first Σ→tile click before MathLive registers mounts a dead "
+        "element with no API surface."
+    )
+    assert "isLoaded()" in body, (
+        "insertSymbol must double-check isLoaded() after the await "
+        "(customElements registration races a microtask queue tick "
+        "even after the script finishes evaluating)"
+    )
+
+
+def test_insertNewFieldAtCaret_refuses_when_mathlive_unloaded():
+    """The synchronous helper insertNewFieldAtCaret() must fail-soft when
+    netsMathLive isn't loaded — return null instead of mounting a dead
+    custom element. The race-fix path (insertSymbol's await) is the only
+    safe entry point; if a future caller bypasses it, this guard prevents
+    a stranded widget."""
+    src = _read(PICKER_JS)
+    m = re.search(
+        r"function\s+insertNewFieldAtCaret\s*\([^)]*\)\s*\{(?P<body>[\s\S]*?)\n\s{2}\}",
+        src,
+    )
+    assert m, "insertNewFieldAtCaret function not found"
+    body = m.group("body")
+    assert "isLoaded()" in body, (
+        "insertNewFieldAtCaret must check isLoaded() and return null when "
+        "MathLive hasn't registered the custom element yet"
+    )
+
+
+def test_open_idempotency_guards_against_listener_leak():
+    """Non-blocking fix from review: open() called while already-open must
+    tear down prior listeners before attaching new ones. Without this,
+    rapid Σ-clicks stack document/window listeners and only the latest
+    set gets cleaned up by close()."""
+    src = _read(PICKER_JS)
+    m = re.search(
+        r"function\s+open\s*\([^)]*\)\s*\{(?P<body>[\s\S]*?)\n\s{2}\}",
+        src,
+    )
+    assert m, "open function not found"
+    body = m.group("body")
+    # The guard must run BEFORE any listener attachment. Look for an
+    # `if (STATE.isOpen) closePicker()` (or equivalent reset) at the
+    # start of the function body.
+    # Strip JS comments before checking — the early-return guard could
+    # be preceded by an explanatory comment block of arbitrary length.
+    no_comments = re.sub(r"//[^\n]*", "", body)
+    no_comments = re.sub(r"/\*[\s\S]*?\*/", "", no_comments)
+    head = no_comments[:300]
+    assert "STATE.isOpen" in head and "closePicker" in head, (
+        "open() must check STATE.isOpen at entry and call closePicker() "
+        "to reset prior listeners. Without this, repeated Σ clicks leak "
+        "document/window keydown/mousedown/resize listeners."
+    )
+
+
+def test_mathlive_bootstrap_pins_sri_hash():
+    """SRI hash protects against CDN-serving-different-bytes attacks
+    (and version-pin drift). If the version is bumped, the hash MUST
+    be regenerated — pin both that the constant exists and that the
+    script tag carries `integrity = MATHLIVE_SRI`."""
+    src = _read(BOOTSTRAP_JS)
+    m = re.search(r"MATHLIVE_SRI\s*=\s*\"sha384-[A-Za-z0-9+/=]+\"", src)
+    assert m, "MATHLIVE_SRI constant missing or wrong format (need sha384-…)"
+    # The script-injection code must apply the integrity attribute.
+    assert "s.integrity = MATHLIVE_SRI" in src or 'integrity = MATHLIVE_SRI' in src, (
+        "script tag must set integrity = MATHLIVE_SRI so the browser "
+        "rejects modified bytes"
+    )
+
+
+def test_mathlive_bootstrap_waits_for_custom_element_registration():
+    """ensureLoaded() must not resolve on the bare script `load` event —
+    it has to additionally confirm `customElements.get('math-field')`
+    returns the registered constructor. The script can finish evaluating
+    a microtask before the registration completes."""
+    src = _read(BOOTSTRAP_JS)
+    assert 'customElements.get("math-field")' in src or "customElements.get('math-field')" in src, (
+        "ensureLoaded must check window.customElements.get('math-field') "
+        "to confirm registration completed — script onload alone is not "
+        "sufficient"
+    )
+
+
+def test_picker_has_loading_and_error_hint_helpers():
+    """The picker shows a 'Loading…' banner during ensureLoaded() and a
+    user-facing error if the CDN load fails. Pin both helpers exist."""
+    src = _read(PICKER_JS)
+    assert "function setHintLoading" in src
+    assert "function setHintError" in src

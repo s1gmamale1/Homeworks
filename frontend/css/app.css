@@ -3836,6 +3836,39 @@ body:has(.preview-panel:not([hidden])) .fab-add {
     color: var(--text);
 }
 
+/* Lazy-load gate banner: shown while MathLive's CDN bundle is downloading
+   (first picker open). Replaced by the default kbd-hint once ready. */
+.equation-picker-loading {
+    color: var(--text-muted);
+    font-style: italic;
+}
+.equation-picker-loading::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border: 2px solid var(--accent);
+    border-top-color: transparent;
+    border-radius: 50%;
+    vertical-align: middle;
+    animation: equation-picker-spin 700ms linear infinite;
+}
+@keyframes equation-picker-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error banner: shown if MathLive's CDN load fails (network, SRI mismatch,
+   server unreachable). role="alert" on the inner span so screen readers
+   announce it. */
+.equation-picker-error {
+    color: #b91c1c;
+    font-weight: 500;
+}
+[data-theme="dark"] .equation-picker-error {
+    color: #fca5a5;
+}
+
 @media (min-width: 480px) and (max-width: 719px) {
     .equation-picker-panel.is-centered .equation-picker-grid {
         grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));

@@ -37,11 +37,20 @@
   // the editor smoke tests pass.
   const MATHLIVE_VERSION = "0.106.0";
   // MathLive ships mathlive.min.mjs at the package ROOT (no /dist prefix).
-  // Bumping the version: verify the URL still 200s — older releases used
-  // /dist/, newer ones don't. The .mjs is the ES module entry; the
-  // companion .min.js is UMD which doesn't auto-register the custom element.
+  // Bumping the version: verify the URL still 200s, regenerate the SRI
+  // hash with:
+  //   curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+  // The .mjs is the ES module entry; the companion .min.js is UMD which
+  // doesn't auto-register the custom element.
   const MATHLIVE_URL =
     `https://cdn.jsdelivr.net/npm/mathlive@${MATHLIVE_VERSION}/mathlive.min.mjs`;
+  // Subresource Integrity hash. If jsDelivr ever serves modified bytes
+  // (CDN compromise, hash collision, version-pin drift), the browser
+  // refuses the resource and ensureLoaded() rejects → the picker shows
+  // the "Equation editor failed to load" banner instead of executing
+  // hostile code. Mirrors the pattern in katex-render.js.
+  const MATHLIVE_SRI =
+    "sha384-qP+Eb6rfDHT/SaRPQH63rrvl2kEPHjt1qrPX7QV5K6YYNPcSMyRnbACnKBle7kHV";
 
   let loadPromise = null;
   let loadFailed = false;
@@ -56,14 +65,39 @@
       s.type = "module";
       s.src = MATHLIVE_URL;
       s.crossOrigin = "anonymous";
+      s.integrity = MATHLIVE_SRI;
       s.onload = () => {
         // The module export auto-registers the <math-field> custom element.
-        // Give the registration microtask one tick to flush.
-        setTimeout(() => resolve(), 0);
+        // Wait for `customElements.get("math-field")` to confirm the
+        // registration completed — `s.onload` fires the moment the script
+        // *evaluates*, but custom-element registration races a microtask
+        // queue tick. Defensive: poll a few times before giving up.
+        if (typeof window.customElements === "undefined") {
+          // Browser doesn't support custom elements at all (very old).
+          loadFailed = true;
+          reject(new Error("Browser does not support custom elements"));
+          return;
+        }
+        let attempts = 0;
+        (function check() {
+          if (window.customElements.get("math-field")) {
+            resolve();
+            return;
+          }
+          if (++attempts > 50) {
+            loadFailed = true;
+            reject(new Error("MathLive loaded but math-field not registered"));
+            return;
+          }
+          setTimeout(check, 10);
+        })();
       };
       s.onerror = (err) => {
         loadFailed = true;
-        reject(err || new Error("MathLive failed to load"));
+        // SRI mismatch surfaces here as a generic load error. The console
+        // will have the specific reason. The picker's hint banner shows
+        // the user-facing failure message.
+        reject(err instanceof Error ? err : new Error("MathLive failed to load"));
       };
       document.head.appendChild(s);
     });
