@@ -20,6 +20,7 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 | Answer-spec | POST /api/ai/answer-spec/preview |
 | Notebook | POST /api/notebook/grade, GET /api/notebook/captures |
 | Grading | POST /api/grading/aggregate, GET /api/grading/rubric |
+| Equations | POST /api/equations/validate |
 | Meta | GET /api/health, GET /api/subjects, GET /api/fixtures, GET /api/fixtures/{name} |
 | Trash | GET /api/trash |
 | Admin | POST /api/admin/checkpoint |
@@ -1794,3 +1795,157 @@ Query: `window_hours` (1-720, default 24).
   "eval_runs": [...]
 }
 ```
+
+---
+
+## Equations
+
+Companion endpoint to the MathLive equation editor (frontend builder UI).
+Lets clients verify a LaTeX expression is well-formed before it hits storage
+or a downstream renderer (KaTeX, MathML, AI tutor prompts). Pure-Python
+validator in `server/services/latex_validator.py` — no third-party renderer
+dependency, deterministic, fast (<1ms per expression for typical inputs).
+
+**When to call this**
+
+- Before saving a new equation to `block.text` (defense-in-depth — the editor
+  validates client-side via MathLive, but a hostile client could bypass that)
+- Before piping a student-authored or author-authored equation into an AI
+  tutor prompt — the validator surfaces unfilled `\placeholder{}` markers
+  so the AI doesn't try to interpret the literal text
+- Before importing math from an external source (Word `.docx`, scraped HTML)
+
+### POST /api/equations/validate
+
+Request body:
+
+```json
+{
+  "latex": "\\frac{1}{2}",
+  "mode": "inline",
+  "max_length": 2000
+}
+```
+
+| Field | Type | Required | Default | Notes |
+|---|---|---|---|---|
+| `latex` | string | ✅ | — | The LaTeX expression. May or may not include outer `$…$` / `$$…$$` delimiters — if it does, a single matching pair is auto-stripped before validation. |
+| `mode` | `"inline"` \| `"display"` | ❌ | `"inline"` | Currently informational; reserved for future per-mode rules. |
+| `max_length` | int > 0 | ❌ | `2000` | Override the default cap. The hard server-side ceiling is **50 000** chars (request bodies above that 413). |
+
+Extra unknown fields are accepted (`extra="allow"` — Invariant 1) so older
+servers can talk to newer clients without breaking.
+
+**Response (always 200, except 413 / 422 — see below):**
+
+```json
+{
+  "valid": true,
+  "latex": "\\frac{1}{2}",
+  "mode": "inline",
+  "length": 12,
+  "macros": ["frac"],
+  "placeholders": 0,
+  "depth": 1,
+  "warnings": [],
+  "error": null,
+  "message": null,
+  "position": null
+}
+```
+
+| Field | Type | Always present? | Meaning |
+|---|---|---|---|
+| `valid` | bool | ✅ | The only field clients MUST inspect. `true` = LaTeX passed every check. |
+| `latex` | string | ✅ | Input with outer `$`-delimiters stripped. |
+| `mode` | string | ✅ | Echoed back. |
+| `length` | int | ✅ | Char count after stripping delimiters. |
+| `macros` | string[] | ✅ | Sorted, deduplicated list of `\name` macros used. |
+| `placeholders` | int | ✅ | Number of `\placeholder{}` markers (MathLive cells the author hasn't filled). |
+| `depth` | int | ✅ | Maximum brace nesting depth — useful as a "complex equation" signal. |
+| `warnings` | string[] | ✅ | Non-fatal advisories (e.g., "latex has 2 unfilled `\placeholder{}` markers"). |
+| `error` | string \| null | ✅ | Error code when `valid=false`; `null` otherwise. |
+| `message` | string \| null | ✅ | Human-readable description of the error. |
+| `position` | int \| null | ✅ | 0-based byte offset of the offending char in the cleaned LaTeX. |
+
+**Error codes** (in `error` field, response stays 200):
+
+| `error` | Triggers when |
+|---|---|
+| `empty` | LaTeX is empty or whitespace-only after stripping delimiters |
+| `too_long` | LaTeX exceeds `max_length` |
+| `script_tag` | Input contains `<script>` / `</script>` (case-insensitive) |
+| `latex_include` | `\input{…}` or `\include{…}` (file-inclusion macros) |
+| `latex_shell_escape` | `\write18{…}` (shell-escape macro) |
+| `href_macro` | `\href{…}{…}` (would inject clickable links into rendered output) |
+| `unbalanced_braces` | `{` / `}` / `[` / `]` / `(` / `)` mismatch — `position` points at the offender |
+| `unbalanced_environments` | `\begin{X}` without matching `\end{X}` (or wrong nesting) |
+| `type_error` | Service-level fallback if non-string value slips through (Pydantic 422 normally catches it first) |
+
+**HTTP status codes**
+
+| Code | When |
+|---|---|
+| 200 | Always — including for `valid=false`. Clients inspect `body.valid`, not the status. |
+| 413 | Payload exceeds the 50 000-char hard ceiling — pathological input, treated as client misuse. |
+| 422 | Request body fails Pydantic schema validation (missing `latex`, wrong type, etc.). |
+
+**Examples**
+
+Valid simple expression:
+
+```bash
+$ curl -sX POST http://localhost:8000/api/equations/validate \
+    -H 'Content-Type: application/json' \
+    -d '{"latex": "\\sqrt{x^2 + y^2}"}' | jq
+{
+  "valid": true,
+  "latex": "\\sqrt{x^2 + y^2}",
+  "mode": "inline",
+  "length": 16,
+  "macros": ["sqrt"],
+  "placeholders": 0,
+  "depth": 1,
+  "warnings": [],
+  "error": null,
+  "message": null,
+  "position": null
+}
+```
+
+Unbalanced braces:
+
+```bash
+$ curl -sX POST http://localhost:8000/api/equations/validate \
+    -H 'Content-Type: application/json' \
+    -d '{"latex": "\\frac{1"}' | jq '.valid, .error, .message, .position'
+false
+"unbalanced_braces"
+"unclosed '{'"
+6
+```
+
+Unfilled MathLive placeholders (warning, not error):
+
+```bash
+$ curl -sX POST http://localhost:8000/api/equations/validate \
+    -H 'Content-Type: application/json' \
+    -d '{"latex": "\\frac{\\placeholder{}}{\\placeholder{}}"}' | jq '.valid, .placeholders, .warnings'
+true
+2
+[
+  "latex has 2 unfilled \\placeholder{} marker(s) — MathLive cells the author hasn't typed into yet"
+]
+```
+
+Security guard:
+
+```bash
+$ curl -sX POST http://localhost:8000/api/equations/validate \
+    -H 'Content-Type: application/json' \
+    -d '{"latex": "<script>alert(1)</script>"}' | jq '.valid, .error'
+false
+"script_tag"
+```
+
+**Tests**: see `tests/test_equations_validate_endpoint.py` (46 cases).

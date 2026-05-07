@@ -43,6 +43,7 @@ _ROUTER_PREFIXES: dict[str, str] = {
     "ai.py":            "/api",
     "ai_plan5.py":      "/api",
     "ai_plan8.py":      "/api",
+    "equations.py":     "/api",
     "grading.py":       "/api/grading",
     "homework.py":      "/api/homeworks",
     "homework_page.py": "",
