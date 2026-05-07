@@ -64,7 +64,14 @@
     ],
     throwOnError: false,
     ignoredTags: ['script','noscript','style','textarea','pre','code','option','input'],
-    ignoredClasses: ['katex','katex-display','no-math','rich-field','mono-input'],
+    // Skip every contenteditable rich-editor surface — the MathLive equation
+    // editor mounts <math-field> elements inside these editors and renders
+    // its own equations; KaTeX must not double-render the surrounding LaTeX
+    // text or wrap math-field children with KaTeX HTML.
+    //   - rich-field      : compact editor wrapper (_rich-field.js)
+    //   - js-rich-editor  : Preview phase editor (preview.js)
+    //   - js-rich-mini    : compact contenteditable used by every other phase
+    ignoredClasses: ['katex','katex-display','no-math','rich-field','js-rich-editor','js-rich-mini','mono-input'],
   };
 
   function isInsideEditable(el) {

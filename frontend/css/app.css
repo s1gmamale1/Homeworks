@@ -3538,3 +3538,324 @@ body:has(.preview-panel:not([hidden])) .fab-add {
   }
 }
 
+/* ==========================================================================
+   Equation Picker + Math Block (MathLive integration)
+   ==========================================================================
+   The math-block is an inline atomic widget mounted inside the rich editor
+   (contenteditable=false so the browser deletes it as one unit). The
+   <math-field> Web Component lives inside it. The picker's surface adapts
+   to viewport: anchored popover (>=720px), centered modal (480-720px),
+   bottom sheet (<480px). All colors come from project CSS variables so
+   dark mode works automatically.
+   ========================================================================== */
+
+.math-block {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 2px;
+    padding: 1px 4px;
+    border-radius: 6px;
+    background: rgba(0, 122, 255, 0.06);
+    border: 1px solid rgba(0, 122, 255, 0.18);
+    transition: background 120ms, border-color 120ms;
+    line-height: 1.2;
+    user-select: none;
+}
+.math-block:hover {
+    background: rgba(0, 122, 255, 0.12);
+    border-color: rgba(0, 122, 255, 0.32);
+}
+.math-block:focus-within {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.math-block math-field {
+    font-size: 16px;
+    min-width: 28px;
+    /* MathLive renders into a Shadow DOM — most styling lives there. The
+       outer math-block handles framing + focus state; this inner rule only
+       sets the typographic baseline and removes the field's own border. */
+    border: 0;
+    background: transparent;
+    outline: none;
+    pointer-events: auto;
+    user-select: text;
+}
+[data-theme="dark"] .math-block {
+    background: rgba(0, 122, 255, 0.10);
+    border-color: rgba(0, 111, 224, 0.35);
+}
+[data-theme="dark"] .math-block:focus-within {
+    background: rgba(0, 111, 224, 0.20);
+    border-color: var(--accent);
+}
+
+.equation-picker-root {
+    position: fixed;
+    inset: 0;
+    z-index: 320;
+    pointer-events: none;
+}
+.equation-picker-root[hidden] { display: none !important; }
+
+.equation-picker-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 180ms ease;
+    pointer-events: none;
+}
+.equation-picker-root.is-centered .equation-picker-backdrop,
+.equation-picker-root.is-sheet .equation-picker-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.equation-picker-panel {
+    position: absolute;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform-origin: top left;
+    animation: equation-picker-pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes equation-picker-pop {
+    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+@keyframes equation-picker-sheet-slide {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+.equation-picker-panel.is-popover {
+    width: min(560px, calc(100vw - 24px));
+    max-height: min(540px, calc(100vh - 80px));
+}
+.equation-picker-panel.is-centered {
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, calc(100vw - 32px));
+    max-height: calc(100vh - 64px);
+    transform-origin: center;
+    animation: equation-picker-pop 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.equation-picker-panel.is-sheet {
+    left: 0; right: 0; bottom: 0;
+    width: 100%;
+    max-height: 80vh;
+    border-radius: 18px 18px 0 0;
+    transform: none;
+    transform-origin: bottom center;
+    animation: equation-picker-sheet-slide 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.equation-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 8px 18px;
+    border-bottom: 1px solid var(--border-light);
+}
+.equation-picker-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+.equation-picker-header-actions {
+    display: flex; align-items: center; gap: 6px;
+}
+.equation-picker-codeview {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: background 120ms, color 120ms, border-color 120ms;
+}
+.equation-picker-codeview:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+.equation-picker-codeview[aria-pressed="true"] {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+.equation-picker-close {
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 22px;
+    line-height: 1;
+    transition: background 120ms, color 120ms;
+}
+.equation-picker-close:hover {
+    background: var(--accent-light);
+    color: var(--accent);
+}
+
+.equation-picker-search {
+    padding: 10px 16px 6px 16px;
+}
+.equation-picker-search-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 120ms, box-shadow 120ms;
+}
+.equation-picker-search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.equation-picker-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 6px 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border-light);
+    scrollbar-width: thin;
+}
+.equation-picker-tab {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border-radius: 8px;
+    transition: background 120ms, color 120ms;
+    white-space: nowrap;
+}
+.equation-picker-tab:hover { color: var(--text); background: var(--accent-light); }
+.equation-picker-tab.is-active {
+    color: white;
+    background: var(--accent);
+}
+
+.equation-picker-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px 12px 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 6px;
+    align-content: start;
+}
+
+.equation-picker-tile {
+    min-height: 64px;
+    padding: 8px 6px 6px 6px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: background 120ms, border-color 120ms, transform 80ms;
+    text-align: center;
+    overflow: hidden;
+}
+.equation-picker-tile:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+}
+.equation-picker-tile:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+.equation-picker-tile:active { transform: scale(0.96); }
+
+.equation-picker-tile-glyph {
+    font-size: 18px;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.equation-picker-tile-glyph .katex { font-size: 1em; }
+.equation-picker-tile-glyph .katex-display { margin: 0; }
+.equation-picker-tile-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.equation-picker-empty {
+    grid-column: 1 / -1;
+    padding: 32px 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.equation-picker-hint {
+    padding: 8px 16px 12px 16px;
+    font-size: 11px;
+    color: var(--text-subtle);
+    border-top: 1px solid var(--border-light);
+    line-height: 1.5;
+}
+.equation-picker-hint kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+@media (min-width: 480px) and (max-width: 719px) {
+    .equation-picker-panel.is-centered .equation-picker-grid {
+        grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+    }
+}
+@media (max-width: 479px) {
+    .equation-picker-panel.is-sheet .equation-picker-tab {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+    .equation-picker-panel.is-sheet .equation-picker-grid {
+        grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+        padding: 12px 12px 18px 12px;
+        gap: 8px;
+    }
+    .equation-picker-panel.is-sheet .equation-picker-tile {
+        min-height: 72px;
+    }
+    .equation-picker-panel.is-sheet .equation-picker-hint {
+        display: none;
+    }
+}
+

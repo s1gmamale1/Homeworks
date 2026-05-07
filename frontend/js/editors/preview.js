@@ -377,6 +377,146 @@
       .join("");
   }
 
+  // ── Math hydration: $LaTeX$ text → <math-field> WYSIWYG widgets ──
+  //
+  // Storage stays as plain $LaTeX$ / $$LaTeX$$ text (the runtime renders
+  // these via the existing KaTeX bootstrap). Inside the builder editor we
+  // upgrade them to MathLive <math-field> widgets so authors edit a real
+  // fraction with placeholder boxes instead of typing \frac{a}{b}.
+  //
+  // Regex: matches $...$ and $$...$$, ignoring escaped \$. Greedy on display
+  // ($$..$$), non-greedy on inline ($..$). Empty bodies are skipped — they
+  // would only confuse MathLive.
+  const _MATH_DELIM_RE = /\$\$([^$]+)\$\$|(?<!\\)\$([^$]+?)(?<!\\)\$/g;
+
+  function hydrateMathInElement(host) {
+    if (!host) return;
+    if (typeof window.netsMathLive === "undefined") return;
+    // Walk text nodes only — never re-process inside an existing math-field
+    // (already a widget) or inside a contenteditable=false block (image-wrap,
+    // svg-wrap, math-block — those carry their own contract).
+    const SKIP = new Set(["MATH-FIELD", "SCRIPT", "STYLE", "TEXTAREA", "PRE", "CODE"]);
+    const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        let cur = node.parentNode;
+        while (cur && cur !== host) {
+          if (cur.nodeType === 1) {
+            if (SKIP.has(cur.tagName)) return NodeFilter.FILTER_REJECT;
+            if (cur.classList && cur.classList.contains("math-block")) return NodeFilter.FILTER_REJECT;
+            if (cur.getAttribute && cur.getAttribute("contenteditable") === "false") return NodeFilter.FILTER_REJECT;
+          }
+          cur = cur.parentNode;
+        }
+        return /\$\$?[^$]+\$\$?/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    });
+    const targets = [];
+    let n;
+    while ((n = walker.nextNode())) targets.push(n);
+    if (!targets.length) return;
+    // Lazy-load MathLive once we know we have something to hydrate.
+    window.netsMathLive.ensureLoaded().catch(() => {/* graceful fallback */});
+
+    for (const textNode of targets) {
+      const text = textNode.nodeValue;
+      const frag = document.createDocumentFragment();
+      let lastIdx = 0;
+      _MATH_DELIM_RE.lastIndex = 0;
+      let m;
+      while ((m = _MATH_DELIM_RE.exec(text)) !== null) {
+        const [match, dispBody, inlineBody] = m;
+        const body = (dispBody || inlineBody || "").trim();
+        if (!body) continue;
+        const isDisplay = !!dispBody;
+        if (m.index > lastIdx) {
+          frag.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
+        }
+        const wrap = document.createElement("span");
+        wrap.className = "math-block";
+        wrap.setAttribute("contenteditable", "false");
+        const field = window.netsMathLive.makeField({ value: body });
+        if (isDisplay) field.dataset.displayMode = "true";
+        wrap.appendChild(field);
+        frag.appendChild(wrap);
+        // Bind events so edits to the field bubble as `input` to the host editor.
+        if (window.EquationPicker && typeof window.EquationPicker.bindFieldEvents === "function") {
+          // host editor is the closest ancestor with class js-rich-editor.
+          const ed = wrap.closest && wrap.closest(".js-rich-editor");
+          if (ed) window.EquationPicker.bindFieldEvents(field, ed);
+        }
+        lastIdx = m.index + match.length;
+      }
+      if (lastIdx === 0) continue; // no replacements
+      if (lastIdx < text.length) {
+        frag.appendChild(document.createTextNode(text.slice(lastIdx)));
+      }
+      textNode.parentNode.replaceChild(frag, textNode);
+    }
+  }
+
+  // ── Math serialization: <math-field> → $LaTeX$ text on save ─────
+  //
+  // Build a DOM snapshot of the editor where every <span.math-block> has
+  // been replaced with a plain text node carrying $LaTeX$ ($$..$$ for
+  // display mode). The snapshot is a fresh <div> we can hand to
+  // htmlToBlocks; the live editor is left untouched.
+  //
+  // We can't simply cloneNode() the editor because the cloned <math-field>
+  // loses its custom-element state — `clone.value` is undefined. Instead
+  // we walk the live editor's childNodes, copy each one shallowly, and
+  // splice math-block contents inline as we go.
+  function snapshotForSerialize(editor) {
+    if (!editor) return editor;
+    const out = document.createElement("div");
+    function walk(srcParent, dstParent) {
+      for (const child of Array.from(srcParent.childNodes)) {
+        if (child.nodeType === 1
+            && child.classList
+            && child.classList.contains("math-block")) {
+          const field = child.querySelector("math-field");
+          let latex = "";
+          if (field) {
+            // Live custom element — read .value (MathLive's getter).
+            try { latex = String(field.value || ""); } catch (_) { latex = ""; }
+            if (!latex) latex = field.getAttribute("value") || "";
+          }
+          latex = latex.trim();
+          if (!latex) continue;
+          const isDisplay = (field && field.dataset && field.dataset.displayMode === "true")
+            || /^\\begin\{(pmatrix|bmatrix|vmatrix|cases|aligned|gather)\}/.test(latex);
+          dstParent.appendChild(
+            document.createTextNode(isDisplay ? "$$" + latex + "$$" : "$" + latex + "$"),
+          );
+          continue;
+        }
+        if (child.nodeType === 3) {
+          dstParent.appendChild(document.createTextNode(child.nodeValue || ""));
+          continue;
+        }
+        if (child.nodeType !== 1) continue;
+        // Element: clone the wrapper shallowly, recurse into its children.
+        const wrap = child.cloneNode(false);
+        // Strip the zero-width spacer text we use as a caret-target after
+        // a math-block insert so it doesn't pollute saved text.
+        if (wrap.tagName === "MATH-FIELD") {
+          // Stray field outside a wrap — should never happen, but recover.
+          let v = "";
+          try { v = String(child.value || ""); } catch (_) {}
+          if (v.trim()) {
+            dstParent.appendChild(document.createTextNode("$" + v.trim() + "$"));
+          }
+          continue;
+        }
+        dstParent.appendChild(wrap);
+        walk(child, wrap);
+      }
+    }
+    walk(editor, out);
+    // Strip zero-width spacers used during insertion.
+    out.innerHTML = (out.innerHTML || "").replace(/​/g, "");
+    return out;
+  }
+
   function isBlank(node) {
     if (!node) return true;
     if (node.nodeType === 3) return !String(node.textContent || "").trim();
@@ -585,6 +725,7 @@
         <button type="button" class="js-rich-btn" data-cmd="ul" title="Bullet list">• List</button>
         <button type="button" class="js-rich-btn" data-cmd="ol" title="Numbered list">1. List</button>
         <span class="rich-sep"></span>
+        <button type="button" class="js-rich-btn rich-btn-wide" data-cmd="equation" title="Insert equation (Σ)" aria-haspopup="dialog">Σ Math</button>
         <button type="button" class="js-rich-btn rich-btn-wide" data-cmd="image" title="Insert image">🖼 Image</button>
         <button type="button" class="js-rich-btn rich-btn-wide" data-cmd="svg" title="Insert SVG">◆ SVG</button>
       </div>
@@ -926,6 +1067,13 @@
                 </div>`
           }
         </div>`;
+      // After every paint, hydrate $LaTeX$ text inside the rich editors
+      // into <math-field> WYSIWYG widgets. Idempotent — already-hydrated
+      // text stays inside math-block wrappers which the walker skips.
+      const editors = container.querySelectorAll(".js-rich-editor");
+      editors.forEach((ed) => {
+        try { hydrateMathInElement(ed); } catch (_) {}
+      });
     }
 
     function panelIndexOf(el) {
@@ -939,7 +1087,13 @@
       const pi = Number(editor.dataset.panelIndex);
       const gi = Number(editor.dataset.pageIndex);
       if (Number.isNaN(pi) || Number.isNaN(gi)) return;
-      const blocks = htmlToBlocks(editor);
+      // Take a snapshot where math-blocks have been collapsed into $LaTeX$
+      // text BEFORE running htmlToBlocks. This keeps storage compatible
+      // with the existing runtime KaTeX render path — no schema change.
+      const snap = (typeof snapshotForSerialize === "function")
+        ? snapshotForSerialize(editor)
+        : editor;
+      const blocks = htmlToBlocks(snap);
       state.panels[pi].pages[gi].blocks = blocks;
       emit();
     }
@@ -1035,6 +1189,33 @@
           r2.collapse(true);
           sel.addRange(r2);
         }
+      } else if (cmd === "equation") {
+        // Open the MathLive picker. If the caret is inside an existing
+        // math-field, the picker targets it (insert symbol into existing
+        // equation). Otherwise the picker mounts a fresh math-field at
+        // the caret on the first tile click.
+        if (!window.EquationPicker || !window.EquationSymbols || !window.netsMathLive) {
+          // Fail-soft: dependent module missing — do nothing rather than
+          // alert. Static cache-bust tests verify these are loaded.
+          return;
+        }
+        const card = editor.closest(".page-card");
+        const trigger = card && card.querySelector('.js-rich-btn[data-cmd="equation"]');
+        // Pre-check: if the caret currently sits inside a math-field, hand
+        // that field to the picker so tile clicks insert into it instead
+        // of mounting a new equation.
+        let activeMathField = null;
+        if (document.activeElement && document.activeElement.tagName === "MATH-FIELD"
+            && editor.contains(document.activeElement)) {
+          activeMathField = document.activeElement;
+        }
+        window.EquationPicker.open({
+          anchor: trigger || editor,
+          editor,
+          activeMathField,
+          onInsert: () => syncEditor(editor),
+        });
+        return;
       } else if (cmd === "image") {
         // Save selection BEFORE the modal opens.
         const savedRange = saveSelection(editor);
