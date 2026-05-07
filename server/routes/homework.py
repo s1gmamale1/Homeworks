@@ -146,6 +146,26 @@ def _normalize_boss_question_ids(content: Any) -> None:
             item["id"] = f"bq_{i}"
 
 
+def _normalize_boss_question_advisory_levels(content: Any) -> None:
+    """Convert empty advisory dropdown values to null before schema validation.
+
+    The boss editor uses "" internally to render the "use default" option for
+    PISA/Bloom advisory dropdowns. The persisted API contract is null-or-enum.
+    """
+    if not isinstance(content, dict):
+        return
+    bq = content.get("boss_questions")
+    if not isinstance(bq, list):
+        return
+    for item in bq:
+        if not isinstance(item, dict):
+            continue
+        if item.get("pisa_level") == "":
+            item["pisa_level"] = None
+        if item.get("bloom_level") == "":
+            item["bloom_level"] = None
+
+
 class HomeworkCreate(BaseModel):
     title: str
     subject: str
@@ -241,6 +261,8 @@ async def create_homework(hw: HomeworkCreate):
     if hw.content_json and "meta" in hw.content_json:
       final_content["meta"] = {**empty_scaffold["meta"], **hw.content_json["meta"]}
 
+    _normalize_boss_question_advisory_levels(final_content)
+
     # PR 2 — reject inline base64 / oversized text fields at the write boundary.
     # New rows must be clean; existing rows are not affected (this only fires
     # on POST/PUT/PATCH).
@@ -289,6 +311,7 @@ async def update_homework(hw_id: str, hw_update: HomeworkUpdate):
         return hw
 
     if "content_json" in updates:
+        _normalize_boss_question_advisory_levels(updates["content_json"])
         _validate_content_json(updates["content_json"])
         # PR 2 — bloat check on the FULL content_json (PUT is full overwrite).
         _check_no_inline_bloat(updates["content_json"])
@@ -314,6 +337,7 @@ async def patch_homework_content(hw_id: str, body: ContentPatch):
 
     existing = hw.get("content_json") or {}
     merged = _deep_merge_content(existing, body.content_json)
+    _normalize_boss_question_advisory_levels(merged)
     # Validate the *merged* result, not just the patch — otherwise an
     # accidental key drop in the patch wouldn't be caught.
     _validate_content_json(merged)

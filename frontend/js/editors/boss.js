@@ -258,8 +258,15 @@
     return normalizeQuestion({});
   }
 
+  function sanitizeQuestionForEmit(question) {
+    const out = clone(question);
+    out.pisa_level = PISA_LEVELS.includes(out.pisa_level) ? out.pisa_level : null;
+    out.bloom_level = BLOOM_LEVELS.includes(out.bloom_level) ? out.bloom_level : null;
+    return out;
+  }
+
   function emit(state, onChange) {
-    onChange(clone(state));
+    onChange(state.map(sanitizeQuestionForEmit));
   }
 
   function renderDamageOptions(active) {

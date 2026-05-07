@@ -164,3 +164,50 @@ def test_patch_content_preserves_dynamic_boss_flag_inside_boss_meta(client):
     assert boss_meta["boss_type"] == "sub"
     assert boss_meta["grade_band"] == "g6_8"
     assert boss_meta["use_dynamic_boss"] is True
+
+
+def test_put_content_normalizes_empty_boss_advisory_levels(client):
+    create = client.post(
+        "/api/homeworks",
+        json={
+            "title": "Boss advisory PUT smoke",
+            "subject": "math-algebra",
+            "grade": 8,
+            "mode": "hard",
+        },
+    )
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    put = client.put(
+        f"/api/homeworks/{hw_id}",
+        json={
+            "content_json": {
+                "meta": {
+                    "title": "Boss advisory PUT smoke",
+                    "subject_display": "Algebra",
+                    "section": "",
+                    "cefr_level": "",
+                },
+                "boss_meta": {
+                    "boss_type": "sub",
+                    "grade_band": "g6_8",
+                    "use_dynamic_boss": False,
+                },
+                "boss_questions": [
+                    {
+                        "q": "Solve x^2 = 4",
+                        "ans": ["2", "-2"],
+                        "dmg": 10,
+                        "pisa_level": "",
+                        "bloom_level": "",
+                    }
+                ],
+            }
+        },
+    )
+
+    assert put.status_code == 200, put.text
+    question = put.json()["content_json"]["boss_questions"][0]
+    assert question["pisa_level"] is None
+    assert question["bloom_level"] is None
