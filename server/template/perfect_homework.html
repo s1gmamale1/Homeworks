@@ -5407,6 +5407,33 @@
         }
         .boss-feedback.correct { background: rgba(53,198,111,0.12); color: #117a3d; }
         .boss-feedback.wrong { background: rgba(239,107,115,0.1); color: #b03a44; }
+        /* Pre-verdict loading state — shown immediately on submit while we
+           await the AI grader. Pre-fix code reused `.boss-feedback.wrong`
+           (red + ✗) here, which pre-empts the verdict and tells the
+           student they got it wrong before grading even ran. Loading is
+           blue/neutral and pairs with a small spinner. */
+        .boss-feedback.loading {
+            background: rgba(99, 184, 255, 0.10);
+            color: #1e4f7a;
+            border: 1px solid rgba(99, 184, 255, 0.28);
+        }
+        .boss-feedback.loading::before {
+            content: '';
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            margin-right: 8px;
+            vertical-align: -2px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 102, 204, 0.18);
+            border-top-color: var(--accent, #0066cc);
+            animation: rlSpin 700ms linear infinite;
+        }
+        [data-theme="dark"] .boss-feedback.loading {
+            background: rgba(99, 184, 255, 0.18);
+            color: #93c5fd;
+            border-color: rgba(99, 184, 255, 0.35);
+        }
 
         /* ── Non-color correctness affordances ──────────────────────
            Color alone fails WCAG 1.4.1 for the ~8% of red-green
@@ -9191,6 +9218,7 @@
                 'boss.correct_hp':       "✓ To'g'ri! −",
                 'boss.combo_hp':         '🔥 COMBO ×2! −',
                 'boss.wrong_ai':         "✗ Noto'g'ri. AI tahlil qilmoqda...",
+                'boss.checking':         "Tekshirilmoqda…",
                 'boss.wrong_next':       "✗ Noto'g'ri. Keyingi savolga o'ting.",
                 'boss.combo_x2':         '🔥 Combo ×2!',
                 'boss.combo_streak':     'ketma-ket',
@@ -9524,6 +9552,7 @@
                 'boss.correct_hp':       '✓ Верно! −',
                 'boss.combo_hp':         '🔥 КОМБО ×2! −',
                 'boss.wrong_ai':         '✗ Неверно. AI анализирует...',
+                'boss.checking':         'Проверяется…',
                 'boss.wrong_next':       '✗ Неверно. Переходите к следующему вопросу.',
                 'boss.combo_x2':         '🔥 Комбо ×2!',
                 'boss.combo_streak':     'подряд',
@@ -9855,6 +9884,7 @@
                 'boss.correct_hp':       '✓ Correct! −',
                 'boss.combo_hp':         '🔥 COMBO ×2! −',
                 'boss.wrong_ai':         '✗ Wrong. AI analyzing...',
+                'boss.checking':         'Checking…',
                 'boss.wrong_next':       '✗ Wrong. Move to the next question.',
                 'boss.combo_x2':         '🔥 Combo ×2!',
                 'boss.combo_streak':     'in a row',
@@ -18701,8 +18731,14 @@ Prezident ertaga hisobot kutmoqda.`,
             const questionId = q ? (q.question_id || q.id) : null;
             const fb = document.getElementById('boss-feedback');
             if (inp) inp.disabled = true;
-            // Tentative "thinking..." UI while we await the server.
-            if (fb) { fb.className = 'boss-feedback wrong'; fb.textContent = RT('boss.wrong_ai'); }
+            // Loading state while we await the server. Pre-fix code reused
+            // the red `.boss-feedback.wrong` class with text `✗ Noto'g'ri.
+            // AI tahlil qilmoqda...` here — that pre-empts the verdict
+            // before the AI has decided. Now use the neutral blue
+            // `.boss-feedback.loading` (with spinner glyph) and a clean
+            // "Tekshirilmoqda…" message; the wrong branch only fires in
+            // bossHandleResponse() AFTER the AI confirms wrong.
+            if (fb) { fb.className = 'boss-feedback loading'; fb.textContent = RT('boss.checking'); }
 
             bossState.busy = true;
             const attemptNumber = (bossState.attemptsUsed || 0) + 1;

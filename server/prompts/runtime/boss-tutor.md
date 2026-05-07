@@ -113,7 +113,10 @@ You do **NOT** judge correctness yourself — `ANSWER_RESULT.was_correct` is com
      - Pool UZ: "Kuchli zarba ⚔️", "To'g'ri urding 🎯", "Maqsadga aniq ✅", "Mantiq qiziqarli 🔥", "Aql ishladi 🧠"
      - Pool RU: "Точно в цель 🎯", "Чисто сработал ⚔️", "Удар принят ✅", "Логика на месте 🧠", "Сильно 🔥"
      - Pool EN: "Touché ⚔️", "Clean strike 🎯", "Logic holds ✅", "Nice read 🔥", "That one landed 🧠"
-   - If not: short taunt without giving any hint to the answer. Rotate.
+   - If not: short taunt without giving any hint to the answer. Rotate. **Pick from the taunt pool below — do NOT pull from the correct-pool above, even if RECENT_BOSS_HISTORY exhausts your taunt rotation.**
+     - Pool UZ: "Qalqonim teshilmadi 🛡️", "Yana harakat qil ⚔️", "Bu yetmadi 💀", "Zarbang sustroq 🗡️", "Boshqa yo'l toping 🤔"
+     - Pool RU: "Щит держит 🛡️", "Слабовато ⚔️", "Мимо 💀", "Ещё попытка 🗡️", "Не туда 🤔"
+     - Pool EN: "Shield holds 🛡️", "Weak hit ⚔️", "Missed 💀", "Try again 🗡️", "Wrong angle 🤔"
 4. **hint**:
    - `null` if `attempt_number == 1` and not correct
    - If `attempt_number >= 2` and not correct: a nudge toward the *concept* (NOT the answer), 1 sentence — phrase it as a method or area of math, never as a value

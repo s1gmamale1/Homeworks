@@ -456,3 +456,89 @@ def test_bottom_action_button_hidden_during_question_loop(template_html):
         "rlShowClosure must un-hide #action-button (display: '') so the student can advance "
         "to the next phase."
     )
+
+
+# ── Boss submit loading state ────────────────────────────────────────────
+
+
+def test_boss_submit_shows_loading_not_premature_wrong(template_html):
+    """Pre-fix Boss submit reused `.boss-feedback.wrong` (red) + text
+    `✗ Noto'g'ri. AI tahlil qilmoqda...` immediately on submit, BEFORE
+    awaiting the AI verdict. The wrong branch must only fire AFTER the AI
+    returns a wrong verdict (in bossHandleResponse).
+
+    Asserts the new neutral `.boss-feedback.loading` class + `boss.checking`
+    translation key are wired correctly.
+    """
+    body = _extract_function_body(template_html, "bossHandleAction")
+    pre_await = body.split("bossState.busy = true")[0]
+
+    assert "'boss-feedback wrong'" not in pre_await and \
+           '"boss-feedback wrong"' not in pre_await, (
+        "bossHandleAction's pre-await UI must not set `.boss-feedback.wrong` — "
+        "applied before the AI has decided. Use `.boss-feedback.loading`."
+    )
+    assert "'boss-feedback loading'" in pre_await or \
+           '"boss-feedback loading"' in pre_await, (
+        "bossHandleAction's pre-await UI must set `.boss-feedback.loading`."
+    )
+    assert "RT('boss.wrong_ai')" not in pre_await and \
+           'RT("boss.wrong_ai")' not in pre_await, (
+        "bossHandleAction's pre-await UI must not use `boss.wrong_ai`."
+    )
+    assert "RT('boss.checking')" in pre_await or \
+           'RT("boss.checking")' in pre_await, (
+        "bossHandleAction's pre-await UI must use `boss.checking`."
+    )
+    assert ".boss-feedback.loading" in template_html, (
+        "Missing `.boss-feedback.loading` CSS rule."
+    )
+    assert re.search(
+        r"\.boss-feedback\.loading\s*\{[^}]*background:\s*rgba\(99,\s*184,\s*255",
+        template_html,
+    ), ".boss-feedback.loading must use blue, not red."
+    count = template_html.count("'boss.checking':") + template_html.count('"boss.checking":')
+    assert count >= 3, (
+        f"`boss.checking` translation key must appear in all 3 locales; found {count}."
+    )
+
+
+# ── Boss-tutor prompt taunt pool ─────────────────────────────────────────
+
+
+def test_boss_tutor_prompt_has_explicit_taunt_pool_for_wrong_branch():
+    """boss-tutor.md must declare a concrete TAUNT POOL for `was_correct:
+    false` (mirroring the praise pool's structure). Pre-fix the wrong
+    branch was just `"short taunt … Rotate"` with no pool, so the LLM
+    leaked praise-pool phrases like "Mantiq qiziqarli 🔥" onto wrong-
+    verdict responses."""
+    prompt_path = (
+        Path(__file__).resolve().parent.parent
+        / "server" / "prompts" / "runtime" / "boss-tutor.md"
+    )
+    prompt = prompt_path.read_text(encoding="utf-8")
+
+    m = re.search(
+        r"If not[^:]*:.*?(?=\n\s*\d\.|\n##|\Z)",
+        prompt,
+        re.DOTALL | re.IGNORECASE,
+    )
+    assert m, (
+        "Couldn't locate the `If not` (wrong-branch) section in boss-tutor.md."
+    )
+    wrong_branch_text = m.group(0)
+
+    for locale in ("UZ", "RU", "EN"):
+        assert re.search(
+            rf"Pool\s+{locale}:.+?\".+?\".+?\".+?\"",
+            wrong_branch_text,
+            re.DOTALL,
+        ), (
+            f"Missing `Pool {locale}:` taunt list under the `If not` "
+            f"(wrong) branch in boss-tutor.md."
+        )
+
+    # Praise pool must STILL be present.
+    assert "Mantiq qiziqarli" in prompt, (
+        "Praise pool was accidentally removed while adding the taunt pool."
+    )
