@@ -36,6 +36,11 @@ _MAX_PHASE_SUMMARIES = 8
 _MAX_TOPICS = 12
 _MAX_ASKED_QUESTIONS_IN_CTX = 10
 _MAX_QUESTION_TEXT_LEN = 600
+_MAX_AUTHORED_STEMS_IN_CTX = 10
+
+# Discrete difficulty buckets — used here for authored_difficulty inference,
+# imported by boss_dynamic.py for the per-skill difficulty floor clamp.
+_DIFFICULTY_RANK = {"easy": 0, "medium": 1, "hard": 2}
 
 
 @dataclass
@@ -53,6 +58,8 @@ class BossContext:
     recent_boss_phrases: list[str] = field(default_factory=list)
     boss_policy: dict[str, Any] = field(default_factory=dict)
     missing_context_flags: list[str] = field(default_factory=list)
+    authored_question_stems: list[dict[str, Any]] = field(default_factory=list)
+    authored_difficulty_floor: Optional[str] = None  # "easy" | "medium" | "hard"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -75,6 +82,30 @@ def _truncate(text: str, limit: int) -> str:
     if not isinstance(text, str):
         return ""
     return text if len(text) <= limit else text[: limit - 3] + "..."
+
+
+def _dmg_to_difficulty(dmg: Any) -> str:
+    """Map authored damage value to difficulty bucket. 10→easy, 20→medium, 30→hard.
+    Default medium when missing/unknown so absent dmg doesn't accidentally
+    floor-anchor at 'easy' which would let the LLM drop arbitrarily low."""
+    try:
+        d = int(dmg)
+    except (TypeError, ValueError):
+        return "medium"
+    if d <= 10:
+        return "easy"
+    if d >= 30:
+        return "hard"
+    return "medium"
+
+
+def _pool_max_difficulty(stems: list[dict]) -> Optional[str]:
+    """Return the pool's hardest authored difficulty — fallback floor when
+    target_skill matches no stem. None when pool is empty."""
+    if not stems:
+        return None
+    ranks = [_DIFFICULTY_RANK[s.get("authored_difficulty", "medium")] for s in stems]
+    return ["easy", "medium", "hard"][max(ranks)]
 
 
 def _phase_summary_from_attempts(attempts: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -185,6 +216,25 @@ async def build_boss_context(
         missing.append("missing_homework")
     content_json = (hw or {}).get("content_json") or {}
 
+    raw_qs = content_json.get("boss_questions") or []
+    stems: list[dict] = []
+    for q in raw_qs[:_MAX_AUTHORED_STEMS_IN_CTX]:
+        if not isinstance(q, dict):
+            continue
+        scrubbed = _scrub_dict(q)  # strips expected/ans/accepted_answers/answer_spec
+        stem = {
+            "question_text": _truncate(
+                str(scrubbed.get("q") or scrubbed.get("prompt") or ""),
+                _MAX_QUESTION_TEXT_LEN,
+            ),
+            "tags": str(scrubbed.get("tags") or "")[:200],
+            "hint": _truncate(str(scrubbed.get("hint") or ""), 200),
+            "authored_difficulty": _dmg_to_difficulty(scrubbed.get("dmg")),
+        }
+        if stem["question_text"]:
+            stems.append(stem)
+    authored_floor = _pool_max_difficulty(stems)
+
     attempts = []
     if session_id and homework_id:
         try:
@@ -233,4 +283,6 @@ async def build_boss_context(
         recent_boss_phrases=list(recent_boss_phrases or [])[:5],
         boss_policy=_default_policy(content_json.get("language") or (hw or {}).get("language")),
         missing_context_flags=missing,
+        authored_question_stems=stems,
+        authored_difficulty_floor=authored_floor,
     )
