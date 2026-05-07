@@ -230,7 +230,7 @@ class BossMeta(BaseModel):
     attempts_max: Optional[int] = None             # None = unlimited (premium sub); 2 = basic sub default; 1 = big/mythical
     anti_cheat: Optional[BossAntiCheatPolicy] = None
     starting_hp_override: Optional[int] = None     # author override for unusual cases
-    use_dynamic_boss: bool = False                 # author opt-in; static boss_questions remain fallback
+    use_dynamic_boss: bool = True  # DEPRECATED: dynamic boss is always-on as of 2026-05-08; field retained for backward compat with stored rows. Editor + runtime ignore this value.
 
     @model_validator(mode="after")
     def _validate(self) -> "BossMeta":

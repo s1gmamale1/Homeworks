@@ -70,7 +70,7 @@ def test_boss_meta_minimal_round_trip():
     assert meta.attempts_max is None
     assert meta.anti_cheat is None
     assert meta.starting_hp_override is None
-    assert meta.use_dynamic_boss is False
+    assert meta.use_dynamic_boss is True
 
 
 # ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ def test_content_schema_mirror_includes_dynamic_boss_flag():
     boss_meta = schema["$defs"]["BossMeta"]
     flag = boss_meta["properties"]["use_dynamic_boss"]
     assert flag["type"] == "boolean"
-    assert flag["default"] is False
+    assert flag["default"] is True
 
 
 # ---------------------------------------------------------------------------
