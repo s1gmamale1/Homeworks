@@ -28,6 +28,7 @@ from server.config import DB_PATH
 
 TARGET_SUBJECTS = {"math-algebra", "geometriya-g7-11"}
 BITMAP_PREFIXES = ("data:image/png;base64,", "data:image/jpeg;base64,", "data:image/jpg;base64,")
+SVG_DATA_URI_PREFIX = "data:image/svg+xml;utf8,"
 MAX_LABEL = 52
 HOMEWORK_BLOAT_THRESHOLD = 200_000
 INLINE_IMAGE_BLOAT_THRESHOLD = 20_000
@@ -67,11 +68,11 @@ def _needs_subject_display_fix(subject: str, subject_display: Any) -> bool:
     return normalized in {"", subject.lower(), "math-algebra", "geometriya-g7-11"}
 
 
-def _svg_data_uri(subject: str, label: str) -> str:
+def _svg_markup(subject: str, label: str) -> str:
     accent = "#0066CC" if subject == "math-algebra" else "#0F8A6C"
     title = _truncate(label)
     subtitle = "Homework diagram"
-    svg = f"""
+    return f"""
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -91,7 +92,11 @@ def _svg_data_uri(subject: str, label: str) -> str:
   <text x="96" y="612" font-family="Segoe UI, Arial, sans-serif" font-size="54" font-weight="700" fill="#17324D">{title}</text>
 </svg>
 """.strip()
-    return "data:image/svg+xml;utf8," + urllib.parse.quote(svg, safe="")
+
+
+def _svg_data_uri(subject: str, label: str) -> str:
+    svg = _svg_markup(subject, label)
+    return SVG_DATA_URI_PREFIX + urllib.parse.quote(svg, safe="")
 
 
 def _guess_label(node: Any, breadcrumbs: list[str], fallback_subject: str) -> str:
@@ -112,38 +117,63 @@ def _is_bloated_data_uri(value: str) -> bool:
     return isinstance(value, str) and value.startswith(BITMAP_PREFIXES) and len(value) >= INLINE_IMAGE_BLOAT_THRESHOLD
 
 
+def _is_svg_data_uri_ref(value: Any) -> bool:
+    return isinstance(value, str) and value.startswith(SVG_DATA_URI_PREFIX)
+
+
 def _is_stale_generated_image_ref(value: Any) -> bool:
     return isinstance(value, str) and bool(GENERATED_IMAGE_PATTERN.search(value))
 
 
+def _has_repairable_img_html(value: Any) -> bool:
+    if not isinstance(value, str) or "<img" not in value:
+        return False
+    return (
+        "data:image/" in value
+        or "/generated/" in value
+        or "generated/" in value
+    )
+
+
 def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str, int]:
     replacements = 0
-    replacement_src = _svg_data_uri(subject, label)
+    replacement_svg = _svg_markup(subject, label)
 
     def repl(match: re.Match[str]) -> str:
         nonlocal replacements
-        src = match.group(3)
+        src = match.group(1)
         if len(src) < INLINE_IMAGE_BLOAT_THRESHOLD:
             return match.group(0)
         replacements += 1
-        prefix = match.group(1)
-        quote = match.group(2)
-        return f"{prefix}{quote}{replacement_src}{quote}"
+        return replacement_svg
 
     updated = re.sub(
-        r'(<img\b[^>]*\bsrc=)(["\'])(data:image/(?:png|jpeg|jpg);base64,[^"\']+)\2',
+        r'<img\b[^>]*\bsrc=["\'](data:image/(?:png|jpeg|jpg);base64,[^"\']+)["\'][^>]*>',
         repl,
         html,
         flags=re.IGNORECASE,
     )
+
     def repl_generated(match: re.Match[str]) -> str:
         nonlocal replacements
         replacements += 1
-        return f'{match.group(1)}{match.group(2)}{replacement_src}{match.group(2)}'
+        return replacement_svg
 
     updated = re.sub(
-        r'(<img\b[^>]*\bsrc=)(["\'])((?:(?:https?:)?//[^"\']+)?/generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg))\2',
+        r'<img\b[^>]*\bsrc=["\']((?:(?:https?:)?//[^"\']+)?/?generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg))["\'][^>]*>',
         repl_generated,
+        updated,
+        flags=re.IGNORECASE,
+    )
+
+    def repl_svg_data_uri(match: re.Match[str]) -> str:
+        nonlocal replacements
+        replacements += 1
+        return replacement_svg
+
+    updated = re.sub(
+        r'<img\b[^>]*\bsrc=["\'](data:image/svg\+xml;utf8,[^"\']+)["\'][^>]*>',
+        repl_svg_data_uri,
         updated,
         flags=re.IGNORECASE,
     )
@@ -156,13 +186,25 @@ def _needs_media_repair(node: Any) -> bool:
     if isinstance(node, list):
         return any(_needs_media_repair(v) for v in node)
     if isinstance(node, str):
-        return _is_stale_generated_image_ref(node)
+        return _is_stale_generated_image_ref(node) or _is_svg_data_uri_ref(node) or _has_repairable_img_html(node)
     return False
 
 
 def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairStats) -> Any:
     if isinstance(node, dict):
         local_label = _guess_label(node, breadcrumbs, subject)
+        if node.get("type") == "quote" and _has_repairable_img_html(node.get("text")):
+            _repaired_html, replaced = _replace_img_srcs_in_html(str(node.get("text") or ""), subject, local_label)
+            if replaced:
+                stats.html_replaced += replaced
+                return {"type": "svg", "html": _svg_markup(subject, local_label)}
+        if node.get("type") == "image" and (
+            _is_bloated_data_uri(node.get("src"))
+            or _is_stale_generated_image_ref(node.get("src"))
+            or _is_svg_data_uri_ref(node.get("src"))
+        ):
+            stats.src_replaced += 1
+            return {"type": "svg", "html": _svg_markup(subject, local_label)}
         repaired: dict[str, Any] = {}
         for key, value in node.items():
             next_breadcrumbs = breadcrumbs
@@ -172,7 +214,7 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
                 repaired[key] = _svg_data_uri(subject, local_label)
                 stats.src_replaced += 1
                 continue
-            if key == "html" and isinstance(value, str) and ("data:image/" in value or "/generated/" in value):
+            if key == "html" and _has_repairable_img_html(value):
                 repaired_html, replaced = _replace_img_srcs_in_html(value, subject, local_label)
                 repaired[key] = repaired_html
                 stats.html_replaced += replaced
@@ -183,7 +225,7 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
     if isinstance(node, list):
         return [_repair_node(item, subject, breadcrumbs, stats) for item in node]
 
-    if isinstance(node, str) and "<img" in node and ("data:image/" in node or "/generated/" in node):
+    if isinstance(node, str) and _has_repairable_img_html(node):
         label = _guess_label(None, breadcrumbs, subject)
         repaired_html, replaced = _replace_img_srcs_in_html(node, subject, label)
         stats.html_replaced += replaced
