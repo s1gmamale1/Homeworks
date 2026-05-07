@@ -180,6 +180,7 @@ def test_serialize_boss_meta_round_trip():
         grade_band="g9_11",
         attempts_max=1,
         anti_cheat=BossAntiCheatPolicy(paste_detect=True, response_time_floor_ms=300),
+        use_dynamic_boss=True,
     )
     result = _serialize_boss_meta(meta)
     data = json.loads(result)
@@ -188,6 +189,7 @@ def test_serialize_boss_meta_round_trip():
     assert data["attempts_max"] == 1
     assert data["anti_cheat"]["paste_detect"] is True
     assert data["anti_cheat"]["response_time_floor_ms"] == 300
+    assert data["use_dynamic_boss"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +201,7 @@ def test_injector_substitutes_both_boss_questions_and_boss_meta_placeholders():
     and the raw __BOSS_META__ / __BOSS_QUESTIONS__ literals must be gone."""
     content = _minimal_content({
         "boss_questions": [_make_boss_question_full()],
-        "boss_meta": {"boss_type": "sub", "grade_band": "g5"},
+        "boss_meta": {"boss_type": "sub", "grade_band": "g5", "use_dynamic_boss": True},
     })
     html = inject(content, runtime_context=_runtime_ctx())
 
@@ -213,6 +215,7 @@ def test_injector_substitutes_both_boss_questions_and_boss_meta_placeholders():
     bm = _extract_boss_meta(html)
     assert bm is not None
     assert bm["boss_type"] == "sub"
+    assert bm["use_dynamic_boss"] is True
 
 
 # ---------------------------------------------------------------------------

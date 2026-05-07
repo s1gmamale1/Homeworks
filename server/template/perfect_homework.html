@@ -17981,6 +17981,14 @@ Prezident ertaga hisobot kutmoqda.`,
 
         const BOSS_META = __BOSS_META__;
 
+        function bossDynamicEnabledFromMeta() {
+            return Boolean(
+                typeof BOSS_META !== 'undefined' &&
+                BOSS_META &&
+                BOSS_META.use_dynamic_boss === true
+            );
+        }
+
         const bossState = {
             hp:100, maxHp:100, qIndex:0, combo:0,
             hintsUsed:0, hintStep:0, correct:0, answered:false, done:false,
@@ -18000,7 +18008,7 @@ Prezident ertaga hisobot kutmoqda.`,
             currentQuestion: null,      // last bossGenerateQuestion response (whitelisted)
             currentDifficulty: null,    // server-side difficulty signal
             recentBossPhrases: [],      // last ≤5 question_text snippets — anti-repetition
-            useDynamicBoss: true,       // feature flag — falls back to BOSS_QUESTIONS path on failure
+            useDynamicBoss: bossDynamicEnabledFromMeta(), // author opt-in — falls back to BOSS_QUESTIONS path on failure
             kickoffExpired: false,      // FE-5 race guard — set true when 3s startFinalBoss timeout wins; late LLM responses must NOT clobber legacy-mode state
         };
 
@@ -18093,7 +18101,11 @@ Prezident ertaga hisobot kutmoqda.`,
             const ab = document.getElementById('action-button');
             if (ab) ab.style.display = '';
 
-            Object.assign(bossState, {hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false});
+            Object.assign(bossState, {
+                hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false,
+                bossSessionId:null,trialsLeft:null,currentQuestion:null,currentDifficulty:null,recentBossPhrases:[],
+                useDynamicBoss: bossDynamicEnabledFromMeta(),
+            });
             // persona_traits intentionally NOT reset here — initBossPlan sets it once.
             // FB redesign — mint sessionId, reset attempts/outcome/stars/etc, apply
             // BOSS_META overrides (starting_hp_override, boss_type → data attribute).
@@ -18131,6 +18143,9 @@ Prezident ertaga hisobot kutmoqda.`,
                 console.warn('[F3] initBossPlan error:', e);
             });
             const dynamicReady = (async () => {
+                if (!bossState.useDynamicBoss) {
+                    return;
+                }
                 try {
                     await bossDynamicStart();
                     if (bossState.useDynamicBoss) {

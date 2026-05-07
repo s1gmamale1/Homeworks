@@ -338,6 +338,13 @@ def test_boss_editor_uses_4_arg_signature_and_meta_helpers() -> None:
     # Boss-meta wiring
     assert "boss_meta" in src
     assert "BOSS_TYPES" in src or "boss_type" in src
+    assert "Enable AI Dynamic Boss Questions" in src
+    assert "use_dynamic_boss" in src
+    assert "js-meta-dynamic" in src
+    assert "Fallback Static Boss Questions" in src
+    assert "Boss questions map to <strong>BOSS_QUESTIONS</strong>" in src
+    assert "content.boss_questions" in Path(__file__).resolve().parents[1].joinpath("frontend/js/builder.js").read_text(encoding="utf-8")
+    assert "use_dynamic_boss: meta.use_dynamic_boss === true" in src
     # Per-question metadata fields (spec §1 additive schema)
     assert "pisa_level" in src
     assert "bloom_level" in src

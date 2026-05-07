@@ -64,6 +64,26 @@ def test_create_homework_respects_content_json(client):
     assert "meta" in content
 
 
+def test_create_homework_preserves_dynamic_boss_flag(client):
+    """POST with boss_meta.use_dynamic_boss preserves the author opt-in flag."""
+    resp = client.post("/api/homeworks", json={
+        "title": "Test HW Dynamic Boss",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "content_json": {
+            "boss_meta": {"boss_type": "sub", "use_dynamic_boss": True},
+            "boss_questions": [{"q": "Fallback?", "ans": ["yes"]}],
+        }
+    })
+    assert resp.status_code == 200, resp.text
+    content = resp.json().get("content_json", {})
+
+    assert content["boss_meta"]["boss_type"] == "sub"
+    assert content["boss_meta"]["use_dynamic_boss"] is True
+    assert content["boss_questions"][0]["q"] == "Fallback?"
+
+
 def test_create_homework_meta_deep_merge(client):
     """POST with content_json.meta deep-merges meta fields."""
     resp = client.post("/api/homeworks", json={

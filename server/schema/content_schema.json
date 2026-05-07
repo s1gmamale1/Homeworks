@@ -1,0 +1,2791 @@
+{
+  "$defs": {
+    "AdaptiveQuizItem": {
+      "additionalProperties": true,
+      "description": "gb_adaptive_quiz — the same answer_spec contract as boss questions.\n\nProduction fixtures use `q`, but the tutor leak test uses `prompt` with\nnested option/field/rubric blocks. Both must validate.",
+      "properties": {
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "tier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tier"
+        },
+        "ans": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ans"
+        },
+        "capture": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture"
+        },
+        "answer_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnswerSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "accepted_answers": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Answers"
+        }
+      },
+      "title": "AdaptiveQuizItem",
+      "type": "object"
+    },
+    "AnswerSpec": {
+      "additionalProperties": true,
+      "description": "Grading contract used by `server/services/answer_checker.py`.\n\nVariants observed in fixtures:\n  - {type: numeric,    expected: int,        tolerance: 0,  ...}\n  - {type: text_exact, expected: \"B\",        allow_ai_fallback: false, ...}\n  - {type: text_fuzzy, expected: \"qo'sh spiral\", allow_ai_fallback: true, ...}\n  - {type: option_index, option_index: 2, ...}\n  - {type: set_match | semantic_short, ...}\n\nAll fields optional — checker reads `type` first and only requires the\nfields relevant to that type. Refusing a field would lock us out of new\ngrading types added later.",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        },
+        "expected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {},
+              "type": "array"
+            },
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected"
+        },
+        "canonical_display": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Display"
+        },
+        "allow_ai_fallback": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allow Ai Fallback"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tolerance"
+        },
+        "accepted_answers": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Answers"
+        },
+        "option_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Option Index"
+        },
+        "correct": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correct"
+        }
+      },
+      "title": "AnswerSpec",
+      "type": "object"
+    },
+    "BossAntiCheatPolicy": {
+      "additionalProperties": true,
+      "description": "Anti-cheat signal fields. Schema-only in v1; runtime telemetry deferred.",
+      "properties": {
+        "paste_detect": {
+          "default": false,
+          "title": "Paste Detect",
+          "type": "boolean"
+        },
+        "response_time_floor_ms": {
+          "default": 0,
+          "title": "Response Time Floor Ms",
+          "type": "integer"
+        }
+      },
+      "title": "BossAntiCheatPolicy",
+      "type": "object"
+    },
+    "BossMeta": {
+      "additionalProperties": true,
+      "description": "Optional metadata block for the boss phase.\n\nAll fields optional. Lives under content_json.boss_meta — never required.\nExisting homeworks without boss_meta render unchanged.",
+      "properties": {
+        "boss_type": {
+          "default": "sub",
+          "enum": [
+            "sub",
+            "big",
+            "mythical"
+          ],
+          "title": "Boss Type",
+          "type": "string"
+        },
+        "grade_band": {
+          "anyOf": [
+            {
+              "enum": [
+                "g1_4",
+                "g5",
+                "g6_8",
+                "g9_11"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Grade Band"
+        },
+        "attempts_max": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Attempts Max"
+        },
+        "anti_cheat": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BossAntiCheatPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "starting_hp_override": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Starting Hp Override"
+        },
+        "use_dynamic_boss": {
+          "default": false,
+          "title": "Use Dynamic Boss",
+          "type": "boolean"
+        }
+      },
+      "title": "BossMeta",
+      "type": "object"
+    },
+    "BossQuestion": {
+      "additionalProperties": true,
+      "properties": {
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "ans": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ans"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hint"
+        },
+        "dmg": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dmg"
+        },
+        "answer_spec": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnswerSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "accepted_answers": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Answers"
+        },
+        "pisa_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "L1",
+                "L2",
+                "L3",
+                "L4",
+                "L5",
+                "L6"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pisa Level"
+        },
+        "bloom_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "apply",
+                "analyze",
+                "evaluate",
+                "create"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bloom Level"
+        },
+        "hint_cost_per_use": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hint Cost Per Use"
+        }
+      },
+      "title": "BossQuestion",
+      "type": "object"
+    },
+    "FlashcardItem": {
+      "additionalProperties": true,
+      "description": "Each fixture uses {term, def, cluster}. NB: key is `def`, not `definition`.",
+      "properties": {
+        "term": {
+          "title": "Term",
+          "type": "string"
+        },
+        "def": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Def"
+        },
+        "cluster": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cluster"
+        }
+      },
+      "required": [
+        "term"
+      ],
+      "title": "FlashcardItem",
+      "type": "object"
+    },
+    "GateQuote": {
+      "additionalProperties": true,
+      "properties": {
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mode"
+        }
+      },
+      "title": "GateQuote",
+      "type": "object"
+    },
+    "MemoryPalace": {
+      "additionalProperties": true,
+      "description": "A single palace (route) that students can walk during encoding.",
+      "properties": {
+        "key": {
+          "default": "",
+          "title": "Key",
+          "type": "string"
+        },
+        "name": {
+          "default": "",
+          "title": "Name",
+          "type": "string"
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "subject_family": {
+          "anyOf": [
+            {
+              "enum": [
+                "bio",
+                "chem",
+                "phys",
+                "math",
+                "history",
+                "lang",
+                "art",
+                "universal"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Family"
+        },
+        "tier": {
+          "default": "basic",
+          "enum": [
+            "basic",
+            "premium"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "locations": {
+          "items": {
+            "$ref": "#/$defs/MemoryPalaceLocation"
+          },
+          "title": "Locations",
+          "type": "array"
+        }
+      },
+      "title": "MemoryPalace",
+      "type": "object"
+    },
+    "MemoryPalaceConcept": {
+      "additionalProperties": true,
+      "description": "One concept to be encoded and recalled via the palace route.",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "term": {
+          "default": "",
+          "title": "Term",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "image_cue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Image Cue"
+        }
+      },
+      "title": "MemoryPalaceConcept",
+      "type": "object"
+    },
+    "MemoryPalaceConfig": {
+      "additionalProperties": true,
+      "description": "Authored config overrides for the Memory Palace game-break.\n\nAll fields are optional; server-side defaults fill any omitted keys.\nSee _MP_DEFAULTS in server/services/injector.py.",
+      "properties": {
+        "concept_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concept Count"
+        },
+        "min_palace_options": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Palace Options"
+        },
+        "enable_reverse_recall": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enable Reverse Recall"
+        },
+        "concept_count_grade_overrides": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concept Count Grade Overrides"
+        }
+      },
+      "title": "MemoryPalaceConfig",
+      "type": "object"
+    },
+    "MemoryPalaceGame": {
+      "additionalProperties": true,
+      "description": "Top-level container stored in content_json.gb_memory_palace.\n\nHolds the authored palace routes + concepts for the game-break.\nValidators enforce structural integrity when content is present;\nempty arrays are allowed during builder authoring.",
+      "properties": {
+        "palaces": {
+          "items": {
+            "$ref": "#/$defs/MemoryPalace"
+          },
+          "title": "Palaces",
+          "type": "array"
+        },
+        "concepts": {
+          "items": {
+            "$ref": "#/$defs/MemoryPalaceConcept"
+          },
+          "title": "Concepts",
+          "type": "array"
+        }
+      },
+      "title": "MemoryPalaceGame",
+      "type": "object"
+    },
+    "MemoryPalaceLocation": {
+      "additionalProperties": true,
+      "description": "A single station inside a Memory Palace route.",
+      "properties": {
+        "name": {
+          "default": "",
+          "title": "Name",
+          "type": "string"
+        },
+        "sensory_cue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sensory Cue"
+        },
+        "icon": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Icon"
+        }
+      },
+      "title": "MemoryPalaceLocation",
+      "type": "object"
+    },
+    "MemorySprintItem": {
+      "additionalProperties": true,
+      "description": "Question types observed: KO (multi-choice), TF (true/false), YNNG (yes/no/unknown).",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        },
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "subtitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "title": "Subtitle"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "title": "Tags"
+        },
+        "explain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "",
+          "title": "Explain"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "correct": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correct"
+        }
+      },
+      "required": [
+        "prompt"
+      ],
+      "title": "MemorySprintItem",
+      "type": "object"
+    },
+    "Meta": {
+      "additionalProperties": true,
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "subject_display": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Display"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section"
+        },
+        "cefr_level": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cefr Level"
+        }
+      },
+      "title": "Meta",
+      "type": "object"
+    },
+    "MysteryBoxItem": {
+      "additionalProperties": true,
+      "description": "gb_mystery_box — {category, q, a}.",
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Category"
+        },
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "a": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "A"
+        }
+      },
+      "title": "MysteryBoxItem",
+      "type": "object"
+    },
+    "Panel": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "pages": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/PanelPage"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pages"
+        }
+      },
+      "title": "Panel",
+      "type": "object"
+    },
+    "PanelBlock": {
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Items"
+        }
+      },
+      "title": "PanelBlock",
+      "type": "object"
+    },
+    "PanelPage": {
+      "additionalProperties": true,
+      "properties": {
+        "blocks": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/PanelBlock"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocks"
+        }
+      },
+      "title": "PanelPage",
+      "type": "object"
+    },
+    "PuzzleLockItem": {
+      "additionalProperties": true,
+      "description": "gb_puzzle_lock — tile + Q&A. Legacy variants use {text, question, answer}\ninstead of {content, q, a}, so all six keys are optional.",
+      "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content"
+        },
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "a": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "A"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "question": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        }
+      },
+      "title": "PuzzleLockItem",
+      "type": "object"
+    },
+    "RLCConceptChip": {
+      "additionalProperties": true,
+      "description": "A concept chip for the concept-select step.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "is_correct": {
+          "default": false,
+          "title": "Is Correct",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "RLCConceptChip",
+      "type": "object"
+    },
+    "RLCConsequence": {
+      "additionalProperties": true,
+      "description": "Post-decision ripple node (deferred runtime visual; schema-ready).",
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "impact": {
+          "enum": [
+            "positive",
+            "negative",
+            "neutral"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Weight"
+        }
+      },
+      "required": [
+        "label",
+        "impact"
+      ],
+      "title": "RLCConsequence",
+      "type": "object"
+    },
+    "RLCDecisionOption": {
+      "additionalProperties": true,
+      "description": "A single MC option on a decision step.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "is_correct": {
+          "default": false,
+          "title": "Is Correct",
+          "type": "boolean"
+        },
+        "consequence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consequence"
+        },
+        "info_cost": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Info Cost"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "RLCDecisionOption",
+      "type": "object"
+    },
+    "RLCStakeholder": {
+      "additionalProperties": true,
+      "description": "Character in the case (deferred runtime visual; schema-ready).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "avatar_emoji": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Avatar Emoji"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role"
+      ],
+      "title": "RLCStakeholder",
+      "type": "object"
+    },
+    "RLCStep": {
+      "additionalProperties": true,
+      "description": "One of the 5 steps in the case flow.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "decision",
+            "info_request",
+            "final_decision",
+            "concept_select",
+            "reasoning"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RLCDecisionOption"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Options"
+        },
+        "concept_chips": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RLCConceptChip"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concept Chips"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeholder"
+        },
+        "min_chars": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min Chars"
+        },
+        "acceptable_keywords": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acceptable Keywords"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "prompt"
+      ],
+      "title": "RLCStep",
+      "type": "object"
+    },
+    "ReadingCheckpoint": {
+      "additionalProperties": true,
+      "properties": {
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "ans": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ans"
+        }
+      },
+      "title": "ReadingCheckpoint",
+      "type": "object"
+    },
+    "ReadingPhase": {
+      "additionalProperties": true,
+      "properties": {
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "checkpoints": {
+          "items": {
+            "$ref": "#/$defs/ReadingCheckpoint"
+          },
+          "title": "Checkpoints",
+          "type": "array"
+        }
+      },
+      "title": "ReadingPhase",
+      "type": "object"
+    },
+    "RealLifeChallengeCase": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "expert_role": {
+          "enum": [
+            "fire_inspector",
+            "structural_engineer",
+            "business_consultant",
+            "medical_diagnostician",
+            "agronomist",
+            "teacher",
+            "lawyer",
+            "city_planner",
+            "epidemiologist",
+            "ethicist",
+            "historian",
+            "general"
+          ],
+          "title": "Expert Role",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "intro": {
+          "title": "Intro",
+          "type": "string"
+        },
+        "pisa_level": {
+          "default": "L4",
+          "enum": [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "L5",
+            "L6"
+          ],
+          "title": "Pisa Level",
+          "type": "string"
+        },
+        "tier": {
+          "default": "basic",
+          "enum": [
+            "basic",
+            "premium"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "grade_band": {
+          "default": "g7_9",
+          "enum": [
+            "g1_3",
+            "g4_6",
+            "g7_9",
+            "g10_11"
+          ],
+          "title": "Grade Band",
+          "type": "string"
+        },
+        "variant": {
+          "default": "standard",
+          "enum": [
+            "standard",
+            "creative_thinking"
+          ],
+          "title": "Variant",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/RLCStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "stakeholders": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RLCStakeholder"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stakeholders"
+        },
+        "consequences": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RLCConsequence"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consequences"
+        },
+        "branch_rules": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Branch Rules"
+        },
+        "apprentice_scaffold_hints": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apprentice Scaffold Hints"
+        },
+        "memory_palace_location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Memory Palace Location"
+        }
+      },
+      "required": [
+        "id",
+        "expert_role",
+        "title",
+        "intro",
+        "steps"
+      ],
+      "title": "RealLifeChallengeCase",
+      "type": "object"
+    },
+    "RealLifeField": {
+      "additionalProperties": true,
+      "description": "A single fill-in field inside a real_life q with `fields`.",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "ans": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ans"
+        }
+      },
+      "title": "RealLifeField",
+      "type": "object"
+    },
+    "RealLifePhase": {
+      "additionalProperties": true,
+      "description": "Top-level scenario block. Every q1..qN slot is optional — fixtures\ncontain anywhere from 1 to 6+ questions.",
+      "properties": {
+        "badge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Badge"
+        },
+        "story": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Story"
+        },
+        "q1": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "q2": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "q3": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "q4": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "q5": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "q6": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RealLifeQuestion"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "endTitle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endtitle"
+        },
+        "endSub": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endsub"
+        }
+      },
+      "title": "RealLifePhase",
+      "type": "object"
+    },
+    "RealLifeQuestion": {
+      "additionalProperties": true,
+      "description": "Fixtures show 3 shapes:\n  - {prompt, ans, fb}                     — single text answer\n  - {prompt, fields: [...], fb}           — multiple labeled blanks\n  - {prompt, open: true, fb}              — open-ended (graded by AI)\nAll combinations exist; we accept all.",
+      "properties": {
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "ans": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ans"
+        },
+        "fb": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fb"
+        },
+        "fields": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/RealLifeField"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fields"
+        },
+        "open": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Open"
+        }
+      },
+      "required": [
+        "prompt"
+      ],
+      "title": "RealLifeQuestion",
+      "type": "object"
+    },
+    "ReflectionPhase": {
+      "additionalProperties": true,
+      "properties": {
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary"
+        },
+        "question": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question"
+        },
+        "spaced_rep": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spaced Rep"
+        },
+        "closing": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Closing"
+        }
+      },
+      "title": "ReflectionPhase",
+      "type": "object"
+    },
+    "SentenceFillItem": {
+      "additionalProperties": true,
+      "description": "gb_sentence_fill — cloze passage with per-blank answers + optional word bank.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "word_bank",
+            "free_recall"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "passage": {
+          "title": "Passage",
+          "type": "string"
+        },
+        "answers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Answers",
+          "type": "array"
+        },
+        "word_bank": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Word Bank"
+        },
+        "explanations": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanations"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "pisa_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "L1",
+                "L2",
+                "L3",
+                "L4",
+                "L5"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pisa Level"
+        },
+        "difficulty": {
+          "anyOf": [
+            {
+              "enum": [
+                "easy",
+                "medium",
+                "hard"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Difficulty"
+        },
+        "subject_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Hint"
+        },
+        "color_hints": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color Hints"
+        },
+        "blank_icons": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blank Icons"
+        },
+        "tier": {
+          "default": "basic",
+          "enum": [
+            "basic",
+            "premium"
+          ],
+          "title": "Tier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "mode",
+        "passage",
+        "answers"
+      ],
+      "title": "SentenceFillItem",
+      "type": "object"
+    },
+    "TileMatchPair": {
+      "additionalProperties": true,
+      "description": "gb_tile_match — structured pair for the Tile Match game.\n\nEach instance represents one left/right concept pair. The injector splits\nthese into a side-disjoint flat array so the client never sees both sides\nof a pair in the same JS object (answer-leak prevention).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "left": {
+          "title": "Left",
+          "type": "string"
+        },
+        "right": {
+          "title": "Right",
+          "type": "string"
+        },
+        "tier": {
+          "default": "basic",
+          "enum": [
+            "basic",
+            "premium"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "concept_family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concept Family"
+        },
+        "subject_family": {
+          "anyOf": [
+            {
+              "enum": [
+                "math",
+                "biology",
+                "history",
+                "literature",
+                "physics",
+                "chemistry",
+                "language",
+                "geography",
+                "general"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Family"
+        },
+        "pisa_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "L1",
+                "L2",
+                "L3",
+                "L4",
+                "L5",
+                "L6"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pisa Level"
+        },
+        "difficulty": {
+          "anyOf": [
+            {
+              "enum": [
+                "easy",
+                "medium",
+                "hard"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Difficulty"
+        },
+        "is_palace_tile": {
+          "default": false,
+          "title": "Is Palace Tile",
+          "type": "boolean"
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanation"
+        }
+      },
+      "required": [
+        "id",
+        "left",
+        "right"
+      ],
+      "title": "TileMatchPair",
+      "type": "object"
+    },
+    "TttConfig": {
+      "additionalProperties": true,
+      "description": "gb_ttt_config — optional XP and session overrides for the TTT game.\n\nAll fields are optional; the injector applies spec defaults when absent:\n  session_games=3, xp_correct=50, xp_draw=200, xp_win=300,\n  xp_strong_session=100, xp_mercy=10, mercy_chance=0.002.",
+      "properties": {
+        "session_games": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Games"
+        },
+        "xp_correct": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xp Correct"
+        },
+        "xp_draw": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xp Draw"
+        },
+        "xp_win": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xp Win"
+        },
+        "xp_strong_session": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xp Strong Session"
+        },
+        "xp_mercy": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xp Mercy"
+        },
+        "mercy_chance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mercy Chance"
+        }
+      },
+      "title": "TttConfig",
+      "type": "object"
+    },
+    "TttItem": {
+      "additionalProperties": true,
+      "description": "gb_ttt — tic-tac-toe quiz with {id, q, correct, distractors[]} (3 distractors).\n\n`id` is optional (auto-assigned by the injector as \"ttt-1\", \"ttt-2\", ... if absent).\n`correct` and `distractors` are server-only — stripped by the injector before the\nwire format is sent to the client (side-disjoint, answer-leak prevention).",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "q": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Q"
+        },
+        "correct": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correct"
+        },
+        "distractors": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distractors"
+        }
+      },
+      "title": "TttItem",
+      "type": "object"
+    },
+    "WhyChainItem": {
+      "additionalProperties": true,
+      "description": "gb_why_chain — open-ended 'why?' chains with re-prompts.",
+      "properties": {
+        "q": {
+          "title": "Q",
+          "type": "string"
+        },
+        "inv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inv"
+        },
+        "reprompts": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reprompts"
+        }
+      },
+      "required": [
+        "q"
+      ],
+      "title": "WhyChainItem",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Full `content_json` blob. Every phase is optional and `extra='allow'`\nis set on every nested model, so unknown keys propagate untouched. The\nboundary validator only rejects shapes that are *obviously* wrong (e.g.,\n`flashcards` set to a string instead of a list, `meta` set to a list).",
+  "properties": {
+    "meta": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Meta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "quotes": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quotes"
+    },
+    "panels": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/Panel"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Panels"
+    },
+    "gate_quote": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GateQuote"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "boss_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Boss Name"
+    },
+    "flashcards": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/FlashcardItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Flashcards"
+    },
+    "memory_sprint": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/MemorySprintItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Memory Sprint"
+    },
+    "real_life": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RealLifePhase"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "real_life_challenge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RealLifeChallengeCase"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reading": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReadingPhase"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "boss_questions": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/BossQuestion"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Boss Questions"
+    },
+    "boss_meta": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BossMeta"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "gb_adaptive_quiz": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/AdaptiveQuizItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Adaptive Quiz"
+    },
+    "gb_why_chain": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/WhyChainItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Why Chain"
+    },
+    "gb_memory_match": {
+      "anyOf": [
+        {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Memory Match"
+    },
+    "gb_puzzle_lock": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/PuzzleLockItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Puzzle Lock"
+    },
+    "gb_mystery_box": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/MysteryBoxItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Mystery Box"
+    },
+    "gb_ttt": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/TttItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Ttt"
+    },
+    "gb_ttt_config": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TttConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "gb_sentence_fill": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/SentenceFillItem"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Sentence Fill"
+    },
+    "gb_tile_match": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/TileMatchPair"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gb Tile Match"
+    },
+    "gb_memory_palace": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MemoryPalaceGame"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "gb_memory_palace_config": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MemoryPalaceConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reflection": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReflectionPhase"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "title": "ContentJSON",
+  "type": "object"
+}

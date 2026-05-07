@@ -78,6 +78,7 @@
       attempts_max: defaultAttemptsForBossType("sub", ctx.tier),
       starting_hp_override: null,
       anti_cheat: null,
+      use_dynamic_boss: false,
     };
   }
 
@@ -121,6 +122,7 @@
       starting_hp_override: meta.starting_hp_override == null
         ? null
         : (Number.isFinite(Number(meta.starting_hp_override)) ? Number(meta.starting_hp_override) : null),
+      use_dynamic_boss: meta.use_dynamic_boss === true,
       anti_cheat: meta.anti_cheat && typeof meta.anti_cheat === "object"
         ? {
             paste_detect: Boolean(meta.anti_cheat.paste_detect),
@@ -369,6 +371,7 @@
                 response_time_floor_ms: Number(existingMeta.anti_cheat.response_time_floor_ms) || 0,
               }
             : null,
+          use_dynamic_boss: existingMeta.use_dynamic_boss === true,
         }
       : defaultBossMeta(ctx);
 
@@ -390,6 +393,12 @@
             : String(defaultAttemptsForBossType(meta.boss_type, ctx.tier)))
         : "";
       const ac = meta.anti_cheat || { paste_detect: false, response_time_floor_ms: 0 };
+      const staticQuestionEyebrow = meta.use_dynamic_boss
+        ? "Fallback Static Boss Questions"
+        : "Final Challenge";
+      const staticQuestionHelp = meta.use_dynamic_boss
+        ? "AI Dynamic Boss is enabled. These static questions remain available as fallback if AI is unavailable."
+        : "Boss questions map to <strong>BOSS_QUESTIONS</strong>. Damage should usually be 10, 20, or 30 HP.";
 
       container.innerHTML = `
         <div class="editor-list">
@@ -407,6 +416,12 @@
               ui.metaOpen
                 ? `
                 <div class="editor-grid">
+                  <label class="field full-span boss-dynamic-toggle">
+                    <input class="js-meta-dynamic" data-key="use_dynamic_boss" type="checkbox"
+                      ${meta.use_dynamic_boss ? "checked" : ""} />
+                    <span>Enable AI Dynamic Boss Questions</span>
+                    <small class="sf-hint">When enabled, students face AI-generated boss questions. Static boss questions remain as fallback if AI is unavailable.</small>
+                  </label>
                   <label class="field">
                     <span>Boss type</span>
                     <select class="js-meta-field" data-key="boss_type">
@@ -455,19 +470,19 @@
                   </fieldset>
                 </div>
                 `
-                : `<p class="muted-text">Type: <strong>${escapeHtml(meta.boss_type)}</strong> · Band: <strong>${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}</strong> · Attempts: <strong>${meta.attempts_max == null ? "∞" : escapeHtml(meta.attempts_max)}</strong></p>`
+                : `<p class="muted-text">Type: <strong>${escapeHtml(meta.boss_type)}</strong> · Band: <strong>${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}</strong> · Attempts: <strong>${meta.attempts_max == null ? "∞" : escapeHtml(meta.attempts_max)}</strong> · Dynamic AI: <strong>${meta.use_dynamic_boss ? "On" : "Off"}</strong></p>`
             }
           </section>
           <section class="editor-card">
             <div class="editor-header">
               <div>
-                <p class="eyebrow">Final Challenge</p>
+                <p class="eyebrow">${staticQuestionEyebrow}</p>
                 <h3>${state.length} boss question${state.length === 1 ? "" : "s"}</h3>
               </div>
               <button class="btn btn-primary js-add-question" type="button">Add boss question</button>
             </div>
             <p class="muted-text">
-              Boss questions map to <strong>BOSS_QUESTIONS</strong>. Damage should usually be 10, 20, or 30 HP.
+              ${staticQuestionHelp}
               Hint cost defaults to <strong>+${escapeHtml(bandHintCostHint)} HP</strong> for grade band ${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}.
             </p>
           </section>
@@ -666,6 +681,12 @@
       const target = event.target;
 
       // Boss-meta inputs live OUTSIDE [data-index]; handle them first.
+      if (target.classList.contains("js-meta-dynamic")) {
+        meta.use_dynamic_boss = Boolean(target.checked);
+        syncAndEmit();
+        repaint();
+        return;
+      }
       if (target.classList.contains("js-meta-field")) {
         const key = target.dataset.key;
         if (key === "attempts_max" || key === "starting_hp_override") {

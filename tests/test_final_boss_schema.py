@@ -16,6 +16,8 @@ Guards:
 
 import pytest
 from pydantic import ValidationError
+import json
+from pathlib import Path
 
 from server.schemas.content import (
     BossAntiCheatPolicy,
@@ -68,6 +70,7 @@ def test_boss_meta_minimal_round_trip():
     assert meta.attempts_max is None
     assert meta.anti_cheat is None
     assert meta.starting_hp_override is None
+    assert meta.use_dynamic_boss is False
 
 
 # ---------------------------------------------------------------------------
@@ -78,6 +81,26 @@ def test_boss_meta_default_boss_type_sub():
     """When boss_type is omitted, it defaults to 'sub'."""
     meta = BossMeta(grade_band="g5")
     assert meta.boss_type == "sub"
+
+
+def test_boss_meta_dynamic_boss_round_trip():
+    """Builder opt-in flag validates and survives model serialization."""
+    meta = BossMeta(use_dynamic_boss=True)
+
+    assert meta.use_dynamic_boss is True
+    assert meta.model_dump()["use_dynamic_boss"] is True
+
+
+def test_content_schema_mirror_includes_dynamic_boss_flag():
+    """The checked-in JSON schema mirror must expose boss_meta.use_dynamic_boss."""
+    root = Path(__file__).resolve().parents[1]
+    schema_path = root / "server" / "schema" / "content_schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    boss_meta = schema["$defs"]["BossMeta"]
+    flag = boss_meta["properties"]["use_dynamic_boss"]
+    assert flag["type"] == "boolean"
+    assert flag["default"] is False
 
 
 # ---------------------------------------------------------------------------

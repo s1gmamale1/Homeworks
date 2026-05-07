@@ -132,3 +132,35 @@ def test_patch_content_merges_without_resending_every_phase(client):
     assert content["gb_puzzle_lock"] == [
         {"content": "Tile A", "q": "Question A", "a": "Answer A"}
     ]
+
+
+def test_patch_content_preserves_dynamic_boss_flag_inside_boss_meta(client):
+    create = client.post(
+        "/api/homeworks",
+        json={
+            "title": "Dynamic boss patch smoke",
+            "subject": "math-algebra",
+            "grade": 8,
+            "mode": "hard",
+            "content_json": {
+                "boss_meta": {
+                    "boss_type": "sub",
+                    "use_dynamic_boss": True,
+                },
+                "boss_questions": [{"q": "Fallback?", "ans": ["yes"]}],
+            },
+        },
+    )
+    assert create.status_code == 200, create.text
+    hw_id = create.json()["id"]
+
+    patch = client.patch(
+        f"/api/homeworks/{hw_id}/content",
+        json={"content_json": {"boss_meta": {"grade_band": "g6_8"}}},
+    )
+
+    assert patch.status_code == 200, patch.text
+    boss_meta = patch.json()["content_json"]["boss_meta"]
+    assert boss_meta["boss_type"] == "sub"
+    assert boss_meta["grade_band"] == "g6_8"
+    assert boss_meta["use_dynamic_boss"] is True
