@@ -80,19 +80,10 @@ def test_boss_editor_does_not_or_swap_answer_spec_with_default():
     )
 
 
-def test_boss_editor_merges_default_rubric():
-    """Post-fix: a default-rubric merge is performed so spec.rubric.* is
-    always defined regardless of fixture shape."""
-    src = _boss_js()
-    # The fix introduces a defaults() factory and spreads its rubric.
-    assert "defaultAnswerSpec" in src or "DEFAULT_SPEC" in src, (
-        "boss.js should expose a default-spec factory the merge can rely on"
-    )
-    # Spread of default rubric — guards against a future refactor that
-    # collapses back into the OR-swap.
-    assert re.search(
-        r"rubric:\s*\{\s*\.\.\.\s*\w+\.rubric", src
-    ), "boss.js should spread the default rubric into the merged spec"
+# Note: the previous test_boss_editor_merges_default_rubric was deleted
+# 2026-05-08 alongside the boss-editor reference-questions refactor. The
+# answer_spec rubric-merging system it guarded was removed wholesale; the
+# author no longer writes per-question grading rubrics for the static path.
 
 
 # ---------------------------------------------------------------------------
