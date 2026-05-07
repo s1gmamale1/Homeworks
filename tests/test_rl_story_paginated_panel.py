@@ -590,6 +590,26 @@ def test_bloom_pisa_tags_relocated_to_header_meta_slot(template_html):
     )
 
 
+def test_final_boss_entry_defensively_unhides_action_button(template_html):
+    """The RL phase hides #action-button during its question loop and
+    rlShowClosure() unhides it on the closure card. Normal flow is safe,
+    but edge paths (skip-to-end shortcuts at line 11057, page reload
+    landing on Boss, session restore) could reach `startFinalBoss()`
+    with the button still hidden, leaving the student stuck.
+
+    `startFinalBoss()` must therefore unconditionally re-show
+    #action-button on entry — Boss should be self-contained, not
+    depend on prior phase cleanup."""
+    body = _extract_function_body(template_html, "startFinalBoss")
+    assert "getElementById('action-button')" in body, (
+        "startFinalBoss must look up #action-button on entry."
+    )
+    assert "ab.style.display = ''" in body, (
+        "startFinalBoss must re-show #action-button via `display: ''` so a "
+        "leaked hide from the RL question loop doesn't strand the student."
+    )
+
+
 def test_bottom_action_button_hidden_during_question_loop(template_html):
     """Bottom #action-button is hidden when entering the question loop and
     re-shown on the closure card. Otherwise the student sees TWO submit

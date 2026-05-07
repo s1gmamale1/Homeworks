@@ -18052,6 +18052,17 @@ Prezident ertaga hisobot kutmoqda.`,
             const sb = document.getElementById('screen-boss');
             if (sb) sb.classList.add('active');
 
+            // Defensive: the RL phase hides #action-button via inline
+            // display:none during its question loop and rlShowClosure()
+            // re-shows it on the closure card. Normal flow goes
+            // RL-Q6 → rlShowClosure (un-hides) → rlShowEndPlaceholder → here.
+            // But edge paths (skip-to-end shortcuts, mid-RL exits, session
+            // restore landing on Boss) can reach this entry with the
+            // button still hidden, leaving the student stuck. Re-show
+            // unconditionally so Boss is self-contained.
+            const ab = document.getElementById('action-button');
+            if (ab) ab.style.display = '';
+
             Object.assign(bossState, {hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false});
             // persona_traits intentionally NOT reset here — initBossPlan sets it once.
             // FB redesign — mint sessionId, reset attempts/outcome/stars/etc, apply
