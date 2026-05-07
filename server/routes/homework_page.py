@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
 from ..db import get_homework
+from ..services.content_json_compat import normalize_content_json_for_runtime
 from ..services.injector import inject
 
 router = APIRouter(tags=["homework_page"])
@@ -105,7 +106,11 @@ def render_homework(hw: dict) -> str:
     Called by both /api/homeworks/{id}/preview and /h/{id}.
     Returns rendered HTML string — byte-equivalent for the same homework record.
     """
-    content = hw.get("content_json") or {}
+    # Normalize legacy aliases (gate_quote envelope / boss → boss_questions /
+    # reading.text → reading.passage / boss-question ids / etc) before the
+    # injector sees the blob. The DB row is left untouched — this is purely
+    # in-memory, additive, idempotent.
+    content = normalize_content_json_for_runtime(hw.get("content_json") or {})
     meta_override = content.get("meta") or {}
     if not meta_override.get("title"):
         meta_override["title"] = hw.get("title", "")
