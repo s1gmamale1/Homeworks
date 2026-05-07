@@ -35,6 +35,20 @@
             user-select: none;
         }
 
+        /* NAV-06 (2026-05-07): clamp html overflow so the layout viewport
+           cannot balloon when panel-switch animations briefly translate
+           #panel-content past the body box. Without this, Chrome mobile
+           grows window.innerWidth/Height to fit html.scrollWidth/Height,
+           which re-anchors every position:fixed element (action button +
+           AI tutor FAB) below the visible viewport — students had to
+           "scroll down" to reach Keyingi sahifa / chatbot. body already
+           clips visually; html needs to match so the layout viewport
+           stays pinned to the actual visible area. No-op on desktop. */
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background:
                 radial-gradient(circle at 12% 18%, rgba(150, 130, 220, 0.22), transparent 34%),
@@ -889,6 +903,13 @@
             flex-direction: column;
             border: 1px solid var(--surface-border);
             box-shadow: var(--shadow-low), var(--shadow-card);
+            /* NAV-06 defense-in-depth: nextPanel() sets #panel-content
+               to translateX(100%) for a single frame to slide the new
+               panel in. Without this clip, that frame's overflow leaks
+               past the card → up to body → triggers the html-level
+               layout-viewport balloon described in the html { overflow }
+               rule above. The card's border-radius is preserved. */
+            overflow: hidden;
         }
 
         .content-area {
