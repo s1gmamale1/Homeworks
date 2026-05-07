@@ -115,6 +115,11 @@ def test_tile_match_collection_max_8_pairs_exactly_8_accepted():
     assert len(content.gb_tile_match) == 8
 
 
+def test_tile_match_collection_empty_list_accepted_as_disabled():
+    content = ContentJSON(**_make_content_with_pairs([]))
+    assert content.gb_tile_match == []
+
+
 # ---------------------------------------------------------------------------
 # Test 5: unique left strings required
 # ---------------------------------------------------------------------------

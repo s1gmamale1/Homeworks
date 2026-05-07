@@ -353,6 +353,43 @@ def test_put_with_invalid_content_json_returns_400_invalid_content(client):
     assert "details" in detail
 
 
+def test_put_with_model_validator_error_returns_serializable_400(client):
+    """Model-level ValueError ctx must not turn validation failures into 500s."""
+    hw_id = _create_minimal_homework(client)
+    resp = client.put(
+        f"/api/homeworks/{hw_id}",
+        json={
+            "content_json": {
+                "gb_tile_match": [
+                    {"id": "tm_001", "left": "dup", "right": "one"},
+                    {"id": "tm_002", "left": "dup", "right": "two"},
+                ]
+            }
+        },
+    )
+    assert resp.status_code == 400, resp.text
+    detail = resp.json()["detail"]
+    assert detail["code"] == "INVALID_CONTENT"
+    assert "ctx" not in detail["details"][0]
+    assert "left strings must be unique" in detail["details"][0]["msg"]
+
+
+def test_put_accepts_empty_tile_match_from_compat_read_path(client):
+    """GET normalization can surface gb_tile_match=[]; builder PUT must accept it."""
+    hw_id = _create_minimal_homework(client)
+    resp = client.put(
+        f"/api/homeworks/{hw_id}",
+        json={
+            "content_json": {
+                "meta": {"title": "Updated", "section": "2"},
+                "flashcards": [{"term": "T2", "def": "D2"}],
+                "gb_tile_match": [],
+            }
+        },
+    )
+    assert resp.status_code == 200, resp.text
+
+
 def test_patch_with_invalid_merged_content_returns_400(client):
     """PATCH must validate the *merged* result. A patch that replaces a
     well-typed array with a non-array must be rejected."""

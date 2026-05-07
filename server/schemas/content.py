@@ -738,11 +738,11 @@ class ContentJSON(_Permissive):
     @model_validator(mode="after")
     def _validate_tile_match_collection(self):
         pairs = self.gb_tile_match
-        if pairs is None:
+        if not pairs:
             return self
-        if not (1 <= len(pairs) <= 8):
+        if len(pairs) > 8:
             raise ValueError(
-                f"gb_tile_match must have 1–8 pairs (got {len(pairs)}); "
+                f"gb_tile_match must have 0–8 pairs (got {len(pairs)}); "
                 "spec board sizes: G1-2:4, G3-4:5, G5-7:6, G8-11:8"
             )
         ids = [p.id for p in pairs]

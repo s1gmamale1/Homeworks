@@ -33,12 +33,16 @@ def _validate_content_json(content: Any) -> None:
     try:
         ContentJSON.model_validate(content)
     except ValidationError as exc:
+        # Pydantic model validators can include raw exception objects under
+        # `ctx.error`. FastAPI cannot JSON-serialize those, so omit context
+        # before placing validation details in the HTTPException body.
+        details = exc.errors(include_context=False)
         raise HTTPException(
             status_code=400,
             detail={
                 "error": "content_json validation failed",
                 "code": "INVALID_CONTENT",
-                "details": exc.errors(),
+                "details": details,
             },
         )
 
