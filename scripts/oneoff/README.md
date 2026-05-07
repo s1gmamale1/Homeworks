@@ -16,6 +16,7 @@ When a script lands here, write a one-liner in the table below saying
 | Script | When | What it did |
 |---|---|---|
 | `rebuild_hw008_from_md.py` | 2026-04-28 | Rebuilt `HW-20260427-008` (Aylana grade-8 geometry) from the source MD after the original push-from-playable importer left several sloppy artifacts (✓ markers in MS prompts, broken panel titles, RL Q5 mis-mapped to Phase 5 text). One-time fixup; the underlying importer was not retroactively fixed because the bug only affected this single record. |
+| `repair_math_geometry_homeworks.py` | 2026-05-08 | Replaced oversized inline bitmap `data:image/png;base64,...` payloads inside Algebra / Geometriya homework `content_json` with lightweight SVG placeholders, shrinking multi-megabyte local demo rows back to normal API-friendly size and normalizing a stray `subject_display` value. |
 
 ## Running
 
