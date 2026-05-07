@@ -303,6 +303,8 @@ def normalize_content_json_for_runtime(content_json: Any) -> dict:
                 dict(cp) if _is_dict(cp) else cp
                 for cp in out["reading"]["checkpoints"]
             ]
+    if _is_dict(out.get("meta")):
+        out["meta"] = dict(out["meta"])
     if _is_dict(out.get("gate_quote")):
         out["gate_quote"] = dict(out["gate_quote"])
     if _is_dict(out.get("boss_meta")):

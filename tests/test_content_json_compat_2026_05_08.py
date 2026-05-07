@@ -59,7 +59,7 @@ def test_normalizer_tolerates_non_dict_input(garbage):
     """
     result = normalize_content_json_for_runtime(garbage)
     assert isinstance(result, dict)
-    assert result == {} if garbage in (None, "", 0, 42, []) else True
+    assert result == {}
 
 
 def test_normalizer_does_not_mutate_input():
@@ -80,6 +80,17 @@ def test_normalizer_does_not_mutate_input():
         "leaks normalization side-effects into FastAPI response bodies "
         "and DB rows held in memory after the read."
     )
+
+
+def test_normalizer_copies_meta_dict():
+    """`meta` is a commonly-touched subtree on the read path, so it must
+    be detached from the caller even when the current normalization pass
+    makes no edits to it yet.
+    """
+    src = {"meta": {"title": "Legacy title", "subject_display": "math-algebra"}}
+    out = normalize_content_json_for_runtime(src)
+    assert out["meta"] == src["meta"]
+    assert out["meta"] is not src["meta"]
 
 
 # ---------------------------------------------------------------------------
