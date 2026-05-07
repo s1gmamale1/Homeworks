@@ -328,7 +328,7 @@
           "title": "Starting Hp Override"
         },
         "use_dynamic_boss": {
-          "default": false,
+          "default": true,
           "title": "Use Dynamic Boss",
           "type": "boolean"
         }
