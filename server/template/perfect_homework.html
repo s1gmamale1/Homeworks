@@ -4786,12 +4786,21 @@
             text-align: left;
         }
         .rl-card {
-            height: 82vh;
+            /* Card hugs content up to a viewport-bounded ceiling. The
+               -96px subtracts space for top/bottom chrome (header band +
+               action button) so content never pushes the card past the
+               viewport. `100dvh` respects mobile browser chrome better
+               than `100vh`. Children with `min-height: 0` can shrink as
+               needed inside this cap; overflow is hidden so any spillover
+               handlers (e.g. .rl-q-body's internal scroll) catch it. */
+            height: auto;
+            max-height: calc(100dvh - 96px);
             display: flex;
             flex-direction: column;
             border: 1.5px solid var(--accent);
             animation: card-border-glow 4s infinite alternate ease-in-out;
             position: relative;
+            overflow: hidden;
         }
         .rl-header-badge {
             font-size: 11px;
@@ -4803,30 +4812,51 @@
             flex-shrink: 0;
             text-align: center;
         }
+        /* Story panel — horizontally paged. Lives at top of the RL card,
+           stays visible alongside the question (no longer display:none on
+           question step). Each "page" is a child div that snaps into view;
+           student swipes / drags between them. Vertical scroll inside a page
+           is disabled — if a paragraph cluster overflows we split it into
+           the next page during JS pagination.
+           Panel height intentionally smaller than half the card so the
+           question prompt + input + feedback band all fit visible below
+           without overflow. Compresses further on short screens via the
+           media query below. */
         .rl-story-wrap {
-            flex: 1;
+            flex: 0 0 clamp(150px, 28vh, 270px);
+            min-height: 150px;
+            max-height: 270px;
             overflow: hidden;
             position: relative;
+            margin-bottom: 4px;
         }
         .rl-story-body {
             height: 100%;
-            overflow-y: auto;
-            overflow-x: hidden;
-            touch-action: pan-y;
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: 40px;
+            touch-action: pan-x;
+            cursor: grab;
+            user-select: text;
+        }
+        .rl-story-body.rl-dragging {
+            cursor: grabbing;
+            user-select: none;
         }
         .rl-story-body::-webkit-scrollbar { display: none; }
         .rl-story-body { -ms-overflow-style: none; scrollbar-width: none; }
+        .rl-story-page {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            box-sizing: border-box;
+            padding: 4px 14px;
+            overflow: hidden;
+        }
         .rl-story-fade {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 52px;
-            background: linear-gradient(to bottom, transparent, rgba(248,251,255,0.96));
-            pointer-events: none;
-            z-index: 2;
+            display: none;
         }
         .rl-story-text {
             font-size: 15px;
@@ -4834,6 +4864,28 @@
             color: var(--text);
             white-space: pre-wrap;
             user-select: text;
+            margin: 0;
+        }
+        .rl-story-dots {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            padding: 4px 0 6px;
+        }
+        .rl-story-dots[data-pages="1"],
+        .rl-story-dots[data-pages="0"] {
+            display: none;
+        }
+        .rl-story-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(150, 165, 195, 0.45);
+            transition: background 160ms ease, transform 160ms ease;
+        }
+        .rl-story-dot.is-active {
+            background: var(--brand, #2563eb);
+            transform: scale(1.2);
         }
         .rl-q-wrap {
             flex: 1;
@@ -4843,21 +4895,29 @@
         }
         .rl-q-wrap.rl-active {
             display: flex;
+            /* min-height: 0 is the load-bearing fix — without it, flex
+               children refuse to shrink below content size, so the
+               feedback band gets pushed past the card boundary and
+               clipped by .rl-card's overflow:hidden. */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
         }
         .rl-q-body {
-            flex: 1;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow-y: auto;
             touch-action: pan-y;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: 16px;
+            padding-bottom: 8px;
         }
         .rl-q-body::-webkit-scrollbar { display: none; }
         .rl-q-body { -ms-overflow-style: none; scrollbar-width: none; }
         .rl-q-prompt {
-            font-size: 15px;
-            line-height: 1.6;
+            font-size: 14px;
+            line-height: 1.45;
             color: var(--text);
-            margin-bottom: 18px;
+            margin-bottom: 8px;
             font-weight: 500;
         }
         .rl-input {
@@ -4890,9 +4950,11 @@
             margin-top: 4px;
         }
         .rl-field-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(56px, auto) 1fr;
             align-items: center;
             gap: 10px;
+            margin-bottom: 8px;
         }
         .rl-field-label {
             font-size: 13px;
@@ -4904,37 +4966,193 @@
         }
         .rl-field-input { flex: 1; }
         .rl-feedback {
-            margin-top: 14px;
-            font-size: 14px;
-            line-height: 1.5;
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.35;
             border-radius: 12px;
-            padding: 12px 14px;
+            padding: 10px 12px;
             display: none;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 44px;
+            /* No max-height / internal scroll: the band expands to fit the
+               full AI response so nothing is clipped. If the whole question
+               region overflows the card, .rl-q-body's overflow-y:auto handles
+               that one level up — a single, natural scroll instead of a tiny
+               in-band scrollbar. */
+        }
+        .rl-feedback.rl-correct,
+        .rl-feedback.rl-wrong,
+        .rl-feedback.rl-hint,
+        .rl-feedback.rl-open,
+        .rl-feedback.rl-loading {
+            display: flex;
         }
         .rl-feedback.rl-correct {
             background: rgba(100,220,140,0.15);
             border: 1px solid rgba(100,220,140,0.4);
             color: #2a7a46;
-            display: block;
         }
         .rl-feedback.rl-wrong {
             background: rgba(255,140,100,0.12);
             border: 1px solid rgba(255,140,100,0.35);
             color: #8a3a1a;
-            display: block;
         }
         .rl-feedback.rl-hint {
             background: rgba(255,220,80,0.15);
             border: 1px solid rgba(255,200,60,0.38);
             color: #7a5a00;
-            display: block;
         }
         .rl-feedback.rl-open {
             background: rgba(99,184,255,0.12);
             border: 1px solid rgba(99,184,255,0.32);
             color: #1e4f7a;
-            display: block;
         }
+        .rl-feedback.rl-loading {
+            background: rgba(99,184,255,0.10);
+            border: 1px solid rgba(99,184,255,0.28);
+            color: #1e4f7a;
+        }
+        /* Inner row: verdict pill on the left, feedback text fills the rest. */
+        .rl-feedback-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+        }
+        .rl-feedback-text {
+            flex: 1;
+            min-width: 0;
+        }
+        /* Verdict pills — the load-bearing visual that stops students from
+           wondering whether they got it right. */
+        .rl-verdict {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 78px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .rl-verdict-ok {
+            color: #117a3d;
+            background: rgba(53, 198, 111, 0.14);
+            border: 1px solid rgba(53, 198, 111, 0.45);
+        }
+        .rl-verdict-bad {
+            color: #b03a44;
+            background: rgba(239, 107, 115, 0.13);
+            border: 1px solid rgba(239, 107, 115, 0.45);
+        }
+        .rl-verdict-checking {
+            color: var(--accent);
+            background: rgba(0, 102, 204, 0.10);
+            border: 1px solid rgba(0, 102, 204, 0.22);
+        }
+        /* Loading spinner — accompanies the "Tekshirilmoqda…" pill while AI
+           is in flight; pre-fix the band rendered empty during this window. */
+        .rl-spinner {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-top: 2px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 102, 204, 0.18);
+            border-top-color: var(--accent);
+            animation: rlSpin 700ms linear infinite;
+        }
+        @keyframes rlSpin {
+            to { transform: rotate(360deg); }
+        }
+        /* Per-question button row (pre-submit). Holds local submit, hint
+           toggle, and tutor pre-submit. After submit the whole row hides
+           and the post-grading row (Keyingi) replaces it. */
+        .rl-q-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .rl-submit-local {
+            border: 0;
+            border-radius: 999px;
+            padding: 9px 18px;
+            background: var(--accent, #0066CC);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+            transition: background 150ms ease, transform 100ms ease, opacity 200ms ease;
+        }
+        .rl-submit-local:hover  { background: #0062cc; }
+        .rl-submit-local:active { transform: scale(0.97); }
+        .rl-submit-local:disabled,
+        .rl-submit-local[disabled] {
+            opacity: 0.55;
+            cursor: progress;
+            pointer-events: none;
+        }
+        /* Secondary buttons — hint toggle and tutor pre-submit are visually
+           subordinate to the submit primary. Same height, neutral background,
+           accent-colored text. */
+        .rl-hint-toggle,
+        .rl-tutor-pre-submit {
+            border: 1px solid rgba(0, 102, 204, 0.28);
+            border-radius: 999px;
+            padding: 8px 14px;
+            background: rgba(0, 102, 204, 0.08);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 150ms ease;
+        }
+        .rl-hint-toggle:hover,
+        .rl-tutor-pre-submit:hover {
+            background: rgba(0, 102, 204, 0.16);
+        }
+        /* Hint panel — collapsible. Hidden by default, expanded only when the
+           student taps the toggle. Styled like a hint band but visually
+           distinct from the verdict feedback. */
+        .rl-hint-panel {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: rgba(255, 220, 80, 0.12);
+            border: 1px solid rgba(255, 200, 60, 0.35);
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #7a5a00;
+        }
+        .rl-hint-panel[hidden] { display: none; }
+        /* Post-grading row — holds the local Keyingi button. Hidden until the
+           verdict is set (correct / wrong). */
+        .rl-q-after {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 10px;
+        }
+        .rl-q-after[hidden] { display: none; }
+        .rl-next-local {
+            border: 0;
+            border-radius: 999px;
+            padding: 9px 22px;
+            background: var(--accent, #0066CC);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+            transition: background 150ms ease, transform 100ms ease;
+        }
+        .rl-next-local:hover  { background: #0062cc; }
+        .rl-next-local:active { transform: scale(0.97); }
         .rl-capture-area {
             margin-top: 14px;
             display: flex;
@@ -5046,6 +5264,33 @@
         }
         .rl-anim-out { animation: rl-slide-out-left 320ms ease-in forwards; }
         .rl-anim-in  { animation: rl-slide-in-right  350ms ease-out forwards; }
+
+        /* Short-screen compaction — laptops with low vertical real estate
+           (e.g. 13" 720p) need the story panel to give up more room so the
+           question + feedback band stay above the action button. */
+        @media (max-height: 760px) {
+            .rl-story-wrap {
+                flex-basis: clamp(120px, 22vh, 190px);
+                min-height: 120px;
+                max-height: 190px;
+            }
+            .rl-story-text {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            .rl-q-prompt {
+                font-size: 13px;
+                line-height: 1.38;
+            }
+            .rl-verdict {
+                min-width: 68px;
+                font-size: 10px;
+                padding: 3px 7px;
+            }
+            .rl-feedback-main {
+                gap: 7px;
+            }
+        }
 
         /* ── FINAL BOSS ─────────────────────────────────── */
         .boss-shell {
@@ -8450,11 +8695,15 @@
             <div class="card panel-card rl-card" id="rl-card">
                 <div class="rl-header-badge" id="rl-header-badge">VAZIFA · Yashil Makon loyihasi</div>
 
-                <!-- Story screen -->
+                <!-- Story panel — horizontally paged. Stays visible while
+                     the student answers questions below; drag/swipe to
+                     navigate pages. Page count + active dot rendered by
+                     rlRenderStory() on phase entry. -->
                 <div id="rl-story-section" class="rl-story-wrap">
                     <div class="rl-story-body" id="rl-story-scroll"></div>
                     <div class="rl-story-fade"></div>
                 </div>
+                <div class="rl-story-dots" id="rl-story-dots" data-pages="0"></div>
 
                 <!-- Question screens Q1-Q6 -->
                 <div id="rl-q1" class="rl-q-wrap">
@@ -8810,6 +9059,11 @@
                 'btn.game_break':        "O'yin tanaffusi",
                 'btn.read':              "O'qishga o'tish",
                 'btn.submit_response':   'Javobni yuborish',
+                'btn.send':              "Javobni Jo'natish",
+                'btn.show_hint':         "💡 Hint ko'rish",
+                'btn.hide_hint':         "💡 Hintni yopish",
+                'btn.ask_tutor':         '💬 Tyutor',
+                'rl.ai_unavailable_wrong': 'Javob qabul qilindi. AI hozirda javob bera olmadi.',
                 // verdicts (shared)
                 'verdict.correct':       "✓ To'g'ri!",
                 'verdict.wrong':         "✗ Noto'g'ri.",
@@ -9149,6 +9403,11 @@
                 'btn.game_break':        'Игровой перерыв',
                 'btn.read':              'К чтению',
                 'btn.submit_response':   'Отправить ответ',
+                'btn.send':              'Отправить ответ',
+                'btn.show_hint':         '💡 Показать подсказку',
+                'btn.hide_hint':         '💡 Скрыть подсказку',
+                'btn.ask_tutor':         '💬 Тьютор',
+                'rl.ai_unavailable_wrong': 'Ответ принят. AI временно недоступен.',
                 'verdict.correct':       '✓ Верно!',
                 'verdict.wrong':         '✗ Неверно.',
                 'verdict.right_answer':  'Правильный ответ:',
@@ -9475,6 +9734,11 @@
                 'btn.game_break':        'Game break',
                 'btn.read':              'Go to reading',
                 'btn.submit_response':   'Submit answer',
+                'btn.send':              'Send answer',
+                'btn.show_hint':         '💡 Show hint',
+                'btn.hide_hint':         '💡 Hide hint',
+                'btn.ask_tutor':         '💬 Tutor',
+                'rl.ai_unavailable_wrong': 'Answer received. AI is temporarily unavailable.',
                 'verdict.correct':       '✓ Correct!',
                 'verdict.wrong':         '✗ Wrong.',
                 'verdict.right_answer':  'Correct answer:',
@@ -16468,7 +16732,17 @@ Prezident ertaga hisobot kutmoqda.`,
             captureDone: [false, false, false, false, false, false],
             captureQ3Done: false,
             submitted: [false, false, false, false, false, false],
-            captureCount: 0
+            captureCount: 0,
+            // Per-question busy flag — guards against double-submit while a
+            // check is in flight (local or AI). Set true on submit, false on
+            // verdict / safety timeout. The submit handler returns early when
+            // checking[idx] is true so the user can mash the button without
+            // firing the AI twice.
+            checking: [false, false, false, false, false, false],
+            // Per-question hint visibility — toggled by .rl-hint-toggle. Hints
+            // are opt-in only; they never auto-display so students who don't
+            // need help aren't shown one (per design rule).
+            hintOpen: [false, false, false, false, false, false]
         };
 
         function rlNorm(s) {
@@ -16514,26 +16788,294 @@ Prezident ertaga hisobot kutmoqda.`,
         // Legacy alias for the hardcoded Q3 button still in the markup.
         function rlCaptureQ3() { rlCapture(2); }
 
-        function rlSetFeedback(id, cls, text) {
+        // Structured feedback renderer. Emits:
+        //   <div class="rl-feedback-main">
+        //     <span class="rl-verdict ...">✓ To'g'ri | ✗ Noto'g'ri | spinner</span>
+        //     <span class="rl-feedback-text">[message + optional AI baho badge]</span>
+        //   </div>
+        //
+        // opts:
+        //   aiBadge:   bool — append <span class="screen-reading-ai-badge">AI baho</span>
+        //                     to the text (only fire on AI-graded results)
+        //   showTutor: bool — DEPRECATED. Kept for back-compat with any caller
+        //                     still passing it; ignored. Tutor is now offered
+        //                     via the per-question pre-submit button rather
+        //                     than inline in the feedback band.
+        //
+        // text:
+        //   may contain HTML — we trust author/translation/AI sources here
+        //   the same way the rest of the runtime does (existing innerHTML
+        //   sites). If we ever sanitize, do it at the data-entry boundary,
+        //   not here.
+        function rlSetFeedback(id, cls, text, opts) {
             const el = document.getElementById(id);
             if (!el) return;
+            opts = opts || {};
             el.className = 'rl-feedback ' + cls;
-            el.textContent = text;
+            el.setAttribute('aria-live', 'polite');
+
+            let marker = '';
+            if (cls === 'rl-correct') {
+                marker = '<span class="rl-verdict rl-verdict-ok">✓ To‘g‘ri</span>';
+            } else if (cls === 'rl-wrong') {
+                marker = '<span class="rl-verdict rl-verdict-bad">✗ Noto‘g‘ri</span>';
+            } else if (cls === 'rl-loading') {
+                marker = '<span class="rl-spinner" aria-hidden="true"></span>'
+                       + '<span class="rl-verdict rl-verdict-checking">Tekshirilmoqda…</span>';
+            }
+            // rl-hint and rl-open render no verdict pill — they are
+            // pre-AI states (local hint / acknowledged open response)
+            // not verdicts.
+
+            const badge = (opts.aiBadge === true)
+                ? ' <span class="screen-reading-ai-badge">AI baho</span>'
+                : '';
+
+            el.innerHTML =
+                '<div class="rl-feedback-main">'
+              +   marker
+              +   '<span class="rl-feedback-text">' + (text || '') + badge + '</span>'
+              + '</div>';
         }
 
         function rlHideFeedback(id) {
             const el = document.getElementById(id);
-            if (el) { el.className = 'rl-feedback'; el.textContent = ''; }
+            if (el) { el.className = 'rl-feedback'; el.innerHTML = ''; }
+        }
+
+        // Toggle the per-question hint panel. Hints are opt-in — they never
+        // auto-display on first wrong attempt anymore (per design rule).
+        // The button label flips between "Show hint" and "Hide hint" so the
+        // affordance is obvious in both states.
+        function rlToggleHint(idx) {
+            const panel = document.getElementById('rl-q' + (idx + 1) + '-hint-panel');
+            const btn = document.getElementById('rl-q' + (idx + 1) + '-hint-toggle');
+            if (!panel) return;
+            const open = !panel.hidden;
+            panel.hidden = open; // flip
+            if (stage6State.hintOpen) stage6State.hintOpen[idx] = !open;
+            if (btn) {
+                btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+                btn.textContent = open ? RT('btn.show_hint') : RT('btn.hide_hint');
+            }
+        }
+
+        // Open the persistent tutor widget. The student must be able to ask
+        // the tutor BEFORE they submit (they don't get a retry afterward).
+        // Programmatically clicks the floating CTA so we don't duplicate
+        // its show-panel logic here.
+        function rlAskTutor(idx) {
+            // Mark this question's tutor was offered — could be used for
+            // analytics / session log; for now just opens the panel.
+            const cta = document.getElementById('nets-tutor-cta');
+            if (cta) {
+                cta.removeAttribute('hidden');
+                cta.click();
+            } else {
+                // Fall back to dispatching the open event directly — covers
+                // the case where the CTA is suppressed but the widget is
+                // still mounted.
+                try {
+                    document.dispatchEvent(new CustomEvent('nets:tutor:open', { detail: { phase: 'real-life', qIndex: idx } }));
+                } catch (e) {}
+            }
         }
 
         function rlRenderStory() {
             const scroll = document.getElementById('rl-story-scroll');
+            const dots = document.getElementById('rl-story-dots');
             if (scroll) {
-                const p = document.createElement('p');
-                p.className = 'rl-story-text';
-                // innerHTML — scenario story may contain inline images/SVGs/bold/italic.
-                p.innerHTML = RL_SCENARIO.story || '';
-                scroll.appendChild(p);
+                scroll.innerHTML = '';
+                const story = RL_SCENARIO.story || '';
+                // Split on blank-line paragraph breaks; fall back to a single
+                // chunk if author wrote one continuous block.
+                const chunks = story.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+                const paragraphs = chunks.length ? chunks : [story];
+
+                // Pack content into pages two-stage:
+                // 1) try paragraph-at-a-time; if a paragraph would overflow,
+                //    roll back and start a new page with that paragraph
+                // 2) if a single paragraph is itself bigger than the panel,
+                //    split it into sentences and pack those into pages so the
+                //    text never gets clipped at the bottom edge.
+                const panelHeight = scroll.clientHeight || 220;
+                let pageEl = null;
+                let pageTextEl = null;
+                const startNewPage = () => {
+                    pageEl = document.createElement('div');
+                    pageEl.className = 'rl-story-page';
+                    pageTextEl = document.createElement('p');
+                    pageTextEl.className = 'rl-story-text';
+                    pageEl.appendChild(pageTextEl);
+                    scroll.appendChild(pageEl);
+                };
+                // Split a too-tall paragraph into sentence-level chunks. We
+                // keep terminators with the sentence so the text reads
+                // naturally. Falls through to whole-paragraph if no
+                // sentence boundaries exist.
+                const sentenceSplit = (text) => {
+                    const out = [];
+                    const re = /[^.!?\n]+[.!?\n]+\s*|[^.!?\n]+$/g;
+                    let m;
+                    while ((m = re.exec(text)) !== null) {
+                        const piece = m[0].trim();
+                        if (piece) out.push(piece);
+                    }
+                    return out.length ? out : [text];
+                };
+                const appendChunk = (chunk, sep) => {
+                    const prev = pageTextEl.innerHTML;
+                    pageTextEl.innerHTML = prev + (prev ? sep : '') + chunk;
+                    if (pageTextEl.scrollHeight > panelHeight && prev) {
+                        // Overflow with content already on the page → roll
+                        // back, start a new page, and place this chunk alone.
+                        pageTextEl.innerHTML = prev;
+                        startNewPage();
+                        pageTextEl.innerHTML = chunk;
+                    }
+                };
+                startNewPage();
+                paragraphs.forEach((para) => {
+                    // Try the whole paragraph first.
+                    const probePrev = pageTextEl.innerHTML;
+                    pageTextEl.innerHTML = probePrev + (probePrev ? '\n\n' : '') + para;
+                    if (pageTextEl.scrollHeight <= panelHeight) {
+                        // Fits — keep as-is.
+                        return;
+                    }
+                    // Doesn't fit. Roll back, then either start a new page
+                    // (if there was prior content) or split this paragraph
+                    // into sentences for sub-page packing.
+                    pageTextEl.innerHTML = probePrev;
+                    if (probePrev) startNewPage();
+                    pageTextEl.innerHTML = para;
+                    if (pageTextEl.scrollHeight <= panelHeight) {
+                        // Single-paragraph page that fits when alone.
+                        return;
+                    }
+                    // Even alone the paragraph overflows — split by sentence.
+                    pageTextEl.innerHTML = '';
+                    const sentences = sentenceSplit(para);
+                    sentences.forEach((s) => appendChunk(s, ' '));
+                });
+
+                // Render the page-indicator dots.
+                if (dots) {
+                    dots.innerHTML = '';
+                    const pageCount = scroll.children.length;
+                    dots.setAttribute('data-pages', String(pageCount));
+                    for (let i = 0; i < pageCount; i++) {
+                        const d = document.createElement('span');
+                        d.className = 'rl-story-dot' + (i === 0 ? ' is-active' : '');
+                        d.setAttribute('data-page', String(i));
+                        dots.appendChild(d);
+                    }
+                }
+
+                // Update active dot on scroll. Native scroll-snap handles the
+                // snap; we only listen so the dots reflect the visible page.
+                if (!scroll.__rlDotsBound) {
+                    scroll.__rlDotsBound = true;
+                    scroll.addEventListener('scroll', () => {
+                        const w = scroll.clientWidth || 1;
+                        const cur = Math.round(scroll.scrollLeft / w);
+                        const all = dots ? dots.querySelectorAll('.rl-story-dot') : [];
+                        all.forEach((el, i) => {
+                            if (i === cur) el.classList.add('is-active');
+                            else el.classList.remove('is-active');
+                        });
+                    }, { passive: true });
+                }
+
+                // Mouse drag-to-pan for desktop. Touch is handled by native
+                // overflow-x scroll. Two-stage: mousedown captures intent,
+                // then we only enter "drag" mode if the user actually moves
+                // past a threshold — that way a normal click (no movement)
+                // still allows text selection.
+                if (!scroll.__rlDragBound) {
+                    scroll.__rlDragBound = true;
+                    const DRAG_THRESHOLD = 6;
+                    let downX = 0, downScroll = 0;
+                    let pending = false;   // mousedown captured, threshold not yet crossed
+                    let active = false;    // crossed threshold — actively dragging
+                    let suppressNextClick = false;
+
+                    scroll.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return;
+                        // Don't intercept clicks on form controls / links inside the panel.
+                        const tag = (e.target.tagName || '').toLowerCase();
+                        if (tag === 'input' || tag === 'button' || tag === 'a' || tag === 'select') return;
+                        pending = true;
+                        active = false;
+                        downX = e.clientX;
+                        downScroll = scroll.scrollLeft;
+                    });
+
+                    window.addEventListener('mousemove', (e) => {
+                        if (!pending) return;
+                        const dx = e.clientX - downX;
+                        if (!active) {
+                            if (Math.abs(dx) < DRAG_THRESHOLD) return;
+                            // Crossed threshold — enter drag mode. preventDefault
+                            // here suppresses the in-progress text selection
+                            // and the cursor flips to grabbing.
+                            active = true;
+                            scroll.classList.add('rl-dragging');
+                            // Clear any selection that may have started before
+                            // the threshold was crossed.
+                            const sel = window.getSelection && window.getSelection();
+                            if (sel && sel.removeAllRanges) sel.removeAllRanges();
+                        }
+                        e.preventDefault();
+                        scroll.scrollLeft = downScroll - dx;
+                    });
+
+                    window.addEventListener('mouseup', (e) => {
+                        if (!pending) return;
+                        pending = false;
+                        if (active) {
+                            active = false;
+                            scroll.classList.remove('rl-dragging');
+                            // Snap to nearest page (scroll-snap usually handles
+                            // this on its own, but a manual smoothScroll guards
+                            // against browsers that don't snap on programmatic
+                            // scrollLeft changes).
+                            const w = scroll.clientWidth || 1;
+                            const target = Math.round(scroll.scrollLeft / w) * w;
+                            scroll.scrollTo({ left: target, behavior: 'smooth' });
+                            // Swallow the synthetic click that follows mouseup
+                            // so a drag-release doesn't accidentally trigger
+                            // any click handler under the cursor.
+                            suppressNextClick = true;
+                        }
+                    });
+
+                    scroll.addEventListener('click', (e) => {
+                        if (suppressNextClick) {
+                            suppressNextClick = false;
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }, true);
+                }
+
+                // Keyboard navigation — ←/→ flips story pages when the RL
+                // screen is active. Document-level listener (idempotent
+                // via __rlKeyboardBound guard) so the student can press
+                // arrows without focusing the panel first.
+                if (!document.__rlKeyboardBound) {
+                    document.__rlKeyboardBound = true;
+                    document.addEventListener('keydown', (e) => {
+                        const screen = document.getElementById('screen-6');
+                        const sc = document.getElementById('rl-story-scroll');
+                        if (!screen || !screen.classList.contains('active') || !sc) return;
+                        if (e.key === 'ArrowRight') {
+                            sc.scrollBy({ left: sc.clientWidth, behavior: 'smooth' });
+                        } else if (e.key === 'ArrowLeft') {
+                            sc.scrollBy({ left: -sc.clientWidth, behavior: 'smooth' });
+                        }
+                    });
+                }
             }
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
@@ -16670,6 +17212,83 @@ Prezident ertaga hisobot kutmoqda.`,
             }
 
             rlHideFeedback('rl-q' + (idx + 1) + '-fb');
+
+            // Per-question buttons. Replaces the legacy "submit via the bottom
+            // action button" pattern: each question now owns its own submit,
+            // optional hint toggle, optional tutor pre-submit, and a post-
+            // grading Keyingi. Re-render safe — the entire row group is rebuilt
+            // every time rlRenderQuestion fires.
+            if (qBody) {
+                // Tear down anything from a prior render of this slot.
+                qBody.querySelectorAll('.rl-q-actions, .rl-hint-panel, .rl-q-after').forEach(el => el.remove());
+
+                const fb = qBody.querySelector('.rl-feedback');
+
+                // Pre-submit action row.
+                const actions = document.createElement('div');
+                actions.className = 'rl-q-actions';
+                const submitBtn = document.createElement('button');
+                submitBtn.type = 'button';
+                submitBtn.className = 'rl-submit-local';
+                submitBtn.id = 'rl-q' + (idx + 1) + '-submit';
+                submitBtn.textContent = RT('btn.send');
+                submitBtn.addEventListener('click', () => rlSubmitQuestion());
+                actions.appendChild(submitBtn);
+
+                if (q.hint) {
+                    const hintBtn = document.createElement('button');
+                    hintBtn.type = 'button';
+                    hintBtn.className = 'rl-hint-toggle';
+                    hintBtn.id = 'rl-q' + (idx + 1) + '-hint-toggle';
+                    hintBtn.setAttribute('aria-expanded', 'false');
+                    hintBtn.textContent = RT('btn.show_hint');
+                    hintBtn.addEventListener('click', () => rlToggleHint(idx));
+                    actions.appendChild(hintBtn);
+                }
+
+                const tutorBtn = document.createElement('button');
+                tutorBtn.type = 'button';
+                tutorBtn.className = 'rl-tutor-pre-submit';
+                tutorBtn.id = 'rl-q' + (idx + 1) + '-tutor';
+                tutorBtn.textContent = RT('btn.ask_tutor');
+                tutorBtn.addEventListener('click', () => rlAskTutor(idx));
+                actions.appendChild(tutorBtn);
+
+                // Hint panel — collapsed by default.
+                const hintPanel = document.createElement('div');
+                hintPanel.className = 'rl-hint-panel';
+                hintPanel.id = 'rl-q' + (idx + 1) + '-hint-panel';
+                hintPanel.hidden = true;
+                if (q.hint) hintPanel.textContent = q.hint;
+
+                // Post-grading row — hidden until verdict is set.
+                const after = document.createElement('div');
+                after.className = 'rl-q-after';
+                after.id = 'rl-q' + (idx + 1) + '-after';
+                after.hidden = true;
+                const nextBtn = document.createElement('button');
+                nextBtn.type = 'button';
+                nextBtn.className = 'rl-next-local';
+                nextBtn.id = 'rl-q' + (idx + 1) + '-next';
+                nextBtn.textContent = RT('btn.next_question');
+                nextBtn.addEventListener('click', () => rlAdvanceFromQuestion());
+                after.appendChild(nextBtn);
+
+                // Insertion order: actions row → hint panel → existing feedback → after row.
+                if (fb) {
+                    qBody.insertBefore(actions, fb);
+                    qBody.insertBefore(hintPanel, fb);
+                    fb.insertAdjacentElement('afterend', after);
+                } else {
+                    qBody.appendChild(actions);
+                    qBody.appendChild(hintPanel);
+                    qBody.appendChild(after);
+                }
+            }
+
+            // Reset per-question runtime flags so a re-render gives a clean slot.
+            if (stage6State.checking) stage6State.checking[idx] = false;
+            if (stage6State.hintOpen) stage6State.hintOpen[idx] = false;
         }
 
         function rlShowQuestion(idx) {
@@ -16677,8 +17296,9 @@ Prezident ertaga hisobot kutmoqda.`,
                 const el = document.getElementById('rl-q' + i);
                 if (el) el.classList.remove('rl-active');
             }
-            const story = document.getElementById('rl-story-section');
-            if (story) story.style.display = 'none';
+            // Story panel stays visible alongside the question — it's the
+            // student's reference passage, not a separate "screen". Only
+            // the closure card is mutually exclusive with the question.
             const closure = document.getElementById('rl-closure');
             if (closure) closure.classList.remove('rl-active');
 
@@ -16690,7 +17310,13 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.qIndex = idx;
             stage6State.screen = 'q' + (idx + 1);
 
-            rlMorphButton(RT('btn.submit_response'));
+            // The fixed bottom button is now phase-level only — submit and
+            // next happen via per-question local buttons (.rl-submit-local /
+            // .rl-next-local). Hide the bottom button while we're in the
+            // question loop; rlShowClosure() re-shows it for the phase-end
+            // advance.
+            const ab = document.getElementById('action-button');
+            if (ab) ab.style.display = 'none';
         }
 
         function rlAnimateTransition(fromEl, toEl, onDone) {
@@ -16721,21 +17347,24 @@ Prezident ertaga hisobot kutmoqda.`,
         let rlPendingAi = null;
         let rlPendingAiTimer = null;
 
-        // While AI is grading the student's open-ended response we must NOT
-        // let them tap "Keyingi" and skip past the verdict. setRlAiLock(true)
-        // dims #action-button and routes its clicks to a no-op until either
-        // the `nets:result` listener clears it, or the safety timeout fires
-        // (so a dropped event can't permanently freeze the button).
+        // While AI is grading we lock the active question's local submit
+        // button (was: the global #action-button). The lock is paired with
+        // stage6State.checking[idx] for the data-side guard; this CSS lock
+        // is the visible/UI affordance. The 12s safety timeout still fires
+        // so a dropped nets:result event can't permanently freeze the
+        // button.
         const RL_AI_LOCK_TIMEOUT_MS = 12000;
-        function setRlAiLock(locked) {
-            const el = document.getElementById('action-button');
-            if (!el) return;
+        function setRlAiLock(locked, idx) {
+            // idx is optional — when omitted we look up the active question.
+            const i = (typeof idx === 'number') ? idx : (stage6State && stage6State.qIndex);
+            const btn = document.getElementById('rl-q' + ((i || 0) + 1) + '-submit');
+            if (!btn) return;
             if (locked) {
-                el.classList.add('is-ai-pending');
-                el.setAttribute('aria-busy', 'true');
+                btn.disabled = true;
+                btn.setAttribute('aria-busy', 'true');
             } else {
-                el.classList.remove('is-ai-pending');
-                el.removeAttribute('aria-busy');
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
             }
         }
 
@@ -16744,8 +17373,16 @@ Prezident ertaga hisobot kutmoqda.`,
                 clearTimeout(rlPendingAiTimer);
                 rlPendingAiTimer = null;
             }
+            // If the lock fired but no result came back (safety timeout),
+            // also clear the per-question busy flag so the student isn't
+            // stuck. submitted[idx] stays false so they get redirected to
+            // a verdict on next submit attempt.
+            if (rlPendingAi && stage6State.checking) {
+                stage6State.checking[rlPendingAi.qIndex] = false;
+            }
+            const lockIdx = rlPendingAi ? rlPendingAi.qIndex : undefined;
             rlPendingAi = null;
-            setRlAiLock(false);
+            setRlAiLock(false, lockIdx);
         }
 
         function rlDispatchTutorAi(idx, q, val) {
@@ -16775,70 +17412,59 @@ Prezident ertaga hisobot kutmoqda.`,
             return ticket;
         }
 
+        // Mark the question committed (verdict shown, no retry). Hides the
+        // pre-submit row and reveals the local Keyingi button. Used by the
+        // local-correct path AND by the AI-result handler when the verdict
+        // arrives. Idempotent.
+        function rlCommitQuestion(idx) {
+            const actions = document.querySelector('#rl-q' + (idx + 1) + ' .rl-q-actions');
+            const after = document.getElementById('rl-q' + (idx + 1) + '-after');
+            if (actions) actions.style.display = 'none';
+            if (after) after.hidden = false;
+        }
+
+        // Single-check submit handler. Per design rule: local exact-match
+        // first; if the answer matches a canonical form, ✓ immediately and
+        // we don't bill an AI call. Only when the local check rejects do we
+        // dispatch the AI to evaluate equivalent forms (e.g. (7a-4b)(7a+4b)
+        // vs (7a+4b)(7a-4b) — algebraically same but textually different).
+        // The verdict is final; no retry. Pre-fix code dual-fired (local
+        // hint AND AI dispatch) on first wrong attempt, which produced
+        // overlapping feedback and confused students.
         function rlSubmitQuestion() {
             if (state.isAnimating) return;
             const idx = stage6State.qIndex;
             const q = RL_SCENARIO.questions[idx];
             const fbId = 'rl-q' + (idx + 1) + '-fb';
 
-            if (stage6State.submitted[idx]) {
-                rlAdvanceFromQuestion();
-                return;
-            }
+            // Guard against double-submit during in-flight AI checks.
+            if (stage6State.checking && stage6State.checking[idx]) return;
+            // Guard against re-firing after the verdict is already in.
+            if (stage6State.submitted[idx]) return;
 
-            let correct = false;
+            // Branch by question type for input validation + local checker.
+            // After validation, every path converges on rlCommitOrAi() below.
+            let val = '';
+            let studentSubmissionPayload = '';
+            let canLocalCheck = false;
+            let localCorrect = false;
 
             if (q.type === 'text' || q.type === 'text-with-capture') {
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
-                const val = inp ? inp.value.trim() : '';
+                val = inp ? inp.value.trim() : '';
 
-                // Per-question capture gate — was checking the legacy
-                // global captureQ3Done flag, which only the (hardcoded)
-                // Q3 button could set. Now reads the per-question
-                // captureDone[idx] populated by rlCapture(idx) on any
-                // dynamically-rendered upload button.
                 if (q.type === 'text-with-capture' && !(stage6State.captureDone && stage6State.captureDone[idx])) {
                     rlSetFeedback(fbId, 'rl-hint', RT('rl.upload_required'));
                     return;
                 }
-
                 if (!val) {
                     rlSetFeedback(fbId, 'rl-hint', RT('rl.enter_answer'));
                     return;
                 }
 
-                correct = rlMatchText(val, q.acceptableAnswers);
-
-                if (correct) {
-                    stage6State.correct[idx] = true;
-                    stage6State.submitted[idx] = true;
-                    rlSetFeedback(fbId, 'rl-correct', RT('rl.correct_prefix') + (q.type === 'text-with-capture' ? q.expectedWork : ''));
-                    if (window.__sessionLog) {
-                        // Per GRADING.md: closed-form correct items count toward
-                        // the donut/phase tally but must NOT contribute to AMR
-                        // axis means (axes only fire on open responses graded by
-                        // the LLM). So we omit axis_1 / axis_2 here.
-                        window.__sessionLog.push({
-                            phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
-                            correct: true, score: 1, first_try: true, closed: true,
-                        });
-                    }
-                    rlMorphButton(RT('btn.next_question'));
-                } else {
-                    stage6State.attempts[idx]++;
-                    if (stage6State.attempts[idx] === 1 && q.hint) {
-                        rlSetFeedback(fbId, 'rl-hint', '💡 ' + q.hint);
-                        // First-attempt failure with a local hint — also ask the AI for
-                        // a nuanced grade so the student gets ONE feedback bubble.
-                        // (Local hint stays; AI may upgrade to "correct" when /api/ai/tutor returns.)
-                        rlDispatchTutorAi(idx, q, val);
-                    } else {
-                        stage6State.submitted[idx] = true;
-                        rlSetFeedback(fbId, 'rl-wrong', RT('rl.ai_analyzing'));
-                        rlMorphButton(RT('btn.next_question'));
-                        rlDispatchTutorAi(idx, q, val);
-                    }
-                }
+                canLocalCheck = Array.isArray(q.acceptableAnswers) && q.acceptableAnswers.length > 0;
+                localCorrect = canLocalCheck && rlMatchText(val, q.acceptableAnswers);
+                studentSubmissionPayload = val;
 
             } else if (q.type === 'multi-input') {
                 const container = document.getElementById('rl-q' + (idx + 1) + '-fields');
@@ -16849,52 +17475,64 @@ Prezident ertaga hisobot kutmoqda.`,
                     return;
                 }
 
-                correct = rlMatchMulti(q.fields, Array.from(inputs));
-
-                if (correct) {
-                    stage6State.correct[idx] = true;
-                    stage6State.submitted[idx] = true;
-                    rlSetFeedback(fbId, 'rl-correct', RT('rl.all_correct'));
-                    rlMorphButton(RT('btn.next_question'));
-                } else {
-                    stage6State.attempts[idx]++;
-                    const studentMulti = Array.from(inputs).map((inp, ii) => {
-                        const lbl = (q.fields[ii] && q.fields[ii].label) || ('field' + ii);
-                        return lbl + '=' + (inp.value || '').trim();
-                    }).join(' · ');
-                    if (stage6State.attempts[idx] === 1) {
-                        rlSetFeedback(fbId, 'rl-hint', RT('rl.field_hint'));
-                        rlDispatchTutorAi(idx, q, studentMulti);
-                    } else {
-                        stage6State.submitted[idx] = true;
-                        const answers = q.fields.map(f => f.label + ': ' + f.acceptable[0]).join(' · ');
-                        rlSetFeedback(fbId, 'rl-wrong', RT('rl.right_answers') + answers);
-                        rlMorphButton(RT('btn.next_question'));
-                        rlDispatchTutorAi(idx, q, studentMulti);
-                    }
-                }
+                canLocalCheck = Array.isArray(q.fields) && q.fields.length > 0;
+                localCorrect = canLocalCheck && rlMatchMulti(q.fields, Array.from(inputs));
+                studentSubmissionPayload = Array.from(inputs).map((inp, ii) => {
+                    const lbl = (q.fields[ii] && q.fields[ii].label) || ('field' + ii);
+                    return lbl + '=' + (inp.value || '').trim();
+                }).join(' · ');
 
             } else if (q.type === 'textarea') {
-                // Read from the CURRENT question's textarea (rlRenderQuestion
-                // injects one with id=`rl-q{idx+1}-input` for any open-ended
-                // question). The reader was hardcoded to rl-q6-input which
-                // only existed for the legacy Yashil Makon Q6 — modern
-                // homeworks (e.g. HW-008) put the textarea on Q5.
                 const inp = document.getElementById('rl-q' + (idx + 1) + '-input');
-                const val = inp ? inp.value.trim() : '';
+                val = inp ? inp.value.trim() : '';
                 if (val.length < 20) {
                     rlSetFeedback(fbId, 'rl-hint', RT('rl.min_chars'));
                     return;
                 }
-                stage6State.submitted[idx] = true;
-                rlSetFeedback(fbId, 'rl-open', RT('rl.analysis_received'));
-                rlMorphButton(RT('btn.next_question'));
-                // Open-ended responses ALWAYS get AI grading — the local
-                // checker has no way to evaluate a free-form analysis. The
-                // tutor result listener (further down in the file) updates
-                // stage6State.correct[idx] when the AI verdict comes back.
-                rlDispatchTutorAi(idx, q, val);
+                // Open-ended: no local checker — straight to AI.
+                canLocalCheck = false;
+                studentSubmissionPayload = val;
+            } else {
+                // Unknown type — bail without state mutation.
+                return;
             }
+
+            // From here we commit to one check path. Engage the busy lock
+            // and disable the local submit button so a second click can't
+            // re-enter this function. Hide the tutor pre-submit since the
+            // student has now committed (no more help available — verdict
+            // is final).
+            stage6State.checking[idx] = true;
+            const submitBtn = document.getElementById('rl-q' + (idx + 1) + '-submit');
+            if (submitBtn) submitBtn.disabled = true;
+            const tutorBtn = document.getElementById('rl-q' + (idx + 1) + '-tutor');
+            if (tutorBtn) tutorBtn.style.display = 'none';
+
+            // Path 1 — local check passed: instant ✓, no AI call.
+            if (canLocalCheck && localCorrect) {
+                stage6State.correct[idx] = true;
+                stage6State.submitted[idx] = true;
+                stage6State.checking[idx] = false;
+                rlSetFeedback(fbId, 'rl-correct', RT('rl.correct_prefix') +
+                    (q.type === 'text-with-capture' ? (q.expectedWork || '') : ''));
+                if (window.__sessionLog) {
+                    window.__sessionLog.push({
+                        phase: 'real-life', id: q.id || ('rl-' + (idx + 1)),
+                        correct: true, score: 1, first_try: true, closed: true,
+                    });
+                }
+                rlCommitQuestion(idx);
+                return;
+            }
+
+            // Path 2 — local rejected (or no local possible for textarea):
+            // dispatch AI ONCE. The result handler at nets:result will:
+            //   • update the band to rl-correct (✓) or rl-wrong (✗)
+            //   • set submitted[idx] = true and clear checking[idx]
+            //   • call rlCommitQuestion to reveal Keyingi
+            stage6State.attempts[idx]++;
+            rlSetFeedback(fbId, 'rl-loading', '');
+            rlDispatchTutorAi(idx, q, studentSubmissionPayload);
         }
 
         // AI tutor result listener for real-life questions. Updates the
@@ -16923,8 +17561,12 @@ Prezident ertaga hisobot kutmoqda.`,
             if (aiCorrect) {
                 stage6State.correct[ticket.qIndex] = true;
                 stage6State.submitted[ticket.qIndex] = true;
-                fbEl.className = 'rl-feedback rl-correct';
-                fbEl.innerHTML = '✓ ' + (response || RT('reading.ai_correct_default')) + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                rlSetFeedback(
+                    fbId,
+                    'rl-correct',
+                    response || RT('reading.ai_correct_default'),
+                    { aiBadge: true, showTutor: false }
+                );
                 if (window.__sessionLog) {
                     const q = RL_SCENARIO.questions[ticket.qIndex];
                     const ax1 = (detail && detail.axis_1) || 3;
@@ -16935,16 +17577,36 @@ Prezident ertaga hisobot kutmoqda.`,
                         axis_1: ax1, axis_2: ax2, first_try: false,
                     });
                 }
-                rlMorphButton(RT('btn.next_question'));
             } else if (response) {
-                // Replace generic "wrong" text with AI feedback. Preserve current
-                // class (rl-wrong / rl-hint) so the color band stays consistent.
-                const cls = fbEl.classList.contains('rl-correct') ? 'rl-correct'
-                          : fbEl.classList.contains('rl-hint') ? 'rl-hint'
-                          : 'rl-wrong';
-                fbEl.className = 'rl-feedback ' + cls;
-                fbEl.innerHTML = response + ' <span class="screen-reading-ai-badge">AI baho</span>';
+                // AI returned a wrong/uncertain verdict. Always switch to
+                // rl-wrong (with the ✗ pill); pre-fix code preserved the
+                // hint color and the wrong band looked like a hint. No
+                // tutor fallback in the band — the student already had
+                // the chance to ask the tutor BEFORE submitting.
+                stage6State.submitted[ticket.qIndex] = true;
+                rlSetFeedback(
+                    fbId,
+                    'rl-wrong',
+                    response,
+                    { aiBadge: true, showTutor: false }
+                );
+            } else {
+                // No response and no aiCorrect — treat as wrong with a
+                // generic message so the student isn't left in limbo.
+                stage6State.submitted[ticket.qIndex] = true;
+                rlSetFeedback(
+                    fbId,
+                    'rl-wrong',
+                    RT('rl.ai_unavailable_wrong'),
+                    { aiBadge: false, showTutor: false }
+                );
             }
+            // Clear the busy lock and reveal the local Keyingi button so
+            // the student can move on. submitted[idx] is set in every
+            // branch above — rlCommitQuestion is idempotent so no harm
+            // double-calling.
+            stage6State.checking[ticket.qIndex] = false;
+            rlCommitQuestion(ticket.qIndex);
             rlClearAiPending();
         });
 
@@ -17004,6 +17666,12 @@ Prezident ertaga hisobot kutmoqda.`,
             closure.classList.add('rl-active');
             stage6State.screen = 'closure';
 
+            // Re-show the fixed bottom button for the phase-end advance —
+            // it was hidden during the question loop because each question
+            // had its own local submit/next buttons.
+            const ab = document.getElementById('action-button');
+            if (ab) ab.style.display = '';
+
             btn.classList.remove('pulse');
             rlMorphButton(RT('btn.next_stage'));
             btn.classList.add('pulse');
@@ -17050,6 +17718,8 @@ Prezident ertaga hisobot kutmoqda.`,
             stage6State.captureDone = [false, false, false, false, false, false];
             stage6State.captureQ3Done = false;
             stage6State.submitted = [false, false, false, false, false, false];
+            stage6State.checking = [false, false, false, false, false, false];
+            stage6State.hintOpen = [false, false, false, false, false, false];
             stage6State.captureCount = 0;
 
             for (let i = 1; i <= 6; i++) {
@@ -17060,10 +17730,24 @@ Prezident ertaga hisobot kutmoqda.`,
             if (closure) closure.classList.remove('rl-active');
 
             const story = document.getElementById('rl-story-section');
-            if (story) { story.style.display = ''; story.style.flex = '1'; }
+            // Reset to CSS defaults — pre-pagination code force-set flex:1
+            // here so the story would fill the card; new design relies on
+            // .rl-story-wrap's clamp() bound the panel height.
+            if (story) { story.style.display = ''; story.style.flex = ''; }
 
             const scroll = document.getElementById('rl-story-scroll');
-            if (scroll && !scroll.hasChildNodes()) rlRenderStory();
+            if (scroll && !scroll.hasChildNodes()) {
+                // Defer pagination two animation frames so the card has
+                // had a chance to lay out (it starts at opacity:0 here and
+                // may not yet have a real clientHeight on the panel —
+                // measuring too early gives 0 → fallback height → wrong
+                // page count).
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        rlRenderStory();
+                    });
+                });
+            }
 
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
@@ -17088,15 +17772,12 @@ Prezident ertaga hisobot kutmoqda.`,
 
         function rlHandleAction() {
             if (stage6State.screen === 'story') {
-                state.isAnimating = true;
+                // Story panel stays visible permanently as a reference; only
+                // the question slot reveals on Start. Pre-pagination code
+                // faded out and display:none'd the story here, which broke
+                // the "passage stays alongside the question" contract.
                 btn.classList.remove('pulse');
-                const story = document.getElementById('rl-story-section');
-                if (story) { story.style.transition = 'opacity 320ms ease'; story.style.opacity = '0'; }
-                setTimeout(() => {
-                    if (story) { story.style.display = 'none'; story.style.opacity = ''; story.style.transition = ''; }
-                    rlShowQuestion(0);
-                    state.isAnimating = false;
-                }, 330);
+                rlShowQuestion(0);
                 return;
             }
             if (stage6State.screen === 'closure') {
