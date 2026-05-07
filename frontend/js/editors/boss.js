@@ -21,13 +21,6 @@
   window.Editors = window.Editors || {};
 
   const DAMAGE_VALUES = [10, 20, 30];
-  const ANSWER_TYPES = [
-    { value: "numeric", label: "Numeric" },
-    { value: "set_match", label: "Equation roots / set" },
-    { value: "text_exact", label: "Text (exact)" },
-    { value: "text_fuzzy", label: "Text (fuzzy)" },
-    { value: "semantic", label: "Free-form (AI only)" }
-  ];
 
   // ---------------------------------------------------------------------------
   // Boss-meta + per-question metadata helpers
@@ -78,7 +71,6 @@
       attempts_max: defaultAttemptsForBossType("sub", ctx.tier),
       starting_hp_override: null,
       anti_cheat: null,
-      use_dynamic_boss: false,
     };
   }
 
@@ -122,7 +114,6 @@
       starting_hp_override: meta.starting_hp_override == null
         ? null
         : (Number.isFinite(Number(meta.starting_hp_override)) ? Number(meta.starting_hp_override) : null),
-      use_dynamic_boss: meta.use_dynamic_boss === true,
       anti_cheat: meta.anti_cheat && typeof meta.anti_cheat === "object"
         ? {
             paste_detect: Boolean(meta.anti_cheat.paste_detect),
@@ -193,55 +184,15 @@
     return JSON.parse(JSON.stringify(value ?? []));
   }
 
-  function defaultAnswerSpec() {
-    return {
-      type: "text_fuzzy",
-      expected: "",
-      canonical_display: "",
-      allow_ai_fallback: true,
-      rubric: {
-        correct: "To'g'ri javob!",
-        partial: "Qisman to'g'ri.",
-        incorrect: "Notog'ri javob."
-      }
-    };
-  }
-
   function normalizeQuestion(question) {
     const dmg = DAMAGE_VALUES.includes(Number(question?.dmg)) ? Number(question.dmg) : 10;
-
-    // Merge default spec/rubric with whatever the question provides.
-    // Replacing the whole default with question.answer_spec dropped rubric
-    // keys when fixtures supplied answer_spec without a rubric, and the
-    // editor crashed on spec.rubric.correct.
-    const defaults = defaultAnswerSpec();
-    const provided = question?.answer_spec || {};
-    const providedRubric = provided.rubric || {};
-    const spec = {
-      ...defaults,
-      ...provided,
-      rubric: {
-        ...defaults.rubric,
-        ...providedRubric
-      }
-    };
-
-    // Backward compat: if old ans exists and spec is empty, try to migrate
-    if (!spec.canonical_display && question?.ans && question.ans.length) {
-      spec.canonical_display = question.ans[0];
-      spec.expected = question.ans[0];
-    }
 
     return {
       q: question?.q || "",
       tags: question?.tags || `[Bloom: L2 | PISA: L2 | Damage: -${dmg} HP]`,
-      ans: Array.isArray(question?.ans) && question.ans.length ? question.ans : [spec.canonical_display || ""],
+      ans: Array.isArray(question?.ans) && question.ans.length ? question.ans : [""],
       hint: question?.hint || "",
       dmg,
-      answer_spec: spec,
-      // New explicit per-question metadata (Chunk A schema additions —
-      // FINAL_BOSS_BACKEND_PLAN.md §1a). Empty string = "use default" so the
-      // editor can render an empty-option state without dropping the field.
       pisa_level: PISA_LEVELS.includes(question?.pisa_level) ? question.pisa_level : "",
       bloom_level: BLOOM_LEVELS.includes(question?.bloom_level) ? question.bloom_level : "",
       hint_cost_per_use: Number.isFinite(Number(question?.hint_cost_per_use))
@@ -275,79 +226,6 @@
     ).join("");
   }
 
-  function renderAnswerSpecForm(question, index) {
-    const spec = question.answer_spec;
-    const typeOptions = ANSWER_TYPES.map(
-      t => `<option value="${t.value}" ${t.value === spec.type ? "selected" : ""}>${t.label}</option>`
-    ).join("");
-
-    let typeSpecificFields = "";
-    if (spec.type === "numeric") {
-      typeSpecificFields = `
-        <label class="field">
-          <span>Expected Number</span>
-          <input type="number" step="any" class="js-spec-field" data-key="expected" value="${escapeHtml(spec.expected)}" />
-        </label>
-        <label class="field">
-          <span>Tolerance (±)</span>
-          <input type="number" step="any" class="js-spec-field" data-key="tolerance" value="${escapeHtml(spec.tolerance || 0)}" />
-        </label>
-      `;
-    } else if (spec.type === "set_match") {
-      typeSpecificFields = `
-        <label class="field full-span">
-          <span>Expected Set (comma-separated, e.g. "9, -9")</span>
-          <input type="text" class="js-spec-field" data-key="expected" value="${escapeHtml(Array.isArray(spec.expected) ? spec.expected.join(", ") : spec.expected)}" />
-        </label>
-      `;
-    }
-
-    return `
-      <div class="editor-grid">
-        <label class="field">
-          <span>Canonical Display Answer</span>
-          <input type="text" class="js-spec-field" data-key="canonical_display" value="${escapeHtml(spec.canonical_display)}" placeholder="Model answer shown to students" />
-        </label>
-        <label class="field">
-          <span>Answer Type</span>
-          <select class="js-spec-type">
-            ${typeOptions}
-          </select>
-        </label>
-
-        ${typeSpecificFields}
-
-        <label class="field full-span">
-          <input type="checkbox" class="js-spec-ai" ${spec.allow_ai_fallback ? "checked" : ""} />
-          <span>Allow AI Fallback for messy/semantic answers</span>
-        </label>
-
-        <details class="full-span">
-          <summary>Grading Rubric (AI usage)</summary>
-          <div class="editor-grid" style="margin-top: 10px;">
-            <label class="field full-span">
-              <span>Correct</span>
-              <textarea class="js-rubric-field" data-key="correct" rows="2">${escapeHtml(spec.rubric.correct)}</textarea>
-            </label>
-            <label class="field full-span">
-              <span>Partial</span>
-              <textarea class="js-rubric-field" data-key="partial" rows="2">${escapeHtml(spec.rubric.partial)}</textarea>
-            </label>
-            <label class="field full-span">
-              <span>Incorrect</span>
-              <textarea class="js-rubric-field" data-key="incorrect" rows="2">${escapeHtml(spec.rubric.incorrect)}</textarea>
-            </label>
-          </div>
-        </details>
-
-        <div class="full-span preview-pane js-preview-pane" id="preview-${index}">
-          <p class="eyebrow">Accepted Examples (AI/Deterministic)</p>
-          <div class="preview-content js-preview-content">Loading preview...</div>
-        </div>
-      </div>
-    `;
-  }
-
   function render(container, data, onChange, context = {}) {
     const ctx = {
       ...defaultContext(),
@@ -378,7 +256,6 @@
                 response_time_floor_ms: Number(existingMeta.anti_cheat.response_time_floor_ms) || 0,
               }
             : null,
-          use_dynamic_boss: existingMeta.use_dynamic_boss === true,
         }
       : defaultBossMeta(ctx);
 
@@ -400,12 +277,6 @@
             : String(defaultAttemptsForBossType(meta.boss_type, ctx.tier)))
         : "";
       const ac = meta.anti_cheat || { paste_detect: false, response_time_floor_ms: 0 };
-      const staticQuestionEyebrow = meta.use_dynamic_boss
-        ? "Fallback Static Boss Questions"
-        : "Final Challenge";
-      const staticQuestionHelp = meta.use_dynamic_boss
-        ? "AI Dynamic Boss is enabled. These static questions remain available as fallback if AI is unavailable."
-        : "Boss questions map to <strong>BOSS_QUESTIONS</strong>. Damage should usually be 10, 20, or 30 HP.";
 
       container.innerHTML = `
         <div class="editor-list">
@@ -423,12 +294,6 @@
               ui.metaOpen
                 ? `
                 <div class="editor-grid">
-                  <label class="field full-span boss-dynamic-toggle">
-                    <input class="js-meta-dynamic" data-key="use_dynamic_boss" type="checkbox"
-                      ${meta.use_dynamic_boss ? "checked" : ""} />
-                    <span>Enable AI Dynamic Boss Questions</span>
-                    <small class="sf-hint">When enabled, students face AI-generated boss questions. Static boss questions remain as fallback if AI is unavailable.</small>
-                  </label>
                   <label class="field">
                     <span>Boss type</span>
                     <select class="js-meta-field" data-key="boss_type">
@@ -477,19 +342,19 @@
                   </fieldset>
                 </div>
                 `
-                : `<p class="muted-text">Type: <strong>${escapeHtml(meta.boss_type)}</strong> · Band: <strong>${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}</strong> · Attempts: <strong>${meta.attempts_max == null ? "∞" : escapeHtml(meta.attempts_max)}</strong> · Dynamic AI: <strong>${meta.use_dynamic_boss ? "On" : "Off"}</strong></p>`
+                : `<p class="muted-text">Type: <strong>${escapeHtml(meta.boss_type)}</strong> · Band: <strong>${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}</strong> · Attempts: <strong>${meta.attempts_max == null ? "∞" : escapeHtml(meta.attempts_max)}</strong></p>`
             }
           </section>
           <section class="editor-card">
             <div class="editor-header">
               <div>
-                <p class="eyebrow">${staticQuestionEyebrow}</p>
+                <p class="eyebrow">Reference Questions</p>
                 <h3>${state.length} boss question${state.length === 1 ? "" : "s"}</h3>
               </div>
               <button class="btn btn-primary js-add-question" type="button">Add boss question</button>
             </div>
             <p class="muted-text">
-              ${staticQuestionHelp}
+              These questions anchor the AI boss generator. Kimi will adjust difficulty and phrasing based on student performance, but stay within these topics.
               Hint cost defaults to <strong>+${escapeHtml(bandHintCostHint)} HP</strong> for grade band ${escapeHtml(meta.grade_band || gradeBandFromGrade(ctx.grade))}.
             </p>
           </section>
@@ -502,7 +367,7 @@
                       <section class="editor-card" data-index="${index}">
                         <div class="editor-header">
                           <div>
-                            <p class="eyebrow">Boss ${index + 1}</p>
+                            <p class="eyebrow">Reference ${index + 1}</p>
                             <h3>${escapeHtml(stripHtml(question.q) || "Untitled boss question")}</h3>
                           </div>
                           <button class="btn btn-danger js-remove-question" type="button">Remove</button>
@@ -557,15 +422,12 @@
                           </label>
                         </div>
 
-                        <div class="editor-card nested-card">
-                          <div class="editor-header compact-header">
-                            <div>
-                              <p class="eyebrow">Answer Grading</p>
-                              <h3>Hybrid (Deterministic + AI)</h3>
-                            </div>
-                          </div>
-                          ${renderAnswerSpecForm(question, index)}
-                        </div>
+                        <label class="field full-span">
+                          <span>Reference answer</span>
+                          <input class="js-ans-field" data-index="${index}" type="text"
+                            value="${escapeHtml(Array.isArray(question.ans) ? question.ans[0] || "" : question.ans || "")}"
+                            placeholder="Example answer (Kimi uses this as a topic anchor)" />
+                        </label>
                       </section>
                     `
                   )
@@ -602,34 +464,9 @@
         });
       }
       
-      // Update previews
-      state.forEach((_, i) => updatePreview(i));
-    }
-
-    async function updatePreview(index) {
-      const q = state[index];
-      const previewEl = container.querySelector(`#preview-${index} .js-preview-content`);
-      if (!previewEl) return;
-      
-      try {
-        const resp = await fetch("/api/ai/answer-spec/preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answer_spec: q.answer_spec })
-        });
-        if (!resp.ok) throw new Error("Preview failed");
-        const data = await resp.json();
-        previewEl.innerHTML = (data.examples || []).map(ex => `<code class="preview-tag">${escapeHtml(ex)}</code>`).join(" ");
-      } catch (err) {
-        previewEl.innerText = "Error loading preview.";
-      }
     }
 
     function syncAndEmit() {
-      state.forEach((question) => {
-        // Shadow populate old ans array for backward compat
-        question.ans = [question.answer_spec.canonical_display || ""];
-      });
       // Persist boss_meta to BUILDER_STATE so the next autosave PUT carries it.
       // (This MUST run alongside any onChange so markDirty fires too.)
       persistMeta();
@@ -688,12 +525,6 @@
       const target = event.target;
 
       // Boss-meta inputs live OUTSIDE [data-index]; handle them first.
-      if (target.classList.contains("js-meta-dynamic")) {
-        meta.use_dynamic_boss = Boolean(target.checked);
-        syncAndEmit();
-        repaint();
-        return;
-      }
       if (target.classList.contains("js-meta-field")) {
         const key = target.dataset.key;
         if (key === "attempts_max" || key === "starting_hp_override") {
@@ -721,6 +552,15 @@
       const index = Number(target.closest("[data-index]")?.dataset.index);
       if (!Number.isFinite(index)) return;
 
+      if (target.classList.contains("js-ans-field")) {
+        const ansIndex = Number(target.dataset.index);
+        if (Number.isFinite(ansIndex) && state[ansIndex]) {
+          state[ansIndex].ans = [target.value];
+          syncAndEmit();
+        }
+        return;
+      }
+
       if (target.classList.contains("js-field")) {
         const key = target.dataset.key;
         if (key === "hint_cost_per_use") {
@@ -729,18 +569,6 @@
         } else {
           state[index][key] = target.value;
         }
-        syncAndEmit();
-      } else if (target.classList.contains("js-spec-field")) {
-        const key = target.dataset.key;
-        let val = target.value;
-        if (key === "expected" && state[index].answer_spec.type === "set_match") {
-          val = val.split(",").map(s => s.trim()).filter(Boolean);
-        }
-        state[index].answer_spec[key] = val;
-        syncAndEmit();
-        updatePreview(index);
-      } else if (target.classList.contains("js-rubric-field")) {
-        state[index].answer_spec.rubric[target.dataset.key] = target.value;
         syncAndEmit();
       }
     };
@@ -775,13 +603,6 @@
         state[index].tags = updateDamageInTags(state[index].tags, state[index].dmg);
         syncAndEmit();
         repaint();
-      } else if (target.classList.contains("js-spec-type")) {
-        state[index].answer_spec.type = target.value;
-        syncAndEmit();
-        repaint();
-      } else if (target.classList.contains("js-spec-ai")) {
-        state[index].answer_spec.allow_ai_fallback = target.checked;
-        syncAndEmit();
       } else if (target.classList.contains("js-field") && target.dataset.key === "pisa_level") {
         state[index].pisa_level = PISA_LEVELS.includes(target.value) ? target.value : "";
         syncAndEmit();
@@ -825,7 +646,7 @@
       window.EditorUtils.bindPasteNormalizer(container);
       window.EditorUtils.bindStrictPasteNormalizer(
         container,
-        'input[data-key="tags"], .js-spec-field'
+        'input[data-key="tags"]'
       );
     }
   }
