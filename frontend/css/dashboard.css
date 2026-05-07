@@ -147,7 +147,7 @@ body[data-page="dashboard"] .topbar-nav {
 body[data-page="dashboard"] .topbar-nav .btn-ghost {
     border: 0;
     background: transparent;
-    color: var(--dash-zinc-500);
+    color: var(--dash-zinc-700);
     font-size: 12px;
     font-weight: 600;
     padding: 6px 14px;
@@ -158,6 +158,14 @@ body[data-page="dashboard"] .topbar-nav .btn-ghost {
 body[data-page="dashboard"] .topbar-nav .btn-ghost:hover {
     color: var(--dash-zinc-950);
     background: transparent;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .topbar-nav .btn-ghost {
+    color: #dbeafe;
+}
+
+[data-theme="dark"] body[data-page="dashboard"] .topbar-nav .btn-ghost:hover {
+    color: #ffffff;
 }
 
 body[data-page="dashboard"] .topbar-nav .is-active {

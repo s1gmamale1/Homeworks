@@ -278,12 +278,12 @@
     const name = subjectDisplayName(subjectId);
     const ariaLabel = t("library.subject_open_label", "Open {name}").replace("{name}", name);
 
-    // The tile uses <article role="button"> instead of <button> because
+    // The tile uses <div role="button"> instead of <button> because
     // the expanded state nests <button> (close, grade chips) and <a>
     // (homework cards) inside it — a real <button> would produce invalid
     // HTML5 (interactive content inside interactive content), which
     // misroutes screen reader focus and breaks keyboard nav.
-    const tile = document.createElement("article");
+    const tile = document.createElement("div");
     tile.className = "subject-tile";
     tile.setAttribute("role", "button");
     tile.setAttribute("tabindex", "0");
@@ -308,7 +308,7 @@
       ev.stopPropagation();
       expandSubject(tile, subjectId);
     };
-    // Manual keyboard activation — <article role="button"> doesn't get
+    // Manual keyboard activation — <div role="button"> doesn't get
     // Enter/Space activation for free the way <button> does.
     tile.addEventListener("keydown", (ev) => {
       if (tile.classList.contains("is-expanded")) return;

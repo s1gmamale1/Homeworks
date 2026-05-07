@@ -9,9 +9,9 @@ LIBRARY_HTML = (ROOT / "frontend" / "library.html").read_text(encoding="utf-8")
 def test_subject_tile_no_longer_uses_nested_button():
     # The tile must NOT be created as a <button>, since its expanded
     # markup contains nested <button> and <a> elements (invalid HTML).
-    assert "createElement(\"article\")" in LIBRARY_JS or \
-           "createElement('article')" in LIBRARY_JS, \
-        "subject tile must use <article> (with role=button) instead of <button>"
+    assert "createElement(\"div\")" in LIBRARY_JS or \
+           "createElement('div')" in LIBRARY_JS, \
+        "subject tile must use a neutral <div> (with role=button) instead of <button>"
     assert 'role", "button"' in LIBRARY_JS or "role', 'button'" in LIBRARY_JS, \
         "tile must declare role=button so screen readers treat it as actionable"
     assert 'tabindex", "0"' in LIBRARY_JS or "tabindex', '0'" in LIBRARY_JS, \
@@ -19,7 +19,7 @@ def test_subject_tile_no_longer_uses_nested_button():
 
 
 def test_subject_tile_keyboard_activation():
-    # An <article role="button"> doesn't get Enter/Space activation for
+    # A <div role="button"> doesn't get Enter/Space activation for
     # free — must be wired manually.
     assert "keydown" in LIBRARY_JS, \
         "tile keyboard handler missing — Enter/Space won't activate the article"

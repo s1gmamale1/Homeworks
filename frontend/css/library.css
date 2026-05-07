@@ -63,7 +63,7 @@ body[data-page="library"] h3 { letter-spacing: -.02em; font-size: 18px; }
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.13em;
-    color: var(--text-muted);
+    color: var(--text);
 }
 
 .lib-lang-row { min-width: 0; }
@@ -95,7 +95,7 @@ body[data-page="library"] h3 { letter-spacing: -.02em; font-size: 18px; }
 }
 
 .lib-chip:hover {
-    color: var(--text);
+    color: var(--accent-hover);
     background: color-mix(in oklab, var(--accent) 14%, transparent);
 }
 
@@ -108,6 +108,14 @@ body[data-page="library"] h3 { letter-spacing: -.02em; font-size: 18px; }
     color: #fff;
     background: var(--accent);
     box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+[data-theme="dark"] .lib-chip {
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .lib-chip:hover {
+    color: #ffffff;
 }
 
 .lib-chip[disabled] {
@@ -247,12 +255,12 @@ body[data-page="library"] h3 { letter-spacing: -.02em; font-size: 18px; }
 }
 
 /* ---------- Subject tile (compact + expanded states share this) ----------
-   Tile is an <article role="button" tabindex="0"> — not a real <button> —
+   Tile is a <div role="button" tabindex="0"> — not a real <button> —
    because expanded markup nests <button>s (close, grade chips) and <a>s
    (homework cards), which would be invalid inside a real <button>. The
-   rules below ensure the article still feels like a button: pointer
+   rules below ensure the tile still feels like a button: pointer
    cursor, left-aligned text, full-width block, inherited font, and a
-   :focus-visible outline. Without these, the article would default to
+   :focus-visible outline. Without these, the tile would default to
    text-cursor + block layout with no focus ring. */
 .subject-tile {
     position: relative;
