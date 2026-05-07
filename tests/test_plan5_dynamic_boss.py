@@ -678,6 +678,37 @@ def test_boss_answer_checker_prompt_json_example_validates_against_schema():
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Section G — empty-pool guard (no stems AND no phases → no_anchor_context)
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_generate_question_rejects_when_both_pools_empty(mock_gen):
+    """Plan Wave 2 §G — when the boss_context has neither authored stems nor
+    phase summaries, generate_boss_question must bail with
+    BossQuestionRejected("no_anchor_context") BEFORE paying the LLM call.
+    Without this guard the generator hallucinates an off-topic skill from
+    nothing.
+    """
+    boss_context = {
+        "session_id": "sess-empty",
+        "homework_id": "hw-empty",
+        "authored_question_stems": [],
+        "phase_summaries": [],
+        "authored_difficulty_floor": None,
+        "asked_questions": [],
+        "boss_policy": {"max_question_length": 900},
+    }
+    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+        asyncio.run(
+            boss_dynamic.generate_boss_question(boss_context, difficulty="medium")
+        )
+    assert exc.value.reason == "no_anchor_context"
+    # The empty-pool guard must short-circuit BEFORE the gateway is called.
+    mock_gen.assert_not_called()
+
+
 @patch("server.routes.ai_plan5.session_metrics_repo.recompute_session_metrics")
 @patch("server.services.boss_dynamic.ai_gateway.generate_structured")
 def test_recompute_session_metrics_called_on_boss_start(mock_gen, mock_recompute, client):
