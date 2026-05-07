@@ -671,3 +671,45 @@ def test_boss_answer_checker_prompt_json_example_validates_against_schema():
 
     parsed = json.loads(match.group(1))
     BossAnswerCheckResult(**parsed)
+
+
+# ---------------------------------------------------------------------------
+# Section F — recompute_session_metrics called on /boss/start
+# ---------------------------------------------------------------------------
+
+
+@patch("server.routes.ai_plan5.session_metrics_repo.recompute_session_metrics")
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_recompute_session_metrics_called_on_boss_start(mock_gen, mock_recompute, client):
+    """Section F regression — /boss/start must trigger recompute_session_metrics so
+    that overall_metrics is fresh by the time /boss/generate-question fires.
+    Before the fix, recompute_session_metrics was never called and
+    overall_metrics was always {}, causing missing_context_flags=['empty_metrics'].
+    This test fails on pre-fix code (where the call is absent).
+    """
+    import asyncio
+
+    # Make the mock awaitable (recompute_session_metrics is async)
+    async def _noop(*args, **kwargs):
+        return {}
+
+    mock_recompute.side_effect = _noop
+
+    hw_id = _make_homework(client, hw_id_hint="t_recompute")
+    sess = "plan5recompute01"
+    _seed_attempts(sess, hw_id)
+
+    resp = client.post("/api/ai/boss/start", json={
+        "session_id": sess,
+        "homework_id": hw_id,
+        "max_hp": 100,
+        "trials_left": 5,
+    })
+    assert resp.status_code == 200, resp.text
+
+    # recompute_session_metrics must have been called exactly once with the
+    # correct session_id and hw_id keyword arguments.
+    mock_recompute.assert_called_once_with(
+        session_id=sess,
+        hw_id=hw_id,
+    )
