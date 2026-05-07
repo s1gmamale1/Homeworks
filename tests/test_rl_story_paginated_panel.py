@@ -439,6 +439,177 @@ def test_post_grading_keyingi_button_only_visible_after_verdict(template_html):
     ), "AI-result handler must call rlCommitQuestion(ticket.qIndex) to reveal Keyingi."
 
 
+def test_bloom_pisa_extractor_regex_handles_documented_variants():
+    """Executable test of the rlExtractMeta regex pattern. Pre-fix, the
+    parsing was checked only via "function exists / is wired" assertions —
+    no test actually ran the regex against the variants the comment claims
+    to support. This catches silent regex regressions.
+
+    Mirrors the JS regex in rlExtractMeta() to Python `re` and asserts the
+    documented input forms parse to the expected (bloom_level, pisa_level)
+    output, plus that no-match inputs return None.
+
+    NOTE: Order assumption is Bloom-before-PISA per production convention.
+    Reversed-order inputs intentionally fail to match — see the comment
+    above rlExtractMeta() for rationale.
+    """
+    # Mirror of the JS regex, ported to Python re flavor (case-insensitive).
+    js_pattern = re.compile(
+        r"\[\s*Bloom:?\s*L?(\d+)\s*[|·,]\s*PISA:?\s*[LP]?(\d+)\s*\]",
+        re.IGNORECASE,
+    )
+
+    # Variants that MUST parse — from the comment in rlExtractMeta().
+    parses = [
+        ("[Bloom: L3 | PISA: L2]", "3", "2"),     # canonical production form
+        ("[Bloom L3 · PISA L2]", "3", "2"),       # no colons, dot separator
+        ("[Bloom: 3 | PISA: 2]", "3", "2"),       # no L prefix
+        ("[BLOOM: L3 | PISA: P2]", "3", "2"),     # uppercase, P prefix on PISA
+        ("[bloom: L4 , pisa: L1]", "4", "1"),     # comma separator, lowercase
+        ("[ Bloom: L5 | PISA: L4 ]", "5", "4"),  # extra whitespace inside brackets
+        ("Question text. [Bloom: L3 | PISA: L2]", "3", "2"),  # tags after text
+    ]
+    for src, bloom, pisa in parses:
+        m = js_pattern.search(src)
+        assert m is not None, f"Regex must parse {src!r} but didn't."
+        assert m.group(1) == bloom, f"{src!r}: bloom expected {bloom!r}, got {m.group(1)!r}"
+        assert m.group(2) == pisa, f"{src!r}: pisa expected {pisa!r}, got {m.group(2)!r}"
+
+    # Inputs that MUST NOT parse.
+    no_match = [
+        "Plain question text without any tags.",
+        "Question with [some other bracketed text].",
+        "[Bloom L3]",                              # PISA missing
+        "[PISA: L2 | Bloom: L3]",                  # reversed order — by design (see code comment)
+        "Bloom: L3 | PISA: L2",                    # missing brackets
+    ]
+    for src in no_match:
+        assert js_pattern.search(src) is None, (
+            f"Regex must NOT parse {src!r}, but it did. Either tighten the pattern "
+            f"or update the documented variants comment."
+        )
+
+
+def test_bloom_pisa_extractor_strips_tags_from_prompt():
+    """The full rlExtractMeta contract — parsing is one half; the other is
+    that the returned `stripped` text has the bracket suffix removed AND
+    trailing whitespace/punctuation cleaned up so the rendered prompt is
+    presentation-ready (not "Some question.   ." with leftovers)."""
+    js_pattern = re.compile(
+        r"\[\s*Bloom:?\s*L?(\d+)\s*[|·,]\s*PISA:?\s*[LP]?(\d+)\s*\]",
+        re.IGNORECASE,
+    )
+    trailing_pattern = re.compile(r"[\s.;,]+$")
+
+    def py_extract(text):
+        # Mirror of the JS rlExtractMeta() implementation.
+        src = text or ""
+        m = js_pattern.search(src)
+        if not m:
+            return {"tags": "", "stripped": src}
+        tags = f"Bloom L{m.group(1)} · PISA L{m.group(2)}"
+        stripped = trailing_pattern.sub("", src.replace(m.group(0), "")).strip()
+        return {"tags": tags, "stripped": stripped}
+
+    cases = [
+        # (input, expected_tags, expected_stripped)
+        (
+            "1-test uchun absolut xatolikni toping (mmol/L). [Bloom: L3 | PISA: L2]",
+            "Bloom L3 · PISA L2",
+            "1-test uchun absolut xatolikni toping (mmol/L)",
+        ),
+        (
+            "Solve this problem. [Bloom L4 · PISA L3]",
+            "Bloom L4 · PISA L3",
+            "Solve this problem",
+        ),
+        (
+            "[Bloom: L1 | PISA: L1] What is 2+2?",
+            "Bloom L1 · PISA L1",
+            "What is 2+2?",
+        ),
+        (
+            "Plain prompt with no tags.",
+            "",
+            "Plain prompt with no tags.",
+        ),
+    ]
+    for src, expected_tags, expected_stripped in cases:
+        result = py_extract(src)
+        assert result["tags"] == expected_tags, (
+            f"{src!r}: tags expected {expected_tags!r}, got {result['tags']!r}"
+        )
+        assert result["stripped"] == expected_stripped, (
+            f"{src!r}: stripped expected {expected_stripped!r}, got {result['stripped']!r}"
+        )
+
+
+def test_bloom_pisa_tags_relocated_to_header_meta_slot(template_html):
+    """Bloom/PISA tags used to be inline at the end of `q.prompt` text. They
+    now render in a dedicated top-right header slot so the prompt stays
+    clean. Asserts:
+      - `.rl-card-top` wrapper + `.rl-q-header-meta` slot exist.
+      - `rlExtractMeta()` helper is defined and pulls the bracketed pattern.
+      - `rlRenderQuestion` writes to `#rl-q-header-meta` and renders the
+        prompt with the tag substring stripped (not the raw `q.prompt`).
+      - Story view + closure clear the meta so it auto-hides via :empty.
+    """
+    # CSS + HTML structure.
+    assert "rl-card-top" in template_html, "Missing .rl-card-top wrapper class."
+    assert 'id="rl-q-header-meta"' in template_html, (
+        "Missing <div id='rl-q-header-meta'> slot in the header row."
+    )
+    assert ".rl-q-header-meta:empty" in template_html, (
+        "Missing :empty rule that hides the meta slot when no tags are present."
+    )
+
+    # JS extractor exists and is invoked on render.
+    assert "function rlExtractMeta(" in template_html, (
+        "Missing rlExtractMeta() helper that extracts `[Bloom: LX | PISA: LY]` from q.prompt."
+    )
+
+    render_q_body = _extract_function_body(template_html, "rlRenderQuestion")
+    assert "rlExtractMeta(q.prompt)" in render_q_body, (
+        "rlRenderQuestion must call rlExtractMeta(q.prompt) so the tags can be relocated."
+    )
+    # Prompt must render meta.stripped (not raw q.prompt) — otherwise the
+    # tag suffix shows in BOTH the meta slot and inline.
+    assert "promptEl.innerHTML = meta.stripped" in render_q_body, (
+        "rlRenderQuestion must render `meta.stripped` (not raw q.prompt) so the "
+        "Bloom/PISA bracket suffix doesn't appear twice."
+    )
+
+    # Story + closure clear the meta so the slot hides.
+    story_body = _extract_function_body(template_html, "rlRenderStory")
+    assert "rl-q-header-meta" in story_body and "metaEl.textContent = ''" in story_body, (
+        "rlRenderStory must clear #rl-q-header-meta so the meta hides during story view."
+    )
+    closure_body = _extract_function_body(template_html, "rlShowClosure")
+    assert "rl-q-header-meta" in closure_body and "closureMetaEl.textContent = ''" in closure_body, (
+        "rlShowClosure must clear #rl-q-header-meta so the meta hides on closure card."
+    )
+
+
+def test_final_boss_entry_defensively_unhides_action_button(template_html):
+    """The RL phase hides #action-button during its question loop and
+    rlShowClosure() unhides it on the closure card. Normal flow is safe,
+    but edge paths (skip-to-end shortcuts at line 11057, page reload
+    landing on Boss, session restore) could reach `startFinalBoss()`
+    with the button still hidden, leaving the student stuck.
+
+    `startFinalBoss()` must therefore unconditionally re-show
+    #action-button on entry — Boss should be self-contained, not
+    depend on prior phase cleanup."""
+    body = _extract_function_body(template_html, "startFinalBoss")
+    assert "getElementById('action-button')" in body, (
+        "startFinalBoss must look up #action-button on entry."
+    )
+    assert "ab.style.display = ''" in body, (
+        "startFinalBoss must re-show #action-button via `display: ''` so a "
+        "leaked hide from the RL question loop doesn't strand the student."
+    )
+
+
 def test_bottom_action_button_hidden_during_question_loop(template_html):
     """Bottom #action-button is hidden when entering the question loop and
     re-shown on the closure card. Otherwise the student sees TWO submit

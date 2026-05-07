@@ -4826,6 +4826,39 @@
             flex-shrink: 0;
             text-align: center;
         }
+        /* Wrapper for the top header — anchors the Bloom/PISA meta slot
+           absolutely to the top-right without displacing the centered
+           SAVOL counter. Badge stays centered in its own width; meta
+           floats flush right. Auto-hides via :empty when no tags exist
+           on the question (e.g., story view, closure card, or a question
+           authored without [Bloom: LX | PISA: LY]). */
+        .rl-card-top {
+            position: relative;
+            flex-shrink: 0;
+            margin-bottom: 14px;
+        }
+        .rl-card-top .rl-header-badge {
+            margin-bottom: 0;
+        }
+        .rl-q-header-meta {
+            position: absolute;
+            top: 0;
+            right: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--text-muted, rgba(120, 135, 160, 0.85));
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .rl-q-header-meta:empty { display: none; }
+        @media (max-width: 480px) {
+            .rl-q-header-meta {
+                font-size: 9px;
+                letter-spacing: 0.4px;
+            }
+        }
         /* Story panel — horizontally paged. Lives at top of the RL card,
            stays visible alongside the question (no longer display:none on
            question step). Each "page" is a child div that snaps into view;
@@ -8734,7 +8767,13 @@
         <!-- Stage 6 — Real-Life Challenge -->
         <div id="screen-6" class="screen">
             <div class="card panel-card rl-card" id="rl-card">
-                <div class="rl-header-badge" id="rl-header-badge">VAZIFA · Yashil Makon loyihasi</div>
+                <div class="rl-card-top">
+                    <div class="rl-header-badge" id="rl-header-badge">VAZIFA · Yashil Makon loyihasi</div>
+                    <!-- Per-question Bloom/PISA tags. Populated by
+                         rlRenderQuestion via rlExtractMeta(); cleared on
+                         story view / closure. Auto-hides when empty. -->
+                    <div class="rl-q-header-meta" id="rl-q-header-meta"></div>
+                </div>
 
                 <!-- Story panel — horizontally paged. Stays visible while
                      the student answers questions below; drag/swipe to
@@ -17123,6 +17162,39 @@ Prezident ertaga hisobot kutmoqda.`,
             }
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RT('rl.task_badge') + ' · ' + (RL_SCENARIO.title || RL_SCENARIO.badge || '');
+            // Story view has no active question, so the per-question
+            // Bloom/PISA tags don't apply — clear the meta slot so it
+            // hides via :empty.
+            const metaEl = document.getElementById('rl-q-header-meta');
+            if (metaEl) metaEl.textContent = '';
+        }
+
+        // Extract `[Bloom: LX | PISA: LY]` tags from a prompt string. Tags
+        // are author-supplied as a suffix inside q.prompt; we surface them
+        // in the top-right header slot instead of leaving them inline at
+        // the end of the question text. Returns {tags, stripped} where
+        // tags is a display-ready string (or '' if no match) and stripped
+        // is q.prompt with the tag substring removed. Permissive regex
+        // covers the variants seen in production: with/without colons,
+        // with/without L/P prefix, "|" or "·" or "," separator, mixed case.
+        //
+        // Order assumption: Bloom appears BEFORE PISA in the bracket.
+        // Production data uses this order universally; reversed order
+        // (e.g. `[PISA: L2 | Bloom: L3]`) is not supported and the tags
+        // will remain inline. If this needs to change, swap to two
+        // alternation branches inside the regex — but verify against
+        // actual production data first; adding flexibility blindly
+        // doubles the parser's failure surface.
+        function rlExtractMeta(text) {
+            const src = text || '';
+            const m = src.match(
+                /\[\s*Bloom:?\s*L?(\d+)\s*[|·,]\s*PISA:?\s*[LP]?(\d+)\s*\]/i
+            );
+            if (!m) return { tags: '', stripped: src };
+            const tags = 'Bloom L' + m[1] + ' · PISA L' + m[2];
+            // Trim trailing whitespace/punctuation left over after stripping.
+            const stripped = src.replace(m[0], '').replace(/[\s.;,]+$/, '').trim();
+            return { tags: tags, stripped: stripped };
         }
 
         function rlRenderQuestion(idx) {
@@ -17131,9 +17203,14 @@ Prezident ertaga hisobot kutmoqda.`,
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RT('rl.question_of') + ' ' + (idx + 1) + ' / ' + total;
 
+            // Pull Bloom/PISA tags out of the prompt and route to header meta.
+            const meta = rlExtractMeta(q.prompt);
+            const metaEl = document.getElementById('rl-q-header-meta');
+            if (metaEl) metaEl.textContent = meta.tags;
+
             const promptEl = document.getElementById('rl-q' + (idx + 1) + '-prompt');
             // innerHTML — question prompt may contain inline images/SVGs/bold/italic.
-            if (promptEl) promptEl.innerHTML = q.prompt || '';
+            if (promptEl) promptEl.innerHTML = meta.stripped || '';
 
             // Per-question capture button. Any text-with-capture question
             // gets a dynamically-injected upload button right under the
@@ -17714,6 +17791,9 @@ Prezident ertaga hisobot kutmoqda.`,
             if (lastQ) lastQ.classList.remove('rl-active');
             const badge = document.getElementById('rl-header-badge');
             if (badge) badge.textContent = RL_SCENARIO.title;
+            // Closure isn't a question — clear meta so it hides.
+            const closureMetaEl = document.getElementById('rl-q-header-meta');
+            if (closureMetaEl) closureMetaEl.textContent = '';
 
             closure.classList.add('rl-active');
             stage6State.screen = 'closure';
@@ -18001,6 +18081,17 @@ Prezident ertaga hisobot kutmoqda.`,
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const sb = document.getElementById('screen-boss');
             if (sb) sb.classList.add('active');
+
+            // Defensive: the RL phase hides #action-button via inline
+            // display:none during its question loop and rlShowClosure()
+            // re-shows it on the closure card. Normal flow goes
+            // RL-Q6 → rlShowClosure (un-hides) → rlShowEndPlaceholder → here.
+            // But edge paths (skip-to-end shortcuts, mid-RL exits, session
+            // restore landing on Boss) can reach this entry with the
+            // button still hidden, leaving the student stuck. Re-show
+            // unconditionally so Boss is self-contained.
+            const ab = document.getElementById('action-button');
+            if (ab) ab.style.display = '';
 
             Object.assign(bossState, {hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false});
             // persona_traits intentionally NOT reset here — initBossPlan sets it once.
