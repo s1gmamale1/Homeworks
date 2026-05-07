@@ -25,7 +25,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from .. import db
-from ..db import boss_session_repo, boss_repo, session_events_repo, attempts_repo
+from ..db import boss_session_repo, boss_repo, session_events_repo, attempts_repo, session_metrics_repo
 from ..services import boss_context_builder, boss_dynamic
 
 
@@ -232,6 +232,13 @@ async def boss_start(req: BossStartRequest):
         "weak_topics": ctx.weak_topics,
         "strong_topics": ctx.strong_topics,
     })
+    try:
+        await session_metrics_repo.recompute_session_metrics(
+            session_id=req.session_id,
+            hw_id=req.homework_id,
+        )
+    except Exception as exc:
+        _log.warning("recompute_session_metrics failed on boss-start: %s", exc)
     return BossStartResponse(
         boss_session_id=boss_session_id,
         hp=state["hp"],
