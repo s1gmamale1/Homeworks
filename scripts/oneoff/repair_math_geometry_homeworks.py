@@ -9,6 +9,7 @@ full base64 PNG payloads inline.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sqlite3
@@ -28,6 +29,8 @@ from server.config import DB_PATH
 TARGET_SUBJECTS = {"math-algebra", "geometriya-g7-11"}
 BITMAP_PREFIXES = ("data:image/png;base64,", "data:image/jpeg;base64,", "data:image/jpg;base64,")
 MAX_LABEL = 52
+HOMEWORK_BLOAT_THRESHOLD = 200_000
+INLINE_IMAGE_BLOAT_THRESHOLD = 20_000
 
 
 @dataclass
@@ -51,6 +54,13 @@ def _subject_display(subject: str) -> str:
         "math-algebra": "Algebra",
         "geometriya-g7-11": "Geometriya",
     }.get(subject, subject)
+
+
+def _needs_subject_display_fix(subject: str, subject_display: Any) -> bool:
+    if not isinstance(subject_display, str):
+        return not subject_display
+    normalized = subject_display.strip().lower()
+    return normalized in {"", subject.lower(), "math-algebra", "geometriya-g7-11"}
 
 
 def _svg_data_uri(subject: str, label: str) -> str:
@@ -94,12 +104,19 @@ def _guess_label(node: Any, breadcrumbs: list[str], fallback_subject: str) -> st
     return _subject_display(fallback_subject)
 
 
+def _is_bloated_data_uri(value: str) -> bool:
+    return isinstance(value, str) and value.startswith(BITMAP_PREFIXES) and len(value) >= INLINE_IMAGE_BLOAT_THRESHOLD
+
+
 def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str, int]:
     replacements = 0
     replacement_src = _svg_data_uri(subject, label)
 
     def repl(match: re.Match[str]) -> str:
         nonlocal replacements
+        src = match.group(3)
+        if len(src) < INLINE_IMAGE_BLOAT_THRESHOLD:
+            return match.group(0)
         replacements += 1
         prefix = match.group(1)
         quote = match.group(2)
@@ -122,7 +139,7 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
             next_breadcrumbs = breadcrumbs
             if key in {"title", "term", "label", "caption", "prompt", "question", "name"} and isinstance(value, str):
                 next_breadcrumbs = breadcrumbs + [value]
-            if key == "src" and isinstance(value, str) and value.startswith(BITMAP_PREFIXES):
+            if key == "src" and _is_bloated_data_uri(value):
                 repaired[key] = _svg_data_uri(subject, local_label)
                 stats.src_replaced += 1
                 continue
@@ -151,10 +168,12 @@ def _repair_homework(content_json: str, subject: str) -> tuple[str, bool, Repair
     data = json.loads(content_json)
     before = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
-    repaired = _repair_node(data, subject, [], stats)
+    repaired = data
+    if len(content_json) >= HOMEWORK_BLOAT_THRESHOLD:
+        repaired = _repair_node(data, subject, [], stats)
     meta = repaired.setdefault("meta", {})
     expected_display = _subject_display(subject)
-    if meta.get("subject_display") != expected_display:
+    if _needs_subject_display_fix(subject, meta.get("subject_display")):
         meta["subject_display"] = expected_display
         stats.metadata_fixed += 1
 
@@ -165,19 +184,38 @@ def _repair_homework(content_json: str, subject: str) -> tuple[str, bool, Repair
     return after, changed, stats
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Repair bloated math / geometry homework content_json rows.")
+    parser.add_argument("--ids", nargs="*", default=None, help="Optional homework IDs to repair instead of all math/geometry rows.")
+    return parser.parse_args()
+
+
 def main() -> int:
+    args = _parse_args()
     db_path = Path(DB_PATH)
     con = sqlite3.connect(db_path)
     con.row_factory = sqlite3.Row
-    rows = con.execute(
-        """
-        select id, subject, title, content_json
-        from homeworks
-        where subject in (?, ?)
-        order by id
-        """,
-        tuple(TARGET_SUBJECTS),
-    ).fetchall()
+    if args.ids:
+        placeholders = ",".join("?" for _ in args.ids)
+        rows = con.execute(
+            f"""
+            select id, subject, title, content_json
+            from homeworks
+            where id in ({placeholders})
+            order by id
+            """,
+            tuple(args.ids),
+        ).fetchall()
+    else:
+        rows = con.execute(
+            """
+            select id, subject, title, content_json
+            from homeworks
+            where subject in (?, ?)
+            order by id
+            """,
+            tuple(TARGET_SUBJECTS),
+        ).fetchall()
 
     total = RepairStats()
     print(f"DB: {db_path}")
