@@ -491,3 +491,162 @@ def test_flashcard_switch_releases_guard_via_transitionend_or_timeout():
         "transitionend handler and the safety setTimeout call into"
     )
 
+
+# ---------------------------------------------------------------------------
+# 10. Flashcard horizontal-slide of a flipped card uses a flat-back render
+#     (2026-05-08): a flipped card sliding sideways must NOT animate an
+#     unflip mid-slide and must NOT hide its back face. We swap to a
+#     `.fc-sliding-flipped` flat representation (parent unrotated, back
+#     un-rotated, front faded) so the slide is a clean 2D translate that
+#     can't be mangled by browser matrix interpolation at 180°.
+# ---------------------------------------------------------------------------
+
+
+def test_flashcard_sliding_flipped_css_state_exists():
+    """The .fc-sliding-flipped flat-back state must:
+       - hide the front face (so it doesn't stack on top of the back), and
+       - un-rotate the back face (so it faces the viewer when the parent
+         is no longer at rotateY(180deg))."""
+    html = _runtime()
+    assert re.search(
+        r"\.fc-inner\.fc-sliding-flipped\s+\.fc-front\s*\{[^}]*opacity\s*:\s*0",
+        html,
+    ), (
+        "missing .fc-inner.fc-sliding-flipped .fc-front { opacity: 0 } — "
+        "without it, the front face would stack on top of the back during "
+        "a flipped card's horizontal slide"
+    )
+    assert re.search(
+        r"\.fc-inner\.fc-sliding-flipped\s+\.fc-back\s*\{[^}]*transform\s*:\s*none",
+        html,
+    ), (
+        "missing .fc-inner.fc-sliding-flipped .fc-back { transform: none } "
+        "— without it, the back face would still have its own rotateY(180deg) "
+        "and face away from the viewer once the parent rotation is removed"
+    )
+
+
+def test_flashcard_slide_out_uses_flat_back_when_flipped():
+    """When the card is flipped at the start of switchCard, slide-out must:
+       - gate on state.cardFlipped,
+       - disable transition,
+       - remove the .flipped class,
+       - add .fc-sliding-flipped,
+       - force a reflow so the un-flip is committed before the slide
+         transition is re-enabled.
+    The inline slide-out transform must NOT include rotateY (we want a
+    flat 2D translate, not a 3D one that browsers can mangle at 180°)."""
+    html = _runtime()
+    switch_card = re.search(
+        r"function switchCard\(newIdx,\s*dir\)\s*\{([\s\S]*?)\n\s{8}\}",
+        html,
+    )
+    assert switch_card, "switchCard function body not found"
+    fn_body = switch_card.group(1)
+
+    # Split at the inner setTimeout that fires the slide-in.
+    parts = fn_body.split("setTimeout(", 1)
+    assert len(parts) == 2, (
+        "switchCard's slide-in setTimeout boundary not found; can't isolate "
+        "slide-out vs slide-in"
+    )
+    slide_out_section, slide_in_section = parts[0], parts[1]
+
+    # The flipped-card swap block must exist and do all four moves.
+    flipped_branch = re.search(
+        r"if\s*\(\s*state\.cardFlipped\s*\)\s*\{([\s\S]*?)\}",
+        slide_out_section,
+    )
+    assert flipped_branch, (
+        "switchCard slide-out must have an `if (state.cardFlipped) { ... }` "
+        "branch that swaps the card to a flat-back representation before "
+        "animating"
+    )
+    branch = flipped_branch.group(1)
+    assert "fcInner.style.transition = 'none'" in branch, (
+        "flipped-card swap must disable transition before toggling classes "
+        "so the un-flip is instant"
+    )
+    assert "classList.remove('flipped')" in branch, (
+        "flipped-card swap must remove the .flipped class so the parent's "
+        "rotateY(180deg) is gone for the slide"
+    )
+    assert "classList.add('fc-sliding-flipped')" in branch, (
+        "flipped-card swap must add .fc-sliding-flipped so the back face "
+        "un-rotates and the front fades out"
+    )
+    assert "offsetWidth" in branch or "offsetHeight" in branch, (
+        "flipped-card swap must force a reflow before re-enabling transition "
+        "so the un-flip commits separately from the slide animation"
+    )
+
+    # The slide-out transform itself must NOT include rotateY anywhere.
+    transform_writes = re.findall(
+        r"fcInner\.style\.transform\s*=\s*([^;]+);",
+        slide_out_section,
+    )
+    assert transform_writes, "expected at least one slide-out transform write"
+    for expr in transform_writes:
+        assert "rotateY" not in expr, (
+            "slide-out transform must NOT include rotateY (rely on the "
+            f".fc-sliding-flipped CSS swap instead). Got: {expr!r}"
+        )
+
+    # Slide-in transforms must also be rotation-free — new card lands on
+    # the front face.
+    slide_in_writes = re.findall(
+        r"fcInner\.style\.transform\s*=\s*([^;]+);",
+        slide_in_section,
+    )
+    assert slide_in_writes
+    for expr in slide_in_writes:
+        assert "rotateY" not in expr, (
+            "slide-in transform must NOT include rotateY — the new card "
+            f"always lands on the front face. Got: {expr!r}"
+        )
+
+
+def test_flashcard_sliding_flipped_class_cleaned_up_on_render_and_release():
+    """Both renderFlashcard (between slide-out and slide-in) and the
+    releaseGuard (after slide-in completes) must clear the
+    .fc-sliding-flipped class so it never leaks into the next card or
+    sits on the element after the carousel settles."""
+    html = _runtime()
+
+    render = re.search(
+        r"function renderFlashcard\([^)]*\)\s*\{([\s\S]*?)\n\s{8}\}",
+        html,
+    )
+    assert render, "renderFlashcard function body not found"
+    render_body = render.group(1)
+    assert "classList.remove('flipped')" in render_body, (
+        "renderFlashcard must still remove the .flipped class"
+    )
+    assert "classList.remove('fc-sliding-flipped')" in render_body, (
+        "renderFlashcard must also remove .fc-sliding-flipped so the new "
+        "card doesn't render through the flat-back overrides"
+    )
+    assert re.search(r"state\.cardFlipped\s*=\s*false", render_body), (
+        "renderFlashcard must reset state.cardFlipped = false"
+    )
+
+    switch_card = re.search(
+        r"function switchCard\(newIdx,\s*dir\)\s*\{([\s\S]*?)\n\s{8}\}",
+        html,
+    )
+    assert switch_card
+    fn_body = switch_card.group(1)
+    release_guard = re.search(
+        r"const releaseGuard\s*=\s*\(\)\s*=>\s*\{([\s\S]*?)\n\s{12}\};",
+        fn_body,
+    )
+    assert release_guard, "releaseGuard helper not found in switchCard"
+    rg_body = release_guard.group(1)
+    assert "classList.remove('flipped')" in rg_body, (
+        "releaseGuard must still remove the .flipped class"
+    )
+    assert "classList.remove('fc-sliding-flipped')" in rg_body, (
+        "releaseGuard must also remove .fc-sliding-flipped so the class "
+        "doesn't leak past the slide-in completion"
+    )
+

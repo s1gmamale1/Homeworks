@@ -477,6 +477,15 @@
         }
         .fc-inner.flipped { transform: rotateY(180deg); }
 
+        /* Flat-back state used during a horizontal slide of a flipped
+           card. Swapping to this state (instead of preserving the parent
+           rotateY(180deg) during the slide) avoids matrix-interpolation
+           glitches at 180° where the browser can pick a path that
+           briefly rotates the card edge-on. The back face un-rotates so
+           it faces the viewer flat; the front face is faded out. */
+        .fc-inner.fc-sliding-flipped .fc-front { opacity: 0; }
+        .fc-inner.fc-sliding-flipped .fc-back { transform: none; }
+
         /* Tap pop — subtle shadow swell on tap. Avoid transform here because
            the back face already uses rotateY(180deg). */
         .fc-inner.tap-pop .fc-face {
@@ -11630,6 +11639,7 @@
             fcInner.style.opacity = '';
             fcInner.style.filter = '';
             fcInner.classList.remove('flipped');
+            fcInner.classList.remove('fc-sliding-flipped');
             state.cardFlipped = false;
 
             const hintEl = document.getElementById('fc-hint');
@@ -11793,6 +11803,22 @@
             const fcInner = document.getElementById('fc-inner');
             fcInner.removeEventListener('click', handleCardTap);
 
+            // Flipped card during a horizontal switch: swap to a flat-back
+            // render BEFORE animating, so the slide is a pure 2D translate.
+            // Preserving the parent rotateY(180deg) through the transition
+            // is unreliable — browser matrix interpolation at 180° can
+            // pick a path that mid-rotates the card and triggers backface-
+            // visibility hiding mid-slide. The .fc-sliding-flipped class
+            // un-rotates the back face and fades the front so the back
+            // content stays visible flat throughout the slide. Transition
+            // is disabled for the swap so the un-flip is instant, then
+            // re-enabled for the slide.
+            if (state.cardFlipped) {
+                fcInner.style.transition = 'none';
+                fcInner.classList.remove('flipped');
+                fcInner.classList.add('fc-sliding-flipped');
+                void fcInner.offsetWidth;
+            }
             fcInner.style.transition = 'transform 350ms ease-in-out, opacity 350ms ease-in-out, filter 350ms ease-in-out';
             fcInner.style.transform = `translateX(${dir * -80}px)`;
             fcInner.style.filter = 'blur(10px)';
@@ -11814,6 +11840,7 @@
                 // Re-assert flipped face cleared (defensive for the case
                 // where renderFlashcard's reset was skipped or interrupted).
                 fcInner.classList.remove('flipped');
+                fcInner.classList.remove('fc-sliding-flipped');
                 state.cardFlipped = false;
                 fcInner.addEventListener('click', handleCardTap, { once: false });
                 if (scene) scene.classList.remove('is-rotating-left', 'is-rotating-right');
