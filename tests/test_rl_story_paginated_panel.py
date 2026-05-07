@@ -439,6 +439,52 @@ def test_post_grading_keyingi_button_only_visible_after_verdict(template_html):
     ), "AI-result handler must call rlCommitQuestion(ticket.qIndex) to reveal Keyingi."
 
 
+def test_bloom_pisa_tags_relocated_to_header_meta_slot(template_html):
+    """Bloom/PISA tags used to be inline at the end of `q.prompt` text. They
+    now render in a dedicated top-right header slot so the prompt stays
+    clean. Asserts:
+      - `.rl-card-top` wrapper + `.rl-q-header-meta` slot exist.
+      - `rlExtractMeta()` helper is defined and pulls the bracketed pattern.
+      - `rlRenderQuestion` writes to `#rl-q-header-meta` and renders the
+        prompt with the tag substring stripped (not the raw `q.prompt`).
+      - Story view + closure clear the meta so it auto-hides via :empty.
+    """
+    # CSS + HTML structure.
+    assert "rl-card-top" in template_html, "Missing .rl-card-top wrapper class."
+    assert 'id="rl-q-header-meta"' in template_html, (
+        "Missing <div id='rl-q-header-meta'> slot in the header row."
+    )
+    assert ".rl-q-header-meta:empty" in template_html, (
+        "Missing :empty rule that hides the meta slot when no tags are present."
+    )
+
+    # JS extractor exists and is invoked on render.
+    assert "function rlExtractMeta(" in template_html, (
+        "Missing rlExtractMeta() helper that extracts `[Bloom: LX | PISA: LY]` from q.prompt."
+    )
+
+    render_q_body = _extract_function_body(template_html, "rlRenderQuestion")
+    assert "rlExtractMeta(q.prompt)" in render_q_body, (
+        "rlRenderQuestion must call rlExtractMeta(q.prompt) so the tags can be relocated."
+    )
+    # Prompt must render meta.stripped (not raw q.prompt) — otherwise the
+    # tag suffix shows in BOTH the meta slot and inline.
+    assert "promptEl.innerHTML = meta.stripped" in render_q_body, (
+        "rlRenderQuestion must render `meta.stripped` (not raw q.prompt) so the "
+        "Bloom/PISA bracket suffix doesn't appear twice."
+    )
+
+    # Story + closure clear the meta so the slot hides.
+    story_body = _extract_function_body(template_html, "rlRenderStory")
+    assert "rl-q-header-meta" in story_body and "metaEl.textContent = ''" in story_body, (
+        "rlRenderStory must clear #rl-q-header-meta so the meta hides during story view."
+    )
+    closure_body = _extract_function_body(template_html, "rlShowClosure")
+    assert "rl-q-header-meta" in closure_body and "closureMetaEl.textContent = ''" in closure_body, (
+        "rlShowClosure must clear #rl-q-header-meta so the meta hides on closure card."
+    )
+
+
 def test_bottom_action_button_hidden_during_question_loop(template_html):
     """Bottom #action-button is hidden when entering the question loop and
     re-shown on the closure card. Otherwise the student sees TWO submit
