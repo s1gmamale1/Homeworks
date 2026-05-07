@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from difflib import SequenceMatcher
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -35,6 +36,7 @@ from pydantic import BaseModel, Field, field_validator
 from . import ai_gateway
 from ..config import PROMPTS_DIR
 from ..schemas.ai_contracts import BossQuestionGenerated, BossAnswerCheckResult
+from .boss_context_builder import _DIFFICULTY_RANK
 
 
 _log = logging.getLogger("nets.boss_dynamic")
@@ -43,7 +45,7 @@ _log = logging.getLogger("nets.boss_dynamic")
 # ---- Prompt versions (Plan 7 §8) ------------------------------------------
 
 PROMPT_VERSION = {
-    "boss-question-generator": "v1",
+    "boss-question-generator": "v2",
     "boss-answer-checker": "v1",
     "boss-tutor": "v2",
 }
@@ -111,6 +113,65 @@ def next_difficulty(
     if s < 0.50 and streaks.wrong_streak >= 2:
         return "easy"
     return cur
+
+
+# ---- Per-skill difficulty floor (Plan Wave 2) ------------------------------
+# 0.40 is a provisional empirical threshold for difflib.SequenceMatcher.ratio()
+# matching a generator's `target_skill` to an authored stem's question_text +
+# tags. Revisit after 20+ live calls — too low lets unrelated skills inherit
+# a stem's floor; too high makes the floor effectively unreachable and the
+# pool_max fallback dominates.
+_SKILL_MATCH_THRESHOLD = 0.40
+
+
+def _match_skill_to_stem(
+    target_skill: str,
+    stems: list[dict],
+) -> Optional[dict]:
+    """Best-effort fuzzy match of generator's target_skill to an authored stem.
+
+    Compares ``target_skill`` against ``(question_text + tags)`` of each stem
+    via ``difflib.SequenceMatcher.ratio()``. Returns the stem with highest
+    score when score >= 0.40 (empirical floor; revisit after 20+ live calls).
+    Returns None if pool empty, target_skill empty, or no stem clears
+    threshold.
+    """
+    if not target_skill or not stems:
+        return None
+    target = target_skill.lower().strip()
+    if not target:
+        return None
+    best_score, best_stem = 0.0, None
+    for stem in stems:
+        haystack = (
+            (stem.get("question_text", "") or "")
+            + " "
+            + (stem.get("tags", "") or "")
+        ).lower()
+        if not haystack.strip():
+            continue
+        score = SequenceMatcher(None, target, haystack[:300]).ratio()
+        if score > best_score:
+            best_score, best_stem = score, stem
+    return best_stem if best_score >= _SKILL_MATCH_THRESHOLD else None
+
+
+def _resolve_skill_floor(
+    target_skill: str,
+    stems: list[dict],
+    pool_max: Optional[str],
+) -> Optional[str]:
+    """Returns the difficulty floor for the generated question's target_skill.
+
+    Per-stem match → that stem's ``authored_difficulty``. No clear match →
+    ``pool_max`` as fallback (per design intent: 'default to pool's maximum
+    when target_skill doesn't clearly map to any stem'). Returns ``None`` when
+    the pool is empty.
+    """
+    matched = _match_skill_to_stem(target_skill, stems)
+    if matched:
+        return matched.get("authored_difficulty")
+    return pool_max
 
 
 # ---- Prompt loading --------------------------------------------------------
@@ -231,12 +292,15 @@ def _validate_generated_question(
     raw: dict[str, Any],
     *,
     asked_questions: list[dict[str, Any]],
+    stems: Optional[list[dict[str, Any]]] = None,
+    pool_max: Optional[str] = None,
     max_question_length: int = 900,
 ) -> GeneratedBossQuestion:
-    """Plan 5 §6 + Plan 7 §10 backend validation.
+    """Plan 5 §6 + Plan 7 §10 + Plan Wave 2 backend validation.
 
     Step 1: Key presence + Pydantic strict contract validation.
     Step 2: Business rules (anti-repetition, length cap).
+    Step 3: Per-skill difficulty floor (when stems / pool_max provided).
     """
     # --- Step 1: Pydantic strict contract validation ---
     try:
@@ -265,6 +329,23 @@ def _validate_generated_question(
         prev_text = " ".join(str(prev.get("question_text") or "").lower().split())
         if prev_text and prev_text == norm_new:
             raise BossQuestionRejected("repeats_previous", raw=raw)
+
+    # --- Step 3: Per-skill difficulty floor (Plan Wave 2) ---
+    # Each authored stem carries an authored_difficulty. We allow the
+    # generated question to drop AT MOST one rank below the matched stem's
+    # floor (floor=hard → {medium,hard}; floor=medium → {easy,medium,hard};
+    # floor=easy → no extra constraint). When target_skill doesn't clearly
+    # match any stem, we fall back to pool_max as the floor.
+    floor = _resolve_skill_floor(parsed.target_skill, stems or [], pool_max)
+    if floor:
+        floor_rank = _DIFFICULTY_RANK[floor]
+        gen_rank = _DIFFICULTY_RANK[parsed.difficulty]
+        if gen_rank < floor_rank - 1:
+            raise BossQuestionRejected(
+                f"difficulty_below_skill_floor: target_skill={parsed.target_skill!r} "
+                f"matched_stem_floor={floor!r} generated={parsed.difficulty!r}",
+                raw=raw,
+            )
 
     return GeneratedBossQuestion(
         question_text=question_text,
@@ -301,11 +382,28 @@ async def generate_boss_question(
 ) -> GeneratedBossQuestion:
     """Call the LLM to generate one new boss question, validate, and return.
 
-    Plan 5 §6 + Plan 7 §4 — wired through ai_gateway.generate_structured()
-    for Pydantic validation, repair retry, and ai_call_logs telemetry.
-    Raises BossQuestionRejected if validation fails. Caller should retry once
-    or fall back to a deterministic stem.
+    Plan 5 §6 + Plan 7 §4 + Plan Wave 2 — wired through
+    ``ai_gateway.generate_structured()`` for Pydantic validation, repair
+    retry, and ai_call_logs telemetry. After the gateway returns we run the
+    per-skill difficulty floor check; on persistent floor violation we
+    hard-clamp the generated difficulty up to the floor (better UX than
+    502-ing the runtime).
+
+    Raises ``BossQuestionRejected`` if neither generation nor clamp can
+    salvage the call (empty anchor context, AI unavailable, anti-repetition,
+    Pydantic, etc.). Caller should retry once or fall back to a deterministic
+    stem.
     """
+    # --- Empty-pool guard (Plan Wave 2 §G) ---
+    # If we have neither authored stems nor phase summaries, the generator
+    # has no anchor context and would hallucinate an off-topic skill. Bail
+    # before paying the LLM call.
+    stems = list(boss_context.get("authored_question_stems") or [])
+    phases = list(boss_context.get("phase_summaries") or [])
+    if not stems and not phases:
+        raise BossQuestionRejected("no_anchor_context")
+    pool_max = boss_context.get("authored_difficulty_floor")
+
     diff = difficulty if difficulty in ALLOWED_DIFFICULTIES else DEFAULT_DIFFICULTY
     prompt = _load_prompt("boss-question-generator")
     payload = dict(boss_context)
@@ -331,15 +429,53 @@ async def generate_boss_question(
         raise BossQuestionRejected("ai_unavailable") from exc
 
     # Gateway already validated against BossQuestionGenerated Pydantic schema.
-    # Convert to dict for business-rule validation.
+    # Convert to dict for business-rule validation (anti-repetition, length,
+    # per-skill difficulty floor).
     raw = result.model_dump()
-    return _validate_generated_question(
-        raw,
-        asked_questions=list(boss_context.get("asked_questions") or []),
-        max_question_length=int(
-            (boss_context.get("boss_policy") or {}).get("max_question_length") or 900
-        ),
+    asked = list(boss_context.get("asked_questions") or [])
+    max_qlen = int(
+        (boss_context.get("boss_policy") or {}).get("max_question_length") or 900
     )
+
+    try:
+        return _validate_generated_question(
+            raw,
+            asked_questions=asked,
+            stems=stems,
+            pool_max=pool_max,
+            max_question_length=max_qlen,
+        )
+    except BossQuestionRejected as exc:
+        # Hard-clamp on persistent floor violation. The gateway already
+        # consumed its one repair retry on Pydantic schema, so the LLM is
+        # not getting another shot. Clamping the difficulty up to the floor
+        # is preferable to surfacing a 502 to the runtime.
+        if (
+            exc.reason.startswith("difficulty_below_skill_floor")
+            and exc.raw
+            and (stems or pool_max)
+        ):
+            clamped_raw = dict(exc.raw)
+            target_skill_str = str(clamped_raw.get("target_skill") or "")
+            actual_floor = (
+                _resolve_skill_floor(target_skill_str, stems, pool_max) or pool_max
+            )
+            clamped_raw["difficulty"] = actual_floor
+            _log.warning(
+                "boss_difficulty_clamped_after_repair_fail: target_skill=%r forced to %r",
+                target_skill_str, actual_floor,
+            )
+            # Re-validate with stems=None / pool_max=None so the floor check
+            # is skipped (we just enforced it ourselves). Anti-repetition,
+            # length, and Pydantic checks still run.
+            return _validate_generated_question(
+                clamped_raw,
+                asked_questions=asked,
+                stems=None,
+                pool_max=None,
+                max_question_length=max_qlen,
+            )
+        raise
 
 
 # ---- Answer checking ------------------------------------------------------
