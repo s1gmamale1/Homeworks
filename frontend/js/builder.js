@@ -228,6 +228,7 @@
       cancelTemplate: $("cancel-template"),
       fixtureList: $("fixture-list"),
       toastRegion: $("toast-region"),
+      migrateContentBtn: $("migrate-content-btn"),
     });
   }
 
@@ -426,6 +427,68 @@
       toast.style.transform = "translateY(8px) scale(0.98)";
       window.setTimeout(() => toast.remove(), 180);
     }, 3200);
+  }
+
+  function setMigrationButton(status) {
+    if (!els.migrateContentBtn) return;
+    const needsMigration = Boolean(status && status.needs_migration);
+    els.migrateContentBtn.hidden = !needsMigration;
+    els.migrateContentBtn.disabled = false;
+    els.migrateContentBtn.textContent = needsMigration
+      ? t("builder.migrate_data", "Update data")
+      : t("builder.data_current", "Data current");
+    const keys = []
+      .concat((status && status.added_keys) || [])
+      .concat((status && status.changed_keys) || []);
+    els.migrateContentBtn.title = keys.length
+      ? `${t("builder.migrate_data_title", "Stored data needs compatibility updates")}: ${keys.slice(0, 6).join(", ")}`
+      : t("builder.migrate_data_title", "Stored data needs compatibility updates");
+  }
+
+  async function checkMigrationStatus() {
+    const homework = window.BUILDER_STATE.homework;
+    if (!homework || !homework.id || !API.getHomeworkMigrationStatus) return;
+    try {
+      const status = await API.getHomeworkMigrationStatus(homework.id);
+      setMigrationButton(status);
+    } catch (_error) {
+      setMigrationButton(null);
+    }
+  }
+
+  async function migrateStoredContent() {
+    const homework = window.BUILDER_STATE.homework;
+    if (!homework || !homework.id || !API.migrateHomeworkContent || !els.migrateContentBtn) return;
+
+    els.migrateContentBtn.disabled = true;
+    els.migrateContentBtn.textContent = t("builder.migrating_data", "Updating...");
+
+    try {
+      if (window.BUILDER_STATE.dirty) {
+        await saveNow();
+      }
+      const result = await API.migrateHomeworkContent(homework.id);
+      const nextHomework = result.homework || homework;
+      window.BUILDER_STATE.homework = {
+        ...homework,
+        ...nextHomework,
+        content_json: normalizeContent(nextHomework.content_json || homework.content_json || {}, nextHomework),
+      };
+      window.BUILDER_STATE.dirty = false;
+      setMigrationButton({ needs_migration: false });
+      renderAll();
+      showToast(
+        t("builder.data_migrated", "Data migrated"),
+        result.migrated
+          ? t("builder.data_migrated_message", "This homework now uses the current content format.")
+          : t("builder.data_already_current", "This homework was already up to date."),
+        "success"
+      );
+    } catch (error) {
+      els.migrateContentBtn.disabled = false;
+      els.migrateContentBtn.textContent = t("builder.migrate_data", "Update data");
+      showToast(t("builder.data_migration_failed", "Data migration failed"), error.message, "error");
+    }
   }
 
   function renderMeta() {
@@ -818,6 +881,7 @@
       setSaveState(t("builder.loaded"), "saved");
       updateSaveState("saved");
       renderAll();
+      checkMigrationStatus();
     } catch (error) {
       els.editorRoot.innerHTML = `
         <div class="empty-state glass-card">
@@ -1026,6 +1090,7 @@
     els.closeTemplateModal.addEventListener("click", closeTemplateModal);
     els.cancelTemplate.addEventListener("click", closeTemplateModal);
     if (els.testTutorBtn) els.testTutorBtn.addEventListener("click", runTutorSmokeTest);
+    if (els.migrateContentBtn) els.migrateContentBtn.addEventListener("click", migrateStoredContent);
 
     els.templateModal.addEventListener("click", (event) => {
       if (event.target === els.templateModal) closeTemplateModal();
