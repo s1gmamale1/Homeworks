@@ -259,41 +259,6 @@ def test_boss_state_has_dynamic_field(perfect_homework_html: str, field: str):
     )
 
 
-def test_use_dynamic_boss_initializes_from_boss_meta_flag(perfect_homework_html: str):
-    """Dynamic Boss must be author opt-in through injected BOSS_META."""
-    m = re.search(
-        r"const\s+bossState\s*=\s*\{(.*?)\};",
-        perfect_homework_html,
-        re.DOTALL,
-    )
-    assert m, "bossState literal missing"
-    body = m.group(1)
-    helper = _extract_function_body(perfect_homework_html, "bossDynamicEnabledFromMeta")
-
-    assert "useDynamicBoss: bossDynamicEnabledFromMeta()" in body
-    assert "BOSS_META.use_dynamic_boss === true" in helper
-    assert "useDynamicBoss: true" not in body
-
-
-def test_start_final_boss_resets_dynamic_flag_from_boss_meta(perfect_homework_html: str):
-    """Re-entering Boss should re-read author config instead of inheriting a fallback flip."""
-    body = _extract_function_body(perfect_homework_html, "startFinalBoss")
-
-    assert "useDynamicBoss: bossDynamicEnabledFromMeta()" in body
-    assert "bossSessionId:null" in body
-    assert "currentQuestion:null" in body
-
-
-def test_start_final_boss_skips_dynamic_kickoff_when_disabled(perfect_homework_html: str):
-    """When use_dynamic_boss is false or missing, runtime must not call Dynamic Boss endpoints."""
-    body = _extract_function_body(perfect_homework_html, "startFinalBoss")
-
-    assert re.search(r"if\s*\(\s*!bossState\.useDynamicBoss\s*\)\s*\{\s*return\s*;", body), (
-        "startFinalBoss dynamicReady block must return before bossDynamicStart() "
-        "when the builder flag is off"
-    )
-
-
 # ---------------------------------------------------------------------------
 # 6. bossRenderQuestion branches on useDynamicBoss
 # ---------------------------------------------------------------------------
