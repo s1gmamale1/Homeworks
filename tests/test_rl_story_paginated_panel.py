@@ -202,3 +202,257 @@ def test_injector_renders_template_with_pagination_classes(tmp_path, monkeypatch
     assert 'id="rl-story-dots"' in rendered
     assert "scroll-snap-type: x mandatory" in rendered
     assert "Para one." in rendered  # story actually injected
+
+
+# ── Grading control flow — single-check contract ────────────────────────────
+#
+# These tests guard the load-bearing logic change in this PR: the old
+# dual-fire "show local hint AND dispatch AI" branch on first wrong attempt
+# is gone, replaced by a single-check flow (local exact-match → if no match,
+# AI fallback once). Reviewer flagged this as the biggest test gap because
+# the original tests only cover the story panel layer, not the submit
+# contract. Static-string tests against the rendered template — same pattern
+# as the rest of this file (Playwright-style runtime tests would be better
+# but match the existing project test style).
+
+
+def _extract_function_body(template_html: str, fn_name: str) -> str:
+    """Extract a JS function body by brace-counting (regex can't handle
+    nested braces in if/else blocks). Returns the text between the
+    function's outer `{` and matching `}`, exclusive."""
+    pattern = re.compile(rf"function\s+{re.escape(fn_name)}\s*\([^)]*\)\s*\{{")
+    m = pattern.search(template_html)
+    assert m, f"Couldn't locate function {fn_name}() in template."
+    start = m.end()  # position right after the opening `{`
+    depth = 1
+    i = start
+    n = len(template_html)
+    in_str = None  # current string delimiter, if any
+    in_line_comment = False
+    in_block_comment = False
+    while i < n and depth > 0:
+        c = template_html[i]
+        nxt = template_html[i + 1] if i + 1 < n else ""
+        if in_line_comment:
+            if c == "\n":
+                in_line_comment = False
+        elif in_block_comment:
+            if c == "*" and nxt == "/":
+                in_block_comment = False
+                i += 1
+        elif in_str:
+            if c == "\\":
+                i += 1  # skip escaped next char
+            elif c == in_str:
+                in_str = None
+        else:
+            if c == "/" and nxt == "/":
+                in_line_comment = True
+                i += 1
+            elif c == "/" and nxt == "*":
+                in_block_comment = True
+                i += 1
+            elif c in ('"', "'", "`"):
+                in_str = c
+            elif c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    return template_html[start:i]
+        i += 1
+    raise AssertionError(f"Unbalanced braces in {fn_name} — could not extract body.")
+
+
+def _rl_submit_body(template_html: str) -> str:
+    return _extract_function_body(template_html, "rlSubmitQuestion")
+
+
+def test_submit_no_dual_fire_on_first_wrong_attempt(template_html):
+    """Pre-fix code had:
+        if (stage6State.attempts[idx] === 1 && q.hint) {
+            rlSetFeedback(fbId, 'rl-hint', '💡 ' + q.hint);
+            rlDispatchTutorAi(idx, q, val);
+        }
+    Both fired together: local hint AND AI dispatch on the same submit. New
+    flow runs ONE check path. Asserts the dual-fire pattern cannot return.
+    """
+    body = _rl_submit_body(template_html)
+    assert not re.search(r"attempts\[idx\]\s*===\s*1\s*&&\s*q\.hint", body), (
+        "rlSubmitQuestion must not contain the legacy `attempts[idx] === 1 && q.hint` "
+        "first-attempt branch — that was the dual-fire bug."
+    )
+    # Auto-prepending the hint emoji + q.hint into the feedback band on
+    # submit was the visible symptom of the dual-fire branch. Hints are
+    # now opt-in via .rl-hint-toggle only.
+    assert "'💡 ' + q.hint" not in body, (
+        "Auto-injecting q.hint into the feedback band on submit is gone — "
+        "hints render on demand via the rl-hint-toggle button."
+    )
+
+
+def test_submit_dispatches_ai_at_most_once(template_html):
+    """Across the entire rlSubmitQuestion body there must be exactly ONE
+    `rlDispatchTutorAi(...)` call site — the single AI fallback path. Pre-fix
+    code had three: text-attempt-1, text-attempt-2+, multi-attempt-1,
+    multi-attempt-2+, plus textarea. New flow has one shared dispatch."""
+    body = _rl_submit_body(template_html)
+    dispatch_calls = re.findall(r"rlDispatchTutorAi\s*\(", body)
+    assert len(dispatch_calls) == 1, (
+        f"Expected exactly 1 AI dispatch call inside rlSubmitQuestion, found {len(dispatch_calls)}. "
+        "Multiple dispatches indicate the old branched-by-question-type pattern returned."
+    )
+
+
+def test_submit_local_correct_skips_ai_dispatch(template_html):
+    """Path 1 of the new flow: when local exact-match passes, the function
+    must return BEFORE dispatching the AI. Verified by checking the order
+    of key markers in the submit body — the local-correct branch's
+    `rlCommitQuestion(idx); return;` MUST appear before the single
+    `rlDispatchTutorAi(...)` call site."""
+    body = _rl_submit_body(template_html)
+
+    # Anchor 1: the gate that opens the local-correct branch.
+    correct_gate = body.find("canLocalCheck && localCorrect")
+    assert correct_gate != -1, (
+        "Couldn't find `canLocalCheck && localCorrect` gate in rlSubmitQuestion."
+    )
+
+    # Anchor 2: the SOLE rlDispatchTutorAi call (must come AFTER the
+    # local-correct branch so the branch's `return;` skips it).
+    dispatch = body.find("rlDispatchTutorAi(")
+    assert dispatch != -1, "Missing rlDispatchTutorAi call in rlSubmitQuestion."
+
+    # Local-correct branch must complete BEFORE the dispatch line. Anchor
+    # the branch end via rlCommitQuestion(idx) — only the local-correct
+    # path calls it from within rlSubmitQuestion (the AI-result handler
+    # has its own call outside).
+    commit_call = body.find("rlCommitQuestion(idx)", correct_gate)
+    assert commit_call != -1, (
+        "Local-correct branch must call rlCommitQuestion(idx) to reveal Keyingi."
+    )
+
+    # Find the `return;` immediately after rlCommitQuestion(idx) — that
+    # terminates the local-correct path before the AI dispatch below.
+    return_after_commit = body.find("return;", commit_call)
+    assert return_after_commit != -1, (
+        "Local-correct branch must `return;` after rlCommitQuestion(idx); "
+        "otherwise the AI dispatch below it fires anyway."
+    )
+    assert return_after_commit < dispatch, (
+        "Local-correct branch's `return;` must come BEFORE the rlDispatchTutorAi call. "
+        "Otherwise the local path falls through and the AI gets called for correct answers."
+    )
+
+    # Also assert: between correct_gate and the local-correct return, there
+    # is NO rlDispatchTutorAi (no dispatch-from-correct-branch).
+    correct_branch_text = body[correct_gate:return_after_commit]
+    assert "rlDispatchTutorAi" not in correct_branch_text, (
+        "Local-correct path must NOT dispatch AI — that defeats the cost/latency "
+        "savings the local-first design provides."
+    )
+
+
+def test_submit_engages_busy_lock_before_dispatch(template_html):
+    """Submit must set checking[idx]=true and disable the local submit button
+    BEFORE dispatching AI, otherwise a fast second click can fire two AI
+    requests. Order matters: lock first, then dispatch."""
+    body = _rl_submit_body(template_html)
+    busy_set = body.find("stage6State.checking[idx] = true")
+    submit_disable = body.find("submitBtn.disabled = true")
+    dispatch = body.find("rlDispatchTutorAi(")
+    assert busy_set != -1, "Missing `stage6State.checking[idx] = true` lock-engage line."
+    assert submit_disable != -1, "Missing `submitBtn.disabled = true` lock-engage line."
+    assert dispatch != -1, "Missing rlDispatchTutorAi call (the single AI dispatch)."
+    assert busy_set < dispatch, "checking[idx]=true must be set BEFORE dispatching AI."
+    assert submit_disable < dispatch, "Submit button must be disabled BEFORE dispatching AI."
+
+
+def test_submit_guarded_against_double_invocation(template_html):
+    """Top-of-function guard: if checking[idx] is already true, return
+    immediately. Same for already-submitted. Without this, a fast second
+    click during the AI window fires twice."""
+    body = _rl_submit_body(template_html)
+    # The first ~15 lines should contain both guards.
+    head = "\n".join(body.split("\n")[:30])
+    assert re.search(
+        r"if\s*\(\s*stage6State\.checking\s*&&\s*stage6State\.checking\[idx\]\s*\)\s*return",
+        head,
+    ), "Missing top-of-function guard against re-entry while checking[idx] is true."
+    assert re.search(
+        r"if\s*\(\s*stage6State\.submitted\[idx\]\s*\)\s*return",
+        head,
+    ), "Missing top-of-function guard against re-submit after verdict already in."
+
+
+def test_set_rl_ai_lock_targets_local_submit_not_action_button(template_html):
+    """Pre-fix `setRlAiLock` toggled is-ai-pending on `#action-button`. New
+    design moves submit off the bottom button entirely, so the lock must
+    operate on the active question's `.rl-submit-local`."""
+    body = _extract_function_body(template_html, "setRlAiLock")
+    assert "'rl-q' + ((i || 0) + 1) + '-submit'" in body or "rl-q' +" in body, (
+        "setRlAiLock must look up the per-question local submit button "
+        "(`rl-q{N}-submit`), not the global #action-button."
+    )
+    assert "getElementById('action-button')" not in body, (
+        "setRlAiLock must NOT target #action-button anymore — that's pre-fix."
+    )
+
+
+def test_all_four_question_types_get_local_button_row(template_html):
+    """rlRenderQuestion must inject `.rl-q-actions` (with submit/hint/tutor)
+    + `.rl-q-after` (with Keyingi) into the per-question body for every
+    question type. Test by checking the renderer code unconditionally builds
+    these rows — they're in a single block at the end of rlRenderQuestion,
+    not branched per-type."""
+    body = _extract_function_body(template_html, "rlRenderQuestion")
+    # The action row builder block must exist outside any q.type-specific
+    # branch (it's in the unconditional tail of the function).
+    assert re.search(r"actions\s*=\s*document\.createElement\(['\"]div['\"]\)", body), (
+        "rlRenderQuestion must build .rl-q-actions row unconditionally."
+    )
+    assert "submitBtn.className = 'rl-submit-local'" in body
+    assert "nextBtn.className = 'rl-next-local'" in body
+    # Tutor pre-submit button (always rendered; hidden after submit).
+    assert "tutorBtn.className = 'rl-tutor-pre-submit'" in body
+    # Hint toggle is conditional on q.hint — that's intentional, but the
+    # variable name + class name must still appear.
+    assert "hintBtn.className = 'rl-hint-toggle'" in body
+    # Per-question state arrays must be reset on render.
+    assert "stage6State.checking[idx] = false" in body
+    assert "stage6State.hintOpen[idx] = false" in body
+
+
+def test_post_grading_keyingi_button_only_visible_after_verdict(template_html):
+    """`.rl-q-after` (post-grading row) is hidden by default and revealed
+    only by `rlCommitQuestion(idx)`. Both the local-correct path and the
+    AI-result handler must call rlCommitQuestion to reveal Keyingi."""
+    body = _extract_function_body(template_html, "rlCommitQuestion")
+    assert "after.hidden = false" in body, (
+        "rlCommitQuestion must unhide `.rl-q-after` so the local Keyingi button appears."
+    )
+    # AI-result handler calls it (lives in the document.addEventListener
+    # block, outside any named function — so we check at template scope).
+    assert re.search(
+        r"rlCommitQuestion\s*\(\s*ticket\.qIndex\s*\)",
+        template_html,
+    ), "AI-result handler must call rlCommitQuestion(ticket.qIndex) to reveal Keyingi."
+
+
+def test_bottom_action_button_hidden_during_question_loop(template_html):
+    """Bottom #action-button is hidden when entering the question loop and
+    re-shown on the closure card. Otherwise the student sees TWO submit
+    affordances (the local one + the global one) and the contract gets
+    confusing."""
+    show_body = _extract_function_body(template_html, "rlShowQuestion")
+    assert re.search(
+        r"getElementById\(['\"]action-button['\"]\)[^;]*;\s*if\s*\(\s*ab\s*\)\s*ab\.style\.display\s*=\s*['\"]none['\"]",
+        show_body,
+        re.DOTALL,
+    ), "rlShowQuestion must hide #action-button via display:none."
+
+    closure_body = _extract_function_body(template_html, "rlShowClosure")
+    assert "ab.style.display = ''" in closure_body, (
+        "rlShowClosure must un-hide #action-button (display: '') so the student can advance "
+        "to the next phase."
+    )
