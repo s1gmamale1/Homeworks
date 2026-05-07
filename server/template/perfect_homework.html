@@ -17147,6 +17147,14 @@ Prezident ertaga hisobot kutmoqda.`,
         // is q.prompt with the tag substring removed. Permissive regex
         // covers the variants seen in production: with/without colons,
         // with/without L/P prefix, "|" or "·" or "," separator, mixed case.
+        //
+        // Order assumption: Bloom appears BEFORE PISA in the bracket.
+        // Production data uses this order universally; reversed order
+        // (e.g. `[PISA: L2 | Bloom: L3]`) is not supported and the tags
+        // will remain inline. If this needs to change, swap to two
+        // alternation branches inside the regex — but verify against
+        // actual production data first; adding flexibility blindly
+        // doubles the parser's failure surface.
         function rlExtractMeta(text) {
             const src = text || '';
             const m = src.match(

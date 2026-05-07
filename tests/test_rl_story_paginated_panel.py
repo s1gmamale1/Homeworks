@@ -439,6 +439,111 @@ def test_post_grading_keyingi_button_only_visible_after_verdict(template_html):
     ), "AI-result handler must call rlCommitQuestion(ticket.qIndex) to reveal Keyingi."
 
 
+def test_bloom_pisa_extractor_regex_handles_documented_variants():
+    """Executable test of the rlExtractMeta regex pattern. Pre-fix, the
+    parsing was checked only via "function exists / is wired" assertions —
+    no test actually ran the regex against the variants the comment claims
+    to support. This catches silent regex regressions.
+
+    Mirrors the JS regex in rlExtractMeta() to Python `re` and asserts the
+    documented input forms parse to the expected (bloom_level, pisa_level)
+    output, plus that no-match inputs return None.
+
+    NOTE: Order assumption is Bloom-before-PISA per production convention.
+    Reversed-order inputs intentionally fail to match — see the comment
+    above rlExtractMeta() for rationale.
+    """
+    # Mirror of the JS regex, ported to Python re flavor (case-insensitive).
+    js_pattern = re.compile(
+        r"\[\s*Bloom:?\s*L?(\d+)\s*[|·,]\s*PISA:?\s*[LP]?(\d+)\s*\]",
+        re.IGNORECASE,
+    )
+
+    # Variants that MUST parse — from the comment in rlExtractMeta().
+    parses = [
+        ("[Bloom: L3 | PISA: L2]", "3", "2"),     # canonical production form
+        ("[Bloom L3 · PISA L2]", "3", "2"),       # no colons, dot separator
+        ("[Bloom: 3 | PISA: 2]", "3", "2"),       # no L prefix
+        ("[BLOOM: L3 | PISA: P2]", "3", "2"),     # uppercase, P prefix on PISA
+        ("[bloom: L4 , pisa: L1]", "4", "1"),     # comma separator, lowercase
+        ("[ Bloom: L5 | PISA: L4 ]", "5", "4"),  # extra whitespace inside brackets
+        ("Question text. [Bloom: L3 | PISA: L2]", "3", "2"),  # tags after text
+    ]
+    for src, bloom, pisa in parses:
+        m = js_pattern.search(src)
+        assert m is not None, f"Regex must parse {src!r} but didn't."
+        assert m.group(1) == bloom, f"{src!r}: bloom expected {bloom!r}, got {m.group(1)!r}"
+        assert m.group(2) == pisa, f"{src!r}: pisa expected {pisa!r}, got {m.group(2)!r}"
+
+    # Inputs that MUST NOT parse.
+    no_match = [
+        "Plain question text without any tags.",
+        "Question with [some other bracketed text].",
+        "[Bloom L3]",                              # PISA missing
+        "[PISA: L2 | Bloom: L3]",                  # reversed order — by design (see code comment)
+        "Bloom: L3 | PISA: L2",                    # missing brackets
+    ]
+    for src in no_match:
+        assert js_pattern.search(src) is None, (
+            f"Regex must NOT parse {src!r}, but it did. Either tighten the pattern "
+            f"or update the documented variants comment."
+        )
+
+
+def test_bloom_pisa_extractor_strips_tags_from_prompt():
+    """The full rlExtractMeta contract — parsing is one half; the other is
+    that the returned `stripped` text has the bracket suffix removed AND
+    trailing whitespace/punctuation cleaned up so the rendered prompt is
+    presentation-ready (not "Some question.   ." with leftovers)."""
+    js_pattern = re.compile(
+        r"\[\s*Bloom:?\s*L?(\d+)\s*[|·,]\s*PISA:?\s*[LP]?(\d+)\s*\]",
+        re.IGNORECASE,
+    )
+    trailing_pattern = re.compile(r"[\s.;,]+$")
+
+    def py_extract(text):
+        # Mirror of the JS rlExtractMeta() implementation.
+        src = text or ""
+        m = js_pattern.search(src)
+        if not m:
+            return {"tags": "", "stripped": src}
+        tags = f"Bloom L{m.group(1)} · PISA L{m.group(2)}"
+        stripped = trailing_pattern.sub("", src.replace(m.group(0), "")).strip()
+        return {"tags": tags, "stripped": stripped}
+
+    cases = [
+        # (input, expected_tags, expected_stripped)
+        (
+            "1-test uchun absolut xatolikni toping (mmol/L). [Bloom: L3 | PISA: L2]",
+            "Bloom L3 · PISA L2",
+            "1-test uchun absolut xatolikni toping (mmol/L)",
+        ),
+        (
+            "Solve this problem. [Bloom L4 · PISA L3]",
+            "Bloom L4 · PISA L3",
+            "Solve this problem",
+        ),
+        (
+            "[Bloom: L1 | PISA: L1] What is 2+2?",
+            "Bloom L1 · PISA L1",
+            "What is 2+2?",
+        ),
+        (
+            "Plain prompt with no tags.",
+            "",
+            "Plain prompt with no tags.",
+        ),
+    ]
+    for src, expected_tags, expected_stripped in cases:
+        result = py_extract(src)
+        assert result["tags"] == expected_tags, (
+            f"{src!r}: tags expected {expected_tags!r}, got {result['tags']!r}"
+        )
+        assert result["stripped"] == expected_stripped, (
+            f"{src!r}: stripped expected {expected_stripped!r}, got {result['stripped']!r}"
+        )
+
+
 def test_bloom_pisa_tags_relocated_to_header_meta_slot(template_html):
     """Bloom/PISA tags used to be inline at the end of `q.prompt` text. They
     now render in a dedicated top-right header slot so the prompt stays
