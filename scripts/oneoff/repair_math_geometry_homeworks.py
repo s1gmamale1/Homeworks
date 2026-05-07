@@ -31,6 +31,10 @@ BITMAP_PREFIXES = ("data:image/png;base64,", "data:image/jpeg;base64,", "data:im
 MAX_LABEL = 52
 HOMEWORK_BLOAT_THRESHOLD = 200_000
 INLINE_IMAGE_BLOAT_THRESHOLD = 20_000
+GENERATED_IMAGE_PATTERN = re.compile(
+    r'(?:(?:https?:)?//[^"\']+)?/generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg)',
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -108,6 +112,10 @@ def _is_bloated_data_uri(value: str) -> bool:
     return isinstance(value, str) and value.startswith(BITMAP_PREFIXES) and len(value) >= INLINE_IMAGE_BLOAT_THRESHOLD
 
 
+def _is_stale_generated_image_ref(value: Any) -> bool:
+    return isinstance(value, str) and bool(GENERATED_IMAGE_PATTERN.search(value))
+
+
 def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str, int]:
     replacements = 0
     replacement_src = _svg_data_uri(subject, label)
@@ -128,7 +136,28 @@ def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str,
         html,
         flags=re.IGNORECASE,
     )
+    def repl_generated(match: re.Match[str]) -> str:
+        nonlocal replacements
+        replacements += 1
+        return f'{match.group(1)}{match.group(2)}{replacement_src}{match.group(2)}'
+
+    updated = re.sub(
+        r'(<img\b[^>]*\bsrc=)(["\'])((?:(?:https?:)?//[^"\']+)?/generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg))\2',
+        repl_generated,
+        updated,
+        flags=re.IGNORECASE,
+    )
     return updated, replacements
+
+
+def _needs_media_repair(node: Any) -> bool:
+    if isinstance(node, dict):
+        return any(_needs_media_repair(v) for v in node.values())
+    if isinstance(node, list):
+        return any(_needs_media_repair(v) for v in node)
+    if isinstance(node, str):
+        return _is_stale_generated_image_ref(node)
+    return False
 
 
 def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairStats) -> Any:
@@ -139,11 +168,11 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
             next_breadcrumbs = breadcrumbs
             if key in {"title", "term", "label", "caption", "prompt", "question", "name"} and isinstance(value, str):
                 next_breadcrumbs = breadcrumbs + [value]
-            if key == "src" and _is_bloated_data_uri(value):
+            if key == "src" and (_is_bloated_data_uri(value) or _is_stale_generated_image_ref(value)):
                 repaired[key] = _svg_data_uri(subject, local_label)
                 stats.src_replaced += 1
                 continue
-            if key == "html" and isinstance(value, str) and "data:image/" in value:
+            if key == "html" and isinstance(value, str) and ("data:image/" in value or "/generated/" in value):
                 repaired_html, replaced = _replace_img_srcs_in_html(value, subject, local_label)
                 repaired[key] = repaired_html
                 stats.html_replaced += replaced
@@ -154,7 +183,7 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
     if isinstance(node, list):
         return [_repair_node(item, subject, breadcrumbs, stats) for item in node]
 
-    if isinstance(node, str) and "data:image/" in node and "<img" in node:
+    if isinstance(node, str) and "<img" in node and ("data:image/" in node or "/generated/" in node):
         label = _guess_label(None, breadcrumbs, subject)
         repaired_html, replaced = _replace_img_srcs_in_html(node, subject, label)
         stats.html_replaced += replaced
@@ -169,7 +198,7 @@ def _repair_homework(content_json: str, subject: str) -> tuple[str, bool, Repair
     before = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
     repaired = data
-    if len(content_json) >= HOMEWORK_BLOAT_THRESHOLD:
+    if len(content_json) >= HOMEWORK_BLOAT_THRESHOLD or _needs_media_repair(data):
         repaired = _repair_node(data, subject, [], stats)
     meta = repaired.setdefault("meta", {})
     expected_display = _subject_display(subject)
