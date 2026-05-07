@@ -195,28 +195,81 @@
         if (document.activeElement !== field
             && (!STATE.panel || !STATE.panel.contains(document.activeElement))) {
           if (STATE.activeMathField === field) STATE.activeMathField = null;
+          // Auto-remove the math-block if the user blurred without filling
+          // anything in. Without this, an accidental tile-click leaves an
+          // empty placeholder widget the user can't easily delete (Backspace
+          // inside an empty placeholder is a no-op in MathLive — they have
+          // to click adjacent first). Empty here means: value is "" OR is
+          // exclusively structural placeholders / template scaffolding with
+          // no actual user-typed content.
+          if (isStructurallyEmpty(field)) {
+            const wrap = field.closest(".math-block");
+            if (wrap && wrap.parentNode) {
+              wrap.parentNode.removeChild(wrap);
+              if (hostEditor) {
+                hostEditor.dispatchEvent(new InputEvent("input", { bubbles: true }));
+              }
+            }
+          }
         }
       }, 50);
     });
 
     // ESC inside the field exits to the surrounding editor (move caret to
-    // right after the math-block wrapper).
+    // right after the math-block wrapper). Pressing ESC twice in quick
+    // succession from an empty field removes the field entirely — gives
+    // keyboard users a way to abort a wrong template choice.
     field.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
         const wrap = field.closest(".math-block");
         if (!wrap) return;
+        // Esc-Esc on empty field = abort and remove.
+        if (isStructurallyEmpty(field)) {
+          if (wrap.parentNode) {
+            wrap.parentNode.removeChild(wrap);
+            if (hostEditor) {
+              hostEditor.dispatchEvent(new InputEvent("input", { bubbles: true }));
+              hostEditor.focus();
+            }
+          }
+          return;
+        }
         const sel = window.getSelection();
         const r = document.createRange();
-        const next = wrap.nextSibling;
-        if (next) r.setStartAfter(wrap);
-        else r.setStartAfter(wrap);
+        r.setStartAfter(wrap);
         r.collapse(true);
         sel.removeAllRanges();
         sel.addRange(r);
         if (hostEditor) hostEditor.focus();
       }
     });
+  }
+
+  // A math-field is "structurally empty" when its value is either the
+  // empty string OR contains only `\placeholder{}` markers and template
+  // scaffolding (\frac, \sqrt, \int, \begin{}/\end{}, & for matrix
+  // separators, \\ for matrix row breaks, _, ^, \to). The heuristic strips
+  // every known scaffolding token and checks if anything substantive is
+  // left. Anything substantive = the user typed actual math content.
+  function isStructurallyEmpty(field) {
+    if (!field) return true;
+    let v = "";
+    try { v = String(field.value || ""); } catch (_) { v = ""; }
+    if (!v.trim()) return true;
+    // Strip placeholder markers.
+    let cleaned = v.replace(/\\placeholder\{\}/g, "");
+    // Strip common scaffolding macros (no arguments — we already stripped
+    // braces below).
+    cleaned = cleaned.replace(
+      /\\(?:frac|dfrac|tfrac|sqrt|int|iint|iiint|oint|sum|prod|lim|hat|vec|dot|ddot|bar|overline|underline|to|infty|partial|nabla|begin|end|left|right|cdot|times|div|pm|mp)\b/g,
+      "",
+    );
+    // Strip braces, brackets, and operator chars used for structure.
+    cleaned = cleaned.replace(/[{}\[\]_^&\\\s,]/g, "");
+    // Strip env names like "pmatrix" "cases" "aligned".
+    cleaned = cleaned.replace(/\b(?:pmatrix|bmatrix|vmatrix|cases|aligned|gather|matrix|array)\b/g, "");
+    return cleaned.length === 0;
   }
 
   // Public hook: walk an editor and bind events on every math-field that's
