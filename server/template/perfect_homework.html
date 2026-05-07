@@ -20049,17 +20049,45 @@ Prezident ertaga hisobot kutmoqda.`,
         try { localStorage.setItem('nets_tutor_session', state.sessionId); } catch (e) { /* private mode */ }
 
         // ── FE-3 — mirror active question metadata to window.NETS_STATE ──
-        // runtime.js#collectRuntimeContext falls back to window.NETS_STATE
-        // when no [data-nets-active] DOM marker is found. This mirror keeps
-        // tutor + answer-submit context complete even before per-renderer
-        // DOM markers are wired (TODO(FE-3): add data-nets-active /
-        // data-question-id / data-subphase to each phase renderer's
-        // active question wrapper).
+        // runtime.js#collectRuntimeContext reads [data-nets-active] markers
+        // first and falls back to window.NETS_STATE. We do BOTH:
+        //   1. Tag the currently visible screen wrapper with
+        //      data-nets-active="true" / data-question-id / data-subphase so
+        //      the collector scrapes screen_context only from that one node.
+        //      (.screen.active is the single phase root the runtime keeps
+        //      shown at any time; using it as the active container means
+        //      screen_context never carries content from a hidden screen.)
+        //   2. Mirror the same triplet onto window.NETS_STATE for the
+        //      fallback path (e.g., a brief gap between phase transitions
+        //      when no .screen has the .active class yet).
         function syncNetsState() {
             window.NETS_STATE = window.NETS_STATE || {};
             window.NETS_STATE.phase = state.currentPhase;
             window.NETS_STATE.subphase = (typeof currentSubphase !== 'undefined') ? currentSubphase : null;
             window.NETS_STATE.questionId = state.currentQuestionId;
+            // Strip any previously tagged active node before tagging a new
+            // one so the collector never sees two "active" wrappers.
+            try {
+                document.querySelectorAll('[data-nets-active="true"]').forEach(function(n) {
+                    n.removeAttribute('data-nets-active');
+                });
+            } catch (e) { /* DOM unavailable */ }
+            try {
+                const activeScreen = document.querySelector('.screen.active');
+                if (activeScreen) {
+                    activeScreen.setAttribute('data-nets-active', 'true');
+                    if (state.currentQuestionId) {
+                        activeScreen.setAttribute('data-question-id', String(state.currentQuestionId));
+                    } else {
+                        activeScreen.removeAttribute('data-question-id');
+                    }
+                    if (typeof currentSubphase !== 'undefined' && currentSubphase) {
+                        activeScreen.setAttribute('data-subphase', String(currentSubphase));
+                    } else {
+                        activeScreen.removeAttribute('data-subphase');
+                    }
+                }
+            } catch (e) { /* DOM unavailable */ }
         }
 
         // ── DOM refs ────────────────────────────────────────────
