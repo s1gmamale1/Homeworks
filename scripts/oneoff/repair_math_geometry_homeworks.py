@@ -135,46 +135,38 @@ def _has_repairable_img_html(value: Any) -> bool:
     )
 
 
-def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str, int]:
+def _extract_first_img_src(html: str) -> str | None:
+    match = re.search(r'<img\b[^>]*\bsrc=["\']([^"\']+)["\'][^>]*>', html or "", flags=re.IGNORECASE)
+    return match.group(1) if match else None
+
+
+def _decode_svg_data_uri(value: str) -> str:
+    return urllib.parse.unquote(value[len(SVG_DATA_URI_PREFIX):]) if _is_svg_data_uri_ref(value) else ""
+
+
+def _media_block_from_src(src: str, subject: str, label: str) -> dict[str, str]:
+    if _is_svg_data_uri_ref(src):
+        html = _decode_svg_data_uri(src).strip() or _svg_markup(subject, label)
+        return {"type": "svg", "html": html}
+    return {"type": "image", "src": src, "alt": label}
+
+
+def _replace_svg_data_uri_imgs_in_html(html: str) -> tuple[str, int]:
     replacements = 0
-    replacement_svg = _svg_markup(subject, label)
 
     def repl(match: re.Match[str]) -> str:
         nonlocal replacements
         src = match.group(1)
-        if len(src) < INLINE_IMAGE_BLOAT_THRESHOLD:
+        html = _decode_svg_data_uri(src).strip()
+        if not html:
             return match.group(0)
         replacements += 1
-        return replacement_svg
-
-    updated = re.sub(
-        r'<img\b[^>]*\bsrc=["\'](data:image/(?:png|jpeg|jpg);base64,[^"\']+)["\'][^>]*>',
-        repl,
-        html,
-        flags=re.IGNORECASE,
-    )
-
-    def repl_generated(match: re.Match[str]) -> str:
-        nonlocal replacements
-        replacements += 1
-        return replacement_svg
-
-    updated = re.sub(
-        r'<img\b[^>]*\bsrc=["\']((?:(?:https?:)?//[^"\']+)?/?generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg))["\'][^>]*>',
-        repl_generated,
-        updated,
-        flags=re.IGNORECASE,
-    )
-
-    def repl_svg_data_uri(match: re.Match[str]) -> str:
-        nonlocal replacements
-        replacements += 1
-        return replacement_svg
+        return html
 
     updated = re.sub(
         r'<img\b[^>]*\bsrc=["\'](data:image/svg\+xml;utf8,[^"\']+)["\'][^>]*>',
-        repl_svg_data_uri,
-        updated,
+        repl,
+        html,
         flags=re.IGNORECASE,
     )
     return updated, replacements
@@ -194,28 +186,20 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
     if isinstance(node, dict):
         local_label = _guess_label(node, breadcrumbs, subject)
         if node.get("type") == "quote" and _has_repairable_img_html(node.get("text")):
-            _repaired_html, replaced = _replace_img_srcs_in_html(str(node.get("text") or ""), subject, local_label)
-            if replaced:
-                stats.html_replaced += replaced
-                return {"type": "svg", "html": _svg_markup(subject, local_label)}
-        if node.get("type") == "image" and (
-            _is_bloated_data_uri(node.get("src"))
-            or _is_stale_generated_image_ref(node.get("src"))
-            or _is_svg_data_uri_ref(node.get("src"))
-        ):
+            src = _extract_first_img_src(str(node.get("text") or ""))
+            if src:
+                stats.html_replaced += 1
+                return _media_block_from_src(src, subject, local_label)
+        if node.get("type") == "image" and _is_svg_data_uri_ref(node.get("src")):
             stats.src_replaced += 1
-            return {"type": "svg", "html": _svg_markup(subject, local_label)}
+            return _media_block_from_src(str(node.get("src") or ""), subject, local_label)
         repaired: dict[str, Any] = {}
         for key, value in node.items():
             next_breadcrumbs = breadcrumbs
             if key in {"title", "term", "label", "caption", "prompt", "question", "name"} and isinstance(value, str):
                 next_breadcrumbs = breadcrumbs + [value]
-            if key == "src" and (_is_bloated_data_uri(value) or _is_stale_generated_image_ref(value)):
-                repaired[key] = _svg_data_uri(subject, local_label)
-                stats.src_replaced += 1
-                continue
             if key == "html" and _has_repairable_img_html(value):
-                repaired_html, replaced = _replace_img_srcs_in_html(value, subject, local_label)
+                repaired_html, replaced = _replace_svg_data_uri_imgs_in_html(value)
                 repaired[key] = repaired_html
                 stats.html_replaced += replaced
                 continue
@@ -226,8 +210,7 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
         return [_repair_node(item, subject, breadcrumbs, stats) for item in node]
 
     if isinstance(node, str) and _has_repairable_img_html(node):
-        label = _guess_label(None, breadcrumbs, subject)
-        repaired_html, replaced = _replace_img_srcs_in_html(node, subject, label)
+        repaired_html, replaced = _replace_svg_data_uri_imgs_in_html(node)
         stats.html_replaced += replaced
         return repaired_html
 

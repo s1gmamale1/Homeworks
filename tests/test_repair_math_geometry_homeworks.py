@@ -21,7 +21,7 @@ def _generated_url() -> str:
     return "http://192.168.1.87:8000/generated/HW-20260505-008__panels_1_pages_0_blocks_4_text__handdrawn.png"
 
 
-def test_repair_homework_replaces_only_bloated_assets():
+def test_repair_homework_preserves_existing_authored_images():
     content = {
         "meta": {"subject_display": "Algebra"},
         "panels": [
@@ -41,20 +41,18 @@ def test_repair_homework_replaces_only_bloated_assets():
     repaired_json, changed, stats = _repair_homework(json.dumps(content, ensure_ascii=False), "math-algebra")
     repaired = json.loads(repaired_json)
 
-    assert changed is True
-    assert stats.src_replaced == 1
-    assert stats.html_replaced == 1
-    big_block = repaired["panels"][0]["pages"][0]["blocks"][0]
+    assert changed is False
+    assert stats.src_replaced == 0
+    assert stats.html_replaced == 0
+    big_src = repaired["panels"][0]["pages"][0]["blocks"][0]["src"]
     small_src = repaired["panels"][0]["pages"][0]["blocks"][1]["src"]
-    assert big_block["type"] == "svg"
-    assert big_block["html"].startswith("<svg")
+    assert big_src == _big_data_uri()
     assert small_src == _small_data_uri()
-    assert "<svg" in repaired["consolidation"]["gallery"][0]["html"]
-    assert "data:image/svg+xml;utf8," not in repaired_json
+    assert _big_data_uri() in repaired["consolidation"]["gallery"][0]["html"]
     assert _small_data_uri() in repaired["consolidation"]["gallery"][1]["html"]
 
 
-def test_repair_homework_replaces_stale_generated_image_urls_even_on_small_rows():
+def test_repair_homework_moves_generated_img_html_to_image_block_without_changing_src():
     content = {
         "meta": {"subject_display": "Algebra"},
         "panels": [
@@ -69,14 +67,17 @@ def test_repair_homework_replaces_stale_generated_image_urls_even_on_small_rows(
 
     assert changed is True
     assert stats.html_replaced == 1
-    assert stats.src_replaced == 1
-    assert _generated_url() not in repaired_json
+    assert stats.src_replaced == 0
+    assert _generated_url() in repaired_json
     quote_repair = repaired["panels"][0]["pages"][0]["blocks"][0]
     image_repair = repaired["panels"][0]["pages"][0]["blocks"][1]
-    assert quote_repair["type"] == "svg"
-    assert quote_repair["html"].startswith("<svg")
-    assert image_repair["type"] == "svg"
-    assert image_repair["html"].startswith("<svg")
+    assert quote_repair == {
+        "type": "image",
+        "src": _generated_url(),
+        "alt": "Diagram",
+    }
+    assert image_repair["type"] == "image"
+    assert image_repair["src"] == _generated_url()
     assert "data:image/svg+xml;utf8," not in repaired_json
 
 
