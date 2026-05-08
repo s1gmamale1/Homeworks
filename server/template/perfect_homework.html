@@ -18806,11 +18806,12 @@ Prezident ertaga hisobot kutmoqda.`,
         const BOSS_META = __BOSS_META__;
 
         function bossDynamicEnabledFromMeta() {
-            return Boolean(
-                typeof BOSS_META !== 'undefined' &&
-                BOSS_META &&
-                BOSS_META.use_dynamic_boss === true
-            );
+            // Dynamic is the only mode as of 2026-05-08 — the BOSS_META.use_dynamic_boss
+            // flag added by PR #203 is now deprecated (kept in schema for backward
+            // compat with stored rows). Always try dynamic; the 3-second timeout in
+            // bossDynamicStart() handles fallback to BOSS_QUESTIONS[] on actual LLM
+            // failure. Function name kept so existing call sites still resolve.
+            return true;
         }
 
         const bossState = {
@@ -18832,7 +18833,7 @@ Prezident ertaga hisobot kutmoqda.`,
             currentQuestion: null,      // last bossGenerateQuestion response (whitelisted)
             currentDifficulty: null,    // server-side difficulty signal
             recentBossPhrases: [],      // last ≤5 question_text snippets — anti-repetition
-            useDynamicBoss: bossDynamicEnabledFromMeta(), // author opt-in — falls back to BOSS_QUESTIONS path on failure
+            useDynamicBoss: bossDynamicEnabledFromMeta(), // always true post-2026-05-08; runtime falls back to BOSS_QUESTIONS[] on failure
             kickoffExpired: false,      // FE-5 race guard — set true when 3s startFinalBoss timeout wins; late LLM responses must NOT clobber legacy-mode state
         };
 
