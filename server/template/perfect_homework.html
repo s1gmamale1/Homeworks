@@ -5968,6 +5968,25 @@
         }
         .screen-cons-toggle:hover:not(:disabled) { background: rgba(99,184,255,0.2); }
         .screen-cons-toggle:disabled { opacity: 0.45; cursor: default; }
+        .screen-cons-next {
+            display: block;
+            margin: 32px auto 16px;
+            padding: 14px 36px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 27px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(0,122,255,0.32);
+            transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+        .screen-cons-next:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 24px rgba(0,122,255,0.42);
+        }
+        .screen-cons-next:active { transform: scale(0.98); }
         .screen-cons-answer {
             opacity: 0.85;
             font-style: italic;
@@ -9067,6 +9086,12 @@
                         <div class="content-area screen-cons-answer" id="cons-check-answer"></div>
                     </div>
                 </div>
+                <!-- Always-visible bottom CTA. The shared #action-button can stay
+                     in state-line (invisible 4px bar) if playPhaseAnnouncement's
+                     callback never fires, leaving students with no visible way
+                     forward. This dedicated button is the escape hatch and
+                     works in both panels[] and legacy consolidation modes. -->
+                <button type="button" class="screen-cons-next" id="cons-next-btn">Keyingi sahifa</button>
             </div>
         </div>
 
@@ -19595,6 +19620,18 @@ Prezident ertaga hisobot kutmoqda.`,
                         ca.classList.add('is-revealed');
                         try { ca.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { /* ignore */ }
                     }
+                });
+            }
+
+            // Dedicated fallback — the shared #action-button stays in state-line
+            // (invisible 4px bar) if playPhaseAnnouncement's callback never fires.
+            const nextBtn = document.getElementById('cons-next-btn');
+            if (nextBtn) {
+                nextBtn.textContent = RT('btn.next_page');
+                const fresh = nextBtn.cloneNode(true);
+                nextBtn.parentNode.replaceChild(fresh, nextBtn);
+                fresh.addEventListener('click', () => {
+                    if (typeof consState.onContinue === 'function') consState.onContinue();
                 });
             }
         }
