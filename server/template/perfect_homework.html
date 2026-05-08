@@ -12803,24 +12803,56 @@
         // out 700ms, then calls onDone at 1950ms. Used by Stage 5 (Game Breaks)
         // and Reading. Pattern matches startMemorySprintPhase exactly.
         function playPhaseIntro(cardId, onDone) {
+            // PR #211 root-cause fix — wave2 phases (reading/consolidation/
+            // reflection) gate their button morph on this callback. If the
+            // setTimeout-driven cleanup ever swallows an exception or the
+            // timer is dropped, the shared morphing #action-button stays in
+            // .state-line (4px invisible bar) and students get stranded.
+            // Guarantee onDone fires AT MOST ONCE, and ALWAYS, even if
+            // cleanup throws or the card was removed mid-animation.
+            let fired = false;
+            const fire = () => {
+                if (fired) return;
+                fired = true;
+                try { onDone && onDone(); } catch (e) {
+                    // Swallow downstream errors so a buggy caller can't
+                    // re-introduce the stuck-button state. Log for forensics.
+                    try { console.warn('[playPhaseIntro] onDone threw:', e); } catch (_) {}
+                }
+            };
             const card = document.getElementById(cardId);
-            if (!card) { onDone && onDone(); return; }
-            card.style.display = '';
-            card.style.animation = '';
-            // requestAnimationFrame to ensure the browser paints with .show absent
-            // before we add it — guarantees the opacity transition runs.
-            requestAnimationFrame(() => {
-                card.classList.add('show');
-            });
-            setTimeout(() => {
-                card.style.animation = 'phaseIntroFadeOut 700ms ease forwards';
-            }, 1200);
-            setTimeout(() => {
-                card.classList.remove('show');
-                card.style.display = 'none';
+            if (!card) { fire(); return; }
+            try {
+                card.style.display = '';
                 card.style.animation = '';
-                onDone && onDone();
-            }, 1950);
+                // requestAnimationFrame to ensure the browser paints with .show absent
+                // before we add it — guarantees the opacity transition runs.
+                requestAnimationFrame(() => {
+                    try { card.classList.add('show'); } catch (_) {}
+                });
+                setTimeout(() => {
+                    try { card.style.animation = 'phaseIntroFadeOut 700ms ease forwards'; } catch (_) {}
+                }, 1200);
+                setTimeout(() => {
+                    try {
+                        card.classList.remove('show');
+                        card.style.display = 'none';
+                        card.style.animation = '';
+                    } catch (_) {}
+                    fire();
+                }, 1950);
+                // Watchdog backstop — if the 1950ms timer is throttled away
+                // (background tab) or dropped, fire onDone at 4000ms so the
+                // wave2 button always reaches .state-pill within ~4s of the
+                // phase transition. The `fired` guard makes this idempotent
+                // with the normal-path setTimeout above.
+                setTimeout(fire, 4000);
+            } catch (e) {
+                // Setup itself failed — fire immediately so the caller can
+                // still flip the button visible.
+                try { console.warn('[playPhaseIntro] setup threw:', e); } catch (_) {}
+                fire();
+            }
         }
 
         // Bug #4: phase announcement card retrofit. Single shared card whose
