@@ -10,6 +10,7 @@ full base64 PNG payloads inline.
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import re
 import sqlite3
@@ -28,6 +29,7 @@ from server.config import DB_PATH
 
 TARGET_SUBJECTS = {"math-algebra", "geometriya-g7-11"}
 BITMAP_PREFIXES = ("data:image/png;base64,", "data:image/jpeg;base64,", "data:image/jpg;base64,")
+SVG_DATA_URI_PREFIX = "data:image/svg+xml;utf8,"
 MAX_LABEL = 52
 HOMEWORK_BLOAT_THRESHOLD = 200_000
 INLINE_IMAGE_BLOAT_THRESHOLD = 20_000
@@ -35,6 +37,9 @@ GENERATED_IMAGE_PATTERN = re.compile(
     r'(?:(?:https?:)?//[^"\']+)?/generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg)',
     re.IGNORECASE,
 )
+STATIC_IMAGE_REPLACEMENTS = {
+    "HW-20260505-008__panels_1_pages_0_blocks_4_text__handdrawn.png": "/generated/HW-20260505-008_factorization_methods.svg",
+}
 
 
 @dataclass
@@ -53,6 +58,13 @@ def _truncate(text: str, limit: int = MAX_LABEL) -> str:
     return text[: limit - 3].rstrip() + "..." if len(text) > limit else text
 
 
+def _clean_svg_label(label: str, subject: str) -> str:
+    clean = _truncate(re.sub(r"<[^>]+>", " ", label or ""))
+    if clean.lower() in {"", "diagram", "formula diagram", "homework diagram", "handdrawn diagram"}:
+        return "Ko'phadlarni ajratish" if subject == "math-algebra" else "Geometriya diagrammasi"
+    return clean
+
+
 def _subject_display(subject: str) -> str:
     return {
         "math-algebra": "Algebra",
@@ -67,31 +79,69 @@ def _needs_subject_display_fix(subject: str, subject_display: Any) -> bool:
     return normalized in {"", subject.lower(), "math-algebra", "geometriya-g7-11"}
 
 
-def _svg_data_uri(subject: str, label: str) -> str:
-    accent = "#0066CC" if subject == "math-algebra" else "#0F8A6C"
-    title = _truncate(label)
-    subtitle = "Homework diagram"
-    svg = f"""
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+def _svg_markup(subject: str, label: str) -> str:
+    is_math = subject == "math-algebra"
+    accent = "#0066CC" if is_math else "#0F8A6C"
+    title = html.escape(_clean_svg_label(label, subject), quote=False)
+    eyebrow = "ALGEBRA" if is_math else "GEOMETRIYA"
+    left_title = "Umumiy omil" if is_math else "Burchak"
+    left_formula = "ax + ay" if is_math else "∠A + ∠B"
+    left_sub = "= a(x + y)" if is_math else "= 180°"
+    right_title = "Guruhlash" if is_math else "Uchburchak"
+    right_formula = "ax+ay+bx+by" if is_math else "a² + b² = c²"
+    right_sub = "= (a+b)(x+y)" if is_math else "to'g'ri burchak"
+    return f"""
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="760" viewBox="0 0 900 760">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F8FBFF"/>
-      <stop offset="100%" stop-color="#EAF4FF"/>
+      <stop offset="0%" stop-color="#f7fbff"/>
+      <stop offset="100%" stop-color="#eaf4ff"/>
     </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="{accent}"/>
+      <stop offset="100%" stop-color="#0F8A6C"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#17324D" flood-opacity="0.14"/>
+    </filter>
   </defs>
-  <rect width="1200" height="720" rx="44" fill="url(#bg)"/>
-  <rect x="48" y="48" width="1104" height="624" rx="36" fill="#FFFFFF" stroke="{accent}" stroke-width="6"/>
-  <circle cx="154" cy="150" r="34" fill="{accent}" opacity="0.12"/>
-  <circle cx="1046" cy="570" r="48" fill="{accent}" opacity="0.08"/>
-  <path d="M156 546 L360 294 L566 546 Z" fill="none" stroke="{accent}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
-  <path d="M710 248 H1006" stroke="{accent}" stroke-width="12" stroke-linecap="round" opacity="0.72"/>
-  <path d="M710 338 H948" stroke="{accent}" stroke-width="12" stroke-linecap="round" opacity="0.56"/>
-  <path d="M710 428 H880" stroke="{accent}" stroke-width="12" stroke-linecap="round" opacity="0.4"/>
-  <text x="96" y="128" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="{accent}">{subtitle}</text>
-  <text x="96" y="612" font-family="Segoe UI, Arial, sans-serif" font-size="54" font-weight="700" fill="#17324D">{title}</text>
+  <rect width="900" height="760" rx="36" fill="url(#bg)"/>
+  <rect x="32" y="32" width="836" height="696" rx="32" fill="#FFFFFF" opacity="0.58"/>
+  <text x="70" y="88" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="{accent}">{eyebrow}</text>
+  <text x="70" y="142" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="850" fill="#17324D">{title}</text>
+  <text x="70" y="186" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#5D7188">Asosiy belgi va mos usulni tanlang.</text>
+  <g filter="url(#softShadow)">
+    <rect x="198" y="238" width="504" height="122" rx="28" fill="url(#core)"/>
+    <text x="270" y="290" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="800" fill="#DFF3FF">BOSHLASH</text>
+    <text x="270" y="334" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="850" fill="#FFFFFF">{title}</text>
+  </g>
+  <path d="M344 360 L252 430" fill="none" stroke="{accent}" stroke-width="6" stroke-linecap="round"/>
+  <path d="M556 360 L648 430" fill="none" stroke="{accent}" stroke-width="6" stroke-linecap="round"/>
+  <g filter="url(#softShadow)">
+    <rect x="92" y="430" width="326" height="174" rx="24" fill="#FFFFFF" stroke="#D7E6F7" stroke-width="3"/>
+    <circle cx="130" cy="476" r="15" fill="{accent}"/>
+    <text x="164" y="486" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="820" fill="#17324D">{left_title}</text>
+    <text x="130" y="544" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="850" fill="#17324D">{left_formula}</text>
+    <text x="130" y="584" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#5D7188">{left_sub}</text>
+  </g>
+  <g filter="url(#softShadow)">
+    <rect x="482" y="430" width="326" height="174" rx="24" fill="#FFFFFF" stroke="#D7E6F7" stroke-width="3"/>
+    <circle cx="520" cy="476" r="15" fill="#0F8A6C"/>
+    <text x="554" y="486" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="820" fill="#17324D">{right_title}</text>
+    <text x="520" y="544" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="850" fill="#17324D">{right_formula}</text>
+    <text x="520" y="584" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#5D7188">{right_sub}</text>
+  </g>
+  <g filter="url(#softShadow)">
+    <rect x="118" y="640" width="664" height="54" rx="20" fill="#FFFFFF" stroke="#D7E6F7" stroke-width="3"/>
+    <text x="156" y="675" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#17324D">Tekshiruv: natijani ochib ko'ring va boshlang'ich ifoda bilan solishtiring.</text>
+  </g>
 </svg>
 """.strip()
-    return "data:image/svg+xml;utf8," + urllib.parse.quote(svg, safe="")
+
+
+def _svg_data_uri(subject: str, label: str) -> str:
+    svg = _svg_markup(subject, label)
+    return SVG_DATA_URI_PREFIX + urllib.parse.quote(svg, safe="")
 
 
 def _guess_label(node: Any, breadcrumbs: list[str], fallback_subject: str) -> str:
@@ -112,39 +162,80 @@ def _is_bloated_data_uri(value: str) -> bool:
     return isinstance(value, str) and value.startswith(BITMAP_PREFIXES) and len(value) >= INLINE_IMAGE_BLOAT_THRESHOLD
 
 
+def _is_svg_data_uri_ref(value: Any) -> bool:
+    return isinstance(value, str) and value.startswith(SVG_DATA_URI_PREFIX)
+
+
 def _is_stale_generated_image_ref(value: Any) -> bool:
     return isinstance(value, str) and bool(GENERATED_IMAGE_PATTERN.search(value))
 
 
-def _replace_img_srcs_in_html(html: str, subject: str, label: str) -> tuple[str, int]:
+def _static_replacement_for_src(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    for old_name, replacement in STATIC_IMAGE_REPLACEMENTS.items():
+        if old_name in value:
+            return replacement
+    return None
+
+
+def _is_generic_placeholder_svg(value: Any) -> bool:
+    return isinstance(value, str) and (
+        "Homework diagram" in value
+        or "Formula diagram" in value
+        or "Handdrawn diagram" in value
+    )
+
+
+def _has_repairable_img_html(value: Any) -> bool:
+    if not isinstance(value, str) or "<img" not in value:
+        return False
+    return (
+        "data:image/" in value
+        or "/generated/" in value
+        or "generated/" in value
+    )
+
+
+def _extract_first_img_src(html: str) -> str | None:
+    match = re.search(r'<img\b[^>]*\bsrc=["\']([^"\']+)["\'][^>]*>', html or "", flags=re.IGNORECASE)
+    return match.group(1) if match else None
+
+
+def _decode_svg_data_uri(value: str) -> str:
+    return urllib.parse.unquote(value[len(SVG_DATA_URI_PREFIX):]) if _is_svg_data_uri_ref(value) else ""
+
+
+def _media_block_from_src(src: str, subject: str, label: str) -> dict[str, str]:
+    replacement = _static_replacement_for_src(src)
+    if replacement:
+        return {"type": "image", "src": replacement, "alt": label}
+    if _is_svg_data_uri_ref(src):
+        html = _decode_svg_data_uri(src).strip()
+        if not html or _is_generic_placeholder_svg(html):
+            html = _svg_markup(subject, label)
+        return {"type": "svg", "html": html}
+    return {"type": "image", "src": src, "alt": label}
+
+
+def _replace_svg_data_uri_imgs_in_html(html_text: str, subject: str, label: str) -> tuple[str, int]:
     replacements = 0
-    replacement_src = _svg_data_uri(subject, label)
 
     def repl(match: re.Match[str]) -> str:
         nonlocal replacements
-        src = match.group(3)
-        if len(src) < INLINE_IMAGE_BLOAT_THRESHOLD:
+        src = match.group(1)
+        html = _decode_svg_data_uri(src).strip()
+        if not html:
             return match.group(0)
+        if _is_generic_placeholder_svg(html):
+            html = _svg_markup(subject, label)
         replacements += 1
-        prefix = match.group(1)
-        quote = match.group(2)
-        return f"{prefix}{quote}{replacement_src}{quote}"
+        return html
 
     updated = re.sub(
-        r'(<img\b[^>]*\bsrc=)(["\'])(data:image/(?:png|jpeg|jpg);base64,[^"\']+)\2',
+        r'<img\b[^>]*\bsrc=["\'](data:image/svg\+xml;utf8,[^"\']+)["\'][^>]*>',
         repl,
-        html,
-        flags=re.IGNORECASE,
-    )
-    def repl_generated(match: re.Match[str]) -> str:
-        nonlocal replacements
-        replacements += 1
-        return f'{match.group(1)}{match.group(2)}{replacement_src}{match.group(2)}'
-
-    updated = re.sub(
-        r'(<img\b[^>]*\bsrc=)(["\'])((?:(?:https?:)?//[^"\']+)?/generated/[^"\']+\.(?:png|jpe?g|webp|gif|svg))\2',
-        repl_generated,
-        updated,
+        html_text,
         flags=re.IGNORECASE,
     )
     return updated, replacements
@@ -156,24 +247,39 @@ def _needs_media_repair(node: Any) -> bool:
     if isinstance(node, list):
         return any(_needs_media_repair(v) for v in node)
     if isinstance(node, str):
-        return _is_stale_generated_image_ref(node)
+        return (
+            _is_stale_generated_image_ref(node)
+            or _is_svg_data_uri_ref(node)
+            or _is_generic_placeholder_svg(node)
+            or _has_repairable_img_html(node)
+        )
     return False
 
 
 def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairStats) -> Any:
     if isinstance(node, dict):
         local_label = _guess_label(node, breadcrumbs, subject)
+        if node.get("type") == "svg" and _is_generic_placeholder_svg(node.get("html")):
+            stats.html_replaced += 1
+            return {"type": "svg", "html": _svg_markup(subject, local_label)}
+        if node.get("type") == "quote" and _has_repairable_img_html(node.get("text")):
+            src = _extract_first_img_src(str(node.get("text") or ""))
+            if src:
+                stats.html_replaced += 1
+                return _media_block_from_src(src, subject, local_label)
+        if node.get("type") == "image" and _is_svg_data_uri_ref(node.get("src")):
+            stats.src_replaced += 1
+            return _media_block_from_src(str(node.get("src") or ""), subject, local_label)
+        if node.get("type") == "image" and _static_replacement_for_src(node.get("src")):
+            stats.src_replaced += 1
+            return _media_block_from_src(str(node.get("src") or ""), subject, local_label)
         repaired: dict[str, Any] = {}
         for key, value in node.items():
-            next_breadcrumbs = breadcrumbs
+            next_breadcrumbs = breadcrumbs + [local_label] if local_label else breadcrumbs
             if key in {"title", "term", "label", "caption", "prompt", "question", "name"} and isinstance(value, str):
                 next_breadcrumbs = breadcrumbs + [value]
-            if key == "src" and (_is_bloated_data_uri(value) or _is_stale_generated_image_ref(value)):
-                repaired[key] = _svg_data_uri(subject, local_label)
-                stats.src_replaced += 1
-                continue
-            if key == "html" and isinstance(value, str) and ("data:image/" in value or "/generated/" in value):
-                repaired_html, replaced = _replace_img_srcs_in_html(value, subject, local_label)
+            if key == "html" and _has_repairable_img_html(value):
+                repaired_html, replaced = _replace_svg_data_uri_imgs_in_html(value, subject, local_label)
                 repaired[key] = repaired_html
                 stats.html_replaced += replaced
                 continue
@@ -183,9 +289,9 @@ def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairS
     if isinstance(node, list):
         return [_repair_node(item, subject, breadcrumbs, stats) for item in node]
 
-    if isinstance(node, str) and "<img" in node and ("data:image/" in node or "/generated/" in node):
+    if isinstance(node, str) and _has_repairable_img_html(node):
         label = _guess_label(None, breadcrumbs, subject)
-        repaired_html, replaced = _replace_img_srcs_in_html(node, subject, label)
+        repaired_html, replaced = _replace_svg_data_uri_imgs_in_html(node, subject, label)
         stats.html_replaced += replaced
         return repaired_html
 

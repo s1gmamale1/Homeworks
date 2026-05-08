@@ -126,6 +126,56 @@ Clones `title` (appended `" (copy)"`), `subject`, `grade`, `mode`, `content_json
 
 ---
 
+### GET /api/homeworks/{hw_id}/migration-status
+
+Reports whether the stored `content_json` would change shape under the current runtime normalizer. Read-only — does NOT mutate the row. Used by the builder UI to decide whether to surface the **Migrate content** button.
+
+```json
+{
+  "ok": true,
+  "id": "HW-20260427-001",
+  "needs_migration": true,
+  "added_keys": ["gb_tile_match", "meta.cefr_level"],
+  "changed_keys": ["flashcards"],
+  "normalized_key_count": 18
+}
+```
+
+- `needs_migration` — `true` when normalization would add or change at least one top-level / dotted key, `false` if the stored blob already matches the normalizer's output.
+- `added_keys` — keys the normalizer would add to the stored blob.
+- `changed_keys` — keys whose stored value differs from the normalized value.
+- `normalized_key_count` — count of top-level keys after normalization (sanity figure for the UI badge).
+
+**200** status payload above. **404** `NOT_FOUND`.
+
+---
+
+### POST /api/homeworks/{hw_id}/migrate-content
+
+Persists the normalized `content_json` to the stored row. Idempotent — calling on an already-migrated row returns `migrated: false` without writing. Boss question advisory levels and IDs are normalized in the same pass.
+
+```json
+{
+  "ok": true,
+  "id": "HW-20260427-001",
+  "migrated": true,
+  "needs_migration": false,
+  "added_keys": ["gb_tile_match", "meta.cefr_level"],
+  "changed_keys": ["flashcards"],
+  "homework": { <HomeworkRecord> }
+}
+```
+
+When the row already matches the normalizer (no-op):
+
+```json
+{ "ok": true, "id": "...", "migrated": false, "needs_migration": false, "added_keys": [], "changed_keys": [], "homework": { <HomeworkRecord> } }
+```
+
+**200** payload above. **404** `NOT_FOUND`. **409** `TRASHED` — restore before migrating.
+
+---
+
 ### Homework Record shape
 
 ```json

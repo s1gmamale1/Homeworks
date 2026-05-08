@@ -1439,6 +1439,8 @@ def _fb_find_boss_question(content: dict, question_id: str) -> Optional[dict]:
         return None
     bq = content.get("boss_questions")
     if not isinstance(bq, list):
+        bq = content.get("boss")
+    if not isinstance(bq, list):
         return None
     for i, q in enumerate(bq):
         if not isinstance(q, dict):
@@ -2391,6 +2393,8 @@ def _extract_boss_questions(content: dict) -> list[dict]:
     if not isinstance(content, dict):
         return []
     bq = content.get("boss_questions")
+    if not isinstance(bq, list):
+        bq = content.get("boss")
     if isinstance(bq, list):
         return [q for q in bq if isinstance(q, dict)]
     return []

@@ -1,3 +1,4 @@
+import json
 import re
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, ValidationError
@@ -5,7 +6,10 @@ from typing import Optional, Dict, Any
 
 from server import db
 from server.schemas.content import ContentJSON
-from server.services.content_json_compat import normalize_homework_row_for_runtime
+from server.services.content_json_compat import (
+    normalize_content_json_for_runtime,
+    normalize_homework_row_for_runtime,
+)
 from server.services.progress import compute_progress
 from server.services.routing import SUBJECTS, ALWAYS_HARD, SUBJECT_GRADES, SUBJECT_TO_FAMILY
 
@@ -205,6 +209,24 @@ def _deep_merge_content(base: dict, patch: dict) -> dict:
             out[key] = value
     return out
 
+
+def _migration_delta(raw_content: Any) -> tuple[dict, bool, list[str], list[str]]:
+    raw = raw_content if isinstance(raw_content, dict) else {}
+    normalized = normalize_content_json_for_runtime(raw)
+    raw_json = json_dumps_compact(raw)
+    normalized_json = json_dumps_compact(normalized)
+    added_keys = sorted(set(normalized.keys()) - set(raw.keys()))
+    changed_keys = sorted(
+        key
+        for key in set(raw.keys()) & set(normalized.keys())
+        if json_dumps_compact(raw.get(key)) != json_dumps_compact(normalized.get(key))
+    )
+    return normalized, raw_json != normalized_json, added_keys, changed_keys
+
+
+def json_dumps_compact(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
 @router.get("")
 async def list_homeworks(
     q: Optional[str] = Query(None),
@@ -298,6 +320,60 @@ async def get_homework(hw_id: str):
     # rewriting the stored DB row. The compat layer is additive and
     # idempotent — every legacy key remains present in the response.
     return normalize_homework_row_for_runtime(hw)
+
+
+@router.get("/{hw_id}/migration-status")
+async def get_homework_migration_status(hw_id: str):
+    hw = await db.get_homework(hw_id)
+    if not hw:
+        raise HTTPException(status_code=404, detail={"error": "Not found", "code": "NOT_FOUND"})
+    normalized, needs_migration, added_keys, changed_keys = _migration_delta(hw.get("content_json"))
+    return {
+        "ok": True,
+        "id": hw_id,
+        "needs_migration": needs_migration,
+        "added_keys": added_keys,
+        "changed_keys": changed_keys,
+        "normalized_key_count": len(normalized),
+    }
+
+
+@router.post("/{hw_id}/migrate-content")
+async def migrate_homework_content(hw_id: str):
+    hw = await db.get_homework(hw_id)
+    if not hw:
+        raise HTTPException(status_code=404, detail={"error": "Not found", "code": "NOT_FOUND"})
+    if hw.get("deleted_at"):
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "Cannot migrate a trashed homework. Restore it first.", "code": "TRASHED"},
+        )
+
+    normalized, needs_migration, added_keys, changed_keys = _migration_delta(hw.get("content_json"))
+    if not needs_migration:
+        return {
+            "ok": True,
+            "id": hw_id,
+            "migrated": False,
+            "needs_migration": False,
+            "added_keys": [],
+            "changed_keys": [],
+            "homework": normalize_homework_row_for_runtime(hw),
+        }
+
+    _normalize_boss_question_advisory_levels(normalized)
+    _normalize_boss_question_ids(normalized)
+    updated = await db.update_homework(hw_id, {"content_json": normalized})
+    return {
+        "ok": True,
+        "id": hw_id,
+        "migrated": True,
+        "needs_migration": False,
+        "added_keys": added_keys,
+        "changed_keys": changed_keys,
+        "homework": normalize_homework_row_for_runtime(updated),
+    }
+
 
 @router.put("/{hw_id}")
 async def update_homework(hw_id: str, hw_update: HomeworkUpdate):

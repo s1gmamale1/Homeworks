@@ -310,6 +310,16 @@
       return request(`/api/homeworks/${encodeId(id)}`);
     },
 
+    getHomeworkMigrationStatus(id) {
+      return request(`/api/homeworks/${encodeId(id)}/migration-status`);
+    },
+
+    migrateHomeworkContent(id) {
+      return request(`/api/homeworks/${encodeId(id)}/migrate-content`, {
+        method: "POST",
+      });
+    },
+
     updateHomework(id, payload) {
       return request(`/api/homeworks/${encodeId(id)}`, {
         method: "PUT",
