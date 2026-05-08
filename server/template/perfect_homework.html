@@ -18985,14 +18985,20 @@ Prezident ertaga hisobot kutmoqda.`,
                     bossState.useDynamicBoss = false;
                 }
             })();
+            // Bumped from 3s to 12s on 2026-05-08: Kimi question generation
+            // takes ~5-8s in practice (`/api/ai/boss/generate-question`), so the
+            // original 3s race made dynamic kickoff lose every time. 12s gives
+            // headroom for typical latency without leaving the student staring
+            // at the intro indefinitely.
+            const KICKOFF_TIMEOUT_MS = 12000;
             const timeoutPromise = new Promise(r => setTimeout(() => {
                 bossState.kickoffExpired = true;
                 if (!bossState.currentQuestion) {
                     bossState.useDynamicBoss = false;
-                    console.warn('[FE-5] dynamic kickoff exceeded 3s, falling back to legacy');
+                    console.warn('[FE-5] dynamic kickoff exceeded ' + (KICKOFF_TIMEOUT_MS / 1000) + 's, falling back to legacy');
                 }
                 r();
-            }, 3000));
+            }, KICKOFF_TIMEOUT_MS));
             const planReady = Promise.race([
                 Promise.all([planPromise, dynamicReady]),
                 timeoutPromise,
