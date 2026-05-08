@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from scripts.oneoff.repair_math_geometry_homeworks import (
     HOMEWORK_BLOAT_THRESHOLD,
@@ -19,6 +20,15 @@ def _small_data_uri() -> str:
 
 def _generated_url() -> str:
     return "http://192.168.1.87:8000/generated/HW-20260505-008__panels_1_pages_0_blocks_4_text__handdrawn.png"
+
+
+def test_static_replacement_asset_exists():
+    asset = Path(__file__).resolve().parents[1] / "frontend" / "generated" / "HW-20260505-008_factorization_methods.svg"
+    assert asset.exists()
+    svg = asset.read_text(encoding="utf-8")
+    assert "Ko'phadlarni ajratish" in svg
+    assert "Homework diagram" not in svg
+    assert "Formula diagram" not in svg
 
 
 def test_repair_homework_preserves_existing_authored_images():
@@ -67,17 +77,17 @@ def test_repair_homework_moves_generated_img_html_to_image_block_without_changin
 
     assert changed is True
     assert stats.html_replaced == 1
-    assert stats.src_replaced == 0
-    assert _generated_url() in repaired_json
+    assert stats.src_replaced == 1
+    assert _generated_url() not in repaired_json
     quote_repair = repaired["panels"][0]["pages"][0]["blocks"][0]
     image_repair = repaired["panels"][0]["pages"][0]["blocks"][1]
     assert quote_repair == {
         "type": "image",
-        "src": _generated_url(),
+        "src": "/generated/HW-20260505-008_factorization_methods.svg",
         "alt": "Diagram",
     }
     assert image_repair["type"] == "image"
-    assert image_repair["src"] == _generated_url()
+    assert image_repair["src"] == "/generated/HW-20260505-008_factorization_methods.svg"
     assert "data:image/svg+xml;utf8," not in repaired_json
 
 
@@ -103,6 +113,36 @@ def test_repair_homework_rewrites_previous_svg_data_uri_img_to_svg_block():
     assert repaired["panels"][0]["pages"][0]["blocks"][0]["html"].startswith("<svg")
     assert repaired["panels"][0]["pages"][0]["blocks"][1]["type"] == "svg"
     assert repaired["panels"][0]["pages"][0]["blocks"][1]["html"].startswith("<svg")
+    assert "Homework diagram" not in repaired_json
+    assert "Formula diagram" not in repaired_json
+
+
+def test_repair_homework_replaces_generic_placeholder_svg_with_contextual_svg():
+    generic_svg = """
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">
+      <text>Homework diagram</text>
+      <text>Formula diagram</text>
+    </svg>
+    """
+    content = {
+        "meta": {"subject_display": "Algebra"},
+        "panels": [
+            {
+                "title": "Ko'phadlarni ajratish",
+                "pages": [{"blocks": [{"type": "svg", "html": generic_svg}]}],
+            }
+        ],
+    }
+    repaired_json, changed, stats = _repair_homework(json.dumps(content, ensure_ascii=False), "math-algebra")
+    repaired = json.loads(repaired_json)
+
+    assert changed is True
+    assert stats.html_replaced == 1
+    html = repaired["panels"][0]["pages"][0]["blocks"][0]["html"]
+    assert html.startswith("<svg")
+    assert "Homework diagram" not in html
+    assert "Formula diagram" not in html
+    assert "Ko'phadlarni ajratish" in html
 
 
 def test_repair_homework_skips_small_rows_except_known_bad_subject_display():
