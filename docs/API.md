@@ -1253,7 +1253,7 @@ Reports which AI backend is active plus the resolved effective model for every g
   "provider_order": ["kimi"],
   "active_provider": "kimi",
   "tasks": {
-    "tutor_chat":             {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
+    "tutor_chat":             {"provider": "kimi", "model": "kimi-k2.6",        "tier": "max"},
     "answer_check":           {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
     "boss_question_generate": {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
     "boss_answer_check":      {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
@@ -1272,7 +1272,7 @@ Reports which AI backend is active plus the resolved effective model for every g
 
 - `provider_order` — provider preference list parsed from `AI_BACKEND_PREFERENCE`. Resolution walks this list in order until a provider is healthy.
 - `active_provider` — first provider in `provider_order` whose credentials are present (`"kimi"` by default, `"none"` if no credentials are configured).
-- `tasks` — per-`AITask` resolved `provider` / `model` / `tier`. The 8 task keys mirror `server/services/ai_gateway.py::AITask`. `tier` is `"pro"` or `"fast"` from `TASK_MODEL_POLICY` and selects between `KIMI_MODEL_PRO` and `KIMI_MODEL_FAST` env overrides.
+- `tasks` — per-`AITask` resolved `provider` / `model` / `tier`. The 8 task keys mirror `server/services/ai_gateway.py::AITask`. `tier` is `"max"`, `"pro"`, or `"fast"` from `TASK_MODEL_POLICY`; `"max"` selects `KIMI_MODEL_VISION` (Kimi K2.6 by default), while `"pro"` and `"fast"` select `KIMI_MODEL_PRO` and `KIMI_MODEL_FAST` env overrides.
 - `available_providers` — all registered providers whose credentials are present.
 - `backend`, `model_fast`, `model_pro`, `preference_list` — legacy fields kept for backward compat with pre-Plan-6 consumers. New consumers should read `tasks` and `provider_order`.
 

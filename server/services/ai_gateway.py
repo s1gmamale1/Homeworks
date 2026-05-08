@@ -47,10 +47,12 @@ class AITask(str, Enum):
     SIMULATION_JUDGE = "simulation_judge"
 
 
-# Task → model tier mapping. "pro" maps to ai_orchestrator.PRO_MODEL,
-# "fast" maps to ai_orchestrator.FAST_MODEL.
+# Task → model tier mapping.
+# - "max" maps to ai_orchestrator.VISION_MODEL (Kimi K2.6 by default)
+# - "pro" maps to ai_orchestrator.PRO_MODEL
+# - "fast" maps to ai_orchestrator.FAST_MODEL
 TASK_MODEL_POLICY: dict[AITask, str] = {
-    AITask.TUTOR_CHAT: "pro",
+    AITask.TUTOR_CHAT: "max",
     AITask.ANSWER_CHECK: "pro",
     AITask.BOSS_QUESTION_GENERATE: "pro",
     AITask.BOSS_ANSWER_CHECK: "pro",
@@ -78,7 +80,11 @@ _TASK_SCHEMA: dict[AITask, type[BaseModel]] = {
 
 def _resolve_model(task: AITask) -> str:
     tier = TASK_MODEL_POLICY.get(task, "fast")
-    return ai_orchestrator.PRO_MODEL if tier == "pro" else ai_orchestrator.FAST_MODEL
+    if tier == "max":
+        return ai_orchestrator.VISION_MODEL
+    if tier == "pro":
+        return ai_orchestrator.PRO_MODEL
+    return ai_orchestrator.FAST_MODEL
 
 
 def _task_schema(task: AITask) -> Optional[type[BaseModel]]:

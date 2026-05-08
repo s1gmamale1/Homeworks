@@ -13,8 +13,8 @@ Covers:
   9. screen_context reaches LLM prompt as PREVIEW_CONTEXT
  10. oversized screen_context is truncated to 2000 chars server-side
  11. Wave K — system prompt locks in Opus 4.7 tone keywords
- 12. Wave F — math subjects use PRO_MODEL to avoid hallucinations
- 13. Wave F — non-math subjects use FAST_MODEL for cost efficiency
+ 12. Tutor live chat uses Kimi K2.6 / VISION_MODEL for all subjects
+ 13. Tutor live chat routing is centralized in ai_gateway task policy
 
 Run:
     python -m pytest tests/test_tutor_chat.py -v
@@ -638,13 +638,13 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
 
 
 # ---------------------------------------------------------------------------
-# 12. Wave F: math subjects use PRO_MODEL to avoid hallucinations
+# 12. Tutor live chat uses Kimi K2.6 / VISION_MODEL for all subjects
 # ---------------------------------------------------------------------------
 
 
 @patch("server.services.ai_orchestrator.generate")
-def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
-    """Math subjects must use PRO_MODEL for deeper reasoning to avoid hallucinations."""
+def test_tutor_chat_uses_k26_model_for_math(mock_generate, client):
+    """Math tutor chat must use the strongest configured Kimi model."""
     captured: dict[str, str] = {}
 
     def _fake_generate(prompt: str, model: str = None, **kwargs):
@@ -667,8 +667,8 @@ def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
 
     model = captured.get("model")
     from server.services import ai_orchestrator
-    assert model == ai_orchestrator.PRO_MODEL, (
-        f"math-algebra should use PRO_MODEL, got {model}"
+    assert model == ai_orchestrator.VISION_MODEL, (
+        f"math-algebra should use VISION_MODEL/Kimi K2.6, got {model}"
     )
 
 
@@ -723,8 +723,8 @@ def test_tutor_chat_uses_gateway_model_policy_for_non_math(mock_generate, client
 
     model = captured.get("model")
     from server.services import ai_orchestrator
-    assert model == ai_orchestrator.PRO_MODEL, (
-        f"tutor_chat should use gateway PRO_MODEL policy, got {model}"
+    assert model == ai_orchestrator.VISION_MODEL, (
+        f"tutor_chat should use gateway VISION_MODEL/Kimi K2.6 policy, got {model}"
     )
 
 

@@ -49,10 +49,16 @@ def test_get_status_has_all_tasks():
         assert "tier" in task_info
 
 
+def test_get_status_max_tasks_use_max_model():
+    status = ai_gateway.get_status()
+    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["tier"] == "max"
+    from server.services.ai_orchestrator import VISION_MODEL
+    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["model"] == VISION_MODEL
+
+
 def test_get_status_pro_tasks_use_pro_model():
     status = ai_gateway.get_status()
     pro_tasks = [
-        ai_gateway.AITask.TUTOR_CHAT.value,
         ai_gateway.AITask.ANSWER_CHECK.value,
         ai_gateway.AITask.BOSS_QUESTION_GENERATE.value,
         ai_gateway.AITask.FINAL_REPORT.value,
@@ -76,9 +82,14 @@ def test_get_status_fast_tasks_use_fast_model():
 # ---------------------------------------------------------------------------
 
 
-def test_resolve_model_pro():
+def test_resolve_model_max():
     model = ai_gateway._resolve_model(ai_gateway.AITask.TUTOR_CHAT)
-    # Should match ai_orchestrator.PRO_MODEL
+    from server.services.ai_orchestrator import VISION_MODEL
+    assert model == VISION_MODEL
+
+
+def test_resolve_model_pro():
+    model = ai_gateway._resolve_model(ai_gateway.AITask.ANSWER_CHECK)
     from server.services.ai_orchestrator import PRO_MODEL
     assert model == PRO_MODEL
 
@@ -107,8 +118,8 @@ async def test_generate_text_delegates_with_correct_model():
     assert result == "Salom!"
     assert mock_gen.called
     call_kwargs = mock_gen.call_args.kwargs
-    from server.services.ai_orchestrator import PRO_MODEL
-    assert call_kwargs["model"] == PRO_MODEL
+    from server.services.ai_orchestrator import VISION_MODEL
+    assert call_kwargs["model"] == VISION_MODEL
 
 
 @pytest.mark.asyncio
