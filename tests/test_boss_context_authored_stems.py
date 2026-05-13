@@ -154,3 +154,113 @@ def test_empty_boss_questions_yields_empty_stems_and_null_floor(client):
 
     assert ctx.authored_question_stems == []
     assert ctx.authored_difficulty_floor is None
+
+
+# ---------------------------------------------------------------------------
+# Option B fix (2026-05-13 audit) — filter language-drifted asked_questions
+# ---------------------------------------------------------------------------
+
+
+def test_build_boss_context_filters_english_asked_questions_on_uz_homework(client):
+    """Option B: when a uz/ru homework has accumulated past generations that
+    drifted to English (pre-fix bug), those entries must be filtered OUT of
+    the asked_questions[] before sending to Kimi. Otherwise the English
+    prior questions act as in-context examples and pull subsequent
+    generations toward English even with the v4 language banner."""
+    hw_id = _make_homework_with_boss_questions(client, hw_id_hint="t-filter-1")
+
+    # Mix of English (drifted) and Uzbek (clean) prior generations.
+    asked = [
+        {
+            "question_id": "gbq_en1",
+            "question_text": "A student measures the length of a school bench as 200 cm with a possible error of 5 cm. What is the relative error?",
+            "target_skill": "sign_error",
+            "difficulty": "medium",
+        },
+        {
+            "question_id": "gbq_en2",
+            "question_text": "A student measures the length of a pencil as 175 mm with a possible error of 2 mm. What is the relative error as a percentage?",
+            "target_skill": "sign_error",
+            "difficulty": "medium",
+        },
+        {
+            "question_id": "gbq_uz1",
+            "question_text": "100 ga 5% nisbiy xatolik bo'yicha o'lchash. Aniq xatolik nechadan iborat?",
+            "target_skill": "nisbiy xatolik",
+            "difficulty": "medium",
+        },
+        {
+            "question_id": "gbq_uz2",
+            "question_text": "Yosh o'quvchining taqvimida o'qituv soati 45 da 5 ta minut. Nisbiy xatolik qanday aniqlanadi?",
+            "target_skill": "nisbiy xatolik",
+            "difficulty": "medium",
+        },
+    ]
+
+    ctx = asyncio.run(
+        build_boss_context(
+            session_id="filter_sess_001",
+            homework_id=hw_id,
+            asked_questions=asked,
+            recent_boss_phrases=[],
+        )
+    )
+
+    # The English entries must be gone. Only the 2 Uzbek entries should
+    # survive into ctx.asked_questions.
+    surviving_ids = {q.get("question_id") for q in ctx.asked_questions}
+    assert "gbq_en1" not in surviving_ids, (
+        "Option B regression — English asked_question 'gbq_en1' was not filtered"
+    )
+    assert "gbq_en2" not in surviving_ids, (
+        "Option B regression — English asked_question 'gbq_en2' was not filtered"
+    )
+    assert "gbq_uz1" in surviving_ids
+    assert "gbq_uz2" in surviving_ids
+    assert len(ctx.asked_questions) == 2
+
+
+def test_build_boss_context_does_not_filter_asked_questions_on_english_homework(client):
+    """Counterpart: on an English homework, English asked_questions are
+    legitimate and must NOT be filtered (otherwise we'd kill anti-repetition
+    for English-language boss flows)."""
+    # Re-use the fixture but flip language to English.
+    payload = {
+        "title": "English boss test",
+        "subject": "english",
+        "grade": 8,
+        "mode": "hard",
+        "family": "til-fanlar",
+        "content_json": {
+            "title": "English boss test",
+            "subject": "english",
+            "grade": 8,
+            "language": "en",
+            "boss_questions": [
+                {"q": "What does X mean?", "tags": "[Bloom: L2]", "dmg": 10},
+            ],
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200
+    hw_id = resp.json()["id"]
+
+    asked = [
+        {
+            "question_id": "gbq_a",
+            "question_text": "A student measures the length of a school bench with a ruler.",
+            "target_skill": "measurement",
+            "difficulty": "medium",
+        },
+    ]
+    ctx = asyncio.run(
+        build_boss_context(
+            session_id="en_sess_001",
+            homework_id=hw_id,
+            asked_questions=asked,
+            recent_boss_phrases=[],
+        )
+    )
+    # English homework: English asked_questions must pass through.
+    assert len(ctx.asked_questions) == 1
+    assert ctx.asked_questions[0]["question_id"] == "gbq_a"

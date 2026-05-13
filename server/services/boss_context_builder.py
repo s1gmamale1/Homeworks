@@ -9,6 +9,7 @@ the prompt or leak answers into a model that must not see them.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, asdict, field
 from typing import Optional, Any
 
@@ -41,6 +42,45 @@ _MAX_AUTHORED_STEMS_IN_CTX = 10
 # Discrete difficulty buckets — used here for authored_difficulty inference,
 # imported by boss_dynamic.py for the per-skill difficulty floor clamp.
 _DIFFICULTY_RANK = {"easy": 0, "medium": 1, "hard": 2}
+
+
+# ---- Language-drift detection (Bug #9 fix, 2026-05-13 audit) ---------------
+# Originally lived in boss_dynamic; moved here so build_boss_context can also
+# use it to filter asked_questions before sending to Kimi (Option B fix,
+# 2026-05-13). Re-exported from boss_dynamic for backward compatibility.
+#
+# Detection is conservative: counts English function-word tokens that have no
+# Uzbek/Russian cognates. A threshold of 3+ hits means single borrowed words
+# ("error", "PISA", "Bloom") don't trip the check.
+_ENGLISH_INDICATOR_WORDS = frozenset({
+    "the", "is", "of", "and", "in", "to", "a", "for", "with", "as",
+    "that", "this", "are", "was", "were", "be", "been", "by", "on",
+    "at", "an", "or", "but", "not", "what", "which", "who", "how",
+    "if", "then", "than", "from",
+})
+
+
+def _detect_language_drift(
+    question_text: str,
+    target_skill: str,
+    expected_language: Optional[str],
+) -> Optional[str]:
+    """Return a short reason string if the generated text appears to be
+    English when the homework language is uz/ru; otherwise None.
+    """
+    if expected_language not in ("uz", "uz-cyrl", "ru"):
+        return None
+    combined = f"{question_text} {target_skill}".lower()
+    tokens = re.findall(r"\b[a-z]+\b", combined)
+    if not tokens:
+        return None
+    english_hits = sum(1 for t in tokens if t in _ENGLISH_INDICATOR_WORDS)
+    if english_hits >= 3:
+        return (
+            f"language_drift: expected={expected_language!r}, "
+            f"detected English ({english_hits} indicator words)"
+        )
+    return None
 
 
 @dataclass
@@ -258,10 +298,29 @@ async def build_boss_context(
 
     # Compress asked_questions for the generator (cap count + text length;
     # scrub any leaked answer keys).
-    asked_clean: list[dict[str, Any]] = []
-    for q in (asked_questions or [])[-_MAX_ASKED_QUESTIONS_IN_CTX:]:
+    #
+    # Option B fix (2026-05-13 audit): for uz/ru homeworks, drop any prior
+    # generations whose text looks English BEFORE applying the chronological
+    # [-N:] slice. Past buggy generations would otherwise feed back into the
+    # in-context-learning signal and pull subsequent generations toward
+    # English even with the v3+ language directive. The drift detector is
+    # the same one used for live output validation.
+    expected_language = (
+        content_json.get("language") or (hw or {}).get("language") or None
+    )
+    candidate_qs: list[dict[str, Any]] = []
+    for q in (asked_questions or []):
         if not isinstance(q, dict):
             continue
+        if expected_language and _detect_language_drift(
+            str(q.get("question_text") or ""),
+            str(q.get("target_skill") or ""),
+            expected_language,
+        ):
+            continue  # drop language-drifted prior generation from context
+        candidate_qs.append(q)
+    asked_clean: list[dict[str, Any]] = []
+    for q in candidate_qs[-_MAX_ASKED_QUESTIONS_IN_CTX:]:
         scrubbed = _scrub_dict(q)
         if "question_text" in scrubbed:
             scrubbed["question_text"] = _truncate(
