@@ -227,12 +227,42 @@ def _aggregate_topics(summaries: list[dict[str, Any]]) -> tuple[list[str], list[
     return [t for t, _ in weak_sorted[:_MAX_TOPICS]], [t for t, _ in strong_sorted[:_MAX_TOPICS]]
 
 
-def _default_policy(language: Optional[str]) -> dict[str, Any]:
+# Subject → language inference (Fix B, 2026-05-13). When the homework's
+# content_json.language is null, the prompt's output_language directive is
+# missing too and Kimi falls back to its training-bias default (usually
+# Uzbek for this codebase's data distribution, even on English homeworks).
+# This table maps the subject string to a sensible language default.
+# Subjects not listed fall through to 'uz' since the platform's primary
+# audience is Uzbek students.
+_SUBJECT_TO_LANGUAGE: dict[str, str] = {
+    "english": "en",
+    "russian": "ru",
+}
+
+
+def _infer_language_from_subject(subject: Optional[str]) -> Optional[str]:
+    """Map a subject string (e.g. 'english', 'math-algebra', 'kimyo') to a
+    language code. Returns None for unknown subjects so the caller can
+    decide its own fallback rather than guessing wrong.
+    """
+    if not subject:
+        return None
+    return _SUBJECT_TO_LANGUAGE.get(subject.lower().strip())
+
+
+def _default_policy(language: Optional[str], subject: Optional[str] = None) -> dict[str, Any]:
+    # If content_json.language is null, try inferring from subject before
+    # falling through to the platform-default (uz). This unblocks pulled
+    # homeworks that omit the language field (real bug 2026-05-13:
+    # HW-20260513-004 imported from sigmaai had language=null but
+    # subject=english; Kimi defaulted to Uzbek output on an English lesson).
+    if not language:
+        language = _infer_language_from_subject(subject) or "uz"
     return {
         "target_weak_topics_first": True,
         "avoid_repetition": True,
         "max_question_length": 900,
-        "language": language or "uzbek_or_student_language",
+        "language": language,
     }
 
 
@@ -340,7 +370,10 @@ async def build_boss_context(
         strong_topics=strong_topics,
         asked_questions=asked_clean,
         recent_boss_phrases=list(recent_boss_phrases or [])[:5],
-        boss_policy=_default_policy(content_json.get("language") or (hw or {}).get("language")),
+        boss_policy=_default_policy(
+            language=content_json.get("language") or (hw or {}).get("language"),
+            subject=content_json.get("subject") or (hw or {}).get("subject"),
+        ),
         missing_context_flags=missing,
         authored_question_stems=stems,
         authored_difficulty_floor=authored_floor,
