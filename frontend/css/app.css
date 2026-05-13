@@ -1953,10 +1953,10 @@ textarea:disabled {
   z-index: 3;
   display: flex;
   gap: 6px;
-  opacity: 0;
-  transform: translateY(-3px);
+  opacity: 1;
+  transform: translateY(0);
   transition: opacity 140ms ease, transform 140ms ease;
-  pointer-events: none;
+  pointer-events: auto;
 }
 .rich-editor .image-wrap:hover .media-wrap-actions,
 .rich-editor .image-wrap:focus-within .media-wrap-actions,

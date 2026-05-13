@@ -640,6 +640,7 @@
           editor.insertAdjacentHTML("beforeend", cleaned);
         }
       }
+      decorateMediaBlocks(editor);
       flushEmit();
     });
 

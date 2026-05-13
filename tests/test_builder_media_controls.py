@@ -43,6 +43,20 @@ def test_builder_media_controls_are_styled_and_generated_paths_are_allowed():
     assert 'lower.startsWith("/generated/")' in rich_js
 
 
+def test_builder_media_controls_are_visible_without_hover():
+    css = APP_CSS.read_text(encoding="utf-8")
+    block = re.search(
+        r"\.rich-editor\s+\.media-wrap-actions,\s*"
+        r"\.rich-field\s+\.js-rich-mini\s+\.media-wrap-actions\s*\{(?P<body>[^}]*)\}",
+        css,
+    )
+    assert block, "missing shared media action bar CSS block"
+    body = block.group("body")
+    assert "opacity: 1" in body
+    assert "pointer-events: auto" in body
+    assert "transform: translateY(0)" in body
+
+
 def test_compact_image_wrap_positions_overlay_buttons_locally():
     css = APP_CSS.read_text(encoding="utf-8")
     block = re.search(
@@ -54,3 +68,8 @@ def test_compact_image_wrap_positions_overlay_buttons_locally():
         "mini-editor image action buttons are absolutely positioned; "
         ".image-wrap must be the positioned ancestor"
     )
+
+
+def test_compact_rich_field_decorates_media_after_paste():
+    js = RICH_FIELD_JS.read_text(encoding="utf-8")
+    assert "decorateMediaBlocks(editor);\n      flushEmit();" in js
