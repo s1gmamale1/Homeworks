@@ -146,7 +146,11 @@
       if (tag === "img") {
         const src = String(el.getAttribute("src") || "").trim();
         const lower = src.toLowerCase();
-        const ok = lower.startsWith("data:image/") || lower.startsWith("http://") || lower.startsWith("https://");
+        const ok =
+          lower.startsWith("data:image/") ||
+          lower.startsWith("http://") ||
+          lower.startsWith("https://") ||
+          lower.startsWith("/generated/");
         if (!ok) { el.remove(); continue; }
         const alreadyWrapped = el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("image-wrap");
         if (!alreadyWrapped) {
@@ -208,6 +212,34 @@
     }
     // Plain text: preserve as-is in a single <p> with line breaks as <br>.
     return plainTextToHtml(s);
+  }
+
+  function mediaActionsHtml(kind) {
+    return (
+      '<div class="media-wrap-actions" contenteditable="false" draggable="false">' +
+        '<button type="button" class="media-wrap-btn js-media-replace" data-media-kind="' + kind + '">' +
+          (kind === "svg" ? "Edit SVG" : "Replace") +
+        '</button>' +
+        '<button type="button" class="media-wrap-btn danger js-media-remove">Remove</button>' +
+      '</div>'
+    );
+  }
+
+  function decorateMediaBlocks(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll(".image-wrap, .svg-wrap").forEach((wrap) => {
+      if (wrap.querySelector(":scope > .media-wrap-actions")) return;
+      wrap.insertAdjacentHTML(
+        "afterbegin",
+        mediaActionsHtml(wrap.classList.contains("svg-wrap") ? "svg" : "image"),
+      );
+    });
+  }
+
+  function serializeEditorHtml(editor) {
+    const clone = editor.cloneNode(true);
+    clone.querySelectorAll(".media-wrap-actions").forEach((node) => node.remove());
+    return clone.innerHTML;
   }
 
   // ---------- selection helpers ----------
@@ -439,13 +471,14 @@
     editor.setAttribute("spellcheck", "true");
     if (placeholder) editor.setAttribute("data-placeholder", placeholder);
     editor.innerHTML = prepareInitialValue(initialValue);
+    decorateMediaBlocks(editor);
     root.appendChild(editor);
 
     // ----- change emission (debounced ~300ms) -----
 
     let debounceId = null;
     function emit() {
-      onChange(editor.innerHTML);
+      onChange(serializeEditorHtml(editor));
     }
     function scheduleEmit() {
       if (debounceId) clearTimeout(debounceId);
@@ -476,7 +509,7 @@
           const safeAlt = String(alt || "").replace(/"/g, "&quot;");
           insertBlockAtCaret(
             editor,
-            '<div class="image-wrap" contenteditable="false" draggable="true"><img src="' + safeSrc + '" alt="' + safeAlt + '"></div><p><br></p>',
+            '<div class="image-wrap" contenteditable="false" draggable="true">' + mediaActionsHtml("image") + '<img src="' + safeSrc + '" alt="' + safeAlt + '"></div><p><br></p>',
           );
           flushEmit();
         });
@@ -488,7 +521,7 @@
           restoreSelection(editor, savedRange);
           insertBlockAtCaret(
             editor,
-            '<div class="svg-wrap" contenteditable="false" draggable="true">' + svgCode + '</div><p><br></p>',
+            '<div class="svg-wrap" contenteditable="false" draggable="true">' + mediaActionsHtml("svg") + svgCode + '</div><p><br></p>',
           );
           flushEmit();
         });
@@ -520,6 +553,54 @@
       if (!btn || !toolbar.contains(btn)) return;
       event.preventDefault();
       event.stopPropagation();
+    });
+
+    function ensureEditableParagraph() {
+      const hasEditable = Array.from(editor.childNodes).some((node) => {
+        if (node.nodeType === 3) return String(node.textContent || "").trim();
+        if (node.nodeType !== 1) return false;
+        return !(node.classList && (node.classList.contains("image-wrap") || node.classList.contains("svg-wrap")));
+      });
+      if (!hasEditable) editor.insertAdjacentHTML("beforeend", "<p><br></p>");
+    }
+
+    editor.addEventListener("mousedown", (event) => {
+      if (event.target.closest && event.target.closest(".media-wrap-actions")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+
+    editor.addEventListener("click", (event) => {
+      const action = event.target.closest && event.target.closest(".js-media-remove, .js-media-replace");
+      if (!action || !editor.contains(action)) return;
+      const wrap = action.closest(".image-wrap, .svg-wrap");
+      if (!wrap) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (action.classList.contains("js-media-remove")) {
+        wrap.remove();
+        ensureEditableParagraph();
+        flushEmit();
+        return;
+      }
+      if (wrap.classList.contains("image-wrap")) {
+        openImageModal((src, alt) => {
+          const img = wrap.querySelector("img");
+          if (!img) return;
+          img.setAttribute("src", String(src || ""));
+          img.setAttribute("alt", String(alt || ""));
+          flushEmit();
+        });
+        return;
+      }
+      openSvgModal((svgCode) => {
+        const actions = wrap.querySelector(".media-wrap-actions");
+        wrap.innerHTML = "";
+        if (actions) wrap.appendChild(actions);
+        wrap.insertAdjacentHTML("beforeend", svgCode);
+        flushEmit();
+      });
     });
 
     // ----- paste sanitizer -----

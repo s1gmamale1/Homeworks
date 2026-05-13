@@ -189,7 +189,11 @@
       if (tag === "img") {
         const src = String(el.getAttribute("src") || "").trim();
         const lower = src.toLowerCase();
-        const ok = lower.startsWith("data:image/") || lower.startsWith("http://") || lower.startsWith("https://");
+        const ok =
+          lower.startsWith("data:image/") ||
+          lower.startsWith("http://") ||
+          lower.startsWith("https://") ||
+          lower.startsWith("/generated/");
         if (!ok) {
           el.remove();
           continue;
@@ -348,6 +352,17 @@
 
   // ---------- blocks <-> HTML ----------
 
+  function mediaActionsHtml(kind) {
+    return `
+      <div class="media-wrap-actions" contenteditable="false" draggable="false">
+        <button type="button" class="media-wrap-btn js-media-replace" data-media-kind="${kind}">
+          ${kind === "svg" ? "Edit SVG" : "Replace"}
+        </button>
+        <button type="button" class="media-wrap-btn danger js-media-remove">Remove</button>
+      </div>
+    `;
+  }
+
   function blocksToHtml(blocks) {
     return asArray(blocks)
       .map((b) => {
@@ -367,10 +382,10 @@
           const src = escapeAttr(b.src || "");
           const alt = escapeAttr(b.alt || "");
           const widthStyle = b.width ? `style="width:${escapeAttr(String(b.width))}"` : "";
-          return `<div class="image-wrap" contenteditable="false" draggable="true" ${widthStyle}><img src="${src}" alt="${alt}"></div>`;
+          return `<div class="image-wrap" contenteditable="false" draggable="true" ${widthStyle}>${mediaActionsHtml("image")}<img src="${src}" alt="${alt}"></div>`;
         }
         if (b.type === "svg") {
-          return `<div class="svg-wrap" contenteditable="false" draggable="true">${stripScripts(b.html || "")}</div>`;
+          return `<div class="svg-wrap" contenteditable="false" draggable="true">${mediaActionsHtml("svg")}${stripScripts(b.html || "")}</div>`;
         }
         return `<p>${b.text || ""}</p>`;
       })
@@ -470,6 +485,11 @@
     const out = document.createElement("div");
     function walk(srcParent, dstParent) {
       for (const child of Array.from(srcParent.childNodes)) {
+        if (child.nodeType === 1
+            && child.classList
+            && child.classList.contains("media-wrap-actions")) {
+          continue;
+        }
         if (child.nodeType === 1
             && child.classList
             && child.classList.contains("math-block")) {
@@ -1225,7 +1245,7 @@
           const safeAlt = String(alt || "").replace(/"/g, "&quot;");
           insertBlockAtCaret(
             editor,
-            `<div class="image-wrap" contenteditable="false" draggable="true"><img src="${safeSrc}" alt="${safeAlt}"></div><p><br></p>`,
+            `<div class="image-wrap" contenteditable="false" draggable="true">${mediaActionsHtml("image")}<img src="${safeSrc}" alt="${safeAlt}"></div><p><br></p>`,
           );
           syncEditor(editor);
         });
@@ -1236,7 +1256,7 @@
         openSvgModal((svgCode) => {
           restoreSelection(editor, savedRange);
           // Wrap SVG in a block-level container so it lands on its own line and is movable.
-          insertBlockAtCaret(editor, `<div class="svg-wrap" contenteditable="false" draggable="true">${svgCode}</div><p><br></p>`);
+          insertBlockAtCaret(editor, `<div class="svg-wrap" contenteditable="false" draggable="true">${mediaActionsHtml("svg")}${svgCode}</div><p><br></p>`);
           syncEditor(editor);
         });
         return; // async, sync happens in callback
@@ -1248,7 +1268,67 @@
 
     let draggedSvgWrap = null;
 
+    function ensureEditableParagraph(editor) {
+      if (!editor) return;
+      const hasEditable = Array.from(editor.childNodes).some((node) => {
+        if (node.nodeType === 3) return String(node.textContent || "").trim();
+        if (node.nodeType !== 1) return false;
+        return !(node.classList && (node.classList.contains("image-wrap") || node.classList.contains("svg-wrap")));
+      });
+      if (!hasEditable) editor.insertAdjacentHTML("beforeend", "<p><br></p>");
+    }
+
+    function replaceMediaWrap(wrap, editor) {
+      if (!wrap || !editor) return;
+      if (wrap.classList.contains("image-wrap")) {
+        openImageModal((src, alt) => {
+          const img = wrap.querySelector("img");
+          if (!img) return;
+          img.setAttribute("src", String(src || ""));
+          img.setAttribute("alt", String(alt || ""));
+          syncEditor(editor);
+        });
+        return;
+      }
+      if (wrap.classList.contains("svg-wrap")) {
+        openSvgModal((svgCode) => {
+          const actions = wrap.querySelector(".media-wrap-actions");
+          wrap.innerHTML = "";
+          if (actions) wrap.appendChild(actions);
+          wrap.insertAdjacentHTML("beforeend", svgCode);
+          syncEditor(editor);
+        });
+      }
+    }
+
+    function removeMediaWrap(wrap, editor) {
+      if (!wrap || !editor) return;
+      wrap.remove();
+      ensureEditableParagraph(editor);
+      syncEditor(editor);
+    }
+
+    container.addEventListener("mousedown", (event) => {
+      if (event.target.closest && event.target.closest(".media-wrap-actions")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+
+    container.addEventListener("click", (event) => {
+      const action = event.target.closest && event.target.closest(".js-media-remove, .js-media-replace");
+      if (!action) return;
+      const wrap = action.closest(".svg-wrap, .image-wrap");
+      const editor = action.closest(".js-rich-editor");
+      if (!wrap || !editor) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (action.classList.contains("js-media-remove")) removeMediaWrap(wrap, editor);
+      else replaceMediaWrap(wrap, editor);
+    });
+
     container.addEventListener("dragstart", (event) => {
+      if (event.target.closest && event.target.closest(".media-wrap-actions")) return;
       const wrap = event.target.closest && event.target.closest(".svg-wrap, .image-wrap");
       if (!wrap) return;
       draggedSvgWrap = wrap;

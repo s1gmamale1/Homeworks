@@ -1945,6 +1945,62 @@ textarea:disabled {
   box-shadow: 0 3px 0 var(--accent);
 }
 
+.rich-editor .media-wrap-actions,
+.rich-field .js-rich-mini .media-wrap-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  pointer-events: none;
+}
+.rich-editor .image-wrap:hover .media-wrap-actions,
+.rich-editor .image-wrap:focus-within .media-wrap-actions,
+.rich-editor .svg-wrap:hover .media-wrap-actions,
+.rich-editor .svg-wrap:focus-within .media-wrap-actions,
+.rich-field .js-rich-mini .image-wrap:hover .media-wrap-actions,
+.rich-field .js-rich-mini .image-wrap:focus-within .media-wrap-actions,
+.rich-field .js-rich-mini .svg-wrap:hover .media-wrap-actions,
+.rich-field .js-rich-mini .svg-wrap:focus-within .media-wrap-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.media-wrap-btn {
+  appearance: none;
+  border: 1px solid rgba(0, 102, 204, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #17324d;
+  box-shadow: 0 8px 22px rgba(18, 35, 57, 0.16);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+.media-wrap-btn:hover,
+.media-wrap-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+.media-wrap-btn.danger:hover,
+.media-wrap-btn.danger:focus-visible {
+  border-color: #b42318;
+  color: #b42318;
+}
+[data-theme="dark"] .media-wrap-btn {
+  background: rgba(17, 31, 51, 0.96);
+  color: #f6f8fb;
+  border-color: rgba(111, 170, 255, 0.34);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
+}
+
 /* ============================================================
    Image insert modal — dropzone
    ============================================================ */
@@ -2072,6 +2128,7 @@ textarea:disabled {
   padding: 6px;
   border-radius: 8px;
   background: rgba(0,122,255,0.03);
+  position: relative;
 }
 .rich-field .js-rich-mini .svg-wrap svg {
   max-width: 100%;
