@@ -40,6 +40,15 @@ GENERIC_PLACEHOLDER_MARKERS = (
     "Formula diagram",
     "Handdrawn diagram",
 )
+# Match the marker only when it appears as the entire rendered label of an SVG —
+# i.e. the trimmed content of <text>/<title>/<desc>, or the value of aria-label.
+# Substring-anywhere matching was clobbering authored SVGs whose <path> data or
+# longer descriptive text incidentally contained one of the marker phrases.
+_GENERIC_SVG_LABEL_RE = re.compile(
+    r"(?:<(?:text|title|desc)\b[^>]*>\s*(?:Homework diagram|Formula diagram|Handdrawn diagram)\s*</(?:text|title|desc)>"
+    r"|\baria-label\s*=\s*[\"']\s*(?:Homework diagram|Formula diagram|Handdrawn diagram)\s*[\"'])",
+    re.IGNORECASE,
+)
 MAX_EXTRACTED_IMAGE_BYTES = 8 * 1024 * 1024
 
 
@@ -80,7 +89,7 @@ def _decode_svg_data_uri(value: str) -> str:
 
 
 def _is_generic_svg(value: Any) -> bool:
-    return isinstance(value, str) and any(marker in value for marker in GENERIC_PLACEHOLDER_MARKERS)
+    return isinstance(value, str) and bool(_GENERIC_SVG_LABEL_RE.search(value))
 
 
 def _clean_label(label: str, subject: str) -> str:
@@ -269,6 +278,13 @@ def _walk(node: Any, subject: str, hw_id: str | None, breadcrumbs: list[str], st
         return [_walk(item, subject, hw_id, breadcrumbs, stats, write_files=write_files) for item in node]
 
     if isinstance(node, str):
+        # Rich-field editors (boss.q, real_life.q1.q, flashcards.def, …) store
+        # editor HTML under arbitrary keys, not just `html`/`text`. Any string
+        # leaf carrying an <img> tag may hold a data URI that must be extracted
+        # before _check_no_inline_bloat runs — otherwise PUT fails with 422.
+        if IMG_TAG_RE.search(node):
+            label = _guess_label(None, breadcrumbs, subject)
+            return _replace_img_srcs_in_html(node, subject, label, hw_id, stats, write_files=write_files)
         normalized, count = _normalize_generated_url(node)
         stats.generated_urls_normalized += count
         if _is_svg_data_uri(normalized):

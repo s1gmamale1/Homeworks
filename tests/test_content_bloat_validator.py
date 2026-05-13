@@ -303,3 +303,183 @@ def test_patch_extracts_structured_image_data_uri_before_bloat_check(client):
         assert written.exists()
     finally:
         written.unlink(missing_ok=True)
+
+
+# ── Bug A regression: rich-field HTML data URIs ──────────────────────────────
+#
+# Pre-fix: `<img src="data:image/png;base64,…">` embedded in HTML stored under
+# rich-field keys (boss.q, real_life.q1.q, flashcards.def, etc. — anything not
+# named `html` or `text`) was missed by migration, then rejected by the bloat
+# validator with HTTP 422. Author saw "Save failed" on every image upload.
+
+
+_TINY_PNG_B64 = base64.b64encode(
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+    b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06"
+    b"\x00\x00\x00\x1f\x15\xc4\x89"
+).decode("ascii")
+
+
+def _seed_clean_homework(client, subject: str = "math-algebra") -> str:
+    seed = client.post(
+        "/api/homeworks",
+        json={
+            "title": "[richfield-image-upload]",
+            "subject": subject,
+            "grade": 8,
+            "mode": "hard",
+            "content_json": {"meta": {"title": "x"}},
+        },
+    )
+    assert seed.status_code == 200, seed.text
+    return seed.json()["id"]
+
+
+def test_patch_extracts_data_uri_from_boss_question_q(client):
+    """Bug A regression: <img data:URI> inside boss_questions[].q must extract."""
+    hw_id = _seed_clean_homework(client)
+    html_with_image = (
+        '<p>Solve: <span class="image-wrap">'
+        f'<img src="data:image/png;base64,{_TINY_PNG_B64}" alt="">'
+        '</span></p>'
+    )
+    resp = client.patch(
+        f"/api/homeworks/{hw_id}/content",
+        json={"content_json": {"boss_questions": [{"id": "bq_0", "q": html_with_image, "ans": ["4"]}]}},
+    )
+    assert resp.status_code == 200, resp.text
+    saved_q = resp.json()["content_json"]["boss_questions"][0]["q"]
+    assert "data:image/png;base64," not in saved_q
+    assert f"/generated/{hw_id}__media_" in saved_q
+    # The extracted file should exist on disk.
+    import re as _re
+    match = _re.search(r'src="(/generated/[^"]+)"', saved_q)
+    assert match, f"Expected /generated/ src in saved q: {saved_q}"
+    written = ROOT / "frontend" / match.group(1).lstrip("/")
+    try:
+        assert written.exists(), f"Extracted file missing: {written}"
+    finally:
+        written.unlink(missing_ok=True)
+
+
+def test_put_extracts_data_uri_from_real_life_question(client):
+    """Bug A regression: <img data:URI> inside real_life.q1.prompt must extract on PUT."""
+    hw_id = _seed_clean_homework(client)
+    html_with_image = (
+        '<p>What is X? '
+        f'<div class="image-wrap"><img src="data:image/png;base64,{_TINY_PNG_B64}" alt=""></div>'
+        '</p>'
+    )
+    resp = client.put(
+        f"/api/homeworks/{hw_id}",
+        json={"content_json": {"real_life": {"story": "...", "q1": {"prompt": html_with_image, "ans": "42", "fb": ""}}}},
+    )
+    assert resp.status_code == 200, resp.text
+    saved_prompt = resp.json()["content_json"]["real_life"]["q1"]["prompt"]
+    assert "data:image/png;base64," not in saved_prompt
+    assert f"/generated/{hw_id}__media_" in saved_prompt
+    import re as _re
+    match = _re.search(r'src="(/generated/[^"]+)"', saved_prompt)
+    assert match
+    written = ROOT / "frontend" / match.group(1).lstrip("/")
+    try:
+        assert written.exists()
+    finally:
+        written.unlink(missing_ok=True)
+
+
+def test_patch_extracts_data_uri_from_flashcard_def(client):
+    """Bug A regression: <img data:URI> inside flashcards[].def must extract."""
+    hw_id = _seed_clean_homework(client)
+    html_with_image = (
+        f'Pythagoras: <img src="data:image/png;base64,{_TINY_PNG_B64}" alt="triangle">'
+    )
+    resp = client.patch(
+        f"/api/homeworks/{hw_id}/content",
+        json={"content_json": {"flashcards": [{"term": "Triangle", "def": html_with_image}]}},
+    )
+    assert resp.status_code == 200, resp.text
+    saved_def = resp.json()["content_json"]["flashcards"][0]["def"]
+    assert "data:image/png;base64," not in saved_def
+    assert f"/generated/{hw_id}__media_" in saved_def
+    import re as _re
+    match = _re.search(r'src="(/generated/[^"]+)"', saved_def)
+    assert match
+    written = ROOT / "frontend" / match.group(1).lstrip("/")
+    try:
+        assert written.exists()
+    finally:
+        written.unlink(missing_ok=True)
+
+
+# ── Bug B regression: authored SVG with marker substring survives ────────────
+#
+# Pre-fix: `_is_generic_svg` matched the marker phrases anywhere in the SVG
+# body via substring containment. Authored SVGs whose <text> or <path> data
+# happened to include the phrase ("Look at this formula diagram showing …")
+# were silently replaced with a generic context SVG on every save — the
+# "image overwritten by a different image" symptom. Tightened to require the
+# marker as the exact trimmed body of <text>/<title>/<desc> or aria-label.
+
+
+def test_authored_svg_with_marker_substring_is_preserved(client):
+    """Bug B regression: authored SVG mentioning 'formula diagram' inside longer
+    <text> survives migration unchanged.
+    """
+    from server.services.content_media_migration import migrate_content_media
+
+    authored = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+        '<text x="10" y="20">Look at this formula diagram and solve</text>'
+        '<circle cx="50" cy="50" r="40" fill="red"/>'
+        '</svg>'
+    )
+    content = {"real_life": {"q1": {"q": "X?", "media": {"type": "svg", "html": authored}}}}
+    migrated, _, stats = migrate_content_media(
+        content, subject="math-algebra", hw_id="HW-AUTHORED", write_files=False
+    )
+    assert stats.generic_svgs_rewritten == 0
+    assert migrated["real_life"]["q1"]["media"]["html"] == authored
+
+
+def test_placeholder_svg_with_bare_marker_still_rewrites(client):
+    """Bug B legitimate path: AI placeholder SVG with bare <text>Homework
+    diagram</text> (no other content) still gets rewritten to context SVG.
+    Preserves the original placeholder-cleanup behavior.
+    """
+    from server.services.content_media_migration import migrate_content_media
+
+    placeholder = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">'
+        '<text>Homework diagram</text>'
+        '<text>Formula diagram</text>'
+        '</svg>'
+    )
+    content = {"real_life": {"q1": {"q": "X?", "media": {"type": "svg", "html": placeholder}}}}
+    migrated, _, stats = migrate_content_media(
+        content, subject="math-algebra", hw_id="HW-PLACEHOLDER", write_files=False
+    )
+    assert stats.generic_svgs_rewritten == 1
+    rewritten = migrated["real_life"]["q1"]["media"]["html"]
+    assert rewritten != placeholder
+    assert 'aria-label=' in rewritten
+    assert "Homework diagram" not in rewritten
+    assert "Formula diagram" not in rewritten
+
+
+def test_authored_svg_with_marker_inside_aria_label_text_is_preserved():
+    """Bug B regression: an authored SVG whose aria-label contains the phrase
+    as part of a longer description should NOT trip the placeholder check.
+    """
+    from server.services.content_media_migration import migrate_content_media
+
+    authored = (
+        '<svg xmlns="http://www.w3.org/2000/svg" aria-label="My formula diagram with sin(x)" viewBox="0 0 100 100">'
+        '<path d="M10 10 L90 90" stroke="blue"/>'
+        '</svg>'
+    )
+    migrated, _, stats = migrate_content_media(
+        {"media": {"type": "svg", "html": authored}}, subject="math-algebra", hw_id="HW-X", write_files=False
+    )
+    assert stats.generic_svgs_rewritten == 0
+    assert migrated["media"]["html"] == authored
