@@ -99,6 +99,42 @@ def test_generated_question_rejected_when_paraphrase_of_previous():
     assert "repeats_previous" in str(exc.value)
 
 
+def test_generated_question_rejected_when_near_duplicate_slips_past_strict_equality():
+    # Regression for the 2026-05-13 bug: Kimi returned a question for Q2 that
+    # differed from Q1 by only a punctuation/word tweak, which strict equality
+    # (the pre-fix anti-repetition check) let through. SequenceMatcher.ratio
+    # >= 0.85 must catch it. Fixture: trailing period + one-digit change — NOT
+    # byte-equal after whitespace normalize, so the pre-fix code passed this
+    # through; the new fuzzy check must reject it.
+    asked = [{"question_text": "Find the absolute error of 12.345 meters"}]
+    raw = {
+        "question_text": "Find the absolute error of 12.346 meters.",
+        "expected_answer": {"canonical": "0.001"},
+        "rubric": {"full_credit": ["0.001"]},
+        "target_skill": "absolyut_xatolik",
+        "difficulty": "medium",
+    }
+    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+        boss_dynamic._validate_generated_question(raw, asked_questions=asked)
+    assert "repeats_previous" in str(exc.value)
+
+
+def test_generated_question_passes_when_topically_related_but_substantively_different():
+    # Counterpart to the near-duplicate test: two different questions on the
+    # same topic must NOT trip the fuzzy similarity threshold. Without this
+    # the generator could be blocked from asking multiple legitimate questions
+    # about, e.g., absolute error in one boss session.
+    asked = [{"question_text": "Find the absolute error of 12.345 meters"}]
+    raw = {
+        "question_text": "Round 0.084736 to two significant figures.",
+        "expected_answer": {"canonical": "0.085"},
+        "rubric": {"full_credit": ["0.085"]},
+        "target_skill": "yaxlitlash",
+        "difficulty": "medium",
+    }
+    boss_dynamic._validate_generated_question(raw, asked_questions=asked)
+
+
 def test_generated_question_rejects_invalid_difficulty_token():
     raw = {
         "question_text": "What is the meaning of 'according to'?",

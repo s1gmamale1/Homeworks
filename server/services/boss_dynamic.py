@@ -313,22 +313,33 @@ def _validate_generated_question(
     if len(question_text) > max_question_length:
         raise BossQuestionRejected("question_too_long", raw=raw)
 
-    # Anti-repetition check: the new question must not be a near-exact
-    # duplicate of any question we've already asked. We use a normalized
-    # whitespace-collapsed comparison rather than string equality so trivial
-    # paraphrases ("Solve x + 2 = 5" vs "solve  x + 2 = 5  .") still trip.
     if parsed.difficulty not in ALLOWED_DIFFICULTIES:
         raise BossQuestionRejected("invalid_difficulty", raw=raw)
 
-    # Anti-repetition check: the new question must not be a near-exact
-    # duplicate of any question we've already asked. We use a normalized
-    # whitespace-collapsed comparison rather than string equality so trivial
-    # paraphrases ("Solve x + 2 = 5" vs "solve  x + 2 = 5  .") still trip.
+    # Anti-repetition: reject when the new question is too similar to any
+    # already-asked one. Strict equality (the original implementation) missed
+    # near-paraphrases — Kimi could change one number, swap punctuation, or
+    # tweak word order and still ship "the same question" from a student's POV.
+    # SequenceMatcher.ratio() on whitespace-collapsed lowercase strings gives a
+    # 0..1 similarity score; 0.85 is high enough to allow legitimate topical
+    # overlap (two different absolute-error problems on different inputs) but
+    # low enough to catch paraphrases. BossQuestionRejected triggers the
+    # gateway repair retry so Kimi gets one chance to regenerate.
+    _DUP_SIMILARITY_THRESHOLD = 0.85
     norm_new = " ".join(question_text.lower().split())
     for prev in asked_questions or []:
         prev_text = " ".join(str(prev.get("question_text") or "").lower().split())
-        if prev_text and prev_text == norm_new:
+        if not prev_text:
+            continue
+        if prev_text == norm_new:
             raise BossQuestionRejected("repeats_previous", raw=raw)
+        similarity = SequenceMatcher(None, prev_text, norm_new).ratio()
+        if similarity >= _DUP_SIMILARITY_THRESHOLD:
+            raise BossQuestionRejected(
+                f"repeats_previous: similarity={similarity:.2f} >= "
+                f"{_DUP_SIMILARITY_THRESHOLD}",
+                raw=raw,
+            )
 
     # --- Step 3: Per-skill difficulty floor (Plan Wave 2) ---
     # Each authored stem carries an authored_difficulty. We allow the
