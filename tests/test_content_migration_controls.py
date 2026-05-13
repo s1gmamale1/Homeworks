@@ -136,3 +136,50 @@ def test_migration_preserves_generated_image_urls_and_extracts_structured_data_u
         assert written.exists()
     finally:
         written.unlink(missing_ok=True)
+
+
+def test_migration_preserves_generic_svg_artwork_for_manual_cleanup(client):
+    generic_svg = """
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">
+      <text>Homework diagram</text>
+      <text>Formula diagram</text>
+    </svg>
+    """
+    created = _run(
+        db_mod.create_homework(
+            {
+                "title": "Generic SVG preservation",
+                "subject": "math-algebra",
+                "grade": 8,
+                "mode": "hard",
+                "family": "aniq-fanlar",
+                "status": "draft",
+                "content_json": {
+                    "meta": {"title": "Generic SVG preservation"},
+                    "panels": [
+                        {
+                            "pages": [
+                                {
+                                    "blocks": [
+                                        {"type": "svg", "html": generic_svg},
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                },
+            }
+        )
+    )
+    hw_id = created["id"]
+
+    status = client.get(f"/api/homeworks/{hw_id}/migration-status")
+    assert status.status_code == 200, status.text
+    assert status.json()["media"]["generic_svgs_rewritten"] == 0
+
+    migrated = client.post(f"/api/homeworks/{hw_id}/migrate-content")
+    assert migrated.status_code == 200, migrated.text
+    content_json = migrated.json()["homework"]["content_json"]
+    html = content_json["panels"][0]["pages"][0]["blocks"][0]["html"]
+    assert "Homework diagram" in html
+    assert "Formula diagram" in html

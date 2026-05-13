@@ -180,14 +180,6 @@ def _static_replacement_for_src(value: Any) -> str | None:
     return None
 
 
-def _is_generic_placeholder_svg(value: Any) -> bool:
-    return isinstance(value, str) and (
-        "Homework diagram" in value
-        or "Formula diagram" in value
-        or "Handdrawn diagram" in value
-    )
-
-
 def _has_repairable_img_html(value: Any) -> bool:
     if not isinstance(value, str) or "<img" not in value:
         return False
@@ -213,8 +205,6 @@ def _media_block_from_src(src: str, subject: str, label: str) -> dict[str, str]:
         return {"type": "image", "src": replacement, "alt": label}
     if _is_svg_data_uri_ref(src):
         html = _decode_svg_data_uri(src).strip()
-        if not html or _is_generic_placeholder_svg(html):
-            html = _svg_markup(subject, label)
         return {"type": "svg", "html": html}
     return {"type": "image", "src": src, "alt": label}
 
@@ -228,8 +218,6 @@ def _replace_svg_data_uri_imgs_in_html(html_text: str, subject: str, label: str)
         html = _decode_svg_data_uri(src).strip()
         if not html:
             return match.group(0)
-        if _is_generic_placeholder_svg(html):
-            html = _svg_markup(subject, label)
         replacements += 1
         return html
 
@@ -251,7 +239,6 @@ def _needs_media_repair(node: Any) -> bool:
         return (
             _is_stale_generated_image_ref(node)
             or _is_svg_data_uri_ref(node)
-            or _is_generic_placeholder_svg(node)
             or _has_repairable_img_html(node)
         )
     return False
@@ -260,9 +247,6 @@ def _needs_media_repair(node: Any) -> bool:
 def _repair_node(node: Any, subject: str, breadcrumbs: list[str], stats: RepairStats) -> Any:
     if isinstance(node, dict):
         local_label = _guess_label(node, breadcrumbs, subject)
-        if node.get("type") == "svg" and _is_generic_placeholder_svg(node.get("html")):
-            stats.html_replaced += 1
-            return {"type": "svg", "html": _svg_markup(subject, local_label)}
         if node.get("type") == "quote" and _has_repairable_img_html(node.get("text")):
             src = _extract_first_img_src(str(node.get("text") or ""))
             if src:

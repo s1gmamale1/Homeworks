@@ -15,7 +15,6 @@ from __future__ import annotations
 import base64
 import copy
 import hashlib
-import html
 import re
 import urllib.parse
 from dataclasses import asdict, dataclass
@@ -35,11 +34,6 @@ BITMAP_DATA_URI_RE = re.compile(
     re.IGNORECASE,
 )
 IMG_TAG_RE = re.compile(r'<img\b[^>]*\bsrc=["\'](?P<src>[^"\']+)["\'][^>]*>', re.IGNORECASE)
-GENERIC_PLACEHOLDER_MARKERS = (
-    "Homework diagram",
-    "Formula diagram",
-    "Handdrawn diagram",
-)
 MAX_EXTRACTED_IMAGE_BYTES = 8 * 1024 * 1024
 
 
@@ -49,6 +43,9 @@ class MediaMigrationStats:
     svg_data_uris_decoded: int = 0
     bitmap_data_uris_extracted: int = 0
     image_html_blocks_lifted: int = 0
+    # Kept for response compatibility with PR #214, but migrations must not
+    # invent replacement artwork. Bad/generic SVGs are content QA issues, not
+    # schema migration issues.
     generic_svgs_rewritten: int = 0
     unresolved_bitmap_data_uris: int = 0
 
@@ -79,34 +76,12 @@ def _decode_svg_data_uri(value: str) -> str:
     return urllib.parse.unquote(value[len(SVG_DATA_URI_PREFIX):]).strip()
 
 
-def _is_generic_svg(value: Any) -> bool:
-    return isinstance(value, str) and any(marker in value for marker in GENERIC_PLACEHOLDER_MARKERS)
-
-
 def _clean_label(label: str, subject: str) -> str:
     label = re.sub(r"<[^>]+>", " ", label or "")
     label = re.sub(r"\s+", " ", label).strip()
     if not label or label.lower() in {"diagram", "homework diagram", "formula diagram", "handdrawn diagram"}:
         return "Ko'phadlarni ajratish" if subject == "math-algebra" else "Mavzu diagrammasi"
     return label[:64]
-
-
-def _context_svg(subject: str, label: str) -> str:
-    title = html.escape(_clean_label(label, subject), quote=False)
-    accent = "#0066CC" if subject == "math-algebra" else "#0F8A6C"
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" role="img" aria-label="{title}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F8FBFF"/>
-      <stop offset="100%" stop-color="#EAF4FF"/>
-    </linearGradient>
-  </defs>
-  <rect width="900" height="540" rx="34" fill="url(#bg)"/>
-  <rect x="42" y="42" width="816" height="456" rx="28" fill="#FFFFFF" stroke="{accent}" stroke-width="4"/>
-  <text x="78" y="106" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="{accent}">{title}</text>
-  <path d="M120 386 L292 184 L464 386 Z" fill="none" stroke="{accent}" stroke-width="10" stroke-linejoin="round"/>
-  <path d="M548 188 H760 M548 270 H720 M548 352 H790" stroke="{accent}" stroke-width="10" stroke-linecap="round" opacity=".7"/>
-</svg>"""
 
 
 def _guess_label(node: Any, breadcrumbs: list[str], subject: str) -> str:
@@ -166,9 +141,6 @@ def _media_block_from_img_src(
     if _is_svg_data_uri(src):
         svg = _decode_svg_data_uri(src)
         stats.svg_data_uris_decoded += 1
-        if not svg or _is_generic_svg(svg):
-            svg = _context_svg(subject, label)
-            stats.generic_svgs_rewritten += 1
         return {"type": "svg", "html": svg}
     return {"type": "image", "src": _normalize_image_src(src, hw_id, stats, write_files=write_files), "alt": label}
 
@@ -204,9 +176,6 @@ def _replace_img_srcs_in_html(
         if _is_svg_data_uri(src):
             svg = _decode_svg_data_uri(src)
             stats.svg_data_uris_decoded += 1
-            if not svg or _is_generic_svg(svg):
-                svg = _context_svg(subject, label)
-                stats.generic_svgs_rewritten += 1
             return svg
         new_src = _normalize_image_src(src, hw_id, stats, write_files=write_files)
         if new_src == src:
@@ -229,12 +198,7 @@ def _walk(node: Any, subject: str, hw_id: str | None, breadcrumbs: list[str], st
             return new_node
 
         if node_type == "svg" and isinstance(node.get("html"), str):
-            html_value = node["html"]
-            if _is_generic_svg(html_value):
-                stats.generic_svgs_rewritten += 1
-                new_node = dict(node)
-                new_node["html"] = _context_svg(subject, label)
-                return new_node
+            return dict(node)
 
         if node_type in {"quote", "p", "text"} and isinstance(node.get("text"), str) and _is_image_only_html(node["text"]):
             src_match = IMG_TAG_RE.search(node["text"])
@@ -254,11 +218,7 @@ def _walk(node: Any, subject: str, hw_id: str | None, breadcrumbs: list[str], st
             if key == "src" and isinstance(value, str):
                 repaired[key] = _normalize_image_src(value, hw_id, stats, write_files=write_files)
             elif key == "html" and isinstance(value, str):
-                if _is_generic_svg(value):
-                    stats.generic_svgs_rewritten += 1
-                    repaired[key] = _context_svg(subject, label)
-                else:
-                    repaired[key] = _replace_img_srcs_in_html(value, subject, label, hw_id, stats, write_files=write_files)
+                repaired[key] = _replace_img_srcs_in_html(value, subject, label, hw_id, stats, write_files=write_files)
             elif key == "text" and isinstance(value, str):
                 repaired[key] = _replace_img_srcs_in_html(value, subject, label, hw_id, stats, write_files=write_files)
             else:
@@ -273,11 +233,7 @@ def _walk(node: Any, subject: str, hw_id: str | None, breadcrumbs: list[str], st
         stats.generated_urls_normalized += count
         if _is_svg_data_uri(normalized):
             stats.svg_data_uris_decoded += 1
-            svg = _decode_svg_data_uri(normalized)
-            if not svg or _is_generic_svg(svg):
-                stats.generic_svgs_rewritten += 1
-                return _context_svg(subject, _guess_label(None, breadcrumbs, subject))
-            return svg
+            return _decode_svg_data_uri(normalized)
         return normalized
 
     return node

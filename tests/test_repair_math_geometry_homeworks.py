@@ -1,4 +1,5 @@
 import json
+import urllib.parse
 from pathlib import Path
 
 from scripts.oneoff.repair_math_geometry_homeworks import (
@@ -91,8 +92,14 @@ def test_repair_homework_moves_generated_img_html_to_image_block_without_changin
     assert "data:image/svg+xml;utf8," not in repaired_json
 
 
-def test_repair_homework_rewrites_previous_svg_data_uri_img_to_svg_block():
-    previous_bad_src = _svg_data_uri("math-algebra", "Formula diagram")
+def test_repair_homework_decodes_svg_data_uri_without_rewriting_artwork():
+    generic_svg = """
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">
+      <text>Homework diagram</text>
+      <text>Formula diagram</text>
+    </svg>
+    """
+    previous_bad_src = "data:image/svg+xml;utf8," + urllib.parse.quote(generic_svg, safe="")
     content = {
         "meta": {"subject_display": "Algebra"},
         "panels": [
@@ -113,11 +120,11 @@ def test_repair_homework_rewrites_previous_svg_data_uri_img_to_svg_block():
     assert repaired["panels"][0]["pages"][0]["blocks"][0]["html"].startswith("<svg")
     assert repaired["panels"][0]["pages"][0]["blocks"][1]["type"] == "svg"
     assert repaired["panels"][0]["pages"][0]["blocks"][1]["html"].startswith("<svg")
-    assert "Homework diagram" not in repaired_json
-    assert "Formula diagram" not in repaired_json
+    assert "Homework diagram" in repaired_json
+    assert "Formula diagram" in repaired_json
 
 
-def test_repair_homework_replaces_generic_placeholder_svg_with_contextual_svg():
+def test_repair_homework_preserves_generic_placeholder_svg_for_manual_review():
     generic_svg = """
     <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">
       <text>Homework diagram</text>
@@ -136,13 +143,11 @@ def test_repair_homework_replaces_generic_placeholder_svg_with_contextual_svg():
     repaired_json, changed, stats = _repair_homework(json.dumps(content, ensure_ascii=False), "math-algebra")
     repaired = json.loads(repaired_json)
 
-    assert changed is True
-    assert stats.html_replaced == 1
+    assert changed is False
+    assert stats.html_replaced == 0
     html = repaired["panels"][0]["pages"][0]["blocks"][0]["html"]
-    assert html.startswith("<svg")
-    assert "Homework diagram" not in html
-    assert "Formula diagram" not in html
-    assert "Ko'phadlarni ajratish" in html
+    assert "Homework diagram" in html
+    assert "Formula diagram" in html
 
 
 def test_repair_homework_skips_small_rows_except_known_bad_subject_display():
