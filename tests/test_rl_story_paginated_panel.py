@@ -642,7 +642,10 @@ def test_boss_submit_shows_loading_not_premature_wrong(template_html):
     translation key are wired correctly.
     """
     body = _extract_function_body(template_html, "bossHandleAction")
-    pre_await = body.split("bossState.busy = true")[0]
+    # rsplit (not split): the Q2+ fetch branch now also sets bossState.busy=true
+    # (audit bug #2 fix, 2026-05-13). We want the slice up to the SUBMIT-AI
+    # await's busy flip, which is the LAST occurrence — not the Q2-fetch one.
+    pre_await = body.rsplit("bossState.busy = true", 1)[0]
 
     assert "'boss-feedback wrong'" not in pre_await and \
            '"boss-feedback wrong"' not in pre_await, (
