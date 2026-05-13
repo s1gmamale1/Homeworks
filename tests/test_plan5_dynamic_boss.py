@@ -945,8 +945,11 @@ def test_boss_start_archives_stale_active_session_and_spawns_fresh(client):
         "Stale session was reused — staleness check failed. "
         "Expected a new boss_session_id."
     )
-    assert second["trials_left"] == 7, (
-        f"New session must start with fresh trials_left=7, got {second['trials_left']}"
+    # _make_homework doesn't author boss_questions, so trials_left falls
+    # back to the default (5) per the 2026-05-13 pool-size-derived logic.
+    assert second["trials_left"] == 5, (
+        f"New session must start with fresh trials_left=5 (fallback default "
+        f"since fixture has no authored boss_questions), got {second['trials_left']}"
     )
     assert second["hp"] == 100
 
@@ -978,4 +981,82 @@ def test_boss_start_reuses_recent_active_session(client):
     assert second["boss_session_id"] == first_bsid, (
         "Recent session was NOT reused — staleness check is firing too eagerly. "
         "Idempotence (Plan 5 acceptance test 5) is broken."
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 — trials_left derived from authored boss_questions pool size
+# ---------------------------------------------------------------------------
+
+
+def test_trials_left_matches_authored_boss_questions_count(client):
+    """Design decision (2026-05-13): trials_left should equal the number of
+    authored boss_questions in the homework. One Kimi-generated question per
+    author-supplied anchor. The req.trials_left field becomes advisory; the
+    server computes the effective value from content_json.boss_questions."""
+    # Build a homework with exactly 3 boss_questions.
+    payload = {
+        "title": "trials count test 3",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {
+            "title": "trials count test 3",
+            "subject": "math-algebra",
+            "grade": 8,
+            "language": "uz",
+            "boss_questions": [
+                {"q": "Stem A", "dmg": 10},
+                {"q": "Stem B", "dmg": 20},
+                {"q": "Stem C", "dmg": 30},
+            ],
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+
+    # Frontend passes the legacy default of 7; server must override to 3.
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": "trials_test_3", "homework_id": hw_id,
+        "max_hp": 100, "trials_left": 7,
+    })
+    assert started.status_code == 200, started.text
+    assert started.json()["trials_left"] == 3, (
+        f"Server must override trials_left to authored pool size "
+        f"(3), got {started.json()['trials_left']}. "
+        f"req.trials_left=7 was treated as advisory."
+    )
+
+
+def test_trials_left_falls_back_to_5_when_no_authored_boss_questions(client):
+    """Counterpart: when content_json has no boss_questions[] (or empty),
+    the server falls back to a default of 5 trials."""
+    payload = {
+        "title": "trials count test 0",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {
+            "title": "trials count test 0",
+            "subject": "math-algebra",
+            "grade": 8,
+            "language": "uz",
+            # No boss_questions key at all.
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": "trials_test_0", "homework_id": hw_id,
+        "max_hp": 100, "trials_left": 7,
+    })
+    assert started.status_code == 200, started.text
+    assert started.json()["trials_left"] == 5, (
+        f"Expected fallback trials_left=5 when no authored boss_questions, "
+        f"got {started.json()['trials_left']}"
     )
