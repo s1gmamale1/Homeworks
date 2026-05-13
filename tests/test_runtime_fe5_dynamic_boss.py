@@ -553,6 +553,41 @@ def test_kickoff_expired_is_cleared_after_planready_when_dynamic_won(perfect_hom
     )
 
 
+def test_boss_handle_response_reads_plan5_field_names_for_damage_and_hp(perfect_homework_html: str):
+    """Real bug observed 2026-05-13 in screenshot: student answered correctly
+    on hard difficulty, server logged damage=15 + hp=85, but UI displayed
+    '−0 HP' and HP bar stayed at 100. Root cause: bossHandleResponse was
+    reading resp.damage_dealt and resp.hp_remaining — the LEGACY field
+    names from /api/ai/boss-turn. Plan-5 /api/ai/boss/submit-answer returns
+    `damage` and `hp` (no suffix). Both shapes must be accepted."""
+    body = _extract_function_body(perfect_homework_html, "bossHandleResponse")
+    # Must accept Plan-5 names first.
+    assert "resp.damage" in body, "must read resp.damage (Plan-5)"
+    assert "resp.hp" in body, "must read resp.hp (Plan-5)"
+    # Should still fall back to legacy names for /boss-turn compatibility.
+    assert "resp.damage_dealt" in body, (
+        "must keep legacy resp.damage_dealt fallback for /boss-turn"
+    )
+    assert "resp.hp_remaining" in body, (
+        "must keep legacy resp.hp_remaining fallback for /boss-turn"
+    )
+
+
+def test_boss_handle_response_detects_boss_over_via_boss_status(perfect_homework_html: str):
+    """Companion to the damage/hp fix: Plan-5 signals end-of-boss via
+    `boss_status: "won"|"failed"|"abandoned"` while legacy /boss-turn used
+    `done: true`. Without this, the results card never fires for Plan-5
+    boss completions and students keep clicking Next past the end."""
+    body = _extract_function_body(perfect_homework_html, "bossHandleResponse")
+    assert "boss_status" in body, (
+        "bossHandleResponse must accept resp.boss_status for Plan-5 end-of-boss"
+    )
+    assert "'won'" in body or '"won"' in body, "must check for 'won' status"
+    assert "'failed'" in body or '"failed"' in body, "must check for 'failed' status"
+    # Legacy `done` check must remain for /boss-turn back-compat.
+    assert "resp.done" in body, "must keep legacy resp.done fallback"
+
+
 def test_kickoff_timeout_timer_cancelled_when_dynamic_wins(perfect_homework_html: str):
     """Regression for 2026-05-13 late-evening bug: the kickoff timeoutPromise
     setTimeout used to fire at T+25s regardless of whether dynamic won the

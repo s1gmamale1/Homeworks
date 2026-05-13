@@ -19312,8 +19312,20 @@ Prezident ertaga hisobot kutmoqda.`,
             }
             if (isCorrect) {
                 // Use server values for damage + HP (no client recompute).
-                const serverDamage = (typeof resp.damage_dealt === 'number') ? resp.damage_dealt : null;
-                const serverHp = (typeof resp.hp_remaining === 'number') ? resp.hp_remaining : null;
+                // 2026-05-13 fix: Plan-5 endpoint /api/ai/boss/submit-answer
+                // returns `damage` and `hp` (no _dealt/_remaining suffix).
+                // The legacy /api/ai/boss-turn used damage_dealt/hp_remaining.
+                // Accept both shapes so legacy + Plan-5 both render correctly.
+                // Symptom of the prior bug: server dealt 15 damage but UI
+                // displayed '−0 HP' because resp.damage_dealt was undefined,
+                // falling back to local bossApplyCorrect (which computed 0
+                // since dynamic questions lack q.dmg).
+                const serverDamage = (typeof resp.damage === 'number') ? resp.damage
+                                   : (typeof resp.damage_dealt === 'number') ? resp.damage_dealt
+                                   : null;
+                const serverHp = (typeof resp.hp === 'number') ? resp.hp
+                               : (typeof resp.hp_remaining === 'number') ? resp.hp_remaining
+                               : null;
                 bossApplyCorrect(q, fbEl, {
                     aiGraded: true,
                     axis_1: resp.axis_1,
@@ -19366,7 +19378,15 @@ Prezident ertaga hisobot kutmoqda.`,
                 }
             }
             // Done branch — server signals end-of-boss.
-            if (resp.done === true) {
+            // 2026-05-13 fix: legacy /boss-turn returns `done: true`; Plan-5
+            // /boss/submit-answer returns `boss_status: "won"|"failed"|
+            // "abandoned"` instead. Accept both shapes so the results card
+            // fires regardless of which endpoint produced the response.
+            const bossOver = resp.done === true
+                          || resp.boss_status === 'won'
+                          || resp.boss_status === 'failed'
+                          || resp.boss_status === 'abandoned';
+            if (bossOver) {
                 bossRenderResult(resp);
             }
         }
