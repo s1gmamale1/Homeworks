@@ -27,13 +27,14 @@ Hard rules (Plan 5 §4 + §13 + Plan 7 §2 + the answer-leak invariant in CLAUDE
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from . import ai_gateway
+from . import ai_gateway, ai_orchestrator
 from ..config import PROMPTS_DIR
 from ..schemas.ai_contracts import BossQuestionGenerated, BossAnswerCheckResult
 from .boss_context_builder import _DIFFICULTY_RANK
@@ -45,7 +46,7 @@ _log = logging.getLogger("nets.boss_dynamic")
 # ---- Prompt versions (Plan 7 §8) ------------------------------------------
 
 PROMPT_VERSION = {
-    "boss-question-generator": "v2",
+    "boss-question-generator": "v3",
     "boss-answer-checker": "v1",
     "boss-tutor": "v2",
 }
@@ -116,12 +117,71 @@ def next_difficulty(
 
 
 # ---- Per-skill difficulty floor (Plan Wave 2) ------------------------------
-# 0.40 is a provisional empirical threshold for difflib.SequenceMatcher.ratio()
-# matching a generator's `target_skill` to an authored stem's question_text +
-# tags. Revisit after 20+ live calls — too low lets unrelated skills inherit
-# a stem's floor; too high makes the floor effectively unreachable and the
-# pool_max fallback dominates.
+# Bug #8 fix (2026-05-13 audit): the original implementation used only
+# SequenceMatcher.ratio() between target_skill (often a short snake_case
+# token like "sign_error", ~10 chars) and a 300-char stem haystack. The
+# length asymmetry tanked the ratio — 16 of 36 live generations had
+# target_skill="sign_error" and none matched any authored Uzbek stem, all
+# falling back to pool_max. We now combine token-overlap (Jaccard on
+# significant tokens) with SequenceMatcher and take the max. Token-overlap
+# is robust to length asymmetry; SequenceMatcher still catches partial
+# variations. Threshold 0.40 stays: legitimate matches now score 0.5–1.0.
 _SKILL_MATCH_THRESHOLD = 0.40
+_SKILL_TOKEN_MIN_LEN = 3  # ignore noise tokens like "a", "of", suffixes
+
+
+# ---- Language-drift detection (Bug #9 fix, 2026-05-13 audit) ---------------
+# Live data showed Kimi drifting to English target_skill (`sign_error`,
+# `Understanding modal verbs in context`) on Uzbek-language homeworks, and
+# occasionally English question_text. This deny-list flags obvious drift
+# by counting English function words that don't exist in Uzbek/Russian.
+# Conservative — needs 3+ hits to fire so legitimate mixed terminology
+# (e.g. "PISA", "Bloom") doesn't trip the check.
+_ENGLISH_INDICATOR_WORDS = frozenset({
+    "the", "is", "of", "and", "in", "to", "a", "for", "with", "as",
+    "that", "this", "are", "was", "were", "be", "been", "by", "on",
+    "at", "an", "or", "but", "not", "what", "which", "who", "how",
+    "if", "then", "than", "from",
+})
+
+
+def _detect_language_drift(
+    question_text: str,
+    target_skill: str,
+    expected_language: Optional[str],
+) -> Optional[str]:
+    """Return a short reason string if the generated text appears to be
+    English when the homework language is uz/ru; otherwise None.
+
+    Detection is conservative: counts English function-word tokens that
+    have no Uzbek/Russian cognates. A threshold of 3+ hits means single
+    borrowed words ("error", "PISA", "Bloom") don't trip the check.
+    """
+    if expected_language not in ("uz", "uz-cyrl", "ru"):
+        return None
+    combined = f"{question_text} {target_skill}".lower()
+    tokens = re.findall(r"\b[a-z]+\b", combined)
+    if not tokens:
+        return None
+    english_hits = sum(1 for t in tokens if t in _ENGLISH_INDICATOR_WORDS)
+    if english_hits >= 3:
+        return (
+            f"language_drift: expected={expected_language!r}, "
+            f"detected English ({english_hits} indicator words)"
+        )
+    return None
+
+
+def _tokenize_skill(s: str) -> set[str]:
+    """Split a skill string on whitespace, underscore, hyphen; keep tokens
+    of length >= _SKILL_TOKEN_MIN_LEN. Lowercased.
+    """
+    if not s:
+        return set()
+    return {
+        t for t in re.split(r"[\s_\-]+", s.lower().strip())
+        if len(t) >= _SKILL_TOKEN_MIN_LEN
+    }
 
 
 def _match_skill_to_stem(
@@ -130,17 +190,18 @@ def _match_skill_to_stem(
 ) -> Optional[dict]:
     """Best-effort fuzzy match of generator's target_skill to an authored stem.
 
-    Compares ``target_skill`` against ``(question_text + tags)`` of each stem
-    via ``difflib.SequenceMatcher.ratio()``. Returns the stem with highest
-    score when score >= 0.40 (empirical floor; revisit after 20+ live calls).
-    Returns None if pool empty, target_skill empty, or no stem clears
-    threshold.
+    Hybrid score: max of (token-overlap fraction, SequenceMatcher.ratio).
+    Token-overlap counts how many significant tokens from target_skill appear
+    in (question_text + tags). Robust to length asymmetry where short
+    target tokens get crushed by a long stem haystack. Returns the highest-
+    scoring stem when score >= _SKILL_MATCH_THRESHOLD, else None.
     """
     if not target_skill or not stems:
         return None
     target = target_skill.lower().strip()
     if not target:
         return None
+    target_tokens = _tokenize_skill(target_skill)
     best_score, best_stem = 0.0, None
     for stem in stems:
         haystack = (
@@ -150,7 +211,16 @@ def _match_skill_to_stem(
         ).lower()
         if not haystack.strip():
             continue
-        score = SequenceMatcher(None, target, haystack[:300]).ratio()
+        # Token-overlap score: fraction of significant target tokens present
+        # as substrings of haystack. Substring (not whole-word) keeps Uzbek
+        # morphology working — "xatolik" should match "xatoligini".
+        if target_tokens:
+            hits = sum(1 for t in target_tokens if t in haystack)
+            token_score = hits / len(target_tokens)
+        else:
+            token_score = 0.0
+        seq_score = SequenceMatcher(None, target, haystack[:300]).ratio()
+        score = max(token_score, seq_score)
         if score > best_score:
             best_score, best_stem = score, stem
     return best_stem if best_score >= _SKILL_MATCH_THRESHOLD else None
@@ -295,11 +365,12 @@ def _validate_generated_question(
     stems: Optional[list[dict[str, Any]]] = None,
     pool_max: Optional[str] = None,
     max_question_length: int = 900,
+    expected_language: Optional[str] = None,
 ) -> GeneratedBossQuestion:
     """Plan 5 §6 + Plan 7 §10 + Plan Wave 2 backend validation.
 
     Step 1: Key presence + Pydantic strict contract validation.
-    Step 2: Business rules (anti-repetition, length cap).
+    Step 2: Business rules (anti-repetition, length cap, language drift).
     Step 3: Per-skill difficulty floor (when stems / pool_max provided).
     """
     # --- Step 1: Pydantic strict contract validation ---
@@ -315,6 +386,15 @@ def _validate_generated_question(
 
     if parsed.difficulty not in ALLOWED_DIFFICULTIES:
         raise BossQuestionRejected("invalid_difficulty", raw=raw)
+
+    # Language drift (Bug #9 fix). If the homework language is uz/ru and the
+    # generated text is English-leaning, reject and let the manual retry path
+    # in generate_boss_question fire once with explicit language emphasis.
+    drift = _detect_language_drift(
+        parsed.question_text, parsed.target_skill, expected_language,
+    )
+    if drift:
+        raise BossQuestionRejected(drift, raw=raw)
 
     # Anti-repetition: reject when the new question is too similar to any
     # already-asked one. Strict equality (the original implementation) missed
@@ -426,7 +506,21 @@ async def generate_boss_question(
     prompt = _load_prompt("boss-question-generator")
     payload = dict(boss_context)
     payload["target_difficulty"] = diff
-    input_section = _build_boss_input_section(payload)
+
+    # Bug #10 fix (2026-05-13 audit): _build_boss_input_section can raise
+    # PromptTooLargeError (a RuntimeError subclass from ai_orchestrator) when
+    # boss_context exceeds the size cap. Previously this call was outside the
+    # try/except below and would surface as an unhandled 500. Translate it
+    # to a clean BossQuestionRejected so the route returns 502 with a
+    # specific reason rather than crashing.
+    try:
+        input_section = _build_boss_input_section(payload)
+    except ai_orchestrator.PromptTooLargeError as exc:
+        _log.warning(
+            "generate_boss_question prompt_too_large: size=%d cap=%d",
+            exc.size, exc.cap,
+        )
+        raise BossQuestionRejected(f"prompt_too_large: size={exc.size} cap={exc.cap}") from exc
     full_prompt = f"{prompt}\n\n{input_section}"
 
     try:
@@ -451,9 +545,9 @@ async def generate_boss_question(
     # per-skill difficulty floor).
     raw = result.model_dump()
     asked = list(boss_context.get("asked_questions") or [])
-    max_qlen = int(
-        (boss_context.get("boss_policy") or {}).get("max_question_length") or 900
-    )
+    policy = boss_context.get("boss_policy") or {}
+    max_qlen = int(policy.get("max_question_length") or 900)
+    expected_language = policy.get("language")
 
     try:
         return _validate_generated_question(
@@ -462,6 +556,7 @@ async def generate_boss_question(
             stems=stems,
             pool_max=pool_max,
             max_question_length=max_qlen,
+            expected_language=expected_language,
         )
     except BossQuestionRejected as exc:
         # Anti-repetition retry (Plan Wave 2 §3 follow-up, 2026-05-13).
@@ -505,6 +600,47 @@ async def generate_boss_question(
                 stems=stems,
                 pool_max=pool_max,
                 max_question_length=max_qlen,
+                expected_language=expected_language,
+            )
+        # Language-drift retry (Bug #9 fix, 2026-05-13 audit). Same shape as
+        # the anti-repetition retry above — one shot with explicit emphasis,
+        # second rejection propagates.
+        if exc.reason.startswith("language_drift") and expected_language:
+            _log.warning(
+                "boss language drift rejection on attempt 1: %s; retrying once with emphasis",
+                exc.reason,
+            )
+            lang_payload = dict(payload)
+            lang_payload["_language_emphasis"] = (
+                f"CRITICAL — your previous attempt was REJECTED for drifting to English. "
+                f"This homework is in language={expected_language!r}. Write the entire "
+                f"question_text, target_skill, why_this_question, and rubric entries in "
+                f"that language. No English snake_case skill names (e.g. 'sign_error') — "
+                f"use the homework language's terminology."
+            )
+            input_section3 = _build_boss_input_section(lang_payload)
+            full_prompt3 = f"{prompt}\n\n{input_section3}"
+            try:
+                result3 = await ai_gateway.generate_structured(
+                    task=ai_gateway.AITask.BOSS_QUESTION_GENERATE,
+                    prompt=full_prompt3,
+                    schema=BossQuestionGenerated,
+                    session_id=boss_context.get("session_id"),
+                    homework_id=boss_context.get("homework_id"),
+                    temperature=0.4,
+                    prompt_version=PROMPT_VERSION["boss-question-generator"],
+                )
+            except RuntimeError as exc3:
+                _log.warning("boss language-drift retry failed: AI unavailable: %s", exc3)
+                raise BossQuestionRejected("ai_unavailable_on_retry") from exc3
+            raw3 = result3.model_dump()
+            return _validate_generated_question(
+                raw3,
+                asked_questions=asked,
+                stems=stems,
+                pool_max=pool_max,
+                max_question_length=max_qlen,
+                expected_language=expected_language,
             )
         # Hard-clamp on persistent floor violation. The gateway already
         # consumed its one repair retry on Pydantic schema, so the LLM is

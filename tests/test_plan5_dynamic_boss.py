@@ -192,7 +192,7 @@ def _make_homework(client, *, hw_id_hint: str = "plan5-hw") -> str:
             "title": f"Plan 5 dynamic boss test ({hw_id_hint})",
             "subject": "english",
             "grade": 8,
-            "language": "uz",
+            "language": "en",
             "preview": {"text": "according to means as stated by"},
         },
     }
@@ -779,4 +779,116 @@ def test_recompute_session_metrics_called_on_boss_start(mock_gen, mock_recompute
     mock_recompute.assert_called_once_with(
         session_id=sess,
         hw_id=hw_id,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Bug #7 — attempt_number increments per question_id
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_attempt_number_increments_when_same_question_resubmitted(mock_gen, client):
+    """Bug #7: attempt_number was hardcoded to 1 on every boss submit.
+    Re-submitting the same question_id (retry path) created multiple rows
+    with attempt_number=1, inflating _streaks_from_recent_attempts. After
+    the fix, the second submit must record attempt_number=2."""
+    import asyncio
+    from server.db import attempts_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_atn")
+    sess = "plan5atn00001"
+    _seed_attempts(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    mock_gen.return_value = _boss_question_factory(
+        question_text="Q for attempt-number test.",
+        expected_answer=BossExpectedAnswer(canonical="x"),
+        rubric=BossRubric(full_credit=["x"]),
+        target_skill="topic1",
+        why_this_question="test",
+    )
+    q = client.post("/api/ai/boss/generate-question", json={"boss_session_id": bsid}).json()
+    qid = q["question_id"]
+
+    mock_gen.return_value = _boss_check_factory(
+        is_correct=False, score=0.0, confidence=0.9,
+        feedback="wrong", misconception_tags=[],
+        damage_multiplier=1.0, difficulty_recommendation="stay",
+        should_retry_same_skill=True,
+    )
+    # First submit
+    r1 = client.post("/api/ai/boss/submit-answer", json={
+        "boss_session_id": bsid, "question_id": qid, "student_answer": "wrong1",
+    })
+    assert r1.status_code == 200, r1.text
+    # Second submit on SAME question_id (retry path)
+    r2 = client.post("/api/ai/boss/submit-answer", json={
+        "boss_session_id": bsid, "question_id": qid, "student_answer": "wrong2",
+    })
+    assert r2.status_code == 200, r2.text
+
+    # Verify DB has two rows for this question with attempt_number 1 and 2.
+    rows = asyncio.run(attempts_repo.attempts_for_question(sess, hw_id, qid))
+    nums = sorted(r.get("attempt_number") for r in rows)
+    assert nums == [1, 2], (
+        f"Expected attempt_number=[1, 2] for two submits, got {nums}. "
+        f"Bug #7 regression — attempt_number must increment per question."
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Backend Bug #4 — append_asked_question atomic on race
+# ---------------------------------------------------------------------------
+
+
+def test_append_asked_question_serializes_concurrent_writes(client):
+    """Backend Bug #4: append_asked_question used to read-then-write in two
+    separate connections, racing with concurrent /generate-question calls.
+    After the BEGIN IMMEDIATE fix, concurrent appends to the same session
+    must serialize — both question IDs end up in the array. Simulates the
+    race with two threads calling append simultaneously."""
+    import asyncio
+    import threading
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_race")
+    sess = "plan5race0001"
+    _seed_attempts(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    errors = []
+
+    def _do_append(qid: str):
+        try:
+            asyncio.run(boss_session_repo.append_asked_question(bsid, qid))
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=_do_append, args=(f"gbq_race_{i:02d}",))
+        for i in range(8)
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert not errors, f"concurrent appends raised: {errors}"
+
+    # Final state must contain ALL 8 question IDs (no overwrites).
+    final = asyncio.run(boss_session_repo.get_boss_session(bsid))
+    asked = final["asked_question_ids"]
+    expected = {f"gbq_race_{i:02d}" for i in range(8)}
+    assert set(asked) >= expected, (
+        f"concurrent appends lost some IDs (race condition still present): "
+        f"expected ⊇ {expected}, got {set(asked)}"
     )
