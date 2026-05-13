@@ -399,3 +399,191 @@ async def test_anti_repetition_retry_does_not_loop_forever():
     assert call_count["n"] == 2, (
         f"Expected exactly 2 LLM calls (initial + 1 retry), got {call_count['n']}"
     )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Bug #8 — hybrid token+SequenceMatcher skill matching
+# ---------------------------------------------------------------------------
+
+
+def test_match_skill_to_stem_token_overlap_beats_sequencematcher_for_short_tokens():
+    """Bug #8 fix: SequenceMatcher.ratio() between a short skill token
+    ('nisbiy xatolik', 14 chars) and a long haystack (300 chars) tanks the
+    score. The new hybrid scoring takes max(token-overlap, seq-ratio) so
+    legitimate short-target matches still clear the 0.40 threshold."""
+    long_haystack_stem = _stem(
+        "(750 ± 1) m o'lchovning nisbiy xatoligini foizda yaxlit ikki "
+        "xonali toping. Nisbiy xatolik aniq fizik o'lchovlar bo'yicha "
+        "o'lchov natijasining haqiqiy qiymatdan og'ish darajasini ifoda etadi. "
+        "Bu masalada o'lchov 750 metrga teng va xato darajasi 1 metrdir.",
+        "medium",
+        tags="[Bloom: L3]",
+    )
+    matched = boss_dynamic._match_skill_to_stem("nisbiy xatolik", [long_haystack_stem])
+    assert matched is not None, (
+        "Hybrid scoring (token-overlap) must rescue short skill tokens "
+        "against long haystacks where pure SequenceMatcher ratio would fail"
+    )
+
+
+def test_tokenize_skill_filters_noise_tokens():
+    """Tokens shorter than _SKILL_TOKEN_MIN_LEN must be excluded so single-
+    letter or two-letter fragments don't dominate the overlap fraction."""
+    assert boss_dynamic._tokenize_skill("sign_error") == {"sign", "error"}
+    # Single + double letter tokens are filtered ("a", "of"); "the" stays (3 chars).
+    assert boss_dynamic._tokenize_skill("a of foo") == {"foo"}
+    assert boss_dynamic._tokenize_skill("nisbiy xatolik") == {"nisbiy", "xatolik"}
+    assert boss_dynamic._tokenize_skill("") == set()
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Bug #9 — language drift detection + retry
+# ---------------------------------------------------------------------------
+
+
+def test_detect_language_drift_flags_english_on_uzbek_homework():
+    """Bug #9: when boss_policy.language='uz' and Kimi generates English
+    text, the validator must reject with 'language_drift'. Threshold is
+    3+ English function-word hits — guards against single-borrowed-word
+    false positives (e.g. 'PISA', 'Bloom', 'error')."""
+    # 5+ English indicators on a uz homework — must trip
+    reason = boss_dynamic._detect_language_drift(
+        question_text="A student measures the length of a school bench with a ruler.",
+        target_skill="sign_error",
+        expected_language="uz",
+    )
+    assert reason is not None
+    assert "language_drift" in reason
+
+
+def test_detect_language_drift_allows_borrowed_terminology():
+    """Mixed Uzbek with one or two English technical terms must NOT trip."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="Buzan tomonidan taklif etilgan PISA standartiga muvofiq o'rganish",
+        target_skill="nisbiy xatolik",
+        expected_language="uz",
+    )
+    assert reason is None, (
+        "Borrowed terminology ('PISA', 'Buzan') must not trip language_drift"
+    )
+
+
+def test_detect_language_drift_skipped_for_english_homework():
+    """For English homeworks, English text is correct — must not trip."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="A student measures the length of a pencil with a ruler.",
+        target_skill="measurement_error",
+        expected_language="en",
+    )
+    assert reason is None
+
+
+def test_validate_generated_question_rejects_english_on_uzbek_homework():
+    """End-to-end: feed an English BossQuestionGenerated through the
+    validator with expected_language='uz' and assert rejection."""
+    english_raw = {
+        "question_text": "A student measures the length of a school bench with a ruler.",
+        "expected_answer": {"canonical": "0.5"},
+        "rubric": {"full_credit": ["0.5"]},
+        "target_skill": "sign_error",
+        "difficulty": "medium",
+    }
+    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+        boss_dynamic._validate_generated_question(
+            english_raw,
+            asked_questions=[],
+            stems=[],
+            pool_max=None,
+            expected_language="uz",
+        )
+    assert "language_drift" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_language_drift_rejection_triggers_one_retry_with_emphasis():
+    """Bug #9: when validator rejects with 'language_drift', generate_boss_question
+    must retry once with explicit language emphasis. Pin the retry count
+    (exactly 2) and verify the retry prompt contains the emphasis."""
+    boss_context = {
+        "session_id": "test-sess",
+        "homework_id": "test-hw",
+        "authored_question_stems": [{
+            "question_text": "Nisbiy xatolikni toping",
+            "tags": "",
+            "hint": "",
+            "authored_difficulty": "medium",
+        }],
+        "phase_summaries": [{"phase": "practice", "score": 0.5}],
+        "authored_difficulty_floor": "medium",
+        "asked_questions": [],
+        "boss_policy": {"max_question_length": 900, "language": "uz"},
+    }
+
+    english_output = BossQuestionGenerated(
+        question_text="A student measures the length of a school bench with a ruler.",
+        expected_answer=BossExpectedAnswer(canonical="0.5"),
+        rubric=BossRubric(full_credit=["0.5"]),
+        target_skill="sign_error",
+        difficulty="medium",
+        source_phase_ids=["practice"],
+        why_this_question="english drift",
+    )
+    uzbek_output = BossQuestionGenerated(
+        question_text="O'lchov natijasi 750 m bo'lib, xato 1 m. Nisbiy xatolikni toping.",
+        expected_answer=BossExpectedAnswer(canonical="0.13%"),
+        rubric=BossRubric(full_credit=["0.13%"]),
+        target_skill="nisbiy xatolik",
+        difficulty="medium",
+        source_phase_ids=["practice"],
+        why_this_question="retry uzbek",
+    )
+
+    call_count = {"n": 0}
+    captured_prompts: list[str] = []
+
+    async def _fake(*args, **kwargs):
+        call_count["n"] += 1
+        captured_prompts.append(kwargs.get("prompt", ""))
+        return english_output if call_count["n"] == 1 else uzbek_output
+
+    with patch.object(boss_dynamic.ai_gateway, "generate_structured", side_effect=_fake):
+        out = await boss_dynamic.generate_boss_question(boss_context, difficulty="medium")
+
+    assert call_count["n"] == 2, f"Expected 2 calls (1 retry), got {call_count['n']}"
+    assert out.target_skill == "nisbiy xatolik"
+    assert "_language_emphasis" in captured_prompts[1] or "REJECTED" in captured_prompts[1]
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Bug #10 — PromptTooLargeError translation
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_prompt_too_large_translates_to_boss_question_rejected():
+    """Bug #10: _build_boss_input_section can raise PromptTooLargeError
+    (RuntimeError subclass from ai_orchestrator). Before this fix it surfaced
+    as an unhandled 500. Now it must be caught and re-raised as
+    BossQuestionRejected('prompt_too_large: size=N cap=M') so the route
+    returns 502 with a specific reason."""
+    boss_context = {
+        "session_id": "test-sess",
+        "homework_id": "test-hw",
+        "authored_question_stems": [{
+            "question_text": "test", "tags": "", "hint": "", "authored_difficulty": "medium",
+        }],
+        "phase_summaries": [{"phase": "practice", "score": 0.5}],
+        "authored_difficulty_floor": "medium",
+        "asked_questions": [],
+        "boss_policy": {"max_question_length": 900},
+    }
+
+    def _explode_with_size(*args, **kwargs):
+        raise boss_dynamic.ai_orchestrator.PromptTooLargeError(size=999_999, cap=500_000)
+
+    with patch.object(boss_dynamic.ai_orchestrator, "build_input_section", side_effect=_explode_with_size):
+        with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+            await boss_dynamic.generate_boss_question(boss_context, difficulty="medium")
+
+    assert "prompt_too_large" in str(exc.value)
+    assert "size=999999" in str(exc.value)

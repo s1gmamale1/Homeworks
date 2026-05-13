@@ -164,15 +164,44 @@ async def update_boss_session(
 
 
 async def append_asked_question(boss_session_id: str, question_id: str) -> Optional[dict]:
-    """Append `question_id` to the asked queue and bump current_question_id."""
-    existing = await get_boss_session(boss_session_id)
-    if not existing:
-        return None
-    asked = list(existing.get("asked_question_ids") or [])
-    if question_id not in asked:
-        asked.append(question_id)
-    return await update_boss_session(
-        boss_session_id,
-        asked_question_ids=asked,
-        current_question_id=question_id,
-    )
+    """Append ``question_id`` to the asked queue and bump current_question_id.
+
+    Bug-Backend-#4 fix (2026-05-13 audit): the read-then-write sequence used
+    to be split across two SQLite connections, racing with any concurrent
+    /generate-question for the same boss session. Two parallel calls could
+    both see asked_question_ids=[A], both append their B/C locally, and one
+    write would overwrite the other (losing B or C from the queue, which
+    then weakens anti-repetition for that lost question).
+
+    Fix: hold a single connection across SELECT+UPDATE wrapped in
+    BEGIN IMMEDIATE — SQLite acquires a RESERVED lock on the first write
+    intent, blocking concurrent writers until COMMIT. Other readers proceed.
+    """
+    db = await connect()
+    try:
+        await db.execute("BEGIN IMMEDIATE")
+        try:
+            async with db.execute(
+                "SELECT asked_question_ids_json FROM boss_sessions WHERE id = ?",
+                (boss_session_id,),
+            ) as cursor:
+                row = await cursor.fetchone()
+            if not row:
+                await db.execute("ROLLBACK")
+                return None
+            asked = json.loads(row[0] or "[]")
+            if question_id not in asked:
+                asked.append(question_id)
+            await db.execute(
+                "UPDATE boss_sessions "
+                "SET asked_question_ids_json = ?, current_question_id = ?, updated_at = ? "
+                "WHERE id = ?",
+                (json.dumps(asked), question_id, _utc_now_iso(), boss_session_id),
+            )
+            await db.commit()
+        except Exception:
+            await db.execute("ROLLBACK")
+            raise
+    finally:
+        await db.close()
+    return await get_boss_session(boss_session_id)

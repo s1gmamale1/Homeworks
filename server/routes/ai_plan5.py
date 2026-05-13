@@ -350,14 +350,22 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
     new_trials = max(0, state["trials_left"] - 1)
 
     # Persist this attempt for the metrics + next-difficulty calculation.
+    # Bug #7 fix (2026-05-13 audit): attempt_number was hardcoded to 1, so
+    # retries on the same question_id produced duplicate rows that inflated
+    # _streaks_from_recent_attempts. Query prior attempts for this question
+    # and increment.
     import json as _json
+    prior_for_q = await attempts_repo.attempts_for_question(
+        state["session_id"], state["homework_id"], req.question_id,
+    )
+    attempt_number = len(prior_for_q) + 1
     attempt_id = await attempts_repo.add_phase_attempt(
         session_id=state["session_id"],
         hw_id=state["homework_id"],
         phase="boss",
         subphase=None,
         question_id=req.question_id,
-        attempt_number=1,
+        attempt_number=attempt_number,
         student_answer=req.student_answer,
         checker_source="boss_judge",
         correct=1 if verdict.is_correct else 0,
