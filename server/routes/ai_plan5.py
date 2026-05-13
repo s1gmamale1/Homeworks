@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from datetime import datetime, timezone, timedelta
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -121,6 +122,41 @@ def _boss_state_to_response(state: dict[str, Any], extra: dict[str, Any] | None 
     return out
 
 
+# Boss session staleness (2026-05-13 audit fix).
+#
+# A boss_sessions row in status='active' is reused by /boss/start to preserve
+# state across page refreshes. But "page refresh" was the only intended use
+# case — multi-day testing made the same row outlive its useful lifetime,
+# depleting trials_left, accumulating asked_question_ids, and trapping the
+# next playthrough in a 'failed' state before Q1 even rendered.
+#
+# 6 hours is conservative: long enough to cover legitimate "student takes
+# a break mid-homework," short enough to auto-archive sessions abandoned
+# overnight or across days.
+_SESSION_STALE_AFTER_SECONDS = 6 * 60 * 60  # 6 hours
+
+
+def _is_session_fresh(state: dict[str, Any]) -> bool:
+    """Return True if the session's updated_at is recent enough to reuse.
+
+    Tolerant of missing/malformed updated_at — treats unparseable as stale
+    so we err on the side of spawning fresh sessions over reusing stuck ones.
+    """
+    raw = state.get("updated_at")
+    if not raw:
+        return False
+    try:
+        # SQLite ISO timestamps may or may not carry timezone info; both
+        # branches are handled.
+        ts = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return False
+    age = datetime.now(timezone.utc) - ts
+    return age <= timedelta(seconds=_SESSION_STALE_AFTER_SECONDS)
+
+
 async def _load_asked_questions(state: dict[str, Any]) -> list[dict[str, Any]]:
     """Hydrate the asked queue into question_text+target_skill summaries.
 
@@ -198,8 +234,17 @@ async def boss_start(req: BossStartRequest):
     # Idempotence: if there is already an active boss session for (session, hw),
     # return its state instead of spawning a duplicate. Plan 5 §11 acceptance
     # test 5 (Boss state survives refresh) depends on this.
+    #
+    # Staleness check (2026-05-13 audit fix): the original idempotence rule
+    # assumed a single linear playthrough — refresh mid-session reuses state.
+    # But multi-day testing across many runs accumulated trials_left
+    # depletion (start with 7, each run consumes one, after 7 runs the next
+    # run hits trials=0 immediately and the boss is "failed" before the
+    # student even sees Q1). We now treat any session whose updated_at is
+    # older than _SESSION_STALE_AFTER_SECONDS as abandoned and fall through
+    # to spawning a fresh row.
     existing = await boss_session_repo.get_active_boss_session_for(req.session_id, req.homework_id)
-    if existing:
+    if existing and _is_session_fresh(existing):
         return BossStartResponse(
             boss_session_id=existing["id"],
             hp=existing["hp"],
@@ -210,6 +255,19 @@ async def boss_start(req: BossStartRequest):
             strong_topics=existing.get("strong_topics") or [],
             missing_context_flags=[],
         )
+    if existing:
+        # Stale — mark abandoned so the next get_active query skips it, and
+        # fall through to create a fresh session row.
+        try:
+            await boss_session_repo.update_boss_session(
+                existing["id"], status="abandoned",
+            )
+            _log.info(
+                "boss_session_archived_stale id=%s updated_at=%s",
+                existing["id"], existing.get("updated_at"),
+            )
+        except Exception as exc:
+            _log.warning("failed to archive stale boss session: %s", exc)
 
     ctx = await boss_context_builder.build_boss_context(
         req.session_id, req.homework_id,
