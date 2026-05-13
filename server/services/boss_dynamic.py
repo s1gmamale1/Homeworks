@@ -37,7 +37,11 @@ from pydantic import BaseModel, Field, field_validator
 from . import ai_gateway, ai_orchestrator
 from ..config import PROMPTS_DIR
 from ..schemas.ai_contracts import BossQuestionGenerated, BossAnswerCheckResult
-from .boss_context_builder import _DIFFICULTY_RANK
+from .boss_context_builder import (
+    _DIFFICULTY_RANK,
+    _ENGLISH_INDICATOR_WORDS,  # re-export for back-compat with existing tests
+    _detect_language_drift,    # re-export — canonical home is boss_context_builder
+)
 
 
 _log = logging.getLogger("nets.boss_dynamic")
@@ -46,7 +50,7 @@ _log = logging.getLogger("nets.boss_dynamic")
 # ---- Prompt versions (Plan 7 §8) ------------------------------------------
 
 PROMPT_VERSION = {
-    "boss-question-generator": "v3",
+    "boss-question-generator": "v4",
     "boss-answer-checker": "v1",
     "boss-tutor": "v2",
 }
@@ -128,48 +132,6 @@ def next_difficulty(
 # variations. Threshold 0.40 stays: legitimate matches now score 0.5–1.0.
 _SKILL_MATCH_THRESHOLD = 0.40
 _SKILL_TOKEN_MIN_LEN = 3  # ignore noise tokens like "a", "of", suffixes
-
-
-# ---- Language-drift detection (Bug #9 fix, 2026-05-13 audit) ---------------
-# Live data showed Kimi drifting to English target_skill (`sign_error`,
-# `Understanding modal verbs in context`) on Uzbek-language homeworks, and
-# occasionally English question_text. This deny-list flags obvious drift
-# by counting English function words that don't exist in Uzbek/Russian.
-# Conservative — needs 3+ hits to fire so legitimate mixed terminology
-# (e.g. "PISA", "Bloom") doesn't trip the check.
-_ENGLISH_INDICATOR_WORDS = frozenset({
-    "the", "is", "of", "and", "in", "to", "a", "for", "with", "as",
-    "that", "this", "are", "was", "were", "be", "been", "by", "on",
-    "at", "an", "or", "but", "not", "what", "which", "who", "how",
-    "if", "then", "than", "from",
-})
-
-
-def _detect_language_drift(
-    question_text: str,
-    target_skill: str,
-    expected_language: Optional[str],
-) -> Optional[str]:
-    """Return a short reason string if the generated text appears to be
-    English when the homework language is uz/ru; otherwise None.
-
-    Detection is conservative: counts English function-word tokens that
-    have no Uzbek/Russian cognates. A threshold of 3+ hits means single
-    borrowed words ("error", "PISA", "Bloom") don't trip the check.
-    """
-    if expected_language not in ("uz", "uz-cyrl", "ru"):
-        return None
-    combined = f"{question_text} {target_skill}".lower()
-    tokens = re.findall(r"\b[a-z]+\b", combined)
-    if not tokens:
-        return None
-    english_hits = sum(1 for t in tokens if t in _ENGLISH_INDICATOR_WORDS)
-    if english_hits >= 3:
-        return (
-            f"language_drift: expected={expected_language!r}, "
-            f"detected English ({english_hits} indicator words)"
-        )
-    return None
 
 
 def _tokenize_skill(s: str) -> set[str]:
@@ -506,6 +468,14 @@ async def generate_boss_question(
     prompt = _load_prompt("boss-question-generator")
     payload = dict(boss_context)
     payload["target_difficulty"] = diff
+    # Option C fix (2026-05-13 audit): lift the language directive from the
+    # nested boss_policy.language to a top-level output_language key. The
+    # prompt's strict-language banner points at this field. Top-level
+    # placement makes it the first thing Kimi reads in the input JSON,
+    # boosting attention vs. a deeply nested attribute.
+    policy_lang = (boss_context.get("boss_policy") or {}).get("language")
+    if policy_lang:
+        payload["output_language"] = policy_lang
 
     # Bug #10 fix (2026-05-13 audit): _build_boss_input_section can raise
     # PromptTooLargeError (a RuntimeError subclass from ai_orchestrator) when
