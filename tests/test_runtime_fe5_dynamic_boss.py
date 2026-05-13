@@ -553,6 +553,41 @@ def test_kickoff_expired_is_cleared_after_planready_when_dynamic_won(perfect_hom
     )
 
 
+def test_kickoff_timeout_timer_cancelled_when_dynamic_wins(perfect_homework_html: str):
+    """Regression for 2026-05-13 late-evening bug: the kickoff timeoutPromise
+    setTimeout used to fire at T+25s regardless of whether dynamic won the
+    race. If dynamic won at T+8s, the late-firing timer would re-set
+    bossState.kickoffExpired=true while the student was reading Q1, then
+    every Q2+ fetch would hit the kickoffExpired guard in
+    bossFetchNextQuestion, return null, and trip the 'Q2+ dynamic fetch
+    failed; ending boss session gracefully' fallback. Server-side Q2 was
+    being generated successfully but discarded by the runtime.
+
+    Fix: capture the timer ID and clearTimeout it after planReady resolves
+    iff dynamic won (currentQuestion is set + useDynamicBoss still true).
+    """
+    body = _extract_function_body(perfect_homework_html, "startFinalBoss")
+    # The kickoff timer ID must be captured (not anonymous in the new Promise).
+    assert "kickoffTimeoutTimer" in body, (
+        "startFinalBoss must capture the kickoff setTimeout ID as "
+        "kickoffTimeoutTimer (or equivalent) so it can be cancelled when "
+        "dynamic wins the race"
+    )
+    # There must be a clearTimeout call on that ID after the race resolves.
+    assert "clearTimeout(kickoffTimeoutTimer)" in body, (
+        "startFinalBoss must clearTimeout the kickoff timer when dynamic "
+        "wins, otherwise the late-firing timer re-arms kickoffExpired and "
+        "breaks Q2+ fetches"
+    )
+    # The clear must be guarded on dynamic having won (currentQuestion set).
+    clear_idx = body.find("clearTimeout(kickoffTimeoutTimer)")
+    preceding = body[max(0, clear_idx - 400):clear_idx]
+    assert "currentQuestion" in preceding, (
+        "clearTimeout(kickoffTimeoutTimer) must be guarded on "
+        "bossState.currentQuestion being populated (i.e. dynamic won)"
+    )
+
+
 def test_q2_plus_fetch_has_a_timeout_race(perfect_homework_html: str):
     """Bug #2: bossFetchNextQuestion for Q2+ was a bare await with no race —
     a stalled Kimi response would lock the Next button indefinitely. The
