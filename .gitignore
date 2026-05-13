@@ -82,3 +82,4 @@ SENTENCE_FILL_BACKEND_PLAN.md
 
 # Architectural rework planning docs (kept local; not part of the codebase)
 /homeworks_ai_architecture_plan_pr169_adjusted/
+.mcp.json
