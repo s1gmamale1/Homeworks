@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,3 +41,16 @@ def test_builder_media_controls_are_styled_and_generated_paths_are_allowed():
     assert ".media-wrap-btn" in css
     assert 'lower.startsWith("/generated/")' in preview_js
     assert 'lower.startsWith("/generated/")' in rich_js
+
+
+def test_compact_image_wrap_positions_overlay_buttons_locally():
+    css = APP_CSS.read_text(encoding="utf-8")
+    block = re.search(
+        r"\.rich-field\s+\.js-rich-mini\s+\.image-wrap\s*\{(?P<body>[^}]*)\}",
+        css,
+    )
+    assert block, "missing compact RichField image-wrap CSS block"
+    assert "position: relative" in block.group("body"), (
+        "mini-editor image action buttons are absolutely positioned; "
+        ".image-wrap must be the positioned ancestor"
+    )
