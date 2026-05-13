@@ -19014,6 +19014,17 @@ Prezident ertaga hisobot kutmoqda.`,
                     // first question always reflects the personalised order +
                     // framing rather than racing the intro animation.
                     await planReady;
+                    // Bug-#1 fix (2026-05-13): clear the race guard once the
+                    // kickoff has resolved. The guard exists to discard late
+                    // dynamic responses that arrive AFTER the 12s timeout has
+                    // already won and we've rendered legacy. Once the race is
+                    // over, leaving the flag set permanently would silently
+                    // abort every Q2+ fetch via the same guard in
+                    // bossFetchNextQuestion — flipping mid-arc to legacy
+                    // even when Q1 succeeded dynamically.
+                    if (bossState.useDynamicBoss && bossState.currentQuestion) {
+                        bossState.kickoffExpired = false;
+                    }
                     bossRenderQuestion(0);
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
@@ -19633,23 +19644,48 @@ Prezident ertaga hisobot kutmoqda.`,
             if (bossState.answered) {
                 bossState.qIndex++;
                 // FE-5 — dynamic mode: fetch the next server-generated question.
-                // The server signals end-of-arc via resp.done in bossRenderResult,
-                // so there is NO BOSS_QUESTIONS.length boundary here — we just
-                // pull the next question and render it. If the fetch fails the
-                // helper flips useDynamicBoss=false and we fall through to the
-                // legacy index path.
+                // Bug-#2 fix (2026-05-13): wrap Q2+ fetch in a 20s timeout
+                // race — earlier the bare await could lock the Next button
+                // indefinitely if Kimi stalled. Bug-#4 fix: when dynamic
+                // fails mid-arc, end the session gracefully instead of
+                // dropping into BOSS_QUESTIONS[idx] (which would render the
+                // authored REFERENCE questions verbatim — defeats the
+                // reference-pool design).
                 if (bossState.useDynamicBoss) {
                     setPhaseProgress('boss', bossState.qIndex, bossState.qIndex + 1);
-                    await bossFetchNextQuestion();
-                    if (!bossState.useDynamicBoss) {
-                        // Fetch failed; fall back into legacy path.
-                        if (bossState.qIndex >= BOSS_QUESTIONS.length) { bossEnd(false); return; }
+                    // Surface "generating" state to the student so the wait
+                    // is visible. Cleared inside bossRenderQuestion on
+                    // success or below on timeout.
+                    bossState.busy = true;
+                    const qTextEl = document.getElementById('boss-q-text');
+                    const inpEl = document.getElementById('boss-input');
+                    if (qTextEl) qTextEl.textContent = RT('boss.generating') || 'Generating next challenge…';
+                    if (inpEl) inpEl.disabled = true;
+                    setBtnText(RT('boss.generating') || 'Generating…');
+                    const FETCH_TIMEOUT_MS = 20000;
+                    const fetchTimedOut = Symbol('boss-fetch-timeout');
+                    const fetchRace = Promise.race([
+                        bossFetchNextQuestion().then(r => r === null ? fetchTimedOut : r).catch(() => fetchTimedOut),
+                        new Promise(r => setTimeout(() => r(fetchTimedOut), FETCH_TIMEOUT_MS)),
+                    ]);
+                    const fetchResult = await fetchRace;
+                    bossState.busy = false;
+                    if (fetchResult === fetchTimedOut || !bossState.useDynamicBoss || !bossState.currentQuestion) {
+                        // Mid-arc dynamic failure. End the session honestly
+                        // rather than falling back to authored references.
+                        console.warn('[FE-5] Q2+ dynamic fetch failed; ending boss session gracefully');
+                        bossState.useDynamicBoss = false;
+                        bossEnd(false);
+                        return;
                     }
                     bossRenderQuestion(bossState.qIndex);
                     setBtnText(RT('btn.check_answer'));
                     return;
                 }
-                // Legacy mode — index into BOSS_QUESTIONS.
+                // Legacy mode — index into BOSS_QUESTIONS. Reached only when
+                // dynamic was disabled BEFORE the boss arc started (kickoff
+                // timeout, missing session, etc.). Mid-arc fallback now ends
+                // gracefully above instead of dropping into this path.
                 setPhaseProgress('boss', bossState.qIndex, BOSS_QUESTIONS.length);
                 if (bossState.qIndex >= BOSS_QUESTIONS.length) { bossEnd(false); return; }
                 bossRenderQuestion(bossState.qIndex);

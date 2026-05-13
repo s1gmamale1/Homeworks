@@ -523,3 +523,91 @@ def test_boss_apply_correct_no_innerhtml_on_dynamic(perfect_homework_html: str):
         "bossApplyCorrect must still emit the .screen-reading-ai-badge "
         "class (legacy a11y/visual contract)"
     )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit fixes — regression tests for bugs #1, #2, #4
+# ---------------------------------------------------------------------------
+
+
+def test_kickoff_expired_is_cleared_after_planready_when_dynamic_won(perfect_homework_html: str):
+    """Bug #1: `kickoffExpired` set by the 12s timeout used to stay true
+    forever, silently aborting all Q2+ fetches via the same race guard in
+    bossFetchNextQuestion. After the kickoff race resolves, if dynamic won
+    (currentQuestion is populated), the flag MUST be cleared so subsequent
+    fetches are not short-circuited.
+    """
+    body = _extract_function_body(perfect_homework_html, "startFinalBoss")
+    # Must reset the guard after `await planReady` AND only when dynamic won.
+    assert "kickoffExpired = false" in body, (
+        "startFinalBoss must clear bossState.kickoffExpired after the "
+        "kickoff race resolves (bug #1 from 2026-05-13 audit)"
+    )
+    # The reset must be gated on dynamic having actually won — otherwise the
+    # legacy fallback path could resurrect dynamic mode mid-arc.
+    reset_idx = body.find("kickoffExpired = false")
+    preceding = body[max(0, reset_idx - 400):reset_idx]
+    assert "useDynamicBoss" in preceding and "currentQuestion" in preceding, (
+        "The kickoffExpired reset must be guarded on `useDynamicBoss && "
+        "currentQuestion` so it doesn't fire when dynamic lost the race"
+    )
+
+
+def test_q2_plus_fetch_has_a_timeout_race(perfect_homework_html: str):
+    """Bug #2: bossFetchNextQuestion for Q2+ was a bare await with no race —
+    a stalled Kimi response would lock the Next button indefinitely. The
+    audit fix wraps it in a 20s timeout race so mid-arc stalls surface as a
+    graceful boss-end rather than a permanent UI lock.
+    """
+    body = _extract_function_body(perfect_homework_html, "bossHandleAction")
+    # Must call bossFetchNextQuestion AND race it against a setTimeout.
+    assert "bossFetchNextQuestion" in body, "bossHandleAction must call bossFetchNextQuestion"
+    # The race uses Promise.race with a sentinel timeout marker.
+    assert "Promise.race" in body, (
+        "Q2+ fetch must be wrapped in Promise.race against a timeout "
+        "(bug #2 from 2026-05-13 audit) — bare await is forbidden"
+    )
+    # The timeout constant must be present and explicit (not a magic number).
+    assert "FETCH_TIMEOUT_MS" in body or "20000" in body, (
+        "Q2+ fetch timeout must be 20s (or a named constant)"
+    )
+
+
+def test_mid_arc_dynamic_failure_ends_gracefully_not_falls_to_authored(perfect_homework_html: str):
+    """Bug #4: when dynamic fails mid-arc (Q3+ fetch fails), the runtime
+    used to read `BOSS_QUESTIONS[qIndex]` as a fallback — which renders the
+    author's REFERENCE questions verbatim, defeating the whole reference-pool
+    refactor. The audit fix calls bossEnd(false) instead. This guards the
+    user from ever seeing authored reference text as a live boss question.
+    """
+    body = _extract_function_body(perfect_homework_html, "bossHandleAction")
+    # The dynamic-mid-arc-failure branch must NOT fall through to BOSS_QUESTIONS[idx].
+    # Find the dynamic-mode block (begins with `if (bossState.useDynamicBoss) {`).
+    dyn_start = body.find("if (bossState.useDynamicBoss)")
+    assert dyn_start >= 0, "Could not find dynamic-mode branch in bossHandleAction"
+    # Walk forward to the matching close brace.
+    depth = 0
+    end_idx = dyn_start
+    started = False
+    for i, ch in enumerate(body[dyn_start:], start=dyn_start):
+        if ch == "{":
+            depth += 1
+            started = True
+        elif ch == "}":
+            depth -= 1
+            if started and depth == 0:
+                end_idx = i
+                break
+    dyn_block = body[dyn_start:end_idx]
+    # The dynamic branch must call bossEnd on failure, NOT bossRenderQuestion
+    # against BOSS_QUESTIONS[idx].
+    assert "bossEnd(false)" in dyn_block, (
+        "When mid-arc dynamic fetch fails, runtime must call bossEnd(false) "
+        "to end the session gracefully (bug #4 fix)"
+    )
+    # Verify the dynamic branch does NOT contain a BOSS_QUESTIONS.length
+    # fallback check (that was the buggy path).
+    assert "qIndex >= BOSS_QUESTIONS.length" not in dyn_block, (
+        "Mid-arc dynamic failure path must NOT fall back to BOSS_QUESTIONS "
+        "indexing — that renders authored REFERENCE questions verbatim"
+    )
