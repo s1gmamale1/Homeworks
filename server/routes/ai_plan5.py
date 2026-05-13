@@ -272,13 +272,22 @@ async def boss_start(req: BossStartRequest):
     ctx = await boss_context_builder.build_boss_context(
         req.session_id, req.homework_id,
     )
+    # 2026-05-13 design decision: trials_left should match the size of the
+    # authored boss_questions[] reference pool. One Kimi-generated question
+    # per author-supplied anchor — semantically cleaner than a fixed cap
+    # disconnected from the homework's content. The request's trials_left is
+    # treated as advisory (frontend default is still 7). Falls back to 5
+    # when the homework has no authored boss questions.
+    authored_pool_size = len(ctx.authored_question_stems or [])
+    _FALLBACK_TRIALS = 5
+    effective_trials = authored_pool_size if authored_pool_size > 0 else _FALLBACK_TRIALS
     boss_session_id = f"bs_{uuid.uuid4().hex[:16]}"
     state = await boss_session_repo.create_boss_session(
         boss_session_id,
         req.session_id,
         req.homework_id,
         max_hp=req.max_hp,
-        trials_left=req.trials_left,
+        trials_left=effective_trials,
         current_difficulty=req.initial_difficulty,
         weak_topics=ctx.weak_topics,
         strong_topics=ctx.strong_topics,
@@ -286,7 +295,8 @@ async def boss_start(req: BossStartRequest):
     await _record_event(state, "boss_started", {
         "boss_session_id": boss_session_id,
         "max_hp": req.max_hp,
-        "trials_left": req.trials_left,
+        "trials_left": effective_trials,
+        "trials_source": "authored_pool_size" if authored_pool_size > 0 else "fallback_default",
         "weak_topics": ctx.weak_topics,
         "strong_topics": ctx.strong_topics,
     })
