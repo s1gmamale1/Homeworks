@@ -19005,15 +19005,27 @@ Prezident ertaga hisobot kutmoqda.`,
                         'Boss is preparing your challenge…';
                 }
             }, PROGRESS_HINT_MS);
-            const timeoutPromise = new Promise(r => setTimeout(() => {
-                clearTimeout(progressHintTimer);
-                bossState.kickoffExpired = true;
-                if (!bossState.currentQuestion) {
-                    bossState.useDynamicBoss = false;
-                    console.warn('[FE-5] dynamic kickoff exceeded ' + (KICKOFF_TIMEOUT_MS / 1000) + 's, falling back to legacy');
-                }
-                r();
-            }, KICKOFF_TIMEOUT_MS));
+            // Capture the kickoff timer ID so we can cancel it after the
+            // kickoff race resolves with a dynamic win. Without the cancel,
+            // the timer keeps ticking and fires at T+25s, flipping
+            // kickoffExpired=true while the student is reading Q1 — which
+            // then makes every Q2+ fetch return null via the kickoffExpired
+            // guard in bossFetchNextQuestion. Real bug observed 2026-05-13:
+            // server generated Q2 successfully (200 OK), but runtime
+            // discarded the response because the late-firing kickoff timer
+            // had silently re-armed the race guard.
+            let kickoffTimeoutTimer = null;
+            const timeoutPromise = new Promise(r => {
+                kickoffTimeoutTimer = setTimeout(() => {
+                    clearTimeout(progressHintTimer);
+                    bossState.kickoffExpired = true;
+                    if (!bossState.currentQuestion) {
+                        bossState.useDynamicBoss = false;
+                        console.warn('[FE-5] dynamic kickoff exceeded ' + (KICKOFF_TIMEOUT_MS / 1000) + 's, falling back to legacy');
+                    }
+                    r();
+                }, KICKOFF_TIMEOUT_MS);
+            });
             const planReady = Promise.race([
                 Promise.all([planPromise, dynamicReady]),
                 timeoutPromise,
@@ -19039,6 +19051,10 @@ Prezident ertaga hisobot kutmoqda.`,
                     // even when Q1 succeeded dynamically.
                     if (bossState.useDynamicBoss && bossState.currentQuestion) {
                         bossState.kickoffExpired = false;
+                        // Cancel the pending 25s kickoff timeout — otherwise
+                        // it fires later and re-sets kickoffExpired=true,
+                        // breaking Q2+ fetches (real bug 2026-05-13).
+                        clearTimeout(kickoffTimeoutTimer);
                     }
                     // Cancel the "preparing" hint regardless of who won —
                     // either dynamic finished early (no hint needed) or
