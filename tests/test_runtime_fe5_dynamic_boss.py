@@ -531,7 +531,7 @@ def test_boss_apply_correct_no_innerhtml_on_dynamic(perfect_homework_html: str):
 
 
 def test_kickoff_expired_is_cleared_after_planready_when_dynamic_won(perfect_homework_html: str):
-    """Bug #1: `kickoffExpired` set by the 12s timeout used to stay true
+    """Bug #1: `kickoffExpired` set by the kickoff timeout used to stay true
     forever, silently aborting all Q2+ fetches via the same race guard in
     bossFetchNextQuestion. After the kickoff race resolves, if dynamic won
     (currentQuestion is populated), the flag MUST be cleared so subsequent

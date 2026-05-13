@@ -18985,13 +18985,28 @@ Prezident ertaga hisobot kutmoqda.`,
                     bossState.useDynamicBoss = false;
                 }
             })();
-            // Bumped from 3s to 12s on 2026-05-08: Kimi question generation
-            // takes ~5-8s in practice (`/api/ai/boss/generate-question`), so the
-            // original 3s race made dynamic kickoff lose every time. 12s gives
-            // headroom for typical latency without leaving the student staring
-            // at the intro indefinitely.
-            const KICKOFF_TIMEOUT_MS = 12000;
+            // Timeout evolution (2026-05-13 audit):
+            //   3s (original) → 12s (after Kimi p99 latency = 12.8s)
+            //   → 25s (after anti-repetition + language-drift retries landed;
+            //     each retry adds one full LLM call ~5-9s, so 2 calls back-
+            //     to-back can take 14-18s total, blowing the 12s budget).
+            // Trade-off: student waits up to 25s at the intro screen if a
+            // retry fires. The intro animation (2.4s + 520ms fade) covers
+            // the first ~3s. We show a progressive "boss is preparing…"
+            // hint at the 8s mark so the wait doesn't feel broken.
+            const KICKOFF_TIMEOUT_MS = 25000;
+            const PROGRESS_HINT_MS = 8000;
+            const progressHintTimer = setTimeout(() => {
+                if (!bossState.currentQuestion && !bossState.kickoffExpired) {
+                    const introMsg = document.querySelector('#boss-intro-message') ||
+                                     document.querySelector('#boss-intro .boss-intro-text');
+                    if (introMsg) introMsg.textContent =
+                        (typeof RT === 'function' ? RT('boss.preparing') : '') ||
+                        'Boss is preparing your challenge…';
+                }
+            }, PROGRESS_HINT_MS);
             const timeoutPromise = new Promise(r => setTimeout(() => {
+                clearTimeout(progressHintTimer);
                 bossState.kickoffExpired = true;
                 if (!bossState.currentQuestion) {
                     bossState.useDynamicBoss = false;
@@ -19016,15 +19031,19 @@ Prezident ertaga hisobot kutmoqda.`,
                     await planReady;
                     // Bug-#1 fix (2026-05-13): clear the race guard once the
                     // kickoff has resolved. The guard exists to discard late
-                    // dynamic responses that arrive AFTER the 12s timeout has
-                    // already won and we've rendered legacy. Once the race is
-                    // over, leaving the flag set permanently would silently
+                    // dynamic responses that arrive AFTER the kickoff timeout
+                    // has already won and we've rendered legacy. Once the race
+                    // is over, leaving the flag set permanently would silently
                     // abort every Q2+ fetch via the same guard in
                     // bossFetchNextQuestion — flipping mid-arc to legacy
                     // even when Q1 succeeded dynamically.
                     if (bossState.useDynamicBoss && bossState.currentQuestion) {
                         bossState.kickoffExpired = false;
                     }
+                    // Cancel the "preparing" hint regardless of who won —
+                    // either dynamic finished early (no hint needed) or
+                    // timeout fired (already self-cleared the timer).
+                    clearTimeout(progressHintTimer);
                     bossRenderQuestion(0);
                     btn.classList.remove('state-line');
                     btn.classList.add('state-pill','pulse');
