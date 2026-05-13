@@ -5867,6 +5867,22 @@
             vertical-align: middle;
         }
 
+        /* Real-Life story and per-question images are full-page diagrams
+           (~1024×768 PNGs from the handdrawn pipeline). The shared inline-
+           media rules above cap them at 220/240px, which crushes the
+           diagram to ~30% of native size and makes annotations unreadable.
+           Override the cap to 60vh so a Real-Life image renders at a
+           usable size while still respecting `max-width:100%` from the
+           rules above (it stays within the card on any viewport). Other
+           inline images — boss prompts, panel paragraphs, memory-sprint
+           titles — keep their 220/240px caps unchanged. */
+        .rl-story-text img, .rl-story-text svg,
+        .rl-q-prompt img, .rl-q-prompt svg,
+        .rl-prompt img, .rl-prompt svg,
+        .rl-feedback img, .rl-feedback svg {
+            max-height: 60vh;
+        }
+
         /* ── WAVE 2 · READING / CONSOLIDATION / REFLECTION SCREENS ───────
            Replaces inline styles previously stamped on the three screen
            divs. Visual rendering is intentionally identical to the old
