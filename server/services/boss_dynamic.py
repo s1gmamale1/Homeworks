@@ -323,8 +323,15 @@ def _validate_generated_question(
     # SequenceMatcher.ratio() on whitespace-collapsed lowercase strings gives a
     # 0..1 similarity score; 0.85 is high enough to allow legitimate topical
     # overlap (two different absolute-error problems on different inputs) but
-    # low enough to catch paraphrases. BossQuestionRejected triggers the
-    # gateway repair retry so Kimi gets one chance to regenerate.
+    # low enough to catch paraphrases.
+    #
+    # NOTE (2026-05-13): An earlier comment claimed "BossQuestionRejected
+    # triggers the gateway repair retry." That was inaccurate. The gateway's
+    # repair retry fires only on json.JSONDecodeError / ValidationError BEFORE
+    # this function runs. Anti-repetition rejection happens post-gateway and
+    # historically surfaced as an immediate 502. generate_boss_question now
+    # implements a single manual retry for the `repeats_previous` case
+    # specifically (see line ~490).
     _DUP_SIMILARITY_THRESHOLD = 0.85
     norm_new = " ".join(question_text.lower().split())
     for prev in asked_questions or []:
@@ -457,6 +464,48 @@ async def generate_boss_question(
             max_question_length=max_qlen,
         )
     except BossQuestionRejected as exc:
+        # Anti-repetition retry (Plan Wave 2 §3 follow-up, 2026-05-13).
+        # The gateway's built-in repair retry doesn't catch BossQuestionRejected
+        # because it fires post-gateway. When fuzzy-similarity rejects a
+        # near-duplicate we get one explicit retry with an emphatic
+        # anti-repetition note injected and temperature bumped for variation.
+        # Limited to ONE retry; a second `repeats_previous` propagates as 502.
+        if exc.reason.startswith("repeats_previous") and asked:
+            _log.warning(
+                "boss anti-repetition rejection on attempt 1: %s; retrying once with emphasis",
+                exc.reason,
+            )
+            emphasized_payload = dict(payload)
+            emphasized_payload["_anti_repetition_emphasis"] = (
+                "CRITICAL — your previous attempt was REJECTED as a near-duplicate of an "
+                "already-asked question. You MUST generate a substantively different stem: "
+                "different surface form, different numbers, ideally a different target_skill. "
+                "Re-read asked_questions[] carefully before generating."
+            )
+            input_section2 = _build_boss_input_section(emphasized_payload)
+            full_prompt2 = f"{prompt}\n\n{input_section2}"
+            try:
+                result2 = await ai_gateway.generate_structured(
+                    task=ai_gateway.AITask.BOSS_QUESTION_GENERATE,
+                    prompt=full_prompt2,
+                    schema=BossQuestionGenerated,
+                    session_id=boss_context.get("session_id"),
+                    homework_id=boss_context.get("homework_id"),
+                    temperature=0.6,  # bumped from 0.3 for variation
+                    prompt_version=PROMPT_VERSION["boss-question-generator"],
+                )
+            except RuntimeError as exc2:
+                _log.warning("boss anti-repetition retry failed: AI unavailable: %s", exc2)
+                raise BossQuestionRejected("ai_unavailable_on_retry") from exc2
+            raw2 = result2.model_dump()
+            # Re-validate (may still reject; propagate that as the final answer).
+            return _validate_generated_question(
+                raw2,
+                asked_questions=asked,
+                stems=stems,
+                pool_max=pool_max,
+                max_question_length=max_qlen,
+            )
         # Hard-clamp on persistent floor violation. The gateway already
         # consumed its one repair retry on Pydantic schema, so the LLM is
         # not getting another shot. Clamping the difficulty up to the floor

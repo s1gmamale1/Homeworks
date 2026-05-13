@@ -267,3 +267,135 @@ async def test_hard_clamp_after_repair_failure_logs_warning_and_returns_clamped(
         "boss_difficulty_clamped_after_repair_fail" in rec.message
         for rec in caplog.records
     ), f"warning not emitted; got: {[r.message for r in caplog.records]}"
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit fix #3 — anti-repetition retry
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_anti_repetition_rejection_triggers_one_retry_with_emphasis(caplog):
+    """Bug #3 from 2026-05-13 audit: BossQuestionRejected('repeats_previous')
+    used to surface as an immediate 502 because the gateway's repair retry
+    only fires on Pydantic/JSON errors. The audit fix adds a single manual
+    retry inside generate_boss_question that re-calls the LLM with an
+    emphatic anti-repetition note injected into the payload. This test pins
+    the retry behavior: first call returns a duplicate, second call returns
+    a fresh question, end result is the fresh question."""
+    asked = [{"question_text": "Absolyut xatolikni hisoblang: a=23, x=23.5"}]
+    boss_context = {
+        "session_id": "test-sess",
+        "homework_id": "test-hw",
+        "authored_question_stems": [{
+            "question_text": "Absolyut xatolikni hisoblang",
+            "tags": "",
+            "hint": "",
+            "authored_difficulty": "medium",
+        }],
+        "phase_summaries": [{"phase": "practice", "score": 0.5}],
+        "authored_difficulty_floor": "medium",
+        "asked_questions": asked,
+        "boss_policy": {"max_question_length": 900, "language": "uz"},
+    }
+
+    duplicate_output = BossQuestionGenerated(
+        question_text="Absolyut xatolikni hisoblang: a=23, x=23.5",  # exact dup
+        expected_answer=BossExpectedAnswer(canonical="0.5"),
+        rubric=BossRubric(full_credit=["0.5"]),
+        target_skill="absolyut xatolik",
+        difficulty="medium",
+        source_phase_ids=["practice"],
+        why_this_question="first attempt",
+    )
+    fresh_output = BossQuestionGenerated(
+        question_text="Nisbiy xatolikni foizda toping: a=100, x=102.",
+        expected_answer=BossExpectedAnswer(canonical="2%"),
+        rubric=BossRubric(full_credit=["2%", "2"]),
+        target_skill="nisbiy xatolik",
+        difficulty="medium",
+        source_phase_ids=["practice"],
+        why_this_question="retry — varied surface form",
+    )
+
+    call_count = {"n": 0}
+    captured_prompts: list[str] = []
+
+    async def _fake_generate_structured(*args, **kwargs):
+        call_count["n"] += 1
+        captured_prompts.append(kwargs.get("prompt", ""))
+        return duplicate_output if call_count["n"] == 1 else fresh_output
+
+    with patch.object(
+        boss_dynamic.ai_gateway,
+        "generate_structured",
+        side_effect=_fake_generate_structured,
+    ):
+        with caplog.at_level(logging.WARNING, logger="nets.boss_dynamic"):
+            out = await boss_dynamic.generate_boss_question(
+                boss_context, difficulty="medium"
+            )
+
+    # Retry must have fired exactly once.
+    assert call_count["n"] == 2, (
+        f"Expected one retry (2 total calls), got {call_count['n']}"
+    )
+    # Final output must be the fresh question, not the duplicate.
+    assert out.question_text == fresh_output.question_text
+    # The retry prompt must include the emphatic anti-repetition note.
+    assert "_anti_repetition_emphasis" in captured_prompts[1] or "REJECTED" in captured_prompts[1], (
+        "Second LLM call must include the anti-repetition emphasis injection"
+    )
+    assert any(
+        "anti-repetition rejection on attempt 1" in rec.message
+        for rec in caplog.records
+    ), "Retry log line missing"
+
+
+@pytest.mark.asyncio
+async def test_anti_repetition_retry_does_not_loop_forever():
+    """If the retry ALSO returns a duplicate, the rejection must propagate
+    as BossQuestionRejected — no infinite retry loop, no third call."""
+    asked = [{"question_text": "Solve 12 + 5 step by step."}]
+    boss_context = {
+        "session_id": "test-sess",
+        "homework_id": "test-hw",
+        "authored_question_stems": [{
+            "question_text": "Solve 12 + 5",
+            "tags": "",
+            "hint": "",
+            "authored_difficulty": "easy",
+        }],
+        "phase_summaries": [{"phase": "practice", "score": 0.5}],
+        "authored_difficulty_floor": "easy",
+        "asked_questions": asked,
+        "boss_policy": {"max_question_length": 900, "language": "en"},
+    }
+    dup = BossQuestionGenerated(
+        question_text="Solve 12 + 5 step by step.",
+        expected_answer=BossExpectedAnswer(canonical="17"),
+        rubric=BossRubric(full_credit=["17"]),
+        target_skill="addition",
+        difficulty="easy",
+        source_phase_ids=["practice"],
+        why_this_question="",
+    )
+
+    call_count = {"n": 0}
+
+    async def _always_dup(*args, **kwargs):
+        call_count["n"] += 1
+        return dup
+
+    with patch.object(
+        boss_dynamic.ai_gateway,
+        "generate_structured",
+        side_effect=_always_dup,
+    ):
+        with pytest.raises(boss_dynamic.BossQuestionRejected) as exc_info:
+            await boss_dynamic.generate_boss_question(boss_context, difficulty="easy")
+
+    assert "repeats_previous" in str(exc_info.value)
+    assert call_count["n"] == 2, (
+        f"Expected exactly 2 LLM calls (initial + 1 retry), got {call_count['n']}"
+    )
