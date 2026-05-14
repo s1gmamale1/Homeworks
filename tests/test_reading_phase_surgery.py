@@ -115,21 +115,68 @@ def test_reading_lock_message_does_not_render_on_text_segment_panels():
     )
 
 
-# ---- Invariant 3: Keyingi button removed for segment-aware panels ---------
+# ---- Invariant 3: Keyingi button — created in both modes, gated reveal ----
+#
+# Contract change (PR #231): the per-checkpoint manual Next button is now
+# created UNCONDITIONALLY for both modes. The old design ("nextBtn only when
+# mode === 'legacy'") stranded students in segment mode on a wrong answer —
+# auto-advance only fires on correct, and the wrong-answer branch left them
+# with the verdict on screen and no visible advance affordance.
+#
+# New contract:
+#   - nextBtn always exists (created unconditionally, hidden by default)
+#   - Revealed when (mode === 'legacy' || !isCorrect) — i.e. legacy mode
+#     always, or segment-mode-wrong-answer as an escape hatch
+#   - Correct + segment still auto-advances at 1.1s; button being also
+#     visible during that 1.1s is harmless (click triggers same advance)
 
-def test_reading_per_checkpoint_next_button_rendered_only_in_legacy_mode():
-    """The per-checkpoint manual Next button is gated on legacy chunker mode.
 
-    Post-wave2 the checkpoint UI builder is `_buildReadingCheckpointBlock`
-    and it creates `nextBtn` only when its `mode` argument is 'legacy'.
-    Segment-aware question panels have no manual Next button — auto-advance
-    handles forward motion after a correct answer.
+def test_reading_per_checkpoint_next_button_created_unconditionally():
+    """The Next button must be created for BOTH modes — no `if (mode === 'legacy')`
+    gate around the createElement call. Pre-fix that gate left segment-mode
+    wrong-answer panels with no manual advancer at all (HW-20260514-007 repro).
     """
     body = _slice_function("_buildReadingCheckpointBlock")
-    assert re.search(
+    # The old broken gate must be gone.
+    bad = re.search(
         r"if\s*\(\s*mode\s*===\s*'legacy'\s*\)\s*\{[^}]*?nextBtn\s*=\s*document\.createElement",
         body, flags=re.DOTALL,
-    ), "_buildReadingCheckpointBlock must create nextBtn only when mode === 'legacy'"
+    )
+    assert bad is None, (
+        "_buildReadingCheckpointBlock must NOT gate nextBtn creation on "
+        "mode === 'legacy'. That's the regressed bug — segment-mode wrong "
+        "answers had no button at all. Create the button unconditionally; "
+        "gate visibility instead."
+    )
+    # And the new unconditional creation must be present.
+    assert re.search(
+        r"const\s+nextBtn\s*=\s*document\.createElement\(\s*['\"]button['\"]\s*\)",
+        body,
+    ), (
+        "_buildReadingCheckpointBlock must create nextBtn unconditionally "
+        "(`const nextBtn = document.createElement('button')`) so the same "
+        "DOM node can be hidden/shown by the gate logic below."
+    )
+
+
+def test_reading_segment_mode_reveals_next_button_on_wrong_answer():
+    """Segment mode + wrong answer: nextBtn must be revealed inside the
+    check handler so the student can advance manually after reading the
+    feedback. Auto-advance only fires for correct answers in segment mode,
+    so this is the escape hatch that fixes the user-reported stranded
+    state on HW-20260514-007.
+    """
+    body = _slice_function("_buildReadingCheckpointBlock")
+    # The reveal condition: `if (mode === 'legacy' || !isCorrect) nextBtn.style.display = ''`
+    assert re.search(
+        r"if\s*\(\s*mode\s*===\s*'legacy'\s*\|\|\s*!isCorrect\s*\)\s*\{"
+        r"\s*nextBtn\.style\.display\s*=\s*['\"]['\"]",
+        body, flags=re.DOTALL,
+    ), (
+        "_buildReadingCheckpointBlock must reveal nextBtn inside "
+        "`if (mode === 'legacy' || !isCorrect)`. Without the `|| !isCorrect` "
+        "clause, segment-mode wrong answers regress to the stranded state."
+    )
 
 
 def test_reading_no_bottom_page_nav_in_segment_mode():

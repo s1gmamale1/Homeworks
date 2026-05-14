@@ -331,3 +331,93 @@ def test_gbTMFinish_reveals_button_with_no_hidden_flag():
         "hidden flag must be absent (or falsy) here so the button "
         "reappears with the 'Keyingi …' label."
     )
+
+
+# ── Clause 5: phase-exit cleanup — class must not leak across phases ─
+#
+# Bug history (PR #231, HW-20260514-007 audit):
+#   The `tm-dock-hidden` auto-clear contract (Clause 2) only fires on
+#   `gbSetButtonNext` calls. But the GB→RL exit path (gbExitToStage6 →
+#   startStage6) bypasses gbSetButtonNext entirely, so when Tile Match
+#   was the last GB sub-game the class survived into the Real-Life
+#   phase entry: button rendered with the right state-pill + pulse +
+#   "Boshlash" text but opacity:0 from the leaked class made it
+#   invisible. Same leak then propagated into Boss entry on the
+#   subsequent phase transition.
+#
+# Fix: every phase-entry that re-skins the morph button must explicitly
+# strip `tm-dock-hidden` from its classList.remove call (or equivalent).
+# These four pins lock in the cleanup so a future refactor can't quietly
+# re-introduce the leak.
+
+
+_TM_DOCK_REMOVE_RE = re.compile(
+    r"classList\.remove\([^)]*['\"]tm-dock-hidden['\"]",
+)
+
+
+def test_gbExitToStage6_strips_tm_dock_hidden_on_phase_exit():
+    """gbExitToStage6 is the primary leak point: it transitions Game
+    Breaks → Real Life without going through gbSetButtonNext. Must
+    include `tm-dock-hidden` in its btn.classList.remove so the class
+    doesn't survive into startStage6's button-state setup. Without this
+    strip, every homework whose last GB sub-game was Tile Match boots
+    into RL with an invisible Boshlash button."""
+    body = _function_body(_read(), "gbExitToStage6")
+    assert _TM_DOCK_REMOVE_RE.search(body), (
+        "Phase-exit regression: `gbExitToStage6` no longer strips "
+        "`tm-dock-hidden` from btn.classList. Tile Match's dock-hide "
+        "class will leak into the Real-Life phase entry — Boshlash "
+        "button renders at opacity:0 (see HW-20260514-007 bug report)."
+    )
+
+
+def test_startStage6_strips_tm_dock_hidden_on_phase_entry():
+    """Defensive backstop in the RL phase entry. gbExitToStage6 is the
+    primary cleanup point, but startStage6 must also strip the class so
+    any other path into Real Life (session restore, skip shortcuts,
+    direct phase-routing) can't leave the Boshlash button invisible."""
+    body = _function_body(_read(), "startStage6")
+    assert _TM_DOCK_REMOVE_RE.search(body), (
+        "Phase-entry regression: `startStage6` no longer strips "
+        "`tm-dock-hidden`. Removes the defensive backstop — if any "
+        "non-gbExitToStage6 path reaches RL with the class set, the "
+        "Boshlash button stays invisible."
+    )
+
+
+def test_startFinalBoss_strips_tm_dock_hidden_on_phase_entry():
+    """Boss phase entry — same defensive strip. The user-reported
+    repro (HW-20260514-007) showed the Javob submit button invisible on
+    boss entry even after the Boshlash bug was triggered upstream. Both
+    `btn.classList.remove` and the local `ab` element handle must clear
+    the class so any leak path is closed."""
+    body = _function_body(_read(), "startFinalBoss")
+    # Either btn.classList.remove(...'tm-dock-hidden'...) or ab.classList.remove('tm-dock-hidden')
+    # is acceptable — the function uses both names for the same element.
+    has_btn_remove = _TM_DOCK_REMOVE_RE.search(body) is not None
+    has_ab_remove = re.search(
+        r"ab\.classList\.remove\(\s*['\"]tm-dock-hidden['\"]\s*\)",
+        body,
+    ) is not None
+    assert has_btn_remove or has_ab_remove, (
+        "Phase-entry regression: `startFinalBoss` no longer strips "
+        "`tm-dock-hidden` from the action button. If a TM session leaked "
+        "the class through RL into Boss, the Javob submit pill renders "
+        "at opacity:0 and the boss phase is unplayable."
+    )
+
+
+def test_showConsolidationScreen_strips_tm_dock_hidden():
+    """Consolidation interstitial sits between Real Life and Boss for
+    homeworks that have consolidation content. Defensive strip here
+    closes the last skip-shortcut path that could leak the class — any
+    flow that jumps into consolidation with `tm-dock-hidden` still set
+    would otherwise hide the consolidation phase's bottom CTA."""
+    body = _function_body(_read(), "showConsolidationScreen")
+    assert _TM_DOCK_REMOVE_RE.search(body), (
+        "Phase-entry regression: `showConsolidationScreen` no longer "
+        "strips `tm-dock-hidden`. Skip-to-consolidation paths can leave "
+        "the Keyingi pill invisible — re-introduces the same class-leak "
+        "family the rest of Clause 5 closes."
+    )
