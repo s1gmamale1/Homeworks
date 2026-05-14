@@ -17119,7 +17119,14 @@
             // Game Breaks phase done — student cleared (or skipped past) all
             // sub-games. Reading interstitial counts under this dot too.
             completePhase('gameBreaks');
-            btn.classList.remove('pulse','state-pill');
+            // Clear `tm-dock-hidden` here: Tile Match's dock prompts add that
+            // class (CSS rule `opacity: 0 !important`) to suppress the morph
+            // button while tile prompts are active. Normal flow auto-clears
+            // it via gbSetButtonNext when advancing to the next sub-game,
+            // but the exit path (last GB sub-game → startStage6) doesn't
+            // route through that helper, so without this explicit removal
+            // the next phase (Real Life) inherits an invisible action button.
+            btn.classList.remove('pulse','state-pill','tm-dock-hidden');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
             const s5 = document.getElementById('screen-5');
@@ -18300,7 +18307,13 @@ Prezident ertaga hisobot kutmoqda.`,
             // student sees them simultaneously. Fade in after the card lands.
             const rlCard = document.getElementById('rl-card');
             if (rlCard) { rlCard.style.transition = 'none'; rlCard.style.opacity = '0'; }
-            btn.classList.remove('pulse', 'state-line', 'state-start', 'state-pill');
+            // Defensive: drop `tm-dock-hidden` here too. Primary cleanup
+            // lives in gbExitToStage6; this is the safety net for any other
+            // entry paths into RL (session restore, skip shortcuts) that
+            // might land here with the class still applied from a prior
+            // Tile Match dock state — CSS would otherwise force opacity:0
+            // and the "Boshlash" pill stays invisible.
+            btn.classList.remove('pulse', 'state-line', 'state-start', 'state-pill', 'tm-dock-hidden');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
             playPhaseAnnouncement('phase.real_life', () => {
@@ -18507,9 +18520,13 @@ Prezident ertaga hisobot kutmoqda.`,
             // But edge paths (skip-to-end shortcuts, mid-RL exits, session
             // restore landing on Boss) can reach this entry with the
             // button still hidden, leaving the student stuck. Re-show
-            // unconditionally so Boss is self-contained.
+            // unconditionally so Boss is self-contained. Also strip
+            // `tm-dock-hidden` (Tile Match dock-hide class — CSS rule
+            // `opacity: 0 !important`) which can leak across phases when
+            // the GB→RL→Boss path doesn't route through gbSetButtonNext.
             const ab = document.getElementById('action-button');
             if (ab) ab.style.display = '';
+            if (ab) ab.classList.remove('tm-dock-hidden');
 
             Object.assign(bossState, {
                 hp:100,maxHp:100,qIndex:0,combo:0,hintsUsed:0,hintStep:0,correct:0,answered:false,done:false,
@@ -18521,7 +18538,7 @@ Prezident ertaga hisobot kutmoqda.`,
             // BOSS_META overrides (starting_hp_override, boss_type → data attribute).
             try { bossInit(); } catch (e) { console.warn('[FB] bossInit failed:', e); }
 
-            btn.classList.remove('pulse','state-pill');
+            btn.classList.remove('pulse','state-pill','tm-dock-hidden');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
 
@@ -19606,16 +19623,24 @@ Prezident ertaga hisobot kutmoqda.`,
             checkBtn.disabled = Boolean(readingState.answered[i]);
             btnRow.appendChild(checkBtn);
 
-            let nextBtn = null;
-            if (mode === 'legacy') {
-                nextBtn = document.createElement('button');
-                nextBtn.type = 'button';
-                nextBtn.className = 'screen-reading-btn is-primary';
-                nextBtn.id = 'reading-cp-next-' + i;
-                nextBtn.textContent = RT('btn.next');
-                nextBtn.style.display = readingState.answered[i] ? '' : 'none';
-                btnRow.appendChild(nextBtn);
-            }
+            // Manual Next button:
+            //   - Legacy mode: always present, hidden until any answer is
+            //     submitted (preserves pre-segment UX).
+            //   - Segment mode: present but only revealed when the student
+            //     answered INCORRECTLY. Correct answers auto-advance after
+            //     1.1s (see check handler below); the wrong-answer branch
+            //     used to leave the student stuck with no advance affordance
+            //     other than the page dots — this is the escape hatch.
+            const nextBtn = document.createElement('button');
+            nextBtn.type = 'button';
+            nextBtn.className = 'screen-reading-btn is-primary';
+            nextBtn.id = 'reading-cp-next-' + i;
+            nextBtn.textContent = RT('btn.next');
+            const shouldShowInitially = readingState.answered[i] && (
+                mode === 'legacy' || readingState.results[i] === false
+            );
+            nextBtn.style.display = shouldShowInitially ? '' : 'none';
+            btnRow.appendChild(nextBtn);
             block.appendChild(btnRow);
 
             const fb = document.createElement('div');
@@ -19700,7 +19725,14 @@ Prezident ertaga hisobot kutmoqda.`,
                 readingState.answers[i] = studentAnswer;
                 readingState.results[i] = Boolean(isCorrect);
                 readingState.feedback[i] = fb.innerHTML;
-                if (nextBtn) nextBtn.style.display = '';
+                // Reveal manual Next when there's no auto-advance:
+                //   - legacy mode: always (current behavior preserved)
+                //   - segment mode + wrong answer: escape hatch — auto-advance
+                //     only fires on correct, so without this the student is
+                //     stuck on a wrong-answer panel with no visible advancer.
+                if (mode === 'legacy' || !isCorrect) {
+                    nextBtn.style.display = '';
+                }
                 updateReadingContinueState();
 
                 // Segment-aware mode: auto-advance after correct via the wave2
@@ -19725,12 +19757,10 @@ Prezident ertaga hisobot kutmoqda.`,
                 }
             });
 
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    if (!readingState.answered[i]) return;
-                    wave2SlideNavigate('reading-stream', +1);
-                });
-            }
+            nextBtn.addEventListener('click', () => {
+                if (!readingState.answered[i]) return;
+                wave2SlideNavigate('reading-stream', +1);
+            });
 
             return block;
         }
@@ -20070,8 +20100,11 @@ Prezident ertaga hisobot kutmoqda.`,
             if (sc) sc.classList.add('active');
             renderConsolidation();
             // Bug #4: hold content + button inert during phase announcement.
+            // Also strip `tm-dock-hidden` defensively — Tile Match's dock-hide
+            // class can leak across phases when the GB exit path bypasses
+            // gbSetButtonNext (the helper that normally auto-clears it).
             if (sc) { sc.style.transition = 'none'; sc.style.opacity = '0'; }
-            btn.classList.remove('pulse', 'state-pill', 'state-line');
+            btn.classList.remove('pulse', 'state-pill', 'state-line', 'tm-dock-hidden');
             btn.classList.add('state-line');
             if (btnText) btnText.style.opacity = '0';
             const handler = () => {
