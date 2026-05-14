@@ -12832,7 +12832,7 @@
             mb: { boxes:[], opened:[], idx:-1, phase:'select', labels:[], pickedLabel:'', idCorrect:null, ansCorrect:null, complete:false, busy:false },
             ttt: { sessionId:null, board:Array(9).fill(''), games:[], gameNum:0, draws:0, losses:0, correct:0, pendingCellIdx:-1, currentItemIdx:0, currentItemId:null, phase:'await-tap', busy:false, complete:false, winLine:null },
             sf: { idx:0, mode:'word_bank', selectedBlank:0, blanks:[], xp:0, pendingFinalize:false, complete:false, busy:false },
-            tm: { tiles:[], pairsTotal:0, matched:0, wrong:0, streak:0, xp:0, selectedLeft:null, busy:false, complete:false, startedAt:null, outcome:null },
+            tm: { tiles:[], pairsTotal:0, matched:0, wrong:0, streak:0, xp:0, selectedLeft:null, busy:false, complete:false, startedAt:null, outcome:null, sessionId:null },
             // Memory Palace (gb-panel-mp, sub-slot 7) — Method of Loci 4-step flow.
             mp: {
                 step: 1,                  // 1..4 (5 = result)
@@ -14480,6 +14480,7 @@
             tm.startedAt = null;
             tm.outcome = null;
             tm._toastTimer = null;
+            tm.sessionId = gbTMSessionId();
 
             const flat = Array.isArray(GB_TILE_MATCH) ? GB_TILE_MATCH : [];
             if (!flat.length) {
@@ -14538,6 +14539,13 @@
                 out[j] = tmp;
             }
             return out;
+        }
+
+        function gbTMSessionId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                try { return 'tm-' + window.crypto.randomUUID(); } catch (e) { /* fallback below */ }
+            }
+            return 'tm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
         }
 
         function gbTMRenderBoard(lefts, rights) {
@@ -14641,6 +14649,7 @@
                     body: JSON.stringify({
                         homework_id: homeworkId,
                         phase: 'tile-match',
+                        session_id: (gbState.tm && gbState.tm.sessionId) || null,
                         left_id: leftId,
                         right_id: rightId,
                     }),

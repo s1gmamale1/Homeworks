@@ -108,6 +108,23 @@ def test_tm_check_answer_correct_pair_returns_correct_true_and_xp(client):
     assert data["total_pairs"] == 4
 
 
+def test_tm_check_answer_same_pair_isolated_by_session_id(client):
+    """A pair solved in one Tile Match run must still be correct in another run."""
+    hw_id = _seed_homework(client)
+    code, data = _post_check(
+        client, hw_id, left_id="tm_001", right_id="tm_001", session_id="sess-A",
+    )
+    assert code == 200, data
+    assert data["correct"] is True
+
+    code, data = _post_check(
+        client, hw_id, left_id="tm_001", right_id="tm_001", session_id="sess-B",
+    )
+    assert code == 200, data
+    assert data["correct"] is True
+    assert data["matched_count"] == 1
+
+
 def test_tm_check_answer_wrong_pair_returns_correct_false_and_hint(client):
     hw_id = _seed_homework(client)
     code, data = _post_check(

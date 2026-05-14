@@ -10,6 +10,7 @@ endpoint (phase='tile-match'):
 - Dispatch branch (subGame===2) routes to gbTMAction / gbAdvanceFromGame(2,...)
 - extract_student_work tile-match extractor reads gbState.tm (not gbState.mm)
 - gbTMCheckPair POSTs phase='tile-match' + left_id + right_id + homework_id
+  + session_id so backend attempt state does not bleed across students/runs
 - Dark-mode CSS overrides (≥15 selectors)
 - i18n keys (tm.*) exist in all three runtime languages (uz/ru/en)
 - No answer-leak attrs in TM panel markup or TM JS layer
@@ -172,6 +173,7 @@ def test_tm_toast_present():
     "pairsTotal:0",
     "selectedLeft:null",
     "complete:false",
+    "sessionId:null",
 ])
 def test_tm_state_slot_in_gbState(field):
     """gbState.tm initial object must contain the expected field."""
@@ -304,7 +306,7 @@ def test_tm_state_machine_functions_present(fn):
 
 
 def test_tm_check_pair_endpoint_contract():
-    """gbTMCheckPair must POST phase='tile-match', left_id, right_id, homework_id."""
+    """gbTMCheckPair must POST phase='tile-match', ids, homework_id, and session_id."""
     html = inject(_empty_content(), runtime_context={"hw_id": "HW-TM-14", "subject": "math-algebra", "grade": 8})
     fn_match = re.search(
         r"async function gbTMCheckPair\([^)]*\)\s*\{[\s\S]*?(?=\n\s{8}(?:async\s+)?function )",
@@ -316,6 +318,23 @@ def test_tm_check_pair_endpoint_contract():
     assert "left_id" in body, "gbTMCheckPair must send left_id"
     assert "right_id" in body, "gbTMCheckPair must send right_id"
     assert "homework_id" in body, "gbTMCheckPair must send homework_id"
+    assert "session_id" in body, "gbTMCheckPair must send session_id to isolate attempt state"
+
+
+def test_tm_init_mints_session_id_before_first_check():
+    """Each Tile Match mount gets a fresh client session id before grading starts."""
+    html = inject(_empty_content(), runtime_context={"hw_id": "HW-TM-14B", "subject": "math-algebra", "grade": 8})
+    init_match = re.search(
+        r"function gbInitTM\(\)\s*\{[\s\S]*?(?=\n\s{8}function gbTMRenderStaticI18n)",
+        html,
+    )
+    assert init_match, "gbInitTM function body not found"
+    body = init_match.group(0)
+    assert "tm.sessionId = gbTMSessionId();" in body, (
+        "gbInitTM must mint a per-run session id so correct matches from a previous run "
+        "cannot make this run's correct answer look wrong"
+    )
+    assert "function gbTMSessionId()" in html, "gbTMSessionId helper missing"
 
 
 # ---------------------------------------------------------------------------
