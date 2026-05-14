@@ -376,6 +376,79 @@ def _verdict_from_gateway(result: BossAnswerCheckResult) -> BossAnswerVerdict:
     )
 
 
+# ---- Deterministic pre-check (hotfix 2026-05-14) --------------------------
+#
+# Boss grading was 100% LLM-judged on origin/server. Students who typed
+# the EXACT canonical answer (e.g. "headache and cold") sometimes still saw
+# the AI mark them wrong — a non-zero LLM error rate × thousands of
+# attempts = real damage to trust during classroom testing.
+#
+# Mirroring the Plan-4 answer-checker (deterministic-first → AI fallback),
+# we now do a normalized exact-match against canonical + accepted_variants
+# BEFORE calling the LLM. If the student typed the unambiguous answer,
+# they get an instant correct verdict with full damage and no LLM call.
+# When the student's text doesn't match exactly, we fall through to the
+# existing LLM-judged path (which handles paraphrases, partial credit,
+# misconception tagging, etc.).
+
+
+def _normalize_for_match(s: str) -> str:
+    """Lowercase + strip + collapse internal whitespace + strip trailing
+    terminal punctuation. Returns empty string for None/non-str inputs.
+    Conservative: does NOT strip percent signs, units, or special chars —
+    if those should be accepted, the rubric author must list them as
+    explicit variants.
+    """
+    if not isinstance(s, str):
+        return ""
+    cleaned = " ".join(s.lower().strip().split())
+    return cleaned.rstrip(".!?;:,").strip()
+
+
+def _accepted_normalized_answers(expected_answer: dict[str, Any]) -> list[str]:
+    """Return the canonical + accepted_variants, normalized, with empties
+    dropped. The single source of truth used by both the deterministic
+    pre-check and the (legacy) LLM-unavailable synthetic_verdict path."""
+    canonical = str(expected_answer.get("canonical") or "")
+    variants = [str(v) for v in (expected_answer.get("accepted_variants") or [])]
+    normalized = [_normalize_for_match(v) for v in [canonical, *variants]]
+    return [v for v in normalized if v]
+
+
+def _deterministic_correct_check(
+    student_answer: str,
+    expected_answer: dict[str, Any],
+) -> Optional[BossAnswerVerdict]:
+    """Return a confident-correct verdict when the student's normalized
+    answer exactly matches the canonical or any accepted variant.
+
+    Returns ``None`` when no exact match — caller falls through to the
+    LLM-judged path. The pre-check NEVER returns ``is_correct=False``;
+    near-misses and paraphrases must still be judged by the LLM (which can
+    award partial credit and tag misconceptions).
+    """
+    sa = _normalize_for_match(student_answer)
+    if not sa:
+        return None
+    accepted = _accepted_normalized_answers(expected_answer)
+    if not accepted or sa not in accepted:
+        return None
+    return BossAnswerVerdict(
+        is_correct=True,
+        score=1.0,
+        confidence=1.0,
+        # Hardcoded Uzbek matches the existing prod synthetic_verdict
+        # pattern. Localization comes via the language banner in the
+        # in-flight Plan-7-follow-up prompt v2; out of hotfix scope.
+        feedback_to_student="✓ Javobingiz to'g'ri.",
+        misconception_tags=[],
+        damage_multiplier=1.0,
+        difficulty_recommendation="stay",
+        should_retry_same_skill=False,
+        ai_unavailable=False,
+    )
+
+
 async def check_boss_answer(
     *,
     question_text: str,
@@ -396,7 +469,21 @@ async def check_boss_answer(
     something). It is NEVER sent to the boss persona / response model. Keep
     that boundary clear if you ever wire the response phrasing through a
     second model call.
+
+    Hotfix 2026-05-14: deterministic pre-check runs first. If the student's
+    answer matches the canonical/variants verbatim (normalized), return
+    a confident correct verdict without consulting the LLM. Falls through
+    to the LLM path only when no exact match — the LLM still handles
+    paraphrases, partial credit, and misconception tagging.
     """
+    deterministic = _deterministic_correct_check(student_answer, expected_answer)
+    if deterministic is not None:
+        _log.info(
+            "boss_deterministic_match session=%s hw=%s answer_chars=%d",
+            session_id, homework_id, len(student_answer or ""),
+        )
+        return deterministic
+
     prompt = _load_prompt("boss-answer-checker")
     payload = {
         "question_text": question_text,
