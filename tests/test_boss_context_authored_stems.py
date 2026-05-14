@@ -297,3 +297,199 @@ def test_build_boss_context_does_not_filter_asked_questions_on_english_homework(
     # English homework: English asked_questions must pass through.
     assert len(ctx.asked_questions) == 1
     assert ctx.asked_questions[0]["question_id"] == "gbq_a"
+
+
+# ---------------------------------------------------------------------------
+# Bug #3 follow-up (2026-05-14) — scrub English snake_case from weak_topics
+# / strong_topics so the LLM never echoes them into target_skill.
+#
+# These tests cover the helper directly. The end-to-end path (boss_sessions
+# DB row → boss_question_generate prompt) is covered by existing live tests
+# of the LLM call; the unit-level scrub guarantee is enforced here.
+# ---------------------------------------------------------------------------
+
+
+def test_scrub_drops_english_snake_case_terms_on_uz_lesson():
+    """The exact tokens observed in production (`sign_error`, `format_error`)
+    on a Uzbek homework must be dropped before the LLM sees them."""
+    from server.services.boss_context_builder import _scrub_english_snake_case_topics
+
+    cleaned = _scrub_english_snake_case_topics(
+        ["sign_error", "format_error", "nisbiy xatolik"],
+        language="uz",
+    )
+    assert "sign_error" not in cleaned
+    assert "format_error" not in cleaned
+    assert "nisbiy xatolik" in cleaned, (
+        "Legitimate Uzbek terms (with spaces) must survive the scrub"
+    )
+
+
+def test_scrub_drops_english_snake_case_terms_on_ru_lesson():
+    """Russian lessons get the same treatment."""
+    from server.services.boss_context_builder import _scrub_english_snake_case_topics
+
+    cleaned = _scrub_english_snake_case_topics(
+        ["measurement_error", "относительная ошибка"],
+        language="ru",
+    )
+    assert "measurement_error" not in cleaned
+    assert "относительная ошибка" in cleaned
+
+
+def test_scrub_keeps_snake_case_on_english_lesson():
+    """English lessons legitimately use snake_case skill identifiers — the
+    scrub must pass them through unchanged."""
+    from server.services.boss_context_builder import _scrub_english_snake_case_topics
+
+    cleaned = _scrub_english_snake_case_topics(
+        ["sign_error", "format_error", "relative_error"],
+        language="en",
+    )
+    assert cleaned == ["sign_error", "format_error", "relative_error"]
+
+
+def test_scrub_skips_filter_when_language_is_none():
+    """When language is unknown (None), the scrub is a no-op rather than
+    silently destroying input topics — caller decides the fallback."""
+    from server.services.boss_context_builder import _scrub_english_snake_case_topics
+
+    cleaned = _scrub_english_snake_case_topics(
+        ["sign_error", "format_error"],
+        language=None,
+    )
+    assert cleaned == ["sign_error", "format_error"]
+
+
+def test_scrub_keeps_single_token_english_terms():
+    """A single-token English word ('measurement') without underscores isn't
+    snake_case — it's a borrowed term that can coexist with Uzbek text.
+    Pattern is conservative: only `word_word_...` shapes are filtered."""
+    from server.services.boss_context_builder import _scrub_english_snake_case_topics
+
+    cleaned = _scrub_english_snake_case_topics(
+        ["measurement", "PISA", "Bloom", "sign_error"],
+        language="uz",
+    )
+    # measurement, PISA, Bloom survive; sign_error is dropped.
+    assert "measurement" in cleaned
+    assert "PISA" in cleaned
+    assert "Bloom" in cleaned
+    assert "sign_error" not in cleaned
+
+
+def test_is_english_snake_case_term_helper():
+    """Sanity check on the underlying detector — pinned so the regex
+    behavior doesn't accidentally widen and start flagging legitimate
+    Uzbek phrases that happen to share a structural prefix."""
+    from server.services.boss_context_builder import _is_english_snake_case_term
+
+    # True cases — canonical snake_case identifiers.
+    assert _is_english_snake_case_term("sign_error") is True
+    assert _is_english_snake_case_term("format_error") is True
+    assert _is_english_snake_case_term("relative_error_calc") is True
+    assert _is_english_snake_case_term("SIGN_ERROR") is True  # case-insensitive
+
+    # False cases — must NOT match.
+    assert _is_english_snake_case_term("nisbiy xatolik") is False  # space
+    assert _is_english_snake_case_term("measurement") is False     # single token
+    assert _is_english_snake_case_term("") is False                # empty
+    assert _is_english_snake_case_term("error-handling") is False  # hyphen
+    assert _is_english_snake_case_term("error_") is False          # trailing underscore (no second token)
+
+
+# ---------------------------------------------------------------------------
+# Bug A (2026-05-14) — strip HTML tags from authored question_text
+#
+# Authored stems written with `<strong>...</strong>` were leaking into the
+# LLM prompt and back to the runtime, which renders via textContent and
+# displays the markup as literal characters. Strip server-side so neither
+# the LLM nor the student ever sees the raw HTML.
+# ---------------------------------------------------------------------------
+
+
+def test_strip_html_tags_removes_emphasis_markup():
+    """The exact case observed in HW-20260513-004."""
+    from server.services.boss_context_builder import _strip_html_tags
+
+    raw = '<strong>Translate to English</strong>, using "have to"'
+    assert _strip_html_tags(raw) == 'Translate to English, using "have to"'
+
+
+def test_strip_html_tags_handles_multiple_tag_types():
+    """<em>, <p>, <br>, self-closing tags — all should be removed."""
+    from server.services.boss_context_builder import _strip_html_tags
+
+    raw = "<p>Hello<br/><em>world</em><br><span class='x'>!</span></p>"
+    assert _strip_html_tags(raw) == "Helloworld!"
+
+
+def test_strip_html_tags_unescapes_entities():
+    """&amp; → &, &lt; → <, &gt; → >, etc."""
+    from server.services.boss_context_builder import _strip_html_tags
+
+    raw = "AT&amp;T &lt;CEO&gt; said &quot;hello&quot;"
+    assert _strip_html_tags(raw) == 'AT&T <CEO> said "hello"'
+
+
+def test_strip_html_tags_preserves_plain_text_unchanged():
+    """No HTML, no change. Idempotent on already-clean text."""
+    from server.services.boss_context_builder import _strip_html_tags
+
+    raw = "Nisbiy xatolikni hisoblang."
+    assert _strip_html_tags(raw) == "Nisbiy xatolikni hisoblang."
+
+
+def test_strip_html_tags_returns_empty_for_none_or_non_string():
+    """Defensive — None, ints, dicts must yield empty string, not raise."""
+    from server.services.boss_context_builder import _strip_html_tags
+
+    assert _strip_html_tags(None) == ""
+    assert _strip_html_tags(42) == ""
+    assert _strip_html_tags({"q": "x"}) == ""
+
+
+def test_build_boss_context_strips_html_from_authored_stems(client):
+    """End-to-end: authored stem with <strong> markup must reach
+    authored_question_stems[].question_text as plain text — the LLM never
+    sees the markup."""
+    payload = {
+        "title": "html-strip test",
+        "subject": "english",
+        "grade": 8,
+        "mode": "hard",
+        "family": "til-fanlar",
+        "content_json": {
+            "title": "html-strip test",
+            "subject": "english",
+            "grade": 8,
+            "language": "en",
+            "boss_questions": [
+                {
+                    "q": "<strong>Translate to English</strong>, using \"have to\"",
+                    "tags": "[Bloom: L3]",
+                    "dmg": 10,
+                },
+            ],
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+
+    ctx = asyncio.run(
+        build_boss_context(
+            session_id="html_strip_sess_001",
+            homework_id=hw_id,
+            asked_questions=[],
+            recent_boss_phrases=[],
+        )
+    )
+
+    assert len(ctx.authored_question_stems) == 1
+    stem_text = ctx.authored_question_stems[0]["question_text"]
+    assert "<strong>" not in stem_text
+    assert "</strong>" not in stem_text
+    assert "Translate to English" in stem_text, (
+        f"text content must survive the strip; got {stem_text!r}"
+    )

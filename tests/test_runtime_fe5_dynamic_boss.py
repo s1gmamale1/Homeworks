@@ -681,3 +681,71 @@ def test_mid_arc_dynamic_failure_ends_gracefully_not_falls_to_authored(perfect_h
         "Mid-arc dynamic failure path must NOT fall back to BOSS_QUESTIONS "
         "indexing — that renders authored REFERENCE questions verbatim"
     )
+
+
+# ---------------------------------------------------------------------------
+# Bug #4 (2026-05-14 audit) — HP / summary mismatch on resumed sessions
+# ---------------------------------------------------------------------------
+
+
+def test_boss_dynamic_start_reads_hp_from_server_response(perfect_homework_html: str):
+    """Bug #4 (2026-05-14): bossDynamicStart used to unconditionally set
+    bossState.hp = res.max_hp, ignoring res.hp. On a RESUMED session where
+    the server already accumulated prior damage (hp < max_hp), this reset
+    the runtime to full HP — making the top HP bar disagree with the result
+    summary. Must read res.hp directly and only fall back to max_hp when
+    the server omits the field."""
+    body = _extract_function_body(perfect_homework_html, "bossDynamicStart")
+    # Must read res.hp from server (preferred) AND res.max_hp (for sizing).
+    assert "res.hp" in body, (
+        "bossDynamicStart must read res.hp from the bossStart response so "
+        "resumed sessions reflect prior damage (Bug #4 fix)"
+    )
+    assert "res.max_hp" in body, "bossDynamicStart must still read res.max_hp"
+    # Specifically: bossState.hp must be assigned from res.hp, NOT from
+    # res.max_hp unconditionally. Locate the assignment and verify the
+    # source side.
+    hp_assignments = re.findall(r"bossState\.hp\s*=\s*([^;]+);", body)
+    assert any("res.hp" in expr for expr in hp_assignments), (
+        f"bossState.hp must be assigned from res.hp on a resume; "
+        f"current assignments: {hp_assignments}"
+    )
+    # Regression guard: must NOT have a top-level `bossState.hp = res.max_hp;`
+    # gated only on max_hp existing (without checking res.hp). Either both
+    # branches assign hp explicitly, or the assignment uses res.hp.
+    forbidden_pattern = re.compile(
+        r"if\s*\(\s*typeof\s+res\.max_hp[^)]*\)\s*\{[^}]*"
+        r"bossState\.hp\s*=\s*res\.max_hp\s*;[^}]*\}",
+        re.DOTALL,
+    )
+    assert not forbidden_pattern.search(body), (
+        "Found the pre-fix pattern where bossState.hp gets unconditionally "
+        "reset to res.max_hp inside the max_hp guard. That's exactly the "
+        "Bug #4 regression — must read res.hp directly."
+    )
+
+
+def test_boss_result_summary_uses_server_authoritative_damage(perfect_homework_html: str):
+    """Bug #4 (2026-05-14): the result card showed 'X HP zarar' (damage
+    dealt) using bossState.damageDealt, a local counter that resets to 0
+    on page refresh / session resume. Top HP bar showed server-authoritative
+    state, so the two displays disagreed (top said 10 HP, summary said
+    50 HP zarar — server-side total was 90). Summary must use
+    (maxHp - hp) which is always server-aligned.
+    """
+    body = _extract_function_body(perfect_homework_html, "bossRenderResult")
+    # The {damage} replacement must derive from (maxHp - hp), not from
+    # bossState.damageDealt directly. Look near the .replace('{damage}', ...) call.
+    damage_replace_idx = body.find("'{damage}'")
+    assert damage_replace_idx >= 0, "result summary must include the {damage} replacement"
+    # Window the surrounding ~300 chars to inspect what the replacement value uses.
+    window = body[max(0, damage_replace_idx - 400):damage_replace_idx + 200]
+    assert "bossState.maxHp" in window and "bossState.hp" in window, (
+        "Summary damage value must derive from (bossState.maxHp - bossState.hp) "
+        "— server-authoritative HP delta — not from the local damageDealt counter"
+    )
+    # Specifically the formula should subtract hp from maxHp.
+    assert re.search(r"bossState\.maxHp[^a-zA-Z0-9_]*-[^a-zA-Z0-9_]*bossState\.hp", window) \
+        or re.search(r"\(.*maxHp.*-.*hp.*\)", window), (
+        "Summary must compute (maxHp - hp), got window:\n" + window
+    )

@@ -901,13 +901,20 @@ def test_append_asked_question_serializes_concurrent_writes(client):
 
 def test_boss_start_archives_stale_active_session_and_spawns_fresh(client):
     """When /boss/start finds an existing active session whose updated_at is
-    older than the staleness threshold (6 hours), it must mark that session
+    older than the staleness threshold (30 minutes), it must mark that session
     as 'abandoned' and create a brand-new row with fresh trials_left and HP.
 
-    This is the fix for the 2026-05-13 bug where multi-day testing on the
-    same (session_id, hw_id) decremented trials_left across runs (each
-    run consumed one trial), eventually starting a new run with trials=0
-    → session 'failed' immediately on Q1 submit → Q2 returned 409."""
+    Bug context (2026-05-14):
+        Threshold was 6 hours originally. A real test on 2026-05-13 had a
+        4h22m gap between two playthroughs of the same homework — well under
+        the 6h window — so the second playthrough silently inherited a session
+        whose trials_left was already depleted from the first. Student got
+        2 questions instead of 5 and the session ended in 'failed' state.
+
+        30 minutes is the new threshold: covers legitimate same-sitting
+        breaks (snack, bathroom, doorbell) without spanning hour-long gaps
+        that a student would mentally count as a separate attempt.
+    """
     import asyncio
     from datetime import datetime, timezone, timedelta
     from server.db import boss_session_repo
@@ -923,8 +930,8 @@ def test_boss_start_archives_stale_active_session_and_spawns_fresh(client):
     first_bsid = first["boss_session_id"]
 
     # Forcibly age the session by writing a stale updated_at directly to DB.
-    # 7 hours ago — well past the 6-hour threshold.
-    stale_ts = (datetime.now(timezone.utc) - timedelta(hours=7)).isoformat()
+    # 45 minutes ago — well past the 30-minute threshold.
+    stale_ts = (datetime.now(timezone.utc) - timedelta(minutes=45)).isoformat()
     import sqlite3
     from server.config import DB_PATH
     con = sqlite3.connect(str(DB_PATH))
@@ -961,7 +968,7 @@ def test_boss_start_archives_stale_active_session_and_spawns_fresh(client):
 
 
 def test_boss_start_reuses_recent_active_session(client):
-    """Counterpart: a session whose updated_at is RECENT (< 6h) must still
+    """Counterpart: a session whose updated_at is RECENT (< 30 min) must still
     be reused per the original idempotence rule (state survives refresh).
     Guards against accidentally making the staleness check fire too eagerly."""
     hw_id = _make_homework(client, hw_id_hint="t_fresh")
@@ -982,6 +989,106 @@ def test_boss_start_reuses_recent_active_session(client):
         "Recent session was NOT reused — staleness check is firing too eagerly. "
         "Idempotence (Plan 5 acceptance test 5) is broken."
     )
+
+
+def test_boss_start_archives_session_aged_just_past_threshold(client):
+    """Boundary test — a session aged 35 minutes (5 min past the 30-min
+    threshold) MUST be archived. Was previously a 6h threshold; a session
+    aged 35 min was incorrectly reused, leading to the 2026-05-13 trial-leak
+    bug. This test guards against the threshold accidentally creeping back
+    up via refactor."""
+    import asyncio
+    from datetime import datetime, timezone, timedelta
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_boundary")
+    sess = "plan5boundary001"
+    _seed_attempts(sess, hw_id)
+
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # 35 min stale — past the 30-min threshold but well short of the old 6h.
+    stale_ts = (datetime.now(timezone.utc) - timedelta(minutes=35)).isoformat()
+    import sqlite3
+    from server.config import DB_PATH
+    con = sqlite3.connect(str(DB_PATH))
+    con.execute(
+        "UPDATE boss_sessions SET updated_at = ? WHERE id = ?",
+        (stale_ts, first_bsid),
+    )
+    con.commit()
+    con.close()
+
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+
+    assert second["boss_session_id"] != first_bsid, (
+        "Session aged 35 min (past 30-min threshold) was reused — would let "
+        "the trial-leak bug regress."
+    )
+
+    old_state = asyncio.run(boss_session_repo.get_boss_session(first_bsid))
+    assert old_state["status"] == "abandoned"
+
+
+def test_boss_start_force_fresh_archives_active_session_regardless_of_age(client):
+    """When the frontend sends `force_fresh=True` (e.g. student clicked an
+    explicit 'Restart boss' / 'New attempt' button), /boss/start must archive
+    any active row for this (session_id, homework_id) regardless of its age
+    and spawn a fresh session. This is the explicit-intent path so the UI
+    can offer a 'Resume or restart?' dialog without fighting the time-based
+    staleness heuristic."""
+    import asyncio
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_fforce")
+    sess = "plan5force001"
+    _seed_attempts(sess, hw_id)
+
+    # First call creates a fresh, very-recent session.
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # Second call with force_fresh=True — must NOT reuse despite session
+    # being seconds old (well within the 30-min staleness window).
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "force_fresh": True,
+    }).json()
+    second_bsid = second["boss_session_id"]
+
+    assert second_bsid != first_bsid, (
+        "force_fresh=True must archive any existing session and spawn fresh, "
+        "even when the existing session is recent."
+    )
+    assert second["trials_left"] == 5
+    assert second["hp"] == 100
+
+    old_state = asyncio.run(boss_session_repo.get_boss_session(first_bsid))
+    assert old_state["status"] == "abandoned"
+
+
+def test_boss_start_force_fresh_works_when_no_existing_session(client):
+    """force_fresh=True on a session that has no active boss row must still
+    create a fresh row (not crash, not 404). The flag is a hint about intent,
+    not a precondition."""
+    hw_id = _make_homework(client, hw_id_hint="t_fnone")
+    sess = "plan5fnone001"
+    _seed_attempts(sess, hw_id)
+
+    resp = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "force_fresh": True,
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["boss_session_id"].startswith("bs_")
+    assert body["hp"] == 100
+    assert body["trials_left"] == 5
 
 
 # ---------------------------------------------------------------------------

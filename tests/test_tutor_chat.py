@@ -650,11 +650,18 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
 
 @patch("server.services.ai_orchestrator.generate")
 def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
-    """Math tutor chat routes through the pro tier model."""
-    captured: dict[str, str] = {}
+    """Math subjects must use the PRO tier (deeper model) to avoid hallucinations.
+
+    Post per-task-routing refactor: gateway hands the orchestrator
+    ``tier="pro"`` and each provider picks its own pro_model. We assert the
+    tier here — the architecturally correct check.
+    """
+    captured: dict[str, object] = {}
 
     def _fake_generate(prompt: str, model: str = None, **kwargs):
         captured["model"] = model
+        captured["tier"] = kwargs.get("tier")
+        captured["preference_override"] = kwargs.get("preference_override")
         return "Try factoring both sides."
 
     mock_generate.side_effect = _fake_generate
@@ -671,20 +678,25 @@ def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
     resp = client.post("/api/ai/tutor/chat", json=payload)
     assert resp.status_code == 200, resp.text
 
-    model = captured.get("model")
-    from server.services import ai_orchestrator
-    assert model == ai_orchestrator.PRO_MODEL, (
-        f"math-algebra tutor chat should use PRO_MODEL/moonshot-v1-128k, got {model}"
+    assert captured.get("tier") == "pro", (
+        f"math-algebra should resolve to pro tier, got {captured.get('tier')!r}"
     )
 
 
 @patch("server.services.ai_orchestrator.generate")
 def test_tutor_chat_uses_gateway_model_policy_for_non_math(mock_generate, client):
-    """Tutor Chat routing is centralized in ai_gateway task policy → pro tier."""
-    captured: dict[str, str] = {}
+    """Tutor Chat routing is centralized in ai_gateway task policy.
+
+    Post per-task-routing refactor: gateway passes ``tier="pro"`` plus the
+    preference list. TUTOR_CHAT is NOT in TASK_PROVIDER_PREFERENCE so it
+    inherits the global default (kimi) — critical to keep cost predictable.
+    """
+    captured: dict[str, object] = {}
 
     def _fake_generate(prompt: str, model: str = None, **kwargs):
         captured["model"] = model
+        captured["tier"] = kwargs.get("tier")
+        captured["preference_override"] = kwargs.get("preference_override")
         return "Good question!"
 
     mock_generate.side_effect = _fake_generate
@@ -727,10 +739,14 @@ def test_tutor_chat_uses_gateway_model_policy_for_non_math(mock_generate, client
     resp = client.post("/api/ai/tutor/chat", json=payload)
     assert resp.status_code == 200, resp.text
 
-    model = captured.get("model")
-    from server.services import ai_orchestrator
-    assert model == ai_orchestrator.PRO_MODEL, (
-        f"tutor_chat should use gateway PRO_MODEL/moonshot-v1-128k policy, got {model}"
+    assert captured.get("tier") == "pro", (
+        f"tutor_chat should resolve to pro tier, got {captured.get('tier')!r}"
+    )
+    # Critical: tutor MUST NOT inherit boss tasks' openai routing — that
+    # would balloon cost + change behavior on non-boss surfaces.
+    assert captured.get("preference_override") == ["kimi"], (
+        "tutor_chat must stay on the global kimi preference (NOT boss's "
+        "openai → kimi chain)."
     )
 
 

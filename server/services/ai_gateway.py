@@ -20,6 +20,7 @@ from typing import Any, Optional, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from . import ai_orchestrator
+from .ai_providers import get_provider, select_provider
 from ..db.ai_call_logs_repo import add_ai_call_log
 from ..schemas.ai_contracts import (
     TutorResponse,
@@ -48,9 +49,14 @@ class AITask(str, Enum):
 
 
 # Task → model tier mapping.
-# - "max" maps to ai_orchestrator.VISION_MODEL (Kimi K2.6 by default)
-# - "pro" maps to ai_orchestrator.PRO_MODEL
-# - "fast" maps to ai_orchestrator.FAST_MODEL
+# - "max" maps to ai_orchestrator.VISION_MODEL (Kimi K2.6 by default).
+#   Currently routes only to Kimi — no OpenAI vision support yet — so
+#   "max" tier bypasses the per-provider preference chain.
+# - "pro" maps to provider.pro_model (per-provider resolution).
+# - "fast" maps to provider.fast_model.
+# Each provider exposes its own pro/fast model identifiers so a cross-
+# provider fallback chain can swap model strings as it walks (post Bug A,
+# 2026-05-14: openai → kimi for boss tasks resolves model per-provider).
 TASK_MODEL_POLICY: dict[AITask, str] = {
     # NOTE: TUTOR_CHAT was briefly routed to "max" (kimi-k2.6) in PR #209 for
     # higher-reasoning replies, but K2.X thinking models can take 30-120s
@@ -69,6 +75,24 @@ TASK_MODEL_POLICY: dict[AITask, str] = {
     AITask.SIMULATION_JUDGE: "pro",
 }
 
+# Per-task provider preference. Overrides the global AI_BACKEND_PREFERENCE
+# env for SPECIFIC tasks while leaving everything else on the global default.
+#
+# Dynamic boss (question generator + answer checker) prefers OpenAI because
+# Kimi's Uzbek competence ceiling produces grammatically rough output and
+# occasional Chinese-glyph leaks on non-English homeworks. OpenAI's
+# gpt-4o-mini handles Uzbek/Russian cleanly at a similar price point.
+#
+# Falls back to Kimi automatically if OPENAI_API_KEY is unset OR if OpenAI
+# 500s / times out, so the boss never hard-fails for the student.
+#
+# Tasks NOT in this map inherit the global AI_BACKEND_PREFERENCE (default
+# ["kimi"]) — so tutor / answer-check / reflection / notebook stay on Kimi.
+TASK_PROVIDER_PREFERENCE: dict[AITask, list[str]] = {
+    AITask.BOSS_QUESTION_GENERATE: ["openai", "kimi"],
+    AITask.BOSS_ANSWER_CHECK: ["openai", "kimi"],
+}
+
 # Default schema mapping for structured outputs. Every AITask that is ever
 # called via generate_structured() must be present here so _task_schema()
 # never silently returns None (which would AttributeError downstream).
@@ -85,13 +109,52 @@ _TASK_SCHEMA: dict[AITask, type[BaseModel]] = {
 }
 
 
-def _resolve_model(task: AITask) -> str:
+def _resolve_task_preference(task: AITask) -> list[str]:
+    """Per-task preference list. Falls back to global AI_BACKEND_PREFERENCE."""
+    return TASK_PROVIDER_PREFERENCE.get(task) or ai_orchestrator._preference_list()
+
+
+def _resolve_task_provider_and_model(task: AITask) -> tuple[str, str, str]:
+    """Return ``(provider_name, model_id, tier)`` for a task.
+
+    Picks the first AVAILABLE provider from the task's preference list, then
+    asks that provider for its own pro/fast model name. The chosen provider
+    is what gets reported in /api/ai/status; the actual call may fall back
+    to a later provider in the chain if the first one errors at runtime.
+    """
     tier = TASK_MODEL_POLICY.get(task, "fast")
+    # "max" tier shortcut — currently Kimi-only (no OpenAI vision support).
+    # Bypasses the per-provider preference chain.
     if tier == "max":
-        return ai_orchestrator.VISION_MODEL
-    if tier == "pro":
-        return ai_orchestrator.PRO_MODEL
-    return ai_orchestrator.FAST_MODEL
+        return "kimi", ai_orchestrator.VISION_MODEL, tier
+    preference = _resolve_task_preference(task)
+    provider = select_provider(preference)
+    if provider is None:
+        # No provider in the per-task chain is available. Surface the legacy
+        # global PRO_MODEL/FAST_MODEL constant so /api/ai/status still
+        # reports something useful (and the eventual call will raise the
+        # standard "No AI backend available" error from the orchestrator).
+        legacy_model = (
+            ai_orchestrator.PRO_MODEL if tier == "pro" else ai_orchestrator.FAST_MODEL
+        )
+        return "none", legacy_model, tier
+    try:
+        model = provider.pro_model if tier == "pro" else provider.fast_model
+    except NotImplementedError:
+        # Provider hasn't exposed tier models; fall back to legacy globals
+        # so we don't crash status reporting on a misconfigured provider.
+        model = (
+            ai_orchestrator.PRO_MODEL if tier == "pro" else ai_orchestrator.FAST_MODEL
+        )
+    return provider.name, model, tier
+
+
+def _resolve_model(task: AITask) -> str:
+    """Legacy single-value resolver kept for back-compat with status callers
+    elsewhere in the codebase. Returns the model id only.
+    """
+    _, model, _ = _resolve_task_provider_and_model(task)
+    return model
 
 
 def _task_schema(task: AITask) -> Optional[type[BaseModel]]:
@@ -156,20 +219,25 @@ async def generate_text(
     prompt_version: Optional[str] = None,
 ) -> str:
     """Generate plain text for a task. Logs the call."""
-    model = _resolve_model(task)
+    provider, model, tier = _resolve_task_provider_and_model(task)
+    preference = _resolve_task_preference(task)
     resolved_prompt_version = prompt_version or DEFAULT_PROMPT_VERSION
     call_id = f"call_{uuid.uuid4().hex[:12]}"
     t0 = time.perf_counter()
-    provider = _active_provider_name()
     fallback_used = False
     success = False
     error_code: Optional[str] = None
     text = ""
 
     try:
+        # Tier mode: each provider in the preference chain picks its own
+        # model name as the orchestrator walks. Logged provider+model
+        # reflect the INTENDED primary; actual provider that answered may
+        # differ on fallback (acceptable for v1 telemetry).
         text = await ai_orchestrator.generate(
             prompt,
-            model=model,
+            tier=tier,
+            preference_override=preference,
             temperature=temperature,
         )
         success = True
@@ -219,11 +287,11 @@ async def generate_structured(
       4. If invalid: one repair retry with validation error context.
       5. If still invalid: raise RuntimeError with AI_PROVIDER_FAILED.
     """
-    model = _resolve_model(task)
+    provider, model, tier = _resolve_task_provider_and_model(task)
+    preference = _resolve_task_preference(task)
     resolved_prompt_version = prompt_version or DEFAULT_PROMPT_VERSION
     call_id = f"call_{uuid.uuid4().hex[:12]}"
     t0 = time.perf_counter()
-    provider = _active_provider_name()
     success = False
     error_code: Optional[str] = None
     raw_text = ""
@@ -246,9 +314,12 @@ async def generate_structured(
                 f"\n\n---\n\nVALIDATION ERRORS (fix these and re-output valid JSON):\n{repair_context}"
             )
 
+        # Tier mode: orchestrator resolves model per-provider so an
+        # `openai → kimi` chain swaps model strings as it walks.
         raw_text = await ai_orchestrator.generate(
             prompt=full_prompt,
-            model=model,
+            tier=tier,
+            preference_override=preference,
             json_mode=True,
             temperature=temperature,
         )
@@ -356,18 +427,32 @@ async def run_guardrail(
 
 
 def get_status() -> dict[str, Any]:
-    """Return resolved effective models for every task."""
-    provider = _active_provider_name()
+    """Return resolved provider+model+tier for every task.
+
+    Post per-task-routing change: `provider` and `model` are resolved
+    per-task (via `_resolve_task_provider_and_model`). Boss tasks may show
+    `openai/gpt-4o-mini` while tutor / answer-check stay on `kimi/moonshot-v1-128k`.
+    """
+    global_provider = _active_provider_name()
     tasks: dict[str, dict[str, str]] = {}
     for task in AITask:
-        model = _resolve_model(task)
-        tasks[task.value] = {
+        provider, model, tier = _resolve_task_provider_and_model(task)
+        task_entry: dict[str, Any] = {
             "provider": provider,
             "model": model,
-            "tier": TASK_MODEL_POLICY.get(task, "fast"),
+            "tier": tier,
         }
+        # Surface per-task preference chain only when it diverges from the
+        # global default so the response stays readable for the common case.
+        if task in TASK_PROVIDER_PREFERENCE:
+            task_entry["preference"] = TASK_PROVIDER_PREFERENCE[task]
+        tasks[task.value] = task_entry
     return {
         "provider_order": ai_orchestrator._preference_list(),
-        "active_provider": provider,
+        "active_provider": global_provider,
+        "task_overrides": {
+            task.value: TASK_PROVIDER_PREFERENCE[task]
+            for task in TASK_PROVIDER_PREFERENCE
+        },
         "tasks": tasks,
     }

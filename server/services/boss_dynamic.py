@@ -41,6 +41,7 @@ from .boss_context_builder import (
     _DIFFICULTY_RANK,
     _ENGLISH_INDICATOR_WORDS,  # re-export for back-compat with existing tests
     _detect_language_drift,    # re-export — canonical home is boss_context_builder
+    _strip_html_tags,          # Bug A defense-in-depth for generated question_text
 )
 
 
@@ -51,7 +52,16 @@ _log = logging.getLogger("nets.boss_dynamic")
 
 PROMPT_VERSION = {
     "boss-question-generator": "v4",
-    "boss-answer-checker": "v1",
+    # boss-answer-checker bumped 2026-05-14:
+    #   v2 (Bug B) — front-loaded language banner so feedback is written in
+    #     the homework's language and misconception_tags avoid English
+    #     snake_case on uz/ru lessons.
+    #   v3 (Bug C) — added "Semantic equivalence" rule 1a so grammatically
+    #     correct variants are accepted even when surface form differs from
+    #     the canonical. Protects students from generator-side rubric typos
+    #     (e.g. "Does he have to come?" being rejected because the LLM-built
+    #     rubric expected literal "has to").
+    "boss-answer-checker": "v3",
     "boss-tutor": "v2",
 }
 
@@ -73,6 +83,14 @@ DEFAULT_DIFFICULTY = "medium"
 _MULTIPLIER_MIN = 0.0
 _MULTIPLIER_MAX = 1.5
 
+# Defensive floors enforced when the LLM verdict has ``is_correct=true``.
+# Without these, the model can return is_correct=true + score<0.60 (or
+# damage_multiplier<1.0) and the student sees "✓ To'g'ri! −0 HP" because
+# calculate_damage's score<0.60 branch returns raw=0. Floor enforced in
+# _verdict_from_gateway. See 2026-05-14 audit bug #2.
+_CORRECT_SCORE_FLOOR = 0.60       # matches calculate_damage's half-damage threshold
+_CORRECT_MULTIPLIER_FLOOR = 1.0   # neutral default; sub-1.0 modifier on a correct answer is nonsensical
+
 
 def calculate_damage(score: float, difficulty: str, multiplier: float = 1.0) -> int:
     """Plan 5 §7 damage table, with a clamped optional multiplier.
@@ -92,6 +110,61 @@ def calculate_damage(score: float, difficulty: str, multiplier: float = 1.0) -> 
         raw = 0
     m = max(_MULTIPLIER_MIN, min(_MULTIPLIER_MAX, float(multiplier or 1.0)))
     return int(round(raw * m))
+
+
+# ---- End-of-boss outcome / stars / XP scoring (Bug #5 fix, 2026-05-14) -----
+#
+# The runtime template expects `outcome` / `stars` / `outcome_xp` on the
+# /boss/submit-answer response when the arc is over, and falls back to
+# 'passing' / 0 / 0 when missing. Prior to this commit the server never
+# emitted them — students saw "+0 XP" and 0 stars even after answering
+# every question correctly.
+
+def compute_boss_outcome(
+    *,
+    hp: int,
+    max_hp: int,
+    correct_count: int,
+    total_attempts: int,
+    hints_used: int,
+    status: str,
+) -> dict[str, Any]:
+    """Return ``{outcome, stars, outcome_xp}`` for a terminal boss session.
+
+    Tier thresholds combine HP retention with correctness — a student who
+    crawled to victory at 5 HP isn't an "expert," and a student who answered
+    perfectly but ran out of trials still earns a "passing" pat on the back.
+
+        - 3 stars / expert: won AND hp_ratio >= 0.70 AND correctness >= 0.80
+        - 2 stars / strong: won AND hp_ratio >= 0.40 AND correctness >= 0.60
+        - 1 star  / passing: won OR correctness >= 0.50
+        - 0 stars / hali_emas: failed AND correctness < 0.50
+
+    XP formula: 50 per correct + int(hp_ratio * 100) bonus - 25 per hint.
+    Floored at 0 so a wholly empty session never produces negative XP.
+    """
+    won = (status == "won")
+    if total_attempts <= 0:
+        return {"outcome": "hali_emas", "stars": 0, "outcome_xp": 0}
+
+    correctness = correct_count / total_attempts
+    hp_ratio = (hp / max_hp) if max_hp > 0 else 0.0
+
+    if won and hp_ratio >= 0.70 and correctness >= 0.80:
+        stars = 3
+    elif won and hp_ratio >= 0.40 and correctness >= 0.60:
+        stars = 2
+    elif won or correctness >= 0.50:
+        stars = 1
+    else:
+        stars = 0
+
+    outcome = {3: "expert", 2: "strong", 1: "passing", 0: "hali_emas"}[stars]
+
+    xp = 50 * correct_count + int(hp_ratio * 100) - 25 * hints_used
+    xp = max(0, xp)
+
+    return {"outcome": outcome, "stars": stars, "outcome_xp": xp}
 
 
 @dataclass
@@ -342,7 +415,14 @@ def _validate_generated_question(
         raise BossQuestionRejected(f"pydantic_validation:{exc}", raw=raw) from exc
 
     # --- Step 2: Business rules ---
-    question_text = parsed.question_text
+    # Bug A (2026-05-14): defense-in-depth strip of any HTML tags the LLM
+    # echoed from authored stems (or invented on its own). The runtime
+    # renders question_text via textContent (XSS guard), so any `<strong>`
+    # / `<em>` etc. would otherwise appear as literal characters. We use
+    # the stripped value from here on — length check, anti-repetition, and
+    # the returned GeneratedBossQuestion all see clean text. Authored stems
+    # are stripped upstream in build_boss_context as well.
+    question_text = _strip_html_tags(parsed.question_text)
     if len(question_text) > max_question_length:
         raise BossQuestionRejected("question_too_long", raw=raw)
 
@@ -660,18 +740,44 @@ class BossAnswerVerdict:
 
 
 def _verdict_from_gateway(result: BossAnswerCheckResult) -> BossAnswerVerdict:
-    """Convert a validated gateway result to the internal dataclass."""
+    """Convert a validated gateway result to the internal dataclass.
+
+    Defensive floors when ``is_correct=true`` (2026-05-14 audit bug #2):
+        - ``score`` floored to ``_CORRECT_SCORE_FLOOR`` (0.60) so
+          calculate_damage doesn't return 0 — the damage formula treats
+          score < 0.60 as a wrong answer and deals no damage. The LLM
+          occasionally returns ``is_correct=true`` with ``score=0.4``
+          (e.g. "answer correct but wording imprecise") which manifests
+          as "✓ To'g'ri! −0 HP" on the student's screen.
+        - ``damage_multiplier`` floored to 1.0 so a correct answer is
+          never penalised by a sub-1.0 modifier. The LLM may recommend
+          multipliers in [0.0, 1.5]; on ``is_correct=true`` we treat any
+          recommendation below 1.0 as semantically inconsistent with the
+          binary correctness signal and clamp to the neutral default.
+
+    When ``is_correct=false``, no floors apply — wrong answers legitimately
+    have low scores and the route layer correctly skips damage.
+    """
     diff_rec = result.difficulty_recommendation
     if diff_rec not in {"increase", "decrease", "stay"}:
         diff_rec = "stay"
+
+    effective_score = float(result.score)
+    effective_multiplier = float(result.damage_multiplier or 1.0)
+    if result.is_correct:
+        if effective_score < _CORRECT_SCORE_FLOOR:
+            effective_score = _CORRECT_SCORE_FLOOR
+        if effective_multiplier < _CORRECT_MULTIPLIER_FLOOR:
+            effective_multiplier = _CORRECT_MULTIPLIER_FLOOR
+
     return BossAnswerVerdict(
         is_correct=result.is_correct,
-        score=result.score,
+        score=effective_score,
         confidence=result.confidence,
         feedback_to_student=result.feedback,
         misconception_tags=list(result.misconception_tags),
         damage_multiplier=max(
-            _MULTIPLIER_MIN, min(_MULTIPLIER_MAX, float(result.damage_multiplier or 1.0))
+            _MULTIPLIER_MIN, min(_MULTIPLIER_MAX, effective_multiplier)
         ),
         difficulty_recommendation=diff_rec,
         should_retry_same_skill=result.should_retry_same_skill,
@@ -686,6 +792,7 @@ async def check_boss_answer(
     student_answer: str,
     target_skill: str,
     difficulty: str,
+    language: Optional[str] = None,
     session_id: Optional[str] = None,
     homework_id: Optional[str] = None,
 ) -> BossAnswerVerdict:
@@ -698,6 +805,12 @@ async def check_boss_answer(
     something). It is NEVER sent to the boss persona / response model. Keep
     that boundary clear if you ever wire the response phrasing through a
     second model call.
+
+    The ``language`` kwarg (Bug B, 2026-05-14) drives the prompt v2 language
+    banner — the checker emits feedback in the homework's language and
+    avoids English snake_case misconception_tags on uz/ru lessons. None is
+    permitted for back-compat with callers that haven't been updated; the
+    prompt falls back to its own heuristic in that case.
     """
     prompt = _load_prompt("boss-answer-checker")
     payload = {
@@ -707,6 +820,7 @@ async def check_boss_answer(
         "student_answer": student_answer,
         "target_skill": target_skill,
         "difficulty": difficulty,
+        "language": language,
     }
     input_section = _build_boss_input_section(payload)
     full_prompt = f"{prompt}\n\n{input_section}"

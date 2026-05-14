@@ -19145,7 +19145,17 @@ Prezident ertaga hisobot kutmoqda.`,
                 bossState.bossSessionId = res.boss_session_id || null;
                 if (typeof res.max_hp === 'number' && res.max_hp >= 10) {
                     bossState.maxHp = res.max_hp;
-                    bossState.hp = res.max_hp;
+                }
+                // Bug #4 fix (2026-05-14): prefer the server's authoritative
+                // `hp` field over res.max_hp. On a RESUMED session the server
+                // returns hp < max_hp (prior damage already accumulated);
+                // unconditionally setting `bossState.hp = res.max_hp` reset
+                // the runtime to full HP and made the summary card disagree
+                // with the top HP bar (server said 10, card said 50).
+                if (typeof res.hp === 'number' && res.hp >= 0) {
+                    bossState.hp = res.hp;
+                } else {
+                    bossState.hp = bossState.maxHp;
                 }
                 if (typeof res.trials_left === 'number') {
                     bossState.trialsLeft = res.trials_left;
@@ -19517,10 +19527,21 @@ Prezident ertaga hisobot kutmoqda.`,
                     total = (typeof BOSS_QUESTIONS !== 'undefined' && Array.isArray(BOSS_QUESTIONS))
                         ? BOSS_QUESTIONS.length : 0;
                 }
+                // Bug #4 fix (2026-05-14): show cumulative damage from
+                // server-authoritative HP delta rather than the local
+                // bossState.damageDealt counter. The counter resets on page
+                // refresh / session resume, producing a summary that
+                // disagrees with the top HP bar (top says 10 HP, summary
+                // says "50 HP zarar" — student dealt 90 HP cumulatively).
+                // Math.max guards against any transient state where hp > maxHp.
+                const cumulativeDamage = Math.max(
+                    0,
+                    (bossState.maxHp || 0) - (bossState.hp || 0)
+                );
                 sumEl.textContent = RT('boss.result.summary')
                     .replace('{correct}', String(bossState.correct || 0))
                     .replace('{total}', String(total))
-                    .replace('{damage}', String(bossState.damageDealt || 0))
+                    .replace('{damage}', String(cumulativeDamage))
                     .replace('{hints}', String(bossState.hintsUsed || 0));
             }
             card.style.display = '';

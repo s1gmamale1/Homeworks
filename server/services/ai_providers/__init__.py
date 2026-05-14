@@ -65,6 +65,7 @@ def available_providers() -> list[str]:
 
 # --- Auto-import concrete providers so they self-register ---
 from . import kimi as _kimi          # noqa: E402, F401
+from . import openai as _openai      # noqa: E402, F401
 
 __all__ = [
     "AIProvider",
