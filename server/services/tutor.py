@@ -249,6 +249,59 @@ def _is_boss(question_id: str, phase: Optional[str]) -> bool:
     return phase == "boss"
 
 
+def _semantic_closed_exact_match(
+    answer_spec: dict,
+    student_answer: str,
+    expected_answers: list[str],
+) -> dict | None:
+    """Accept exact closed-form semantic answers before AI fallback.
+
+    Some closed practice surfaces, especially the legacy Sentence Fill chain,
+    use ``type="semantic"`` only to allow fallback for variants. When the
+    student types the exact blank value, sending that one-word answer to the
+    language rubric can incorrectly reject it as "too brief". Only apply this
+    to explicit non-AMR semantic checks so rubric-scored open answers still
+    receive AI axes.
+    """
+    if not isinstance(answer_spec, dict):
+        return None
+    if answer_spec.get("type") != "semantic" or answer_spec.get("amr") is not False:
+        return None
+
+    candidates: list[str] = []
+    for value in expected_answers or []:
+        if value is not None and str(value).strip():
+            candidates.append(str(value))
+
+    expected = answer_spec.get("expected")
+    if isinstance(expected, list):
+        candidates.extend(str(v) for v in expected if v is not None and str(v).strip())
+    elif expected is not None and str(expected).strip():
+        candidates.append(str(expected))
+
+    canonical = answer_spec.get("canonical_display")
+    if canonical is not None and str(canonical).strip():
+        candidates.append(str(canonical))
+
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = candidate.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        det = answer_checker.check(
+            {
+                "type": "text_exact",
+                "expected": candidate,
+                "canonical_display": candidate,
+            },
+            student_answer,
+        )
+        if det.get("verdict") == "correct":
+            return det
+    return None
+
+
 async def check_answer(
     question_id: str = "",
     question: str = "",
@@ -279,6 +332,9 @@ async def check_answer(
         
     # Step 1: Deterministic check
     det_result = answer_checker.check(answer_spec, student_answer)
+    semantic_exact = _semantic_closed_exact_match(answer_spec, student_answer, expected_answers)
+    if semantic_exact is not None:
+        det_result = semantic_exact
     verdict = det_result.get("verdict")
     
     if verdict in ("correct", "incorrect"):

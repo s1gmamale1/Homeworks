@@ -466,6 +466,37 @@ def test_check_answer_semantic_always_routes_through_ai(mock_generate, client):
 
 
 @patch("server.services.ai_orchestrator.generate_json")
+def test_sentence_fill_closed_semantic_exact_blank_short_circuits_ai(mock_generate, client):
+    """Closed Sentence Fill blanks use semantic fallback for variants, but exact
+    blank values must not be rejected by a full-sentence language rubric."""
+    payload = {
+        "question_id": "wc-homework-1",
+        "question": 'We always say "do homework" — never "make ___".',
+        "student_answer": "homework",
+        "expected_answers": ["homework"],
+        "answer_spec": {
+            "type": "semantic",
+            "expected": "homework",
+            "canonical_display": "homework",
+            "allow_ai_fallback": True,
+            "amr": False,
+        },
+        "phase": "sentence-fill",
+        "subject": "english",
+        "grade": 8,
+    }
+
+    resp = client.post("/api/ai/check-answer", json=payload)
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["correct"] is True
+    assert data["source"] == "deterministic"
+    assert data["score"] == 1.0
+    mock_generate.assert_not_called()
+
+
+@patch("server.services.ai_orchestrator.generate_json")
 def test_sentence_fill_amr_flag_extends_schema(mock_generate, client):
     """When the SF runtime sends answer_spec.amr=true, the grader must
     accept and surface axis_1 / axis_2 in the response so the
