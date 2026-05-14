@@ -56,6 +56,13 @@ def _empty_content():
     }
 
 
+def _css_block(source: str, selector: str) -> str:
+    pattern = re.escape(selector) + r"\s*\{(?P<body>[^}]*)\}"
+    match = re.search(pattern, source)
+    assert match, f"missing CSS block for {selector}"
+    return match.group("body")
+
+
 # ---------------------------------------------------------------------------
 # 1. Panel presence
 # ---------------------------------------------------------------------------
@@ -161,6 +168,24 @@ def test_tm_toast_present():
     toast_tag = toast_match.group(0)
     assert 'role="status"' in toast_tag, '#gb-tm-toast must have role="status"'
     assert 'aria-live="polite"' in toast_tag, '#gb-tm-toast must have aria-live="polite"'
+
+
+def test_tm_toast_is_fixed_to_bottom_feedback_area():
+    """Wrong-match feedback must stay anchored near the viewport bottom."""
+    html = inject(_empty_content(), runtime_context={"hw_id": "HW-TM-7B", "subject": "math-algebra", "grade": 8})
+    body = _css_block(html, ".gb-tm-toast")
+    assert re.search(r"position\s*:\s*fixed\s*;", body), (
+        "#gb-tm-toast must be fixed to the viewport, not absolute inside the scrollable panel"
+    )
+    assert "bottom: calc(92px + var(--safe-bottom, 0px));" in body, (
+        "#gb-tm-toast must sit above the bottom action area and respect safe-area inset"
+    )
+    assert "width: min(calc(100vw - 28px), 420px);" in body, (
+        "#gb-tm-toast must size against the viewport after becoming fixed"
+    )
+    assert "z-index: 1100;" in body, (
+        "#gb-tm-toast must render above the fixed action button layer"
+    )
 
 
 # ---------------------------------------------------------------------------

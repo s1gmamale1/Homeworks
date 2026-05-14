@@ -2762,14 +2762,14 @@
 
         /* ── Toast ── */
         .gb-tm-toast {
-            position: absolute;
-            bottom: 16px;
+            position: fixed;
+            bottom: calc(92px + var(--safe-bottom, 0px));
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             opacity: 0;
             pointer-events: none;
-            z-index: 60;
-            width: min(calc(100% - 28px), 420px);
+            z-index: 1100;
+            width: min(calc(100vw - 28px), 420px);
             padding: 13px 15px;
             border-radius: 20px;
             background: rgba(29,29,31,.86);
