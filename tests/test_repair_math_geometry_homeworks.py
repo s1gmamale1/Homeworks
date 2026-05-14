@@ -173,3 +173,65 @@ def test_repair_homework_only_normalizes_clearly_broken_subject_display():
     assert _needs_subject_display_fix("math-algebra", "math-algebra") is True
     assert _needs_subject_display_fix("math-algebra", "Algebra") is False
     assert _needs_subject_display_fix("geometriya-g7-11", "Geometriya") is False
+
+
+def test_repair_homework_preserves_authored_svg_with_marker_substring():
+    """Authored math/geometry SVG that mentions a marker phrase inside longer
+    text or descriptive content should NOT be classified as a generic
+    placeholder. Prevents the broad-substring overmatch that previously
+    clobbered authored content with the formula-card template SVG.
+    """
+    authored = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+        '<text x="10" y="20">Look at this formula diagram and solve</text>'
+        '<path d="M10 50 L90 50" stroke="blue" stroke-width="2"/>'
+        '<circle cx="50" cy="50" r="40" fill="red"/>'
+        '</svg>'
+    )
+    content = {
+        "meta": {"subject_display": "Algebra"},
+        "panels": [
+            {"pages": [{"blocks": [
+                {"type": "svg", "html": authored},
+                {"type": "image", "src": _big_data_uri()},  # forces the row over the bloat threshold
+            ]}]}
+        ],
+    }
+    repaired_json, _changed, _stats = _repair_homework(json.dumps(content, ensure_ascii=False), "math-algebra")
+    repaired = json.loads(repaired_json)
+    surviving_svg = repaired["panels"][0]["pages"][0]["blocks"][0]["html"]
+    assert surviving_svg == authored, (
+        "Authored SVG with marker as substring of longer text was replaced — "
+        "repair script's _is_generic_placeholder_svg is still too broad."
+    )
+
+
+def test_repair_homework_still_rewrites_bare_marker_placeholder_svg():
+    """Sanity for the tightened predicate: an SVG whose only content is a bare
+    `<text>Homework diagram</text>` (the actual AI placeholder shape) MUST
+    still be rewritten by the repair script.
+    """
+    placeholder = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720">'
+        '<text>Homework diagram</text>'
+        '<text>Formula diagram</text>'
+        '</svg>'
+    )
+    content = {
+        "meta": {"subject_display": "Algebra"},
+        "panels": [
+            {"title": "Ko'phadlarni ajratish", "pages": [{"blocks": [
+                {"type": "svg", "html": placeholder},
+                {"type": "image", "src": _big_data_uri()},
+            ]}]}
+        ],
+    }
+    repaired_json, changed, _stats = _repair_homework(json.dumps(content, ensure_ascii=False), "math-algebra")
+    repaired = json.loads(repaired_json)
+    rewritten = repaired["panels"][0]["pages"][0]["blocks"][0]["html"]
+
+    assert changed is True
+    assert rewritten != placeholder
+    assert "Homework diagram" not in rewritten
+    assert "Formula diagram" not in rewritten
+    assert "Ko'phadlarni ajratish" in rewritten

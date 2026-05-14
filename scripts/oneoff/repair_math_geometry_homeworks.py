@@ -180,12 +180,19 @@ def _static_replacement_for_src(value: Any) -> str | None:
     return None
 
 
+# Match the marker only when it appears as the entire rendered label of an SVG —
+# i.e. the trimmed content of <text>/<title>/<desc>, or the value of aria-label.
+# Substring-anywhere matching was clobbering authored math/geometry SVGs whose
+# longer descriptive text incidentally contained the phrase.
+_GENERIC_PLACEHOLDER_LABEL_RE = re.compile(
+    r"(?:<(?:text|title|desc)\b[^>]*>\s*(?:Homework diagram|Formula diagram|Handdrawn diagram)\s*</(?:text|title|desc)>"
+    r"|\baria-label\s*=\s*[\"']\s*(?:Homework diagram|Formula diagram|Handdrawn diagram)\s*[\"'])",
+    re.IGNORECASE,
+)
+
+
 def _is_generic_placeholder_svg(value: Any) -> bool:
-    return isinstance(value, str) and (
-        "Homework diagram" in value
-        or "Formula diagram" in value
-        or "Handdrawn diagram" in value
-    )
+    return isinstance(value, str) and bool(_GENERIC_PLACEHOLDER_LABEL_RE.search(value))
 
 
 def _has_repairable_img_html(value: Any) -> bool:
