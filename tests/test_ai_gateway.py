@@ -49,16 +49,23 @@ def test_get_status_has_all_tasks():
         assert "tier" in task_info
 
 
-def test_get_status_max_tasks_use_max_model():
+def test_get_status_tutor_chat_uses_pro_model():
+    """TUTOR_CHAT was briefly on the "max" tier (kimi-k2.6) in PR #209 but
+    that model's 30-120s thinking latency tripped the 15s text-path client
+    timeout on every call and surfaced "Tutor backend temporarily unavailable"
+    to students. Reverted to "pro" — guard here so any future re-route is
+    deliberate and paired with a timeout/UX update.
+    """
     status = ai_gateway.get_status()
-    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["tier"] == "max"
-    from server.services.ai_orchestrator import VISION_MODEL
-    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["model"] == VISION_MODEL
+    from server.services.ai_orchestrator import PRO_MODEL
+    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["tier"] == "pro"
+    assert status["tasks"][ai_gateway.AITask.TUTOR_CHAT.value]["model"] == PRO_MODEL
 
 
 def test_get_status_pro_tasks_use_pro_model():
     status = ai_gateway.get_status()
     pro_tasks = [
+        ai_gateway.AITask.TUTOR_CHAT.value,
         ai_gateway.AITask.ANSWER_CHECK.value,
         ai_gateway.AITask.BOSS_QUESTION_GENERATE.value,
         ai_gateway.AITask.FINAL_REPORT.value,
@@ -82,10 +89,12 @@ def test_get_status_fast_tasks_use_fast_model():
 # ---------------------------------------------------------------------------
 
 
-def test_resolve_model_max():
+def test_resolve_model_pro_for_tutor_chat():
+    # Was "max" → VISION_MODEL after PR #209; reverted to "pro" → PRO_MODEL
+    # because K2.X thinking models exceed the 15s text-path client timeout.
     model = ai_gateway._resolve_model(ai_gateway.AITask.TUTOR_CHAT)
-    from server.services.ai_orchestrator import VISION_MODEL
-    assert model == VISION_MODEL
+    from server.services.ai_orchestrator import PRO_MODEL
+    assert model == PRO_MODEL
 
 
 def test_resolve_model_pro():
@@ -118,8 +127,8 @@ async def test_generate_text_delegates_with_correct_model():
     assert result == "Salom!"
     assert mock_gen.called
     call_kwargs = mock_gen.call_args.kwargs
-    from server.services.ai_orchestrator import VISION_MODEL
-    assert call_kwargs["model"] == VISION_MODEL
+    from server.services.ai_orchestrator import PRO_MODEL
+    assert call_kwargs["model"] == PRO_MODEL
 
 
 @pytest.mark.asyncio

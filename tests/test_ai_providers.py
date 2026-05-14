@@ -71,7 +71,7 @@ def test_status_endpoint_matches_documented_plan6_shape(client):
     silently.
     """
     from server.services.ai_gateway import AITask
-    from server.services.ai_orchestrator import VISION_MODEL
+    from server.services.ai_orchestrator import PRO_MODEL
 
     resp = client.get("/api/ai/status")
     assert resp.status_code == 200
@@ -90,8 +90,8 @@ def test_status_endpoint_matches_documented_plan6_shape(client):
         assert set(entry.keys()) >= {"provider", "model", "tier"}
         assert entry["tier"] in ("max", "pro", "fast")
 
-    assert data["tasks"][AITask.TUTOR_CHAT.value]["tier"] == "max"
-    assert data["tasks"][AITask.TUTOR_CHAT.value]["model"] == VISION_MODEL
+    assert data["tasks"][AITask.TUTOR_CHAT.value]["tier"] == "pro"
+    assert data["tasks"][AITask.TUTOR_CHAT.value]["model"] == PRO_MODEL
 
     # Legacy compat fields
     for legacy_key in ("backend", "model_fast", "model_pro", "preference_list"):

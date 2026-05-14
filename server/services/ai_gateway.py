@@ -52,7 +52,14 @@ class AITask(str, Enum):
 # - "pro" maps to ai_orchestrator.PRO_MODEL
 # - "fast" maps to ai_orchestrator.FAST_MODEL
 TASK_MODEL_POLICY: dict[AITask, str] = {
-    AITask.TUTOR_CHAT: "max",
+    # NOTE: TUTOR_CHAT was briefly routed to "max" (kimi-k2.6) in PR #209 for
+    # higher-reasoning replies, but K2.X thinking models can take 30-120s
+    # while the standard Kimi client timeout is 15s — every tutor call timed
+    # out and surfaced "Tutor backend temporarily unavailable" to students.
+    # Reverted to "pro" (moonshot-v1-128k) so replies fit the latency budget.
+    # Re-enabling K2.X tutor chat needs a separate PR that bumps the text
+    # client timeout AND adds a streaming/progress UI for the wait.
+    AITask.TUTOR_CHAT: "pro",
     AITask.ANSWER_CHECK: "pro",
     AITask.BOSS_QUESTION_GENERATE: "pro",
     AITask.BOSS_ANSWER_CHECK: "pro",

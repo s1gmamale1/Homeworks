@@ -1303,7 +1303,7 @@ Reports which AI backend is active plus the resolved effective model for every g
   "provider_order": ["kimi"],
   "active_provider": "kimi",
   "tasks": {
-    "tutor_chat":             {"provider": "kimi", "model": "kimi-k2.6",        "tier": "max"},
+    "tutor_chat":             {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
     "answer_check":           {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
     "boss_question_generate": {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},
     "boss_answer_check":      {"provider": "kimi", "model": "moonshot-v1-128k", "tier": "pro"},

@@ -638,13 +638,19 @@ def test_tutor_assistant_prompt_locks_in_tone_rules():
 
 
 # ---------------------------------------------------------------------------
-# 12. Tutor live chat uses Kimi K2.6 / VISION_MODEL for all subjects
+# 12. Tutor live chat routes through the "pro" tier (moonshot-v1-128k)
+#
+# PR #209 briefly routed TUTOR_CHAT through "max" (kimi-k2.6) for higher
+# reasoning, but K2.X thinking models can take 30-120s while the standard
+# Kimi text-path client timeout is 15s — every tutor call timed out and
+# surfaced "Tutor backend temporarily unavailable" to students. Reverted to
+# "pro" so replies fit the latency budget. Tests here lock in the revert.
 # ---------------------------------------------------------------------------
 
 
 @patch("server.services.ai_orchestrator.generate")
-def test_tutor_chat_uses_k26_model_for_math(mock_generate, client):
-    """Math tutor chat must use the strongest configured Kimi model."""
+def test_tutor_chat_uses_pro_model_for_math(mock_generate, client):
+    """Math tutor chat routes through the pro tier model."""
     captured: dict[str, str] = {}
 
     def _fake_generate(prompt: str, model: str = None, **kwargs):
@@ -667,14 +673,14 @@ def test_tutor_chat_uses_k26_model_for_math(mock_generate, client):
 
     model = captured.get("model")
     from server.services import ai_orchestrator
-    assert model == ai_orchestrator.VISION_MODEL, (
-        f"math-algebra should use VISION_MODEL/Kimi K2.6, got {model}"
+    assert model == ai_orchestrator.PRO_MODEL, (
+        f"math-algebra tutor chat should use PRO_MODEL/moonshot-v1-128k, got {model}"
     )
 
 
 @patch("server.services.ai_orchestrator.generate")
 def test_tutor_chat_uses_gateway_model_policy_for_non_math(mock_generate, client):
-    """Tutor Chat routing is now centralized in ai_gateway task policy."""
+    """Tutor Chat routing is centralized in ai_gateway task policy → pro tier."""
     captured: dict[str, str] = {}
 
     def _fake_generate(prompt: str, model: str = None, **kwargs):
@@ -723,8 +729,8 @@ def test_tutor_chat_uses_gateway_model_policy_for_non_math(mock_generate, client
 
     model = captured.get("model")
     from server.services import ai_orchestrator
-    assert model == ai_orchestrator.VISION_MODEL, (
-        f"tutor_chat should use gateway VISION_MODEL/Kimi K2.6 policy, got {model}"
+    assert model == ai_orchestrator.PRO_MODEL, (
+        f"tutor_chat should use gateway PRO_MODEL/moonshot-v1-128k policy, got {model}"
     )
 
 
