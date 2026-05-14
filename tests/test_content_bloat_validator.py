@@ -423,14 +423,17 @@ def test_patch_extracts_data_uri_from_flashcard_def(client):
 
 
 def test_authored_svg_with_marker_substring_is_preserved(client):
-    """Bug B regression: authored SVG mentioning 'formula diagram' inside longer
-    <text> survives migration unchanged.
+    """Bug B regression: authored SVG mentioning 'Formula diagram' inside longer
+    <text> survives migration unchanged. Uses the EXACT-CASE marker phrase
+    because pre-fix `GENERIC_PLACEHOLDER_MARKERS` substring matching was
+    case-sensitive — a lowercase variant wouldn't actually have tripped the
+    pre-fix code path and thus wouldn't have guarded against re-introduction.
     """
     from server.services.content_media_migration import migrate_content_media
 
     authored = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-        '<text x="10" y="20">Look at this formula diagram and solve</text>'
+        '<text x="10" y="20">Look at this Formula diagram and solve</text>'
         '<circle cx="50" cy="50" r="40" fill="red"/>'
         '</svg>'
     )
@@ -470,11 +473,13 @@ def test_placeholder_svg_with_bare_marker_still_rewrites(client):
 def test_authored_svg_with_marker_inside_aria_label_text_is_preserved():
     """Bug B regression: an authored SVG whose aria-label contains the phrase
     as part of a longer description should NOT trip the placeholder check.
+    Uses exact-case "Formula diagram" so the test actually fails on pre-fix
+    code (substring match was case-sensitive).
     """
     from server.services.content_media_migration import migrate_content_media
 
     authored = (
-        '<svg xmlns="http://www.w3.org/2000/svg" aria-label="My formula diagram with sin(x)" viewBox="0 0 100 100">'
+        '<svg xmlns="http://www.w3.org/2000/svg" aria-label="My Formula diagram with sin(x)" viewBox="0 0 100 100">'
         '<path d="M10 10 L90 90" stroke="blue"/>'
         '</svg>'
     )
@@ -483,3 +488,28 @@ def test_authored_svg_with_marker_inside_aria_label_text_is_preserved():
     )
     assert stats.generic_svgs_rewritten == 0
     assert migrated["media"]["html"] == authored
+
+
+def test_walk_strips_lan_url_alongside_img_in_same_string():
+    """LAN-prefixed /generated/ URLs in non-<img> markup (e.g. <a href=…>) must
+    be normalized to relative paths even when the same string also contains an
+    <img> tag the rich-field extraction handler picks up. Pre-fix the string
+    short-circuited into the img-only extractor before _normalize_generated_url
+    ran on the surrounding text.
+    """
+    from server.services.content_media_migration import migrate_content_media
+
+    mixed = (
+        '<p>See ref: <a href="http://192.168.1.87:8000/generated/old.png">link</a> '
+        'and image: <img src="/generated/already-relative.png" alt="">'
+        '</p>'
+    )
+    content = {"boss_questions": [{"id": "bq_0", "q": mixed, "ans": ["x"]}]}
+    migrated, _, stats = migrate_content_media(
+        content, subject="math-algebra", hw_id="HW-LAN", write_files=False
+    )
+    saved_q = migrated["boss_questions"][0]["q"]
+    assert "http://192.168.1.87:8000" not in saved_q
+    assert "/generated/old.png" in saved_q
+    assert "/generated/already-relative.png" in saved_q
+    assert stats.generated_urls_normalized >= 1

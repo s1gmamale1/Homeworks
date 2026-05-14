@@ -278,15 +278,18 @@ def _walk(node: Any, subject: str, hw_id: str | None, breadcrumbs: list[str], st
         return [_walk(item, subject, hw_id, breadcrumbs, stats, write_files=write_files) for item in node]
 
     if isinstance(node, str):
+        # Normalize absolute LAN /generated/ URLs first, regardless of what
+        # else is in the string. This catches LAN-prefixed refs that live in
+        # <a href="…">, prose, or anywhere the <img>-scan won't reach.
+        normalized, count = _normalize_generated_url(node)
+        stats.generated_urls_normalized += count
         # Rich-field editors (boss.q, real_life.q1.q, flashcards.def, …) store
         # editor HTML under arbitrary keys, not just `html`/`text`. Any string
         # leaf carrying an <img> tag may hold a data URI that must be extracted
         # before _check_no_inline_bloat runs — otherwise PUT fails with 422.
-        if IMG_TAG_RE.search(node):
+        if IMG_TAG_RE.search(normalized):
             label = _guess_label(None, breadcrumbs, subject)
-            return _replace_img_srcs_in_html(node, subject, label, hw_id, stats, write_files=write_files)
-        normalized, count = _normalize_generated_url(node)
-        stats.generated_urls_normalized += count
+            return _replace_img_srcs_in_html(normalized, subject, label, hw_id, stats, write_files=write_files)
         if _is_svg_data_uri(normalized):
             stats.svg_data_uris_decoded += 1
             svg = _decode_svg_data_uri(normalized)

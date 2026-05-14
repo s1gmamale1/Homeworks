@@ -180,10 +180,13 @@ def test_repair_homework_preserves_authored_svg_with_marker_substring():
     text or descriptive content should NOT be classified as a generic
     placeholder. Prevents the broad-substring overmatch that previously
     clobbered authored content with the formula-card template SVG.
+    Uses exact-case "Formula diagram" — pre-fix substring match was
+    case-sensitive, so a lowercase variant wouldn't have failed pre-fix and
+    wouldn't actually guard the regression.
     """
     authored = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-        '<text x="10" y="20">Look at this formula diagram and solve</text>'
+        '<text x="10" y="20">Look at this Formula diagram and solve</text>'
         '<path d="M10 50 L90 50" stroke="blue" stroke-width="2"/>'
         '<circle cx="50" cy="50" r="40" fill="red"/>'
         '</svg>'
