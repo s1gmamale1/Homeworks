@@ -83,3 +83,10 @@ SENTENCE_FILL_BACKEND_PLAN.md
 # Architectural rework planning docs (kept local; not part of the codebase)
 /homeworks_ai_architecture_plan_pr169_adjusted/
 .mcp.json
+
+# DB backups (one-shot migration snapshots like mojibake repair 2026-05-13)
+nets.db.bak.*
+
+# Uvicorn run logs from local dev (caught by *.log too, but explicit for clarity)
+uvicorn.stdout.log
+uvicorn.stderr.log

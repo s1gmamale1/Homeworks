@@ -9,6 +9,7 @@ the prompt or leak answers into a model that must not see them.
 """
 from __future__ import annotations
 
+import html as _html_lib
 import re
 from dataclasses import dataclass, asdict, field
 from typing import Optional, Any
@@ -16,6 +17,31 @@ from typing import Optional, Any
 from ..db.homework_repo import get_homework
 from ..db.attempts_repo import list_phase_attempts
 from ..db.session_metrics_repo import get_session_metrics
+
+
+# Bug A (2026-05-14 audit): authored boss_questions occasionally contain
+# inline HTML markup the author used for visual emphasis
+# (e.g. "<strong>Translate to English</strong>"). The LLM mirrors those
+# tags into generated question_text, and the runtime renders question text
+# via textContent (XSS safety) so the markup appears as literal characters
+# on the student's screen. Strip server-side at every boundary where
+# authored or LLM-generated question_text touches our pipeline.
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _strip_html_tags(text: str) -> str:
+    """Remove HTML tags and unescape entities from ``text``. Always returns a
+    string (empty when input is None/non-str). Does NOT preserve formatting
+    — author's <strong>/<em>/<br> intent is dropped so the runtime sees clean
+    text. Safe for use on both authored-stem extraction and post-generation
+    question_text validation.
+    """
+    if not isinstance(text, str):
+        return ""
+    stripped = _HTML_TAG_RE.sub("", text)
+    # Unescape after strip so an entity inside a tag attribute doesn't get
+    # un-escaped into a stray quote/bracket.
+    return _html_lib.unescape(stripped).strip()
 
 
 # Fields the LLM must never see, anywhere in the boss context.
@@ -59,6 +85,45 @@ _ENGLISH_INDICATOR_WORDS = frozenset({
     "if", "then", "than", "from",
 })
 
+# English snake_case identifier pattern. Catches things like "sign_error",
+# "format_error", "relative_error", "linear_eq" — the style the LLM defaults
+# to for "skill tags" because its training corpus is full of code-style
+# identifiers. Doesn't fire on legitimate Uzbek skill names ("nisbiy xatolik")
+# because those use spaces, not underscores.
+#
+# 2026-05-14 follow-up to Bug #3: this pattern is NO LONGER used to reject
+# output generations (that produced 502s when the LLM persisted). Instead
+# it's used as an INPUT filter — we scrub English snake_case from
+# weak_topics/strong_topics before feeding them to the LLM, so the model
+# can't mirror the English back into target_skill. See
+# _scrub_english_snake_case_topics below + the prompt's "skill tag" framing
+# is the underlying reason the LLM reaches for snake_case.
+_ENGLISH_SNAKE_CASE_RE = re.compile(r"^[a-z]+(_[a-z]+)+$")
+
+
+def _is_english_snake_case_term(term: str) -> bool:
+    """True if ``term`` matches the English snake_case identifier pattern."""
+    if not isinstance(term, str):
+        return False
+    return bool(_ENGLISH_SNAKE_CASE_RE.match(term.strip().lower()))
+
+
+def _scrub_english_snake_case_topics(
+    topics: list[str], language: Optional[str]
+) -> list[str]:
+    """For uz/ru lessons, drop English snake_case identifiers from a topics
+    list before they reach the LLM prompt. Root cause of Bug #3 (2026-05-14):
+    the boss-question-generator prompt tells the LLM to "target weak_topics[0]"
+    and the LLM mirrors the value verbatim into ``target_skill``. Feeding it
+    ``"sign_error"`` guarantees an English skill name in the output. Cleaning
+    the INPUT side is the only way to break the echo cycle without rejecting
+    valid generations server-side. For English homeworks, snake_case skill
+    names are fine and pass through unchanged.
+    """
+    if language not in ("uz", "uz-cyrl", "ru"):
+        return list(topics)
+    return [t for t in topics if not _is_english_snake_case_term(t)]
+
 
 def _detect_language_drift(
     question_text: str,
@@ -67,9 +132,18 @@ def _detect_language_drift(
 ) -> Optional[str]:
     """Return a short reason string if the generated text appears to be
     English when the homework language is uz/ru; otherwise None.
+
+    Only checks **English function-word density** across question_text +
+    target_skill — threshold of 3+ hits, so a single borrowed word ("error",
+    "PISA") doesn't trip the check. Snake_case-only target_skill values
+    (e.g. "sign_error") are NOT a rejection signal here — they're scrubbed at
+    the input side via :func:`_scrub_english_snake_case_topics` before the
+    LLM ever sees them, which prevents the echo loop without producing 502s
+    when the LLM persists with English identifiers.
     """
     if expected_language not in ("uz", "uz-cyrl", "ru"):
         return None
+
     combined = f"{question_text} {target_skill}".lower()
     tokens = re.findall(r"\b[a-z]+\b", combined)
     if not tokens:
@@ -292,13 +366,18 @@ async def build_boss_context(
         if not isinstance(q, dict):
             continue
         scrubbed = _scrub_dict(q)  # strips expected/ans/accepted_answers/answer_spec
+        # Bug A (2026-05-14): strip HTML from authored question text BEFORE
+        # the LLM sees it. Authors sometimes write `<strong>Translate</strong>`
+        # for visual emphasis; the LLM mirrors the tags into its output and
+        # the runtime renders via textContent → student sees raw markup.
+        raw_question_text = str(scrubbed.get("q") or scrubbed.get("prompt") or "")
         stem = {
             "question_text": _truncate(
-                str(scrubbed.get("q") or scrubbed.get("prompt") or ""),
+                _strip_html_tags(raw_question_text),
                 _MAX_QUESTION_TEXT_LEN,
             ),
             "tags": str(scrubbed.get("tags") or "")[:200],
-            "hint": _truncate(str(scrubbed.get("hint") or ""), 200),
+            "hint": _truncate(_strip_html_tags(str(scrubbed.get("hint") or "")), 200),
             "authored_difficulty": _dmg_to_difficulty(scrubbed.get("dmg")),
         }
         if stem["question_text"]:
@@ -316,6 +395,37 @@ async def build_boss_context(
 
     phase_summaries = _phase_summary_from_attempts(attempts)
     weak_topics, strong_topics = _aggregate_topics(phase_summaries)
+
+    # Bug #3 follow-up (2026-05-14): scrub English snake_case identifiers
+    # (e.g. "sign_error", "format_error") from EVERY topics list fed to the
+    # LLM on uz/ru lessons. The LLM mirrors weak_topics[0] verbatim into
+    # target_skill — feeding it an English token guarantees an English skill
+    # tag in the output even with the prompt v4 "use the homework language"
+    # banner. Cleaning the input prevents the echo loop without producing
+    # 502s when output validation would otherwise have to reject persistent
+    # English from the model.
+    #
+    # Scrubbed at three places: the aggregate weak_topics / strong_topics
+    # AND each phase_summary's per-phase weak_topics / strong_topics
+    # (the prompt's "Allowed inputs" exposes both).
+    _input_language = (
+        content_json.get("language") or (hw or {}).get("language") or None
+    )
+    if not _input_language:
+        _input_language = _infer_language_from_subject(
+            content_json.get("subject") or (hw or {}).get("subject")
+        )
+    weak_topics = _scrub_english_snake_case_topics(weak_topics, _input_language)
+    strong_topics = _scrub_english_snake_case_topics(strong_topics, _input_language)
+    for ps in phase_summaries:
+        if isinstance(ps.get("weak_topics"), list):
+            ps["weak_topics"] = _scrub_english_snake_case_topics(
+                ps["weak_topics"], _input_language
+            )
+        if isinstance(ps.get("strong_topics"), list):
+            ps["strong_topics"] = _scrub_english_snake_case_topics(
+                ps["strong_topics"], _input_language
+            )
 
     metrics: dict[str, Any] = {}
     if session_id and homework_id:
@@ -335,9 +445,9 @@ async def build_boss_context(
     # in-context-learning signal and pull subsequent generations toward
     # English even with the v3+ language directive. The drift detector is
     # the same one used for live output validation.
-    expected_language = (
-        content_json.get("language") or (hw or {}).get("language") or None
-    )
+    # Reuses the language already inferred above (with subject fallback for
+    # null content_json.language).
+    expected_language = _input_language
     candidate_qs: list[dict[str, Any]] = []
     for q in (asked_questions or []):
         if not isinstance(q, dict):

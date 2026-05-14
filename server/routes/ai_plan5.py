@@ -42,6 +42,13 @@ class BossStartRequest(BaseModel):
     max_hp: int = Field(default=100, ge=10, le=1000)
     trials_left: int = Field(default=7, ge=1, le=30)
     initial_difficulty: str = "medium"
+    # 2026-05-14: explicit-intent flag — when True, /boss/start archives any
+    # active row for this (session_id, homework_id) regardless of its age and
+    # spawns a fresh session. Frontend should send this when the student
+    # clicks an explicit "Restart boss" / "New attempt" action so trials_left
+    # is reset cleanly. Default False preserves the legacy resume-on-refresh
+    # behavior for the staleness window.
+    force_fresh: bool = False
 
 
 class BossStartResponse(BaseModel):
@@ -89,6 +96,14 @@ class BossSubmitAnswerResponse(BaseModel):
     boss_status: str  # "active" | "won" | "failed"
     should_retry_same_skill: bool
     misconception_tags: list[str]
+    # End-of-boss outcome (Bug #5 fix, 2026-05-14). Optional fields populated
+    # only on terminal status transitions ('won' / 'failed'). The runtime
+    # reads these to render the result card's star count + XP pill; previously
+    # the server never sent them and students saw 0 stars / +0 XP even after
+    # answering every question correctly.
+    outcome: Optional[str] = None       # "expert" | "strong" | "passing" | "hali_emas"
+    stars: Optional[int] = None         # 0–3
+    outcome_xp: Optional[int] = None    # cumulative XP awarded
 
 
 class BossStateRequest(BaseModel):
@@ -122,18 +137,20 @@ def _boss_state_to_response(state: dict[str, Any], extra: dict[str, Any] | None 
     return out
 
 
-# Boss session staleness (2026-05-13 audit fix).
+# Boss session staleness (2026-05-13 audit fix; 2026-05-14 tightened).
 #
 # A boss_sessions row in status='active' is reused by /boss/start to preserve
 # state across page refreshes. But "page refresh" was the only intended use
-# case — multi-day testing made the same row outlive its useful lifetime,
-# depleting trials_left, accumulating asked_question_ids, and trapping the
-# next playthrough in a 'failed' state before Q1 even rendered.
+# case — same-day testing across hours quietly accumulated trials_left
+# depletion. Student starts the boss, gets 2 questions instead of 5, because
+# 3 trials were consumed during an earlier abandoned attempt.
 #
-# 6 hours is conservative: long enough to cover legitimate "student takes
-# a break mid-homework," short enough to auto-archive sessions abandoned
-# overnight or across days.
-_SESSION_STALE_AFTER_SECONDS = 6 * 60 * 60  # 6 hours
+# 30 minutes is the new threshold: covers legitimate breaks (snack, bathroom,
+# answering the door) without spanning multi-hour gaps that the student would
+# mentally consider a separate attempt. Pair with the new `force_fresh` flag
+# on BossStartRequest — frontend can send it explicitly when the student
+# clicks "Restart boss" or after a "Resume / New attempt" dialog.
+_SESSION_STALE_AFTER_SECONDS = 30 * 60  # 30 minutes (was 6 hours)
 
 
 def _is_session_fresh(state: dict[str, Any]) -> bool:
@@ -244,7 +261,7 @@ async def boss_start(req: BossStartRequest):
     # older than _SESSION_STALE_AFTER_SECONDS as abandoned and fall through
     # to spawning a fresh row.
     existing = await boss_session_repo.get_active_boss_session_for(req.session_id, req.homework_id)
-    if existing and _is_session_fresh(existing):
+    if existing and not req.force_fresh and _is_session_fresh(existing):
         return BossStartResponse(
             boss_session_id=existing["id"],
             hp=existing["hp"],
@@ -256,18 +273,20 @@ async def boss_start(req: BossStartRequest):
             missing_context_flags=[],
         )
     if existing:
-        # Stale — mark abandoned so the next get_active query skips it, and
-        # fall through to create a fresh session row.
+        # Stale OR caller explicitly asked for a fresh session — mark
+        # abandoned so the next get_active query skips it, and fall through
+        # to create a fresh session row.
+        reason = "force_fresh" if req.force_fresh else "stale"
         try:
             await boss_session_repo.update_boss_session(
                 existing["id"], status="abandoned",
             )
             _log.info(
-                "boss_session_archived_stale id=%s updated_at=%s",
-                existing["id"], existing.get("updated_at"),
+                "boss_session_archived id=%s reason=%s updated_at=%s",
+                existing["id"], reason, existing.get("updated_at"),
             )
         except Exception as exc:
-            _log.warning("failed to archive stale boss session: %s", exc)
+            _log.warning("failed to archive boss session: %s", exc)
 
     ctx = await boss_context_builder.build_boss_context(
         req.session_id, req.homework_id,
@@ -402,6 +421,21 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
             "code": "BOSS_Q_NOT_FOUND",
         })
 
+    # Bug B (2026-05-14): pass the homework's language to the answer-checker
+    # so feedback comes back in the student's language (not "typically Uzbek"
+    # like the v1 prompt hardcoded) and misconception_tags avoid English
+    # snake_case on uz/ru. Falls back to subject-inferred language when
+    # content_json.language is null (same logic as boss_context_builder).
+    homework = await db.get_homework(state["homework_id"])
+    content_json = (homework or {}).get("content_json") or {}
+    answer_language = (
+        content_json.get("language") or (homework or {}).get("language") or None
+    )
+    if not answer_language:
+        answer_language = boss_context_builder._infer_language_from_subject(
+            content_json.get("subject") or (homework or {}).get("subject")
+        )
+
     verdict = await boss_dynamic.check_boss_answer(
         question_text=q["question_text"],
         expected_answer=q["expected_answer"],
@@ -409,6 +443,9 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
         student_answer=req.student_answer,
         target_skill=(q.get("topic_tags") or [""])[0],
         difficulty=state["current_difficulty"],
+        language=answer_language,
+        session_id=state["session_id"],
+        homework_id=state["homework_id"],
     )
 
     damage = boss_dynamic.calculate_damage(
@@ -455,13 +492,47 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
         state["current_difficulty"], verdict.score, streaks,
     )
 
-    # Resolve boss outcome.
+    # Resolve boss arc state-machine status. NOTE (Bug #6, 2026-05-14):
+    # `boss_status` is a state-machine label describing how the arc ended —
+    # 'won' (HP went to 0), 'failed' (trials ran out before HP did), 'active'
+    # (arc still ongoing). It is NOT a value judgment of the student's
+    # performance. The runtime never shows this string to the student
+    # directly; it only uses it to decide *when* to fire the result card.
+    # The student-facing tier ('expert' / 'strong' / 'passing' / 'hali_emas')
+    # is computed below by compute_boss_outcome from correctness + HP, so a
+    # 'failed' arc with strong performance correctly shows as 'passing' on
+    # the result card. The two concepts disagree by design.
     if new_hp <= 0:
         new_status = "won"
     elif new_trials <= 0:
         new_status = "failed"
     else:
         new_status = "active"
+
+    # Bug #5 fix (2026-05-14): compute outcome/stars/XP when the arc ends so
+    # the runtime can render the result card with real numbers. Previously
+    # these fields were missing → runtime defaulted to 0 stars / +0 XP.
+    outcome_payload: dict[str, Any] = {}
+    if new_status != "active":
+        correct_count = sum(1 for a in all_attempts if a.get("correct") == 1)
+        # Include THIS attempt — it's the one that triggered the transition
+        # and hasn't been listed by list_phase_attempts above (chronological
+        # ordering means the current row may not yet be visible in some
+        # backends). Safe to count it from `verdict.is_correct`.
+        if all_attempts and all_attempts[-1].get("id") == attempt_id:
+            total_attempts = len(all_attempts)
+        else:
+            total_attempts = len(all_attempts) + 1
+            if verdict.is_correct:
+                correct_count += 1
+        outcome_payload = boss_dynamic.compute_boss_outcome(
+            hp=new_hp,
+            max_hp=state["max_hp"],
+            correct_count=correct_count,
+            total_attempts=total_attempts,
+            hints_used=0,  # TODO: thread hints_used through boss_sessions
+            status=new_status,
+        )
 
     updated = await boss_session_repo.update_boss_session(
         req.boss_session_id,
@@ -500,6 +571,9 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
         boss_status=new_status,
         should_retry_same_skill=verdict.should_retry_same_skill,
         misconception_tags=verdict.misconception_tags,
+        outcome=outcome_payload.get("outcome"),
+        stars=outcome_payload.get("stars"),
+        outcome_xp=outcome_payload.get("outcome_xp"),
     )
 
 

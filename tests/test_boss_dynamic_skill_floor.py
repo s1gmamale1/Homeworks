@@ -478,6 +478,177 @@ def test_detect_language_drift_skipped_for_english_homework():
     assert reason is None
 
 
+# ---------------------------------------------------------------------------
+# Bug #3 follow-up (2026-05-14) — snake_case is an INPUT problem, not an
+# OUTPUT validation problem.
+#
+# Pre-fix: _detect_language_drift flagged English snake_case in target_skill
+# and triggered a hard reject on output. When the LLM persisted with English
+# (because weak_topics[0] was already English snake_case in the input), the
+# retry also produced snake_case → 502 → boss session ends mid-arc.
+#
+# Post-fix: snake_case is scrubbed at the INPUT side in
+# boss_context_builder.build_boss_context — weak_topics like "sign_error"
+# never reach the LLM, so it never echoes them. _detect_language_drift now
+# only checks function-word density (the legitimate "wholesale drift to
+# English" signal). Snake_case in target_skill is no longer a rejection.
+# ---------------------------------------------------------------------------
+
+
+def test_detect_language_drift_does_not_reject_snake_case_alone():
+    """Bug #3 follow-up: snake_case-only target_skill on uz/ru lesson must
+    NOT trip drift detection. We handle this via input scrubbing instead
+    (see test_boss_context_authored_stems.py for the input-side coverage).
+    Pre-fix produced 502s when the LLM persisted with English skill names."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="100 gramm dorida nisbiy xatolikni foizda toping.",
+        target_skill="sign_error",
+        expected_language="uz",
+    )
+    assert reason is None, (
+        "Snake_case in target_skill alone must NOT trigger drift rejection; "
+        "the question_text is clean Uzbek. Input-side scrubbing prevents the "
+        "English echo cycle without producing 502s."
+    )
+
+
+def test_detect_language_drift_does_not_flag_uzbek_space_separated_target_skill():
+    """A legitimate Uzbek target_skill ('nisbiy xatolik') has a SPACE, not an
+    underscore — and the question_text is clean Uzbek. No drift."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="Nisbiy xatolikni hisoblang.",
+        target_skill="nisbiy xatolik",
+        expected_language="uz",
+    )
+    assert reason is None
+
+
+def test_detect_language_drift_does_not_flag_single_token_target_skill():
+    """A single ASCII token (e.g. 'measurement') with clean Uzbek question
+    text must not trip — borrowed single English terms are tolerated."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="O'lchov xatoligini toping.",
+        target_skill="measurement",
+        expected_language="uz",
+    )
+    assert reason is None
+
+
+def test_detect_language_drift_does_not_flag_snake_case_on_english_homework():
+    """On an English homework, snake_case skill names are correct — guard
+    short-circuits on non-uz/ru languages."""
+    reason = boss_dynamic._detect_language_drift(
+        question_text="Find the relative error of the measurement.",
+        target_skill="sign_error",
+        expected_language="en",
+    )
+    assert reason is None
+
+
+def test_validate_generated_question_accepts_clean_uzbek_with_snake_case_skill():
+    """Bug #3 follow-up regression: a Uzbek question_text with an English
+    snake_case target_skill must validate cleanly. Pre-fix this raised
+    BossQuestionRejected and produced 502s when the LLM retry also kept
+    snake_case. Post-fix, input scrubbing is the only defense and snake_case
+    on output is accepted (cosmetic metadata only)."""
+    raw = {
+        "question_text": "100 gramm dorida nisbiy xatolikni foizda toping.",
+        "expected_answer": {"canonical": "5%"},
+        "rubric": {"full_credit": ["5%"]},
+        "target_skill": "format_error",
+        "difficulty": "medium",
+    }
+    # Must NOT raise — only function-word density triggers a reject now.
+    result = boss_dynamic._validate_generated_question(
+        raw,
+        asked_questions=[],
+        stems=[],
+        pool_max=None,
+        expected_language="uz",
+    )
+    assert result.target_skill == "format_error"
+
+
+def test_validate_generated_question_still_rejects_full_english_drift_on_uz_homework():
+    """Defense against the OTHER drift mode — when the LLM goes fully English
+    (function-word density >= 3 in question_text), the validator must still
+    reject. This is the legitimate "wholesale language drift" we keep
+    rejecting after the snake_case branch was removed."""
+    raw = {
+        "question_text": "A student measures the length of a school bench with a ruler.",
+        "expected_answer": {"canonical": "0.5"},
+        "rubric": {"full_credit": ["0.5"]},
+        "target_skill": "measurement",
+        "difficulty": "medium",
+    }
+    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+        boss_dynamic._validate_generated_question(
+            raw,
+            asked_questions=[],
+            stems=[],
+            pool_max=None,
+            expected_language="uz",
+        )
+    assert "language_drift" in str(exc.value)
+
+
+# ---------------------------------------------------------------------------
+# Bug A (2026-05-14) — _validate_generated_question strips HTML tags from
+# LLM-generated question_text as defense in depth. Authored stems are
+# stripped upstream in build_boss_context too; this is the safety net for
+# anything the LLM injects on its own.
+# ---------------------------------------------------------------------------
+
+
+def test_validate_generated_question_strips_html_tags_from_question_text():
+    """If the LLM echoes `<strong>...</strong>` from an authored stem (or
+    invents inline markup), the validator must return clean text. Runtime
+    renders via textContent so any surviving tag becomes a literal character
+    on the student's screen."""
+    raw = {
+        "question_text": "<strong>Translate to English</strong>, using \"have to\".",
+        "expected_answer": {"canonical": "ok"},
+        "rubric": {"full_credit": ["ok"]},
+        "target_skill": "translation",
+        "difficulty": "medium",
+    }
+    result = boss_dynamic._validate_generated_question(
+        raw,
+        asked_questions=[],
+        stems=[],
+        pool_max=None,
+        expected_language="en",
+    )
+    assert "<strong>" not in result.question_text
+    assert "</strong>" not in result.question_text
+    assert "Translate to English" in result.question_text
+
+
+def test_validate_generated_question_length_check_uses_stripped_text():
+    """A long question with HTML markup must be length-checked against the
+    STRIPPED text. Otherwise a question that's actually within the cap could
+    fail just because of `<strong>...</strong>` padding."""
+    # 100 visible characters + 17 chars of HTML markup = 117 raw, 100 stripped
+    visible = "x" * 100
+    raw = {
+        "question_text": f"<strong>{visible}</strong>",
+        "expected_answer": {"canonical": "ok"},
+        "rubric": {"full_credit": ["ok"]},
+        "target_skill": "translation",
+        "difficulty": "medium",
+    }
+    result = boss_dynamic._validate_generated_question(
+        raw,
+        asked_questions=[],
+        stems=[],
+        pool_max=None,
+        max_question_length=110,  # would reject 117 raw, accept 100 stripped
+        expected_language="en",
+    )
+    assert len(result.question_text) <= 110
+    assert "<strong>" not in result.question_text
+
+
 def test_validate_generated_question_rejects_english_on_uzbek_homework():
     """End-to-end: feed an English BossQuestionGenerated through the
     validator with expected_language='uz' and assert rejection."""
