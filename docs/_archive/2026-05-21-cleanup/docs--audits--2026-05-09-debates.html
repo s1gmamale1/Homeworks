@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homework Flow + Game Debates — 2026-05-09</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --fg-muted: #6b7280;
+    --rule: #e5e7eb;
+    --code-bg: #f6f7f9;
+    --accent: #3b6394;
+    --pill-ship-bg: #ecf5ec;
+    --pill-ship-fg: #1f6b3a;
+    --pill-modify-bg: #fbf3e3;
+    --pill-modify-fg: #8a5a14;
+    --pill-defer-bg: #f1f1f1;
+    --pill-defer-fg: #5a5a5a;
+    --pill-reject-bg: #f8eaea;
+    --pill-reject-fg: #8a2c2c;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a;
+      --fg: #e8e8e6;
+      --fg-muted: #9ca3af;
+      --rule: #2a2d33;
+      --code-bg: #1e2127;
+      --accent: #6b9bd2;
+      --pill-ship-bg: #1f3a2a;
+      --pill-ship-fg: #9adcae;
+      --pill-modify-bg: #3a2f18;
+      --pill-modify-fg: #e0c280;
+      --pill-defer-bg: #2a2d33;
+      --pill-defer-fg: #b8b8b8;
+      --pill-reject-bg: #3a1f1f;
+      --pill-reject-fg: #e2a3a3;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 17.5px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 64px 24px 120px;
+  }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 32px 18px 80px; }
+    html, body { font-size: 16.5px; }
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .meta {
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+    margin: 0 0 48px;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 64px 0 18px;
+    letter-spacing: -0.005em;
+  }
+
+  h3 {
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 40px 0 14px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  h3 .num {
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 56px 0;
+  }
+
+  p {
+    margin: 0 0 18px;
+  }
+
+  ul, ol {
+    padding-left: 22px;
+    margin: 0 0 20px;
+  }
+
+  li { margin-bottom: 8px; }
+  li > p { margin-bottom: 8px; }
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  a:hover { text-decoration-thickness: 2px; }
+
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  /* TOC */
+  details.toc {
+    margin: 0 0 48px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+  }
+  details.toc summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    list-style: none;
+    user-select: none;
+  }
+  details.toc summary::-webkit-details-marker { display: none; }
+  details.toc summary::before {
+    content: "›";
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.15s ease;
+  }
+  details.toc[open] summary::before { transform: rotate(90deg); }
+  details.toc ol {
+    margin: 16px 0 4px;
+    padding-left: 22px;
+    list-style: decimal;
+  }
+  details.toc li {
+    margin-bottom: 4px;
+    font-size: 0.94rem;
+  }
+  details.toc a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  details.toc a:hover { color: var(--accent); }
+
+  /* Verdict pills — small, inline, secondary */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2.5px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    white-space: nowrap;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .pill-ship   { background: var(--pill-ship-bg);   color: var(--pill-ship-fg); }
+  .pill-modify { background: var(--pill-modify-bg); color: var(--pill-modify-fg); }
+  .pill-defer  { background: var(--pill-defer-bg);  color: var(--pill-defer-fg); }
+  .pill-reject { background: var(--pill-reject-bg); color: var(--pill-reject-fg); }
+
+  /* Tables — minimal */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 28px;
+    font-size: 0.94rem;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    padding: 8px 10px 8px 0;
+    border-bottom: 1.5px solid var(--rule);
+    color: var(--fg);
+  }
+  tbody td {
+    padding: 9px 10px 9px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.id { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+  td.title { font-weight: 500; }
+
+  @media (max-width: 600px) {
+    table { font-size: 0.88rem; }
+    thead th, tbody td { padding-right: 6px; }
+    .hide-sm { display: none; }
+  }
+
+  /* Print */
+  @media print {
+    :root {
+      --bg: #ffffff;
+      --fg: #000000;
+      --fg-muted: #444;
+      --rule: #ccc;
+    }
+    .wrap { max-width: none; padding: 0; }
+    details.toc { display: none; }
+    h2 { page-break-after: avoid; }
+    h3 { page-break-after: avoid; }
+    .pill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<h1>Homework Flow &amp; Game Debates — Synthesis</h1>
+<p class="meta">2026-05-09 · Two 3-agent swarms · 23 proposals debated · No code changed</p>
+
+<details class="toc">
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#tldr">TL;DR — Combined</a></li>
+    <li><a href="#flow">Flow Debate</a>
+      <ol>
+        <li><a href="#flow-facts">Current state — 4 facts that matter</a></li>
+        <li><a href="#flow-issues">Issues — 5 the swarm confirmed</a></li>
+        <li><a href="#flow-proposals">The 8 proposals (P1–P8)</a></li>
+        <li><a href="#flow-risks">Cross-cutting risks underweighted</a></li>
+      </ol>
+    </li>
+    <li><a href="#game">Game Debate</a>
+      <ol>
+        <li><a href="#game-risks">Cross-cutting risks (read first)</a></li>
+        <li><a href="#game-matrix">Verdict matrix (G1–G14)</a></li>
+        <li><a href="#game-detail">Detailed verdicts</a></li>
+      </ol>
+    </li>
+    <li><a href="#ship">Combined ship plan</a></li>
+    <li><a href="#open">Open questions</a></li>
+  </ol>
+</details>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p>Two debates, 23 proposals, no production code touched. The Flow swarm reviewed homework cycle interactivity, content quality, and Uzbek grammar; <strong>3 ship as-is, 3 ship modified, 1 deferred, 1 rejected</strong>. The Game swarm reviewed 14 gamification proposals; <strong>6 ship, 3 modified, 3 deferred, 2 rejected</strong>.</p>
+
+<p>The single highest-leverage move across both debates is <strong>G9 — Why Was I Wrong tap</strong> (XS effort, 5/5 pedagogy, zero schema risk, data already in payload). The most consequential rejection is the seductive 1-line "resurrect Memory Match" — spot-checking proved it would cause a runtime DOM collision with Tile Match, not a no-op. The most under-appreciated cross-cutting risk is the <strong>overjustification effect</strong>: stacking XP persistence + streaks + heatmaps + growth echoes turns intrinsic motivation into number-chasing. Ship at most one Cat-4 reward in v1.</p>
+
+<p>Combined plan: <strong>~12–14 dev-days across 7 sequenced PRs</strong>. Two open decisions block sequencing — Memory Match (delete vs. refactor) and Cat-4 reward selection (G13 alone, or none).</p>
+
+<hr>
+
+<h2 id="flow">Flow Debate</h2>
+
+<p>3-agent swarm — Recon → Reformer → Skeptic — reviewing the homework flow against three user complaints: lack of interactivity, boring/raw content, Uzbek grammar errors. Sub-docs: <a href="2026-05-09-flow-recon.md">recon</a>, <a href="2026-05-09-flow-reform.md">reform</a>, <a href="2026-05-09-flow-skeptic.md">skeptic</a>.</p>
+
+<h3 id="flow-facts">Current state — 4 facts that matter</h3>
+
+<p><strong>Common backbone (all 7 subjects).</strong> <code>preview → flashcards → memory-sprint → game-breaks → [maybe consolidation/real-life] → final-challenge → reflection</code>. Math has Easy/Hard branching (5/8 phases). History is always Hard (6 phases, no Real-Life because the narrative IS the content).</p>
+
+<p><strong>Game inventory mismatch.</strong> 8 game slots in <code>gbActiveGameOrder()</code> (template line 12666). Memory Match (<code>mm</code>) is specced in <code>flow.md</code> for math/history/biology/physics but has <strong>no routing entry</strong> and <strong>no panel HTML</strong> (<code>#gb-panel-mm</code> = 0 grep hits).</p>
+
+<p><strong>Interactivity profile.</strong> Preview = read-only · flashcards = tap-flip (no correctness signal) · memory-sprint = MC/TF tap · game-breaks = varied (Adaptive Quiz / Tile Match / Sentence Fill) · real-life = typed · final-challenge = typed + boss · reflection = read-only. <strong>Half the cycle is one-way.</strong></p>
+
+<p><strong>Uzbek surface.</strong> Every phase generates Uzbek. Zero post-generation grammar check. Zero "self-check Uzbek" rule in any of the 7 <code>instruction.md</code> files. The complaint is structurally correct.</p>
+
+<h3 id="flow-issues">Issues — 5 the swarm confirmed</h3>
+
+<ol>
+  <li><strong>Mislabeled mechanic (P2).</strong> Slots 1 (<code>wc</code>) and 6 (<code>sf</code>) both display "Sentence Fill" to students — but <code>wc</code> is the GB_WHY_CHAIN causal scaffold, not Sentence Fill. Two different mechanics, same label. Suppresses adoption and confuses students.</li>
+  <li><strong>Broken Preview→Reflection contract (P3).</strong> Preview ends with a BOST goal prompt ("Bugun … nimani bilmoqchisiz?") that the student reads but never answers. Reflection-coach is told to "resurface it" — it has nothing to resurface.</li>
+  <li><strong>Two-layer panel content collapsed visually (P4).</strong> Preview prompts mandate "Qatlam 1 — Rasmiy izoh" + "Qatlam 2 — Sodda so'zlar" — but the runtime renders them as flat text, indistinguishable. Wall-of-text visual = "boring/raw" complaint, confirmed.</li>
+  <li><strong>Flashcard phase has zero correctness signal (P5).</strong> The only graded-style phase with no graded output. Student flips card, moves on; the cycle never knows if they knew it.</li>
+  <li><strong>English has no <code>flow.md</code> (P6).</strong> Only subject without a canonical flow spec. Every future English work re-derives from <code>instruction.md</code>. Drift risk = real.</li>
+</ol>
+
+<h3 id="flow-proposals">The 8 proposals</h3>
+
+<h4 style="font-size:1rem; font-weight:600; margin:32px 0 12px; color:var(--fg-muted);">Verdict matrix</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Proposal</th>
+      <th class="hide-sm">Cost</th>
+      <th>Verdict</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="id">P1</td><td class="title">Resurrect Memory Match</td><td class="hide-sm">M (real) or delete</td><td><span class="pill pill-reject">🚫 Reject as proposed</span></td></tr>
+    <tr><td class="id">P2</td><td class="title">Rename <code>wc</code> label → "Why → How → What"</td><td class="hide-sm">S</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">P3</td><td class="title">BOST goal as interactive micro-prompt</td><td class="hide-sm">S</td><td><span class="pill pill-modify">🛠️ Modify</span></td></tr>
+    <tr><td class="id">P4</td><td class="title">"Sodda so'zlar" CSS toggle</td><td class="hide-sm">XS+S (split)</td><td><span class="pill pill-defer">⏳ Defer</span></td></tr>
+    <tr><td class="id">P5</td><td class="title">Flashcard self-grade (Bildim/Bilmadim)</td><td class="hide-sm">S</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">P6</td><td class="title">Create <code>english/flow.md</code></td><td class="hide-sm">XS</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">P7</td><td class="title">Uzbek grammar rules in <code>instruction.md</code></td><td class="hide-sm">S</td><td><span class="pill pill-modify">🛠️ Modify</span></td></tr>
+    <tr><td class="id">P8</td><td class="title">Injector-layer grammar regex check</td><td class="hide-sm">S</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+  </tbody>
+</table>
+
+<h3><span class="num">P1.</span> Resurrect Memory Match <span class="pill pill-reject">🚫 Reject as proposed</span></h3>
+
+<p><strong>Why.</strong> Memory Match has full JS, is specced for 4 subjects, runtime is silently dropping it. Free interactivity win. <strong>How.</strong> Add 1 line to <code>gbActiveGameOrder()</code> (template ~line 12687) + confirm panel exists. <strong>What.</strong> 9th conditional in the routing fn. ~2–4 hrs.</p>
+
+<p><em><strong>Skeptic counter.</strong> Spot-checked lines 14121–14148 — <code>gbInitMM</code> writes to <code>#gb-tm-left</code>/<code>#gb-tm-right</code> (Tile Match's DOM). MM has no panel of its own; it parasitises TM. Adding <code>mm</code> to the registry while both <code>tm</code> and <code>mm</code> content populate = <strong>runtime collision, not no-op</strong>. The mechanic was likely deliberately disabled during TM consolidation. Real fix: build <code>#gb-panel-mm</code> + refactor MM to use <code>mm</code>-prefixed IDs (~80 LOC) — or delete the dead code (aligns with the "engine simplification" theme from yesterday's MASTER audit).</em></p>
+
+<p><strong>Verdict.</strong> Reject the 1-line version. Two paths forward: (a) deliberate medium-cost refactor IF you actually want MM live, or (b) delete <code>gbInitMM</code> + <code>GB_MEMORY_MATCH</code> constant as dead code. Pick "delete" unless there's a pedagogical reason MM beats TM/MP for a specific phase.</p>
+
+<h3><span class="num">P2.</span> Rename <code>wc</code> slot label → "Why → How → What" <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>Why.</strong> <code>wc</code> and <code>sf</code> both display "Sentence Fill" — bug. The mechanic IS Why-Chain. <strong>How.</strong> Template line 12672 label change + new i18n key <code>game.whw</code> (uz/ru/en) + add "Why → How → What" as a named option in subject <code>game-breaks.md</code> files + fix boss prompts (How→How→What → Why→How→What). <strong>What.</strong> Student sees the correct label; mechanic legible; boss opens with proper Why-tier.</p>
+
+<p><em><strong>Skeptic counter.</strong> Concedes. Adds two test requirements: (1) regression assert <code>gbActiveGameLabels()</code> returns no duplicate labels; (2) boss-prompt fix needs an answer-leak regression (touches the security path).</em></p>
+
+<p><strong>Verdict.</strong> Ship with the two test requirements. Cost S (3–5 hrs). Highest impact-per-hour in the slate.</p>
+
+<h3><span class="num">P3.</span> BOST goal as interactive micro-prompt <span class="pill pill-modify">🛠️ Ship modified</span></h3>
+
+<p><strong>Why.</strong> Preview ends with a BOST learning-goal prompt that students read passively. Reflection is told to surface it but nothing was captured. <strong>How.</strong> Add an input field below BOST → store in <code>__sessionLog</code> → reflection-coach echoes it back. <strong>What.</strong> 15-second interaction at end of Preview, personalized callback in Reflection.</p>
+
+<p><em><strong>Skeptic counter.</strong> <code>__sessionLog</code> does not exist (grep: 0 hits). The Reformer invented the storage. Reflection-coach prompt also has no <code>bost_goal</code> slot — wiring it changes the runtime AI-context contract. Real cost is M, not S.</em></p>
+
+<p><strong>Verdict.</strong> Ship modified — keep the input idea, drop the <code>__sessionLog</code> fiction. Use <code>sessionStorage</code> keyed by homework ID. V1 surfaces the goal as visible DOM text on the reflection screen, NOT through the AI prompt ("Dars boshida Siz X bilmoqchi edingiz" injected as static text). Halves the surface area; no AI-contract change. Cost: S (4–6 hrs).</p>
+
+<h3><span class="num">P4.</span> "Sodda so'zlar" CSS toggle <span class="pill pill-defer">⏳ Defer</span></h3>
+
+<p><strong>Why.</strong> Preview panels mandate two-layer (formal + plain) text but render flat. Wall-of-text problem. <strong>How.</strong> Detect literal phrase "Sodda so'zlar bilan:" → apply collapse + toggle CSS class. <strong>What.</strong> XS fix, no backend, makes panels visibly less raw.</p>
+
+<p><em><strong>Skeptic counter.</strong> Spot-check confirmed math uses "Sodda so'zlar bilan:" but history uses "Qatlam 2 — Sodda so'zlar:" (different phrase, no <code>bilan</code>, wrapped in bold). Worse: in real <code>content_json</code>, the layer-2 text is inside the same <code>p</code> block as layer 1 (same <code>&lt;strong&gt;</code> boundary). The Reformer's structure assumption is wrong — there's no separate block to tag. Heuristic mis-fires on history; structure mis-fires across the corpus.</em></p>
+
+<p><strong>Verdict.</strong> Defer — don't ship the regex heuristic. Do prompt-side standardisation first: update all 7 preview prompts to emit Layer 2 as its own <code>p</code> block with a stable marker (<code>{type: "p", layer: 2, text: "..."}</code>). Schema-additive (allowed). Then the toggle ships on a stable marker, not regex. Two PRs: prompt-standardise (S) → toggle (XS). Together M.</p>
+
+<h3><span class="num">P5.</span> Flashcard self-grade (Bildim / Bilmadim) <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>Why.</strong> Flashcard phase is the only graded-style phase with zero correctness signal. <strong>How.</strong> Two tap targets after flip + record <code>{cardId, known}</code> in session log + cluster badge shows <code>7/10 bildim</code>. <strong>What.</strong> Binary self-grade per card; ratio surfaces to reflection-coach.</p>
+
+<p><em><strong>Skeptic counter.</strong> Concedes pedagogy. Same <code>__sessionLog</code> fix from P3 applies (use <code>sessionStorage</code>). Test must guard buttons render only AFTER flip (otherwise micro answer-leak).</em></p>
+
+<p><strong>Verdict.</strong> Ship with the two fixes (real storage primitive + post-flip-only test). Cost S (3–5 hrs).</p>
+
+<h3><span class="num">P6.</span> Create <code>english/flow.md</code> <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>Why.</strong> English is the only subject without <code>flow.md</code>; <code>instruction.md</code> is the only spec; drift risk. <strong>How.</strong> Copy <code>math-algebra/flow.md</code> structure + populate from existing <code>english/instruction.md</code>. <strong>What.</strong> 7-of-7 subjects have a canonical flow spec.</p>
+
+<p><em><strong>Skeptic counter.</strong> Concedes. One-liner risk: don't let it become a 4-hour Reading-phase semantics debate. Time-box 90 min.</em></p>
+
+<p><strong>Verdict.</strong> Ship as XS hygiene fix. Bundle with P7 + P8 in a single grammar-quality PR.</p>
+
+<h3><span class="num">P7.</span> Uzbek grammar rules in <code>instruction.md</code> <span class="pill pill-modify">🛠️ Ship modified — bundle, don't ship alone</span></h3>
+
+<p><strong>Why.</strong> Zero grammar gate exists. Cheapest fix: tell the LLM what NOT to do at generation time. <strong>How.</strong> Add a <code>## Uzbek Grammar Quality Rules</code> section to all 7 <code>instruction.md</code> files (6–8 bullet rules: script consistency, "Siz" agreement, no Russian proxies, verb-final order, etc.). <strong>What.</strong> LLM self-corrects before output.</p>
+
+<p><em><strong>Skeptic counter.</strong> Real but oversold. Research: GPT-class models follow targeted system-prompt constraints at ~60–80%, degrades sharply at 4k+ token context (common in our preview prompts). Kimi K2.6 has zero published Uzbek-morphology benchmarks — we're guessing. After P7, residual error rate is 20–40% of current → the new bug surface, harder to debug because the prompt now CLAIMS the rules are enforced. Worse: the Reformer's specific rule "verb-final: subordinate clauses end with <code>-b/-ib/-gan/-adigan</code>" is linguistically wrong — these aren't interchangeable. Wrong rules are worse than no rules.</em></p>
+
+<p><strong>Verdict.</strong> Ship modified — (1) bundle with P8 (catch-net for residual), (2) a native Uzbek linguist signs off on every rule before merge, (3) A/B test: 20 homeworks before, 20 after, blind native-speaker scoring. If P7 alone moves the mean by less than 0.5 points, it's theatre.</p>
+
+<h3><span class="num">P8.</span> Injector-layer regex grammar check <span class="pill pill-ship">✅ Ship — bundle with P7</span></h3>
+
+<p><strong>Why.</strong> P7 reduces but doesn't eliminate errors. Regex catch-net at the injector layer for the residual. <strong>How.</strong> <code>_uzbek_quality_check(content)</code> in <code>server/services/injector.py</code> — returns warning list (Cyrillic / "sen " / empty blocks / panel count). Logged via <code>logging.warning()</code>, never blocks the student. <strong>What.</strong> Every generation produces a warning trail; "sen" leaks become visible.</p>
+
+<p><em><strong>Skeptic counter.</strong> Concedes the catch-net design. Two improvements: (1) <code>\bsen(?:ing|ga|i)?\b</code> word-boundary regex (the Reformer's <code>r"sen\s"</code> misses cases and can false-positive); (2) pipe warnings to the builder UI homework-detail view, not just log — logged warnings rot. Adds ~20 LOC, turns logging into a tight feedback loop.</em></p>
+
+<p><strong>Verdict.</strong> Ship with the word-boundary regex + builder-UI surfacing. Bundle with P7 + P6 in one "Uzbek quality" PR.</p>
+
+<h3 id="flow-risks">Cross-cutting risks the Reformer underweighted</h3>
+
+<ul>
+  <li><strong>Phantom storage (<code>__sessionLog</code>).</strong> Referenced in P3 + P5 as if it exists. It doesn't. Both fixes route through <code>sessionStorage</code>.</li>
+  <li><strong>"No schema change" claimed too easily.</strong> P3 changes the AI-context contract; P4 implies a schema convention. The frozen-schema invariant covers <code>content_json</code>, but the runtime AI-prompt contract is also a contract.</li>
+  <li><strong>Prompt instructions ≠ enforcement.</strong> P7-style "tell the LLM not to do X" needs measurement (A/B + adherence numbers), not just intent.</li>
+  <li><strong>Missing regression tests.</strong> The Reformer specifies tests for P1/P2/P8 but is silent on P3/P4/P5. Project rule (<code>CONTRIBUTING.md</code>) requires every fix ship a regression test.</li>
+</ul>
+
+<hr>
+
+<h2 id="game">Game Debate</h2>
+
+<p>3-agent swarm — Inventor (Sonnet) → Pedagogy Critic (Sonnet) + Feasibility Realist (Opus). 14 proposals debated. Sub-docs: <a href="2026-05-09-game-proposals.md">Inventor's slate</a>, <a href="2026-05-09-game-pedagogy.md">Pedagogy review</a>, <a href="2026-05-09-game-feasibility.md">Feasibility review</a>.</p>
+
+<p>Headline: <strong>G9 — Why Was I Wrong tap</strong> is the single cheapest highest-pedagogy win in the slate. Corrective feedback is the most-evidenced cognitive-science intervention; the data already exists in the <code>explain</code> field; pure runtime fix. The Pedagogy critic disagreed sharpest with G6 (Flashcard Confidence Tap) — Dunning-Kruger problem: lowest-knowledge students self-assess worst. Ship-as-is is acceptable IF paired with G9 corrective-feedback so the cycle has both self-signal AND truth-signal. The Feasibility critic caught: G7 (Preview Curiosity) is S not XS; G2 drag-rank is M-high not M; G14 reads a <code>phase_scores</code> column that has zero writes anywhere in the codebase.</p>
+
+<h3 id="game-risks">Cross-cutting risks (read first)</h3>
+
+<p><strong>1. Overjustification effect (the strongest cross-cutting catch).</strong> Cat 3 + Cat 4 (G10 / G11 / G12 / G13) shipped together create a layered reward stack: XP persists → Streak counts → Heatmap shows history → "You've grown" phrase → student optimizes for the numbers, not the learning. Each individually is defensible. Stacked, they crowd out the intrinsic motivation already present in the boss mechanic. Recommendation: ship at most ONE of G10 / G11 / G12 / G13 in v1. G10 is the right pick because it's pure infrastructure — it ENABLES the others without activating the full reward stack yet. Decide which (if any) of G11 / G12 / G13 to add only after measuring G10's actual effect on completion + boss-replay rates.</p>
+
+<p><strong>2. Schema vs. runtime-contract distinction.</strong> The frozen-schema invariant covers <code>content_json</code> only. Several proposals don't add <code>content_json</code> keys but DO extend other contracts: G10 adds <code>sessions.boss_xp_earned</code> column (DB schema change, but OUTSIDE <code>content_json</code> — allowed); G7 would inject memory-sprint content into preview-phase tutor context, bypassing <code>_redact_question_for_tutor</code> (the answer-leak invariant) — reject as proposed; G3 / G6 / G8 all touch the runtime payload contract subtly — must include regression tests per the CONTRIBUTING rule.</p>
+
+<p><strong>3. The "free reads existing X" trap.</strong> G14 claims it reads existing <code>phase_scores</code>. Truth: that column has zero writes anywhere in <code>server/</code>. Reading it returns null. So G14's "XS — reads existing data" is wrong; real cost is S+ because <code>phase_scores</code> writes need to be wired first (a separate non-trivial task).</p>
+
+<h3 id="game-matrix">Verdict matrix</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th class="hide-sm">Cat</th>
+      <th class="hide-sm">Cost</th>
+      <th>Verdict</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="id">G9</td><td class="title">Why Was I Wrong tap</td><td class="hide-sm">2</td><td class="hide-sm">XS</td><td><span class="pill pill-ship">✅ Ship — top pick</span></td></tr>
+    <tr><td class="id">G10</td><td class="title">Boss XP Persistence</td><td class="hide-sm">3</td><td class="hide-sm">S</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">G8</td><td class="title">Reflection Prompt Ladder</td><td class="hide-sm">2</td><td class="hide-sm">XS</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">G6</td><td class="title">Flashcard Confidence Tap</td><td class="hide-sm">2</td><td class="hide-sm">XS</td><td><span class="pill pill-ship">✅ Ship — paired w/ G9</span></td></tr>
+    <tr><td class="id">G5</td><td class="title">Caption It</td><td class="hide-sm">1</td><td class="hide-sm">M</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">G4</td><td class="title">Number Line Sprint</td><td class="hide-sm">1</td><td class="hide-sm">S</td><td><span class="pill pill-ship">✅ Ship</span></td></tr>
+    <tr><td class="id">G2</td><td class="title">Evidence Relay</td><td class="hide-sm">1</td><td class="hide-sm">M-high</td><td><span class="pill pill-modify">🛠️ Modify</span></td></tr>
+    <tr><td class="id">G3</td><td class="title">Analogy Bridge</td><td class="hide-sm">1</td><td class="hide-sm">S</td><td><span class="pill pill-modify">🛠️ Modify</span></td></tr>
+    <tr><td class="id">G13</td><td class="title">"You've Grown" echo</td><td class="hide-sm">4</td><td class="hide-sm">XS</td><td><span class="pill pill-modify">🛠️ Modify</span></td></tr>
+    <tr><td class="id">G1</td><td class="title">Sorting Hat</td><td class="hide-sm">1</td><td class="hide-sm">M</td><td><span class="pill pill-defer">⏳ Defer</span></td></tr>
+    <tr><td class="id">G12</td><td class="title">Mastery Heatmap</td><td class="hide-sm">4</td><td class="hide-sm">S</td><td><span class="pill pill-defer">⏳ Defer</span></td></tr>
+    <tr><td class="id">G14</td><td class="title">Topic Revisit Nudge</td><td class="hide-sm">4</td><td class="hide-sm">S</td><td><span class="pill pill-defer">⏳ Defer</span></td></tr>
+    <tr><td class="id">G11</td><td class="title">Cycle Streak</td><td class="hide-sm">3</td><td class="hide-sm">XS</td><td><span class="pill pill-reject">🚫 Reject</span></td></tr>
+    <tr><td class="id">G7</td><td class="title">Preview Curiosity</td><td class="hide-sm">2</td><td class="hide-sm">S</td><td><span class="pill pill-reject">🚫 Reject</span></td></tr>
+  </tbody>
+</table>
+
+<h3 id="game-detail">Detailed verdicts</h3>
+
+<h3><span class="num">G9.</span> Memory-Sprint "Why Was I Wrong?" Tap <span class="pill pill-ship">✅ Ship — top pick</span></h3>
+
+<p><strong>What.</strong> Wrong-answer pill expands the <code>explain</code> field inline. ~25 LOC total. Zero schema, zero backend. <strong>Pedagogy.</strong> 5/5 — corrective feedback + elaboration is the highest-evidence single intervention in cognitive science. <strong>Feasibility.</strong> XS verified — <code>explain</code> already in MS_QUESTIONS injection.</p>
+
+<p><strong>Verdict.</strong> Ship first. Lowest cost in slate, highest pedagogy score, zero risk.</p>
+
+<h3><span class="num">G10.</span> Boss XP Persistence <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>What.</strong> <code>sessions.boss_xp_earned</code> column + persist <code>outcome_xp</code> at boss defeat + display once on results screen. ~40 LOC. <strong>Feasibility.</strong> S verified — <code>outcome_xp</code> computed at <code>ai.py:1672</code> and discarded today. Pure gap-fill. <strong>Pedagogy.</strong> Infrastructure, no direct pedagogy score. WARNING: enables Cat 4 reward stack.</p>
+
+<p><strong>Verdict.</strong> Ship as the ONE persistence move. Don't ship G11 / G12 unless measurement justifies later. G13 OK as a single soft echo if any Cat 4 ships.</p>
+
+<h3><span class="num">G8.</span> Reflection Prompt Ladder <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>What.</strong> 3-rung scaffold (BOST goal echo + "hardest thing today" + "I'll try next time") replaces the blank textarea. ~35 LOC. Zero backend.</p>
+
+<p><strong>Verdict.</strong> Ships in the same PR as FLOW-DEBATE P3 (BOST goal capture); one extends the other naturally.</p>
+
+<h3><span class="num">G6.</span> Flashcard Confidence Tap <span class="pill pill-ship">✅ Ship — paired with G9</span></h3>
+
+<p><em><strong>Pedagogy flag.</strong> "Self-assessment accuracy is lowest among lowest-knowledge students" — Dunning-Kruger. Ships a tool that systematically misleads the students most needing corrective feedback.</em></p>
+
+<p><strong>Response.</strong> The concern is real but informational-only signal (no XP, no grade, no public surface) limits damage. Mitigation: G6 SHIPS PAIRED with G9 — corrective feedback (G9) catches the wrong self-grades flashcards (G6) misses. Ship them in the same PR so the cycle has BOTH self-signal AND truth-signal. FLOW-DEBATE already approved P5 as Ship — keeping that decision but tightening the pairing.</p>
+
+<h3><span class="num">G5.</span> Caption It <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>What.</strong> Student writes a caption for a flashcard image; AI grader returns 1–3 stars + model caption. <strong>Pedagogy.</strong> 5/5 — only image-to-language production mechanic; PISA Level 3–4 reading literacy. <strong>Feasibility.</strong> M verified — uses existing AI grader pattern, new <code>content_json</code> key + route + panel.</p>
+
+<p><strong>Verdict.</strong> Ship in the second sprint after G9 / G6 / G8 / G10 ship.</p>
+
+<h3><span class="num">G4.</span> Number Line Sprint <span class="pill pill-ship">✅ Ship</span></h3>
+
+<p><strong>What.</strong> Drag-marker estimation game on a number line, 20s clock as engagement scaffold. Subject-gated math/phys/kimyo only. <strong>Mitigation.</strong> Use <code>&lt;input type="range"&gt;</code> slider instead of raw SVG drag — solves mobile finickiness.</p>
+
+<p><strong>Verdict.</strong> Ship — kinesthetic + PISA math L2 estimation skill; no current mechanic does this.</p>
+
+<h3><span class="num">G2.</span> Evidence Relay <span class="pill pill-modify">🛠️ Modify</span></h3>
+
+<p><strong>Original design.</strong> Drag-rank 3 cards 1→3.</p>
+
+<p><em><strong>Feasibility catch.</strong> Drag-rank UI on mobile is M-high not M. Replace with 3-tap pick-best: student taps the SINGLE most convincing card (not full ordering). Still trains evidence judgment. Ranking can come back v2.</em></p>
+
+<p><strong>Pedagogy.</strong> 5/5 — only mechanic explicitly training scientific reasoning. Worth shipping with the simplification.</p>
+
+<p><strong>Verdict.</strong> Ship modified.</p>
+
+<h3><span class="num">G3.</span> Analogy Bridge <span class="pill pill-modify">🛠️ Modify</span></h3>
+
+<p><em><strong>Pedagogy flag.</strong> Genuine Learning = 3/5. MC analogy is recognition, not transfer-generation. Score moves to 4 ONLY IF the builder author writes genuinely novel analogy pairs where elimination is hard.</em></p>
+
+<p><strong>Verdict.</strong> Ship modified — gate the implementation on a content-quality checklist for builders (every analogy pair must include 4 plausible distractors, not 1 right + 3 obvious wrong). Without that, G3 ships as engagement theatre.</p>
+
+<h3><span class="num">G13.</span> "You've Grown" echo <span class="pill pill-modify">🛠️ Modify — ship as ONLY Cat 4</span></h3>
+
+<p><strong>What.</strong> If current boss XP ≥ previous +10%, show one personalized line: "O'tgan safarga nisbatan yaxshilandingiz!" <strong>Why this over G11/G12.</strong> Compares ONLY to self, no number, no streak counter, no visible historical trail. Lowest overjustification risk in Cat 4.</p>
+
+<p><strong>Verdict.</strong> Ship modified — ONLY if you want any Cat 4 surface. Don't pair with streak (G11) or heatmap (G12).</p>
+
+<h3><span class="num">G1.</span> Sorting Hat <span class="pill pill-defer">⏳ Defer</span></h3>
+
+<p>Overlap with Tile Match (1:1 pairing) is real even if classification ≠ association at the cognitive level. M effort. Ship after G2 / G4 / G5 land.</p>
+
+<h3><span class="num">G12.</span> Mastery Heatmap <span class="pill pill-defer">⏳ Defer</span></h3>
+
+<p>Compelling visual. Compounds the reward stack. Hold until G10 has shipped + been observed for 2–4 weeks.</p>
+
+<h3><span class="num">G14.</span> Topic Revisit Nudge <span class="pill pill-defer">⏳ Defer</span></h3>
+
+<p>Feasibility caught the trap: depends on <code>phase_scores</code> writes that don't exist. Ship <code>phase_scores</code> writing as a prerequisite first (separate S task), THEN G14 becomes XS as originally claimed.</p>
+
+<h3><span class="num">G11.</span> Cycle Streak <span class="pill pill-reject">🚫 Reject</span></h3>
+
+<p><em><strong>Pedagogy bottom-3 verdict.</strong> "Beginner-tier daily player earns streak-7 without improvement." Rewards attendance, not mastery. Directly anti-PISA.</em></p>
+
+<p><strong>Verdict.</strong> Don't ship. If any cross-session signal ships, use G13 (compares to self) not G11 (compares to attendance).</p>
+
+<h3><span class="num">G7.</span> Preview Curiosity Unlock <span class="pill pill-reject">🚫 Reject</span></h3>
+
+<p><em><strong>Pedagogy bottom-3.</strong> Wrong guess + immediate answer + advance = no consolidation. The proposal calls itself a "warm-up not learning" — that's accurate. <strong>Feasibility escalation.</strong> Original "XS" is actually S because it couples to the preview state machine AND would inject memory-sprint content into preview-phase tutor context, bypassing <code>_redact_question_for_tutor</code> — answer-leak risk.</em></p>
+
+<p><strong>Verdict.</strong> Reject. Triple-negative (pedagogy weak + cost wrong + contract risk).</p>
+
+<hr>
+
+<h2 id="ship">Combined ship plan</h2>
+
+<p>Seven PRs, sequenced. Total ~12–14 dev-days. Two open decisions block sequencing — see <a href="#open">Open questions</a>.</p>
+
+<p><strong>PR 1 — Game-break clarity (S, ~1 day).</strong> P2 ship as-is + 2 test requirements (no duplicate labels, boss answer-leak regression).</p>
+
+<p><strong>PR 2 — Cycle bookends + signal (M, ~2 days).</strong> P3 modified (sessionStorage + DOM-only V1) · P5 ship (with sessionStorage + post-flip-only test).</p>
+
+<p><strong>PR 3 — Uzbek quality bundle (M, ~2–3 days).</strong> P6 ship (<code>english/flow.md</code>) · P7 modified (bundled, linguist-reviewed rules, A/B measurement plan) · P8 ship (with word-boundary regex + builder-UI surfacing).</p>
+
+<p><strong>PR-A — Cycle signal (XS+XS, ~1 day).</strong> G9 Why-Was-I-Wrong tap · G6 Flashcard Confidence Tap (paired with G9 for Dunning-Kruger mitigation) · 2 regression tests.</p>
+
+<p><strong>PR-B — Reflection bookend (XS+XS, builds on P3, ~1.5 days).</strong> G8 Reflection Prompt Ladder (extends P3's BOST input) · regression test.</p>
+
+<p><strong>PR-C — Boss XP foundation + soft growth signal (S+XS, ~1.5–2 days).</strong> G10 Boss XP Persistence (DB column + write + display) · G13 modified "You've Grown" echo (compares to SELF only) · 3 tests including the streak/heatmap regression-locked-out (no G11/G12 in v1).</p>
+
+<p><strong>PR-D — New game-break mechanics (S+S+M, ~3–4 days).</strong> G4 Number Line Sprint · G2 modified Evidence Relay (3-tap pick-best, no drag-rank) · G5 Caption It (image production) · content-quality checklist for G3 modified Analogy Bridge (decide ship/skip after writing 5 sample analogy pairs).</p>
+
+<p><strong>Decision needed — Memory Match (P1).</strong> Decide between (a) M-cost real refactor or (b) delete the dead code. Don't ship the 1-line version. Recommend (b) unless there's a pedagogical reason MM beats TM/MP.</p>
+
+<p><strong>Deferred for measurement / prerequisite work.</strong> P4 (needs prompt-side standardisation PR FIRST — flatten Layer 2 to its own block; then the toggle ships on a stable marker). G1 (Sorting Hat). G12 (Heatmap). G14 (Revisit Nudge — needs <code>phase_scores</code> wired first).</p>
+
+<p><strong>Killed.</strong> G7 (Preview Curiosity). G11 (Streak).</p>
+
+<hr>
+
+<h2 id="open">Open questions</h2>
+
+<ol>
+  <li><strong>Memory Match decision.</strong> Refactor (medium-cost real fix) OR delete (~50 LOC removed, aligns with simplification)? Recommend delete unless you remember a specific pedagogical reason it earned a slot.</li>
+  <li><strong>Native Uzbek linguist availability.</strong> P7's rules MUST be reviewed by someone who actually speaks the language before they go into 7 <code>instruction.md</code> files. Do you have someone, or should we ship a smaller, lower-risk rule set first (e.g., only the 3 rules we're 100% sure about: Latin script, "Siz" formal, no informal "sen")?</li>
+  <li><strong>A/B measurement appetite.</strong> P7 needs blind-scored before/after to prove it works. Do we ship the rules now and measure later, or block the PR on the measurement plan? My take: ship the smaller-rule version now without measurement; gate the full rule set on measurement.</li>
+  <li><strong>Which Cat 4 (if any)?</strong> Recommendation is G13 alone (compares to self). If you want NO cross-session signal in v1 — also valid; ship just G10 as silent infrastructure and revisit in 4 weeks.</li>
+  <li><strong>G3 Analogy Bridge — ship or skip?</strong> Depends on whether you (or a builder author) will hand-write the analogy pairs to the quality bar. If LLM-generated at runtime, skip — recognition theatre. If hand-curated, ship.</li>
+  <li><strong>Sequence the 4 game PRs strictly, or parallelize PR-A and PR-B?</strong> They touch different runtime sections (memory-sprint + flashcards vs. reflection screen) and could go in parallel. Saves a day. Risk: small if both PRs include their own regression tests.</li>
+</ol>
+
+</main>
+</body>
+</html>
