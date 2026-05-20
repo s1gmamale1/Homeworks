@@ -74,6 +74,7 @@ _ARRAY_CONSTANTS = [
 # Mapping: content_json key -> JS constant name in template, for OBJECT (non-array) constants.
 # Wave 2: reading/consolidation/reflection are objects, like RL_SCENARIO.
 _OBJECT_CONSTANTS = [
+    ("memory_check",  "MC"),
     ("reading",       "READING"),
     ("consolidation", "CONSOLIDATION"),
     ("reflection",    "REFLECTION"),
