@@ -325,13 +325,35 @@ def _infer_language_from_subject(subject: Optional[str]) -> Optional[str]:
 
 
 def _default_policy(language: Optional[str], subject: Optional[str] = None) -> dict[str, Any]:
-    # If content_json.language is null, try inferring from subject before
-    # falling through to the platform-default (uz). This unblocks pulled
-    # homeworks that omit the language field (real bug 2026-05-13:
-    # HW-20260513-004 imported from sigmaai had language=null but
-    # subject=english; Kimi defaulted to Uzbek output on an English lesson).
-    if not language:
-        language = _infer_language_from_subject(subject) or "uz"
+    # Language-resolution policy (2026-05-13 + 2026-05-20):
+    #
+    # The DB row's `language` field encodes the AUDIENCE language (the L1
+    # of the Uzbek students this platform serves — currently always "uz"
+    # on every prod row). It does NOT describe what the boss should
+    # output in.
+    #
+    # The `subject` column is the actual lesson subject. The lesson
+    # content (passages, vocabulary, boss questions) is written in the
+    # subject's own working language: an English subject's content is in
+    # English; a Biology subject taught in Uzbek schools has content in
+    # Uzbek; a Russian subject in Russian. The boss should output in the
+    # same language the lesson content already uses, so questions and
+    # feedback land in the same script the student is reading.
+    #
+    # The mapping below resolves the subject string to that working
+    # language. Subjects not in the map fall through to "uz" (platform
+    # default — biology / history / kimyo / physics / geometriya /
+    # math-algebra are all delivered in Uzbek on prod).
+    #
+    # Earlier (2026-05-13) only ran this inference when `language` was
+    # falsy. Every real prod row has language="uz" (audience signal), so
+    # the inference never fired on English-subject homeworks and Kimi
+    # defaulted to Uzbek output. Subject-first inference fixes that.
+    subject_language = _infer_language_from_subject(subject)
+    if subject_language:
+        language = subject_language
+    elif not language:
+        language = "uz"
     return {
         "target_weak_topics_first": True,
         "avoid_repetition": True,

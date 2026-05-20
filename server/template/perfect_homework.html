@@ -19326,33 +19326,24 @@ Prezident ertaga hisobot kutmoqda.`,
                 // returns `damage` and `hp` (no _dealt/_remaining suffix).
                 // The legacy /api/ai/boss-turn used damage_dealt/hp_remaining.
                 // Accept both shapes so legacy + Plan-5 both render correctly.
-                // Symptom of the prior bug: server dealt 15 damage but UI
-                // displayed '−0 HP' because resp.damage_dealt was undefined,
-                // falling back to local bossApplyCorrect (which computed 0
-                // since dynamic questions lack q.dmg).
                 const serverDamage = (typeof resp.damage === 'number') ? resp.damage
                                    : (typeof resp.damage_dealt === 'number') ? resp.damage_dealt
                                    : null;
                 const serverHp = (typeof resp.hp === 'number') ? resp.hp
                                : (typeof resp.hp_remaining === 'number') ? resp.hp_remaining
                                : null;
-                bossApplyCorrect(q, fbEl, {
+                // 2026-05-20: pass serverDamage INTO bossApplyCorrect so the
+                // verdict pill ("−X HP") uses the authoritative damage value.
+                // Replaces the prior post-call double-count patch — when
+                // serverDamage is present, bossApplyCorrect now uses it
+                // directly for dmg, lastDamage, AND damageDealt.
+                const applyOpts = {
                     aiGraded: true,
                     axis_1: resp.axis_1,
                     axis_2: resp.axis_2,
-                });
-                // Bug FB-1 fix: damageDealt was double-counting. bossApplyCorrect
-                // already added the local `dmg` to bossState.damageDealt; if the
-                // server returns its own authoritative damage, we previously
-                // added serverDamage on top, doubling the total shown on the
-                // result card. Subtract bossState.lastDamage (= the local dmg
-                // bossApplyCorrect just accumulated) before adding serverDamage
-                // so the server value is the single source of truth when present.
-                if (serverDamage !== null) {
-                    bossState.damageDealt -= bossState.lastDamage;
-                    bossState.lastDamage = serverDamage;
-                    bossState.damageDealt += serverDamage;
-                }
+                };
+                if (serverDamage !== null) applyOpts.serverDamage = serverDamage;
+                bossApplyCorrect(q, fbEl, applyOpts);
                 if (serverHp !== null) {
                     bossState.hp = Math.max(0, serverHp);
                     bossUpdateHP(bossState.hp, true);
@@ -19580,9 +19571,16 @@ Prezident ertaga hisobot kutmoqda.`,
                     el('boss-q-tags').textContent = tagText;
                 }
                 if (el('boss-q-counter')) {
+                    // Bug #6 fix (2026-05-20): the legacy "Savol N · X" format
+                    // (where X = bossState.trialsLeft remaining) was ambiguous
+                    // — students read it as "Q2 of 4" or "Q2 attempt 4" rather
+                    // than "Q2, 4 more to go". Switch to "Savol N / total" to
+                    // match the static-boss counter on line ~19098. Total =
+                    // questions already asked (idx + 1) + remaining trials.
                     let counterText = RT('boss.question_of') + ' ' + (idx + 1);
                     if (typeof bossState.trialsLeft === 'number') {
-                        counterText += ' · ' + bossState.trialsLeft;
+                        const total = (idx + 1) + bossState.trialsLeft;
+                        counterText = RT('boss.question_of') + ' ' + (idx + 1) + ' / ' + total;
                     }
                     el('boss-q-counter').textContent = counterText;
                 }
@@ -19637,17 +19635,27 @@ Prezident ertaga hisobot kutmoqda.`,
         // previous question can't overwrite the current question's UI.
 
         function bossApplyCorrect(q, fbEl, opts) {
-            // opts: { aiGraded: bool, message: string|null, axis_1?, axis_2? }
+            // opts: { aiGraded: bool, serverDamage: number?, axis_1?, axis_2? }
             bossState.correct++;
             bossState.combo++;
             const doubled = bossState.combo >= 3;
-            // FE-5 — in dynamic mode q.damage is undefined; default to 0 here.
-            // bossHandleResponse mirrors the authoritative resp.damage_dealt /
-            // resp.hp_remaining values from the server immediately after this
-            // function returns (subtracting bossState.lastDamage to avoid the
-            // double-count fixed by FB-1).
-            const baseDamage = (q && typeof q.damage === 'number') ? q.damage : 0;
-            const dmg = doubled ? baseDamage * 2 : baseDamage;
+            // Bug #1 visible-regression fix (2026-05-20): dynamic boss questions
+            // lack q.damage (damage lives server-side per Plan 5), so the legacy
+            // path computed dmg=0 and the verdict pill rendered "−0 HP" even
+            // though the server dealt real damage. When the caller passes
+            // opts.serverDamage (from /api/ai/boss/submit-answer's `damage`
+            // field), use it directly — that's the authoritative number, no
+            // combo doubling (server's damage formula doesn't combo-double; the
+            // HP bar is driven by resp.hp, not local accumulator). Falls back
+            // to q.damage × local combo doubling for the legacy static-boss
+            // path which still ships authored damage values.
+            let dmg;
+            if (opts && typeof opts.serverDamage === 'number') {
+                dmg = opts.serverDamage;
+            } else {
+                const baseDamage = (q && typeof q.damage === 'number') ? q.damage : 0;
+                dmg = doubled ? baseDamage * 2 : baseDamage;
+            }
             bossState.hp = Math.max(0, bossState.hp - dmg);
             bossState.lastDamage = dmg;
             bossState.damageDealt = (bossState.damageDealt || 0) + dmg;
