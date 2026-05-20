@@ -165,29 +165,52 @@ def test_rlc_complete_branch_matches_legacy_pattern():
 
 # ---------------------------------------------------------------------------
 # Bug FB-1 — boss damage double-count
+#
+# Historical context: 2026-05-09 fix used a "subtract local dmg + add
+# serverDamage" patch AFTER bossApplyCorrect ran. That patched the
+# cumulative damageDealt but left the per-answer verdict pill showing "−0 HP"
+# because the pill text was already drawn with the local (zero) dmg.
+#
+# 2026-05-20 refactor: serverDamage is now threaded INTO bossApplyCorrect via
+# opts. bossApplyCorrect uses it directly for dmg + lastDamage + damageDealt
+# AND the pill text. The post-call subtract-then-add patch is gone (rendered
+# obsolete and would now double-mutate damageDealt if reintroduced).
 # ---------------------------------------------------------------------------
 
 def test_boss_damage_not_double_counted():
-    """bossHandleResponse's AI-graded branch must NOT do
-    `bossState.damageDealt += serverDamage` independently of
-    bossApplyCorrect's accumulation. The fix subtracts
-    bossState.lastDamage before adding serverDamage so the
-    server's value is the single source of truth."""
+    """The damageDealt total must accumulate serverDamage exactly once, never
+    twice. Post-2026-05-20: the protection lives in bossApplyCorrect (via
+    opts.serverDamage) — not in a post-call patch. The previous
+    subtract-then-add pattern in bossHandleResponse must NOT return.
+    """
     body = _slice_function("bossHandleResponse")
-    # The fix marker comment must be present so future readers see why.
-    assert "Bug FB-1 fix" in body, (
-        "Missing 'Bug FB-1 fix' comment marker in bossHandleResponse — "
-        "the damage-double-count fix has likely been reverted."
+    # The pre-refactor anti-pattern (subtract local lastDamage, then add
+    # serverDamage to damageDealt) must not be present — it would re-introduce
+    # the bug from the OTHER side now that bossApplyCorrect handles serverDamage
+    # natively.
+    assert "bossState.damageDealt -= bossState.lastDamage" not in body, (
+        "Legacy subtract-before-add patch found. With the 2026-05-20 refactor "
+        "(serverDamage threaded into bossApplyCorrect via opts), this pattern "
+        "DOUBLE-mutates damageDealt. Remove it."
     )
-    # The subtract-before-add invariant: damageDealt -= lastDamage must
-    # appear before damageDealt += serverDamage in the AI-graded branch.
+    assert "bossState.damageDealt += serverDamage" not in body, (
+        "Legacy direct mutation of damageDealt in the response handler — see "
+        "the comment above. bossApplyCorrect is the single mutation site now."
+    )
+    # The new invariant: applyOpts.serverDamage must be set before
+    # bossApplyCorrect is called so it can pick up the authoritative damage.
+    assert "applyOpts.serverDamage = serverDamage" in body, (
+        "Response handler must thread serverDamage into bossApplyCorrect via "
+        "applyOpts.serverDamage. Without this, dynamic boss verdict pills "
+        "regress to '−0 HP' (q.damage is undefined on dynamic questions)."
+    )
+    # Verify the legacy in-body anchors are removed entirely so the
+    # remaining assertions stay coherent.
     sub_pos = body.find("bossState.damageDealt -= bossState.lastDamage")
     add_pos = body.find("bossState.damageDealt += serverDamage")
-    assert 0 < sub_pos < add_pos, (
-        f"Expected `bossState.damageDealt -= bossState.lastDamage` to "
-        f"precede `bossState.damageDealt += serverDamage` so the local "
-        f"dmg accumulated by bossApplyCorrect is rolled back before the "
-        f"server's authoritative damage is applied. Got positions "
+    assert sub_pos == -1 and add_pos == -1, (
+        f"Both legacy mutation lines must be ABSENT — bossApplyCorrect is now "
+        f"the single damageDealt mutation site. Got positions "
         f"sub@{sub_pos} add@{add_pos}."
     )
 
