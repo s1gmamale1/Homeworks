@@ -105,6 +105,39 @@ class MemorySprintItem(_Permissive):
 
 
 # --------------------------------------------------------------------------- #
+# Flow v2 — Memory Check (Flashcards readiness gate).
+# --------------------------------------------------------------------------- #
+
+
+class MemoryCheckItem(_Permissive):
+    """Quizlet-style retrieval item shown after Flashcards in Flow v2.
+
+    V1 runtime support intentionally covers only the PR-3 modes:
+    mcq, fill_blank, and choose_explanation. Extra fields are allowed so the
+    generator can carry subject hints, distractor notes, or future metadata
+    without breaking old content rows.
+    """
+
+    type: Literal["mcq", "fill_blank", "choose_explanation"] = "mcq"
+    prompt: str
+    options: Optional[List[str]] = None
+    answer_spec: AnswerSpec = Field(default_factory=AnswerSpec)
+    flashcard_ref: Optional[str] = None
+    explanation: Optional[str] = None
+
+
+class MemoryCheck(_Permissive):
+    """Flashcards branch gate: score at least pass_threshold_pct to continue."""
+
+    items: List[MemoryCheckItem] = Field(default_factory=list)
+    pass_threshold_pct: int = 60
+    modes_enabled: List[str] = Field(
+        default_factory=lambda: ["mcq", "fill_blank", "choose_explanation"]
+    )
+    retake_pool_size: Optional[int] = None
+
+
+# --------------------------------------------------------------------------- #
 # Phase 3 — Real Life (scenario + per-question answers).
 # --------------------------------------------------------------------------- #
 
@@ -703,7 +736,9 @@ class ContentJSON(_Permissive):
     boss_name: Optional[str] = None
 
     # Phase 1
+    flow_version: Optional[Literal["v1", "v2"]] = None
     flashcards: Optional[List[FlashcardItem]] = None
+    memory_check: Optional[MemoryCheck] = None
     # Phase 2
     memory_sprint: Optional[List[MemorySprintItem]] = None
     # Phase 3 — legacy scenario (untouched; all existing rows use this)
