@@ -194,12 +194,32 @@ class FinalSimulation(_Permissive):
     visual_description: Optional[str] = None
 
 
+class DecisionProcessExplanation(_Permissive):
+    """Open-ended student-written reasoning between Checkpoint 3 and the
+    final simulation (CBP Standard §5 Step 6 / Infra family prompts Step 6).
+
+    Three prompts: which concept applied, which method was used, what
+    common mistake was avoided. Without DPE, CBP collapses to three MCQs
+    in a row — the "passive rationalization" trap DPE was designed to
+    prevent (Infra family prompts forbid #7 + #8).
+
+    All fields optional so authoring tools can build a CBP incrementally;
+    the generation pipeline (PR #6) is responsible for populating each
+    field when present and treating unset DPE as a missing step.
+    """
+
+    concept: Optional[str] = None  # which concept/rule applied
+    method: Optional[str] = None   # which method/approach was used
+    mistake: Optional[str] = None  # which common mistake was avoided
+
+
 class CaseBasedPreview(_Permissive):
     """Flow v2 Case-Based Preview envelope (Tile A of the Learning Hub).
 
     Required structure per CBP Generation Standard §5:
         case_setup → ckp1 (identify) → lb_after1 → ckp2 (decide) →
-        lb_after2 → ckp3 (justify) → final_simulation → feedback_summary
+        lb_after2 → ckp3 (justify) → decision_process_explanation →
+        final_simulation → feedback_summary
 
     Gate: ≥2 of 3 checkpoints correct → section passes (plan §"Locked
     design decisions"). PR #1 ships the schema only; gate logic lands in
@@ -212,6 +232,12 @@ class CaseBasedPreview(_Permissive):
     visual_plan: Optional[Dict[str, Any]] = None
     case_setup: Optional[Dict[str, Any]] = None
     checkpoints: List[Checkpoint] = Field(default_factory=list)
+    # Step 6 of the CBP pipeline — open-ended reasoning gate before the
+    # consequence reveal. Backend-prompts-audit finding F1 surfaced that
+    # the contract / per-subject prompts had dropped DPE; schema is the
+    # corresponding data-model anchor. Optional so legacy / placeholder
+    # CBPs still validate.
+    decision_process_explanation: Optional[DecisionProcessExplanation] = None
     final_simulation: Optional[FinalSimulation] = None
     feedback_summary: Optional[Dict[str, Any]] = None
     completion_rules: Optional[Dict[str, Any]] = None
