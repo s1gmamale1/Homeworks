@@ -219,12 +219,24 @@ export interface TileMatchPayload {
   explanation?: never;
 }
 
-/** Per-pair Tile Match grade result (server-authoritative). */
+/** Per-pair Tile Match grade result (server-authoritative).
+ *
+ * `matched_tokens` echoes the per-side tokens of every currently-matched pair
+ * so the client can re-sync its local matched-set on every response — used to
+ * recover from page-reload-after-completion (the server's `_TM_ATTEMPTS` dict
+ * survives the reload while the React component remounts with an empty set).
+ *
+ * `already_matched` flags submits against a pair the server has already
+ * recorded — distinguishes from a true "wrong match" so the UI doesn't flash
+ * the wrong-state for what's actually a no-op replay.
+ */
 export interface TileMatchResult {
   correct: boolean;
+  already_matched?: boolean;
   hint: string | null;
   explanation: string | null;
   matched_count: number;
+  matched_tokens?: { lid: string; rid: string }[];
   total_pairs: number;
   complete: boolean;
   outcome: string | null;

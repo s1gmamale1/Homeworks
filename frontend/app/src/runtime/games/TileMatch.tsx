@@ -85,17 +85,35 @@ export default function TileMatch({ onComplete }: GameProps) {
       // The server inverts the opaque tokens to pair indices and grades by
       // index equality. We send the two tapped tokens; the verdict comes back.
       const res = await submitTileMatch(hwId, sessionId, selectedLid, rid);
+
+      // Sync the local matched-set from the server's authoritative
+      // `matched_tokens` on EVERY response (success, wrong, or already-matched
+      // replay). The server's _TM_ATTEMPTS dict survives page reloads while
+      // the React state remounts empty — without this sync, a returning student
+      // sees "0/N matched" and every click on a previously-matched pair flashes
+      // wrong with no feedback. Echoing the full token set on every response
+      // re-bases the UI to ground truth in one round-trip.
+      if (Array.isArray(res.matched_tokens)) {
+        const lids = new Set(res.matched_tokens.map((t) => t.lid));
+        const rids = new Set(res.matched_tokens.map((t) => t.rid));
+        setMatchedLefts(lids);
+        setMatchedRights(rids);
+      }
+
       if (res.correct) {
-        const nextL = new Set(matchedLefts);
-        nextL.add(selectedLid);
-        const nextR = new Set(matchedRights);
-        nextR.add(rid);
-        setMatchedLefts(nextL);
-        setMatchedRights(nextR);
         setSelectedLid(null);
         setHint(null);
         // Server is authoritative on completion (matched_count vs total_pairs).
-        if (res.complete || nextL.size >= totalPairs) {
+        if (res.complete) {
+          setComplete(true);
+        }
+      } else if (res.already_matched || res.complete) {
+        // Replay against a pair the server already considers matched (typical
+        // after a reload mid-game or post-completion). Don't flash wrong —
+        // this is a no-op from the student's perspective, not a mistake.
+        setSelectedLid(null);
+        setHint(null);
+        if (res.complete) {
           setComplete(true);
         }
       } else {
