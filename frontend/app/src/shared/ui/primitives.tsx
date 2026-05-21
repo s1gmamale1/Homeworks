@@ -1,4 +1,4 @@
-import type { ReactNode, ButtonHTMLAttributes } from "react";
+import type { HTMLAttributes, ReactNode, ButtonHTMLAttributes } from "react";
 import s from "./primitives.module.css";
 
 type Div = { children?: ReactNode; className?: string };
@@ -28,9 +28,14 @@ export function FeatureCard({ children, hover, className }: Div & { hover?: bool
   return <div className={cx(s.featureCard, hover && s.featureCardHover, className)}>{children}</div>;
 }
 
-export function DarkSection({ children, glow = true, className }: Div & { glow?: boolean }) {
+export function DarkSection({
+  children,
+  glow = true,
+  className,
+  ...rest
+}: Div & { glow?: boolean } & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cx(s.darkSection, className)}>
+    <div className={cx(s.darkSection, className)} {...rest}>
       {glow && <div className={s.darkGlow} aria-hidden="true" />}
       {children}
     </div>

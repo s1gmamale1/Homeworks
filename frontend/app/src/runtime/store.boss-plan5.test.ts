@@ -70,6 +70,7 @@ beforeEach(() => {
       loadingQuestion: false,
       submitError: null,
       generateError: null,
+      consecutiveGenerateFailures: 0,
     },
   });
 });
@@ -218,6 +219,36 @@ describe("loadNextQuestion", () => {
     await useRuntimeStore.getState().loadNextQuestion();
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("tracks consecutive 502 failures (Decision 3 — escalates to refresh CTA at ≥2)", async () => {
+    useRuntimeStore.setState((st) => ({
+      boss: { ...st.boss, bossSessionId: "bs_1" },
+    }));
+
+    // First 502 — counter goes to 1, UI shows "Try again".
+    stageResponses([errResponse(502, "language_drift")]);
+    await useRuntimeStore.getState().loadNextQuestion();
+    expect(useRuntimeStore.getState().boss.consecutiveGenerateFailures).toBe(1);
+
+    // Second 502 in a row — counter goes to 2, UI escalates to refresh CTA.
+    stageResponses([errResponse(502, "anti_repetition")]);
+    await useRuntimeStore.getState().loadNextQuestion();
+    expect(useRuntimeStore.getState().boss.consecutiveGenerateFailures).toBe(2);
+
+    // Successful generation resets the counter back to 0.
+    stageResponses([
+      okResponse({
+        question_id: "gbq_recovered",
+        question_text: "Recovered.",
+        target_skill: "s",
+        difficulty: "medium",
+        why_this_question: "",
+        boss_session_id: "bs_1",
+      }),
+    ]);
+    await useRuntimeStore.getState().loadNextQuestion();
+    expect(useRuntimeStore.getState().boss.consecutiveGenerateFailures).toBe(0);
   });
 });
 

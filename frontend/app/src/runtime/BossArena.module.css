@@ -376,10 +376,111 @@
   transform: scale(1.1);
 }
 
+/* ============================================================
+   PLAN-5 ADDITIONS — trials pill, loading skeleton,
+   misconception tags, 502 retry block.
+   ============================================================ */
+
+/* Right-side meta cluster — HP + trials pill share a row. */
+.headMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Trials pill — sits next to HP. Plan-5 contract is "you have N trials,
+   each submission consumes one"; visible counter prevents the "the boss
+   suddenly won" surprise. */
+.trialsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--boss-accent-lt);
+  border: 1px solid rgba(201, 58, 58, 0.22);
+  color: var(--boss-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  animation: trialsPulse 360ms var(--landing-spring) both;
+}
+@keyframes trialsPulse {
+  0%   { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Loading skeleton — calm placeholder card while /generate-question runs. */
+.skeleton {
+  margin-top: 8px;
+}
+.skeletonBar {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.04) 0%,
+    rgba(0, 0, 0, 0.08) 50%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonSweep 1.4s linear infinite;
+  margin-bottom: 10px;
+}
+.skeletonBar:nth-child(2) { width: 88%; }
+.skeletonBar:nth-child(3) { width: 62%; }
+@keyframes skeletonSweep {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.lead {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--boss-secondary);
+}
+
+/* Misconception tags — small chips inside the wrong-answer turn card. */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(201, 58, 58, 0.10);
+  border: 1px solid rgba(201, 58, 58, 0.20);
+  color: var(--boss-accent);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 502 retry block — same error tint, plus an action button below. */
+.generateError {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(201, 58, 58, 0.06);
+  border: 1px solid rgba(201, 58, 58, 0.30);
+}
+.generateError p {
+  margin: 0 0 10px;
+  color: var(--boss-accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 560px) {
   .whw { grid-template-columns: 1fr; }
   .arena.arena { padding: 28px 20px; }
+  .headMeta { gap: 8px; }
+  .trialsPill { font-size: 10px; padding: 3px 8px; }
 }
 
 /* ---- Reduced motion ---- */

@@ -1,70 +1,59 @@
 import { useEffect, useState } from "react";
 import { useRuntimeStore } from "./store";
 import type { GameProps } from "./GameHost";
-import type { BossQuestion } from "../shared/types";
 import { DarkSection, Eyebrow, Title, Lead, Button, Pill } from "../shared/ui/primitives";
 import s from "./BossArena.module.css";
 
 // ---------------------------------------------------------------------------
-// Boss Arena — the F4 mastery peak. A high-stakes dark arena: the student
-// answers boss_questions, each landed hit drains the boss HP bar by the
-// SERVER-returned `damage_dealt`. Correctness/damage are ALWAYS the server's
-// (phase=final-boss resolves the expected answer by question_id — the client
-// holds no answer and NEVER self-grades). HP hitting 0 is the win.
+// Boss Arena — F4 mastery peak. Plan-5 dynamic boss: each turn is an
+// adaptive question generated against the student's running context, and the
+// server is authoritative for HP / damage / trials / boss_status. The client
+// never self-grades; correctness comes from /boss/submit-answer.
 //
-// The Why → How → What scaffold is a 3-up reasoning prompt: it frames the
-// quality of answer the boss demands (name the concept → show the method →
-// state the result), mirroring the workflow-step pattern. It's a coaching
-// frame, not a grader.
+// Per-turn flow:
+//   1. /boss/start opens the session (resume or fresh based on staleness)
+//   2. /boss/generate-question fetches the next adaptive question
+//   3. Student types an answer + submits
+//   4. /boss/submit-answer returns is_correct + absolute hp + new trials_left
+//      + boss_status. If still "active", the store auto-chains step 2 for
+//      the NEXT question. Every submission consumes one trial; there is no
+//      "retry the same question" path (Plan-5 contract).
+//
+// 502 on /generate-question (anti-repetition / skill-floor / language-drift
+// retry exhaustion) is surfaced as a user-triggered "Try again" affordance
+// per Boss Arena spec §10. After 2 consecutive failures we escalate to a
+// "Refresh the page" CTA (Decision 3) — don't keep hammering a degraded LLM.
+//
+// The Why → How → What scaffold is a coaching label (Option B scope), not
+// a grader.
 // ---------------------------------------------------------------------------
 
 const WHW_STEPS = [
   { label: "Why", hint: "Name the concept in play." },
-  { label: "How", hint: "Show the method you’d use." },
+  { label: "How", hint: "Show the method you'd use." },
   { label: "What", hint: "State the result." },
 ] as const;
 
 export default function BossArena({ onComplete }: GameProps) {
-  const payload = useRuntimeStore((st) => st.payload);
   const boss = useRuntimeStore((st) => st.boss);
+  const payload = useRuntimeStore((st) => st.payload);
   const startBoss = useRuntimeStore((st) => st.startBoss);
+  const loadNextQuestion = useRuntimeStore((st) => st.loadNextQuestion);
   const bossAnswer = useRuntimeStore((st) => st.bossAnswer);
   const advanceBossQuestion = useRuntimeStore((st) => st.advanceBossQuestion);
   const retryBoss = useRuntimeStore((st) => st.retryBoss);
 
-  const questions = (payload?.content_json.boss_questions ?? []) as BossQuestion[];
   const meta = payload?.content_json.boss_meta;
   const bossName = meta?.name ?? "The Boss";
-  // PR-2: question text now comes from the Plan-5 server response. Static
-  // boss_questions[] is read only by the empty-state guard below; PR-3 drops
-  // that branch in favor of Plan-5's 502 / no-question-loaded UI states.
-  const questionText = boss.currentQuestion?.question_text ?? "Defend your reasoning.";
 
   const [answer, setAnswer] = useState("");
 
-  // Reset the input whenever a new turn begins (a new question is shown).
-  const turnHadResult = boss.lastResult !== null;
+  // Reset the input whenever a new question is shown (questionIndex bumps on
+  // each successful /generate-question landing — store guarantees question_id
+  // is unique per turn).
   useEffect(() => {
     setAnswer("");
-  }, [boss.questionIndex, turnHadResult]);
-
-  if (questions.length === 0) {
-    return (
-      <DarkSection className={s.arena} glow={false}>
-        <div className={s.arenaGlow} aria-hidden="true" />
-        <Eyebrow>Boss Arena</Eyebrow>
-        <Title size="section">
-          No boss to face.
-        </Title>
-        <Lead>This homework has no boss questions. Wrapping the arc.</Lead>
-        <div className={s.actions}>
-          <Button variant="blue" onClick={onComplete}>
-            Finish arc →
-          </Button>
-        </div>
-      </DarkSection>
-    );
-  }
+  }, [boss.currentQuestion?.question_id]);
 
   // ---- intro ----
   if (boss.status === "intro") {
@@ -81,10 +70,20 @@ export default function BossArena({ onComplete }: GameProps) {
         </Lead>
         <WhyHowWhat />
         <div className={s.actions}>
-          <Button variant="blue" onClick={startBoss} data-testid="boss-begin">
-            Enter the arena →
+          <Button
+            variant="blue"
+            onClick={() => void startBoss()}
+            disabled={boss.submitting}
+            data-testid="boss-begin"
+          >
+            {boss.submitting ? "Opening the arena…" : "Enter the arena →"}
           </Button>
         </div>
+        {boss.submitError && (
+          <p className={s.error} role="alert">
+            {boss.submitError}
+          </p>
+        )}
       </DarkSection>
     );
   }
@@ -100,7 +99,7 @@ export default function BossArena({ onComplete }: GameProps) {
           {bossName} is down.
         </Title>
         <Lead>
-          You drained the bar to zero with reasoning that held up. That’s
+          You drained the bar to zero with reasoning that held up. That's
           mastery.
         </Lead>
         {typeof stars === "number" && <Stars count={stars} />}
@@ -124,8 +123,13 @@ export default function BossArena({ onComplete }: GameProps) {
         </Title>
         <Lead>Regroup and come back sharper — the bar resets to full.</Lead>
         <div className={s.actions}>
-          <Button variant="blue" onClick={retryBoss} data-testid="boss-retry">
-            Face it again →
+          <Button
+            variant="blue"
+            onClick={() => void retryBoss()}
+            disabled={boss.submitting}
+            data-testid="boss-retry"
+          >
+            {boss.submitting ? "Resetting…" : "Face it again →"}
           </Button>
         </div>
       </DarkSection>
@@ -136,6 +140,11 @@ export default function BossArena({ onComplete }: GameProps) {
   const result = boss.lastResult;
   const justHit = result?.is_correct === true;
   const hpPct = boss.maxHp > 0 ? Math.max(0, Math.min(100, (boss.hp / boss.maxHp) * 100)) : 0;
+
+  // Decision 3 escalation: after 2 consecutive /generate-question 502s we
+  // surface a hard "refresh the page" CTA instead of another retry button.
+  const refreshNeeded = boss.consecutiveGenerateFailures >= 2;
+  const hasGenerateError = boss.generateError !== null;
 
   const onSubmit = () => {
     const trimmed = answer.trim();
@@ -149,12 +158,22 @@ export default function BossArena({ onComplete }: GameProps) {
 
       <div className={s.bossHead}>
         <span className={s.bossName}>{bossName}</span>
-        <span className={s.hpLabel} data-testid="boss-hp">
-          {boss.hp} / {boss.maxHp} HP
+        <span className={s.headMeta}>
+          <span
+            className={s.trialsPill}
+            key={`trials-${boss.trialsLeft}`}
+            data-testid="boss-trials"
+          >
+            Trials: {boss.trialsLeft} left
+          </span>
+          <span className={s.hpLabel} data-testid="boss-hp">
+            {boss.hp} / {boss.maxHp} HP
+          </span>
         </span>
       </div>
 
-      {/* HP bar — drains with damage; flashes on a hit. */}
+      {/* HP bar — drains with damage; flashes on a hit. HP is server-absolute,
+          not a client-side subtraction. */}
       <div className={s.hpTrack} aria-hidden="true">
         <div
           className={`${s.hpFill} ${justHit ? s.hpFillHit : ""}`}
@@ -164,14 +183,29 @@ export default function BossArena({ onComplete }: GameProps) {
 
       <WhyHowWhat />
 
-      <p className={s.qLabel}>Question {boss.questionIndex + 1}</p>
-      <Title size="section" className={s.question}>
-        {questionText}
-      </Title>
+      {/* Question slot — three sub-states:
+          1. currentQuestion → render it (the steady-state)
+          2. loadingQuestion → calm skeleton (mid-generate)
+          3. neither → covered by the generateError block below */}
+      {boss.currentQuestion ? (
+        <>
+          <p className={s.qLabel}>Question {boss.questionIndex + 1}</p>
+          <Title size="section" className={s.question}>
+            {boss.currentQuestion.question_text}
+          </Title>
+        </>
+      ) : boss.loadingQuestion ? (
+        <div className={s.skeleton} data-testid="boss-loading-question">
+          <p className={s.qLabel}>Question</p>
+          <div className={s.skeletonBar} aria-hidden="true" />
+          <div className={s.skeletonBar} aria-hidden="true" />
+          <p className={s.lead}>Loading the next question…</p>
+        </div>
+      ) : null}
 
-      {/* turn feedback: boss line + damage. Plan-5 returns a single
-          `feedback` string (no separate hint field); PR-3 redesigns this
-          surface to show "Wrong, moving on" + a "Next question →" CTA. */}
+      {/* Turn feedback — sits beneath the question until the student
+          dismisses via "Next question →". On a wrong answer, the
+          misconception_tags chip-row surfaces what tripped them. */}
       {result && (
         <div
           className={`${s.turn} ${result.is_correct ? s.turnHit : s.turnMiss}`}
@@ -184,10 +218,54 @@ export default function BossArena({ onComplete }: GameProps) {
                 Hit · −{result.damage} HP
               </Pill>
             ) : (
-              <Pill tone="warn">Blocked · no damage</Pill>
+              <Pill tone="warn">
+                Wrong · moving on
+              </Pill>
             )}
           </div>
           {result.feedback && <p className={s.bossLine}>{result.feedback}</p>}
+          {!result.is_correct && result.misconception_tags.length > 0 && (
+            <div className={s.tags} data-testid="boss-misconception-tags">
+              {result.misconception_tags.map((tag) => (
+                <span key={tag} className={s.tag}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 502 retry block — Decision 3.
+          First failure: "Try again" button re-invokes /generate-question.
+          Two failures in a row: hard refresh CTA. Telemetry on the
+          consecutiveGenerateFailures counter is the ops signal. */}
+      {hasGenerateError && (
+        <div className={s.generateError} role="alert" data-testid="boss-generate-error">
+          {refreshNeeded ? (
+            <>
+              <p>Boss generation is unavailable right now.</p>
+              <Button
+                variant="blue"
+                onClick={() => window.location.reload()}
+                data-testid="boss-refresh"
+              >
+                Refresh the page →
+              </Button>
+            </>
+          ) : (
+            <>
+              <p>{boss.generateError}</p>
+              <Button
+                variant="blue"
+                onClick={() => void loadNextQuestion()}
+                disabled={boss.loadingQuestion}
+                data-testid="boss-try-again"
+              >
+                {boss.loadingQuestion ? "Trying…" : "Try again →"}
+              </Button>
+            </>
+          )}
         </div>
       )}
 
@@ -197,14 +275,26 @@ export default function BossArena({ onComplete }: GameProps) {
         </p>
       )}
 
-      {/* After a landed hit (boss still up), advance to the next question. */}
-      {justHit ? (
+      {/* CTA row.
+          - With a result on screen AND no generate-error: "Next question →"
+            dismisses the turn summary. The next question is already
+            auto-loaded by the store, so the dismissal just reveals it.
+          - Result + generateError: hide this CTA; the retry block above
+            owns the path forward.
+          - No result + currentQuestion: answer textarea + Attack button.
+          - Otherwise (loading / generateError without prior result): no CTA. */}
+      {result && !hasGenerateError ? (
         <div className={s.actions}>
-          <Button variant="blue" onClick={advanceBossQuestion} data-testid="boss-next">
-            Press the attack →
+          <Button
+            variant="blue"
+            onClick={advanceBossQuestion}
+            disabled={boss.loadingQuestion}
+            data-testid="boss-next"
+          >
+            Next question →
           </Button>
         </div>
-      ) : (
+      ) : !result && boss.currentQuestion ? (
         <div className={s.answerWrap}>
           <label className={s.answerLabel} htmlFor="boss-answer">
             Your answer
@@ -233,7 +323,7 @@ export default function BossArena({ onComplete }: GameProps) {
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
     </DarkSection>
   );
 }

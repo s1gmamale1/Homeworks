@@ -154,6 +154,10 @@ interface BossState {
   loadingQuestion: boolean; // loadNextQuestion in flight
   submitError: string | null; // generic submit / session-open error surface
   generateError: string | null; // /generate-question 502-style error (PR-3 surfaces "Try again")
+  // Consecutive /generate-question failures; resets on any success. The UI
+  // shows a "Try again" affordance on 1, escalates to a "Refresh the page"
+  // CTA on ≥2 (per Decision 3 — we don't keep hammering a degraded LLM).
+  consecutiveGenerateFailures: number;
 }
 
 // Reflection / Debrief (F5): the closing screen after the Boss. A short
@@ -306,6 +310,7 @@ const initialBoss: BossState = {
   loadingQuestion: false,
   submitError: null,
   generateError: null,
+  consecutiveGenerateFailures: 0,
 };
 
 // Default reflection prompts (Flow v2 "What was hardest? Why did you make your
@@ -727,6 +732,11 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
           questionIndex: st.boss.currentQuestion ? st.boss.questionIndex + 1 : 0,
           attemptNumber: 1,
           loadingQuestion: false,
+          // Reset the consecutive-failure counter on any success — a single
+          // good generation clears the way for the "Try again" affordance to
+          // reappear cleanly on the NEXT 502 (rather than instantly jumping
+          // to the refresh CTA).
+          consecutiveGenerateFailures: 0,
           // NOTE: do NOT clear lastResult here — bossAnswer chains into this
           // action immediately after setting lastResult for the just-finished
           // turn, and the UI relies on lastResult to render the feedback card
@@ -743,6 +753,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
           generateError: retryExhausted
             ? "The boss is regrouping — try again."
             : (err as Error).message || "Couldn't fetch the next question.",
+          consecutiveGenerateFailures: st.boss.consecutiveGenerateFailures + 1,
         },
       }));
     }
