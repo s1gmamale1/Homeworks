@@ -138,6 +138,104 @@ class MemoryCheck(_Permissive):
 
 
 # --------------------------------------------------------------------------- #
+# Flow v2 — Case-Based Preview (CBP) — 3-checkpoint guided learning case.
+# --------------------------------------------------------------------------- #
+
+
+class LearningBlock(_Permissive):
+    """Micro-explanation shown after a CBP checkpoint resolves.
+
+    `consequence_preview` carries the per-checkpoint Forbid #6 consequence
+    text ("Agar boshqacha tanlasangiz, [X] bo'lardi"). Named explicitly so
+    the recursive scrub in `services/tutor.py` can target this key during
+    the active checkpoint window — the body itself reveals the answer.
+    """
+
+    body: str
+    consequence_preview: Optional[str] = None
+
+
+class Checkpoint(_Permissive):
+    """One of the three sequenced checkpoints in a Case-Based Preview.
+
+    `kind` is required (no default). CBP §5 mandates exactly three
+    checkpoints in canonical order [identify, decide, justify]. The
+    model-level validator on `CaseBasedPreview` enforces both length and
+    order.
+
+    `retake_variants` holds regenerated questions used by the soft-retry
+    path (Flow v2 forbid rule #19: never the identical question). These
+    MUST be redacted by the tutor scrub until the student fails the
+    original — wiring lands in PR #2 (tutor coupling).
+    """
+
+    kind: Literal["identify", "decide", "justify"]
+    question: str
+    options: Optional[List[Any]] = None
+    answer_spec: AnswerSpec = Field(default_factory=AnswerSpec)
+    learning_block_after: Optional[LearningBlock] = None
+    retake_variants: List["Checkpoint"] = Field(default_factory=list)
+
+
+class FinalSimulation(_Permissive):
+    """The simulation block shown after all 3 checkpoints resolve.
+
+    PR #1 ships text-only `visual_description`. SVG handling is deferred to
+    PR #6 with a sanitizer (no inline `<script>`, no `<foreignObject>`, no
+    event handlers) — XSS risk on the inline-`<script>` CSP allowance is
+    the reason the field is text-only at this layer.
+    """
+
+    correct_path: str
+    wrong_path: str
+    visual_description: Optional[str] = None
+
+
+class CaseBasedPreview(_Permissive):
+    """Flow v2 Case-Based Preview envelope (Tile A of the Learning Hub).
+
+    Required structure per CBP Generation Standard §5:
+        case_setup → ckp1 (identify) → lb_after1 → ckp2 (decide) →
+        lb_after2 → ckp3 (justify) → final_simulation → feedback_summary
+
+    Gate: ≥2 of 3 checkpoints correct → section passes (plan §"Locked
+    design decisions"). PR #1 ships the schema only; gate logic lands in
+    PR #6.
+    """
+
+    title: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    source_extraction: Optional[Dict[str, Any]] = None
+    visual_plan: Optional[Dict[str, Any]] = None
+    case_setup: Optional[Dict[str, Any]] = None
+    checkpoints: List[Checkpoint] = Field(default_factory=list)
+    final_simulation: Optional[FinalSimulation] = None
+    feedback_summary: Optional[Dict[str, Any]] = None
+    completion_rules: Optional[Dict[str, Any]] = None
+
+    @model_validator(mode="after")
+    def _validate_checkpoint_order(self) -> "CaseBasedPreview":
+        if len(self.checkpoints) != 3:
+            raise ValueError(
+                f"CaseBasedPreview requires exactly 3 checkpoints "
+                f"(CBP §1, §5); got {len(self.checkpoints)}"
+            )
+        kinds = [c.kind for c in self.checkpoints]
+        expected = ["identify", "decide", "justify"]
+        if kinds != expected:
+            raise ValueError(
+                f"Checkpoint order must be {expected} (CBP §6); got {kinds}"
+            )
+        return self
+
+
+# Resolve the forward-reference in Checkpoint.retake_variants. Required
+# because `List["Checkpoint"]` is the first self-referential annotation in
+# this file.
+Checkpoint.model_rebuild()
+
+
+# --------------------------------------------------------------------------- #
 # Phase 3 — Real Life (scenario + per-question answers).
 # --------------------------------------------------------------------------- #
 
@@ -739,6 +837,8 @@ class ContentJSON(_Permissive):
     flow_version: Optional[Literal["v1", "v2"]] = None
     flashcards: Optional[List[FlashcardItem]] = None
     memory_check: Optional[MemoryCheck] = None
+    # Phase 1.5 — Case-Based Preview (Flow v2 Learning Hub Tile A)
+    case_based_preview: Optional[CaseBasedPreview] = None
     # Phase 2
     memory_sprint: Optional[List[MemorySprintItem]] = None
     # Phase 3 — legacy scenario (untouched; all existing rows use this)

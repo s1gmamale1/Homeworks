@@ -75,6 +75,7 @@ _ARRAY_CONSTANTS = [
 # Wave 2: reading/consolidation/reflection are objects, like RL_SCENARIO.
 _OBJECT_CONSTANTS = [
     ("memory_check",  "MC"),
+    ("case_based_preview", "CBP"),
     ("reading",       "READING"),
     ("consolidation", "CONSOLIDATION"),
     ("reflection",    "REFLECTION"),
