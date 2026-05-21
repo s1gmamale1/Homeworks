@@ -42,8 +42,8 @@ Plus:
 CBP is Uzbek-first (with English/Russian translations downstream).
 
 - **System voice** (narration, instructions to the student, AI feedback) — always formal **Siz**.
-- **In-case character dialogue** — role-natural. A student speaking to a young customer inside the case may use `sen` if the scene genuinely calls for it. A student addressing an adult or stranger uses `Siz`.
-- Avoid `sen`/`san` in system voice. Avoid Russian/English calques. Avoid childish tone.
+- **In-case character dialogue** — also formal **Siz**, throughout. The Uzbek Language Foundation Review (Risk 6.4) treats `sen` / `san` as a register break regardless of who is speaking inside the case; no exception is authorized at this layer. If a case genuinely requires intra-character casual register (e.g., the lesson IS teaching `sen`/`siz` distinction in an English/Russian formal-address topic), escalate to the Uzbek language owner before authoring.
+- Avoid `sen`/`san` everywhere. Avoid Russian/English calques. Avoid childish tone.
 - Preserve subject accuracy first; simplification never changes formulas, numbers, units, calculation order, or source meaning.
 - Mark output `language_status: "draft"` if Uzbek hasn't passed native linguist review.
 
@@ -59,8 +59,9 @@ Output MUST contain, in order:
 4. **Checkpoint 2: Decide** — application. "Which method / formula / next step is correct?"
 5. **Learning Block 2** — same shape as LB1.
 6. **Checkpoint 3: Justify** — explanation. "Why is the correct choice correct, OR why does the common mistake fail?"
-7. **Final simulation** — `{correct_path, wrong_path, visual_description}`. Text-only `visual_description` for v1; sanitized SVG is deferred.
-8. **AI feedback summary** — `{student_understood, mistake_appeared, what_to_review}`.
+7. **Decision Process Explanation (DPE)** — `{concept, method, mistake}`. Open-ended student-written reasoning rendered BEFORE the consequence reveal. Three sub-prompts: *which concept applied · which method was used · which common mistake was avoided*. Without DPE, CBP collapses to three MCQs in a row — the "passive rationalization" trap. **Forbids:** (a) replacing DPE with a 4th MCQ, (b) placing DPE AFTER the consequence (Infra family prompts forbid #7 + #8).
+8. **Final simulation** — `{correct_path, wrong_path, visual_description}`. Text-only `visual_description` for v1; sanitized SVG is deferred.
+9. **AI feedback summary** — `{student_understood, mistake_appeared, what_to_review}`.
 
 Gate: ≥2 of 3 checkpoints correct → section passes.
 
@@ -76,20 +77,21 @@ Before returning the generated CBP, the generator MUST be able to answer "yes" t
 2. ✅ Required student skill is identified (in `metadata.required_skill`).
 3. ✅ Case type matches subject (math = practical-problem, science = phenomenon/lab/observation, language = communication, history = decision/source).
 4. ✅ Case is source-aligned — concept preserved.
-5. ✅ Student is decision-maker / solver (verified by `case_setup.student_role` non-empty + each checkpoint question uses a 2nd-person Siz decision verb).
+5. ✅ Student is decision-maker / solver (verified by `case_setup.role` non-empty + each checkpoint question uses a 2nd-person Siz decision verb).
 6. ✅ Exactly 3 checkpoints exist.
 7. ✅ Checkpoint 1 identifies a concept.
 8. ✅ Checkpoint 2 chooses a method / action.
 9. ✅ Checkpoint 3 justifies or catches a mistake.
-10. ✅ Final consequence / simulation exists.
-11. ✅ Correct path AND common wrong path are both shown.
-12. ✅ Visuals support learning, not decoration.
-13. ✅ Image is used only for scene / context (not for formulas).
-14. ✅ SVG would be used for math / model / state visuals (deferred to PR #6 — v1 emits text descriptions).
-15. ✅ Uzbek is formal Siz in the system voice and clear.
-16. ✅ Formulas / numbers / units / source meaning preserved.
-17. ✅ No passive reading blob.
-18. ✅ Completion / pass condition exists; retry state exists.
+10. ✅ Decision Process Explanation (DPE) exists between Ckp 3 and final_simulation, with the three sub-prompts (concept, method, mistake). DPE is NOT a 4th MCQ; it lives BEFORE the consequence (Infra family prompts forbid #7 + #8).
+11. ✅ Final consequence / simulation exists.
+12. ✅ Correct path AND common wrong path are both shown.
+13. ✅ Visuals support learning, not decoration.
+14. ✅ Image is used only for scene / context (not for formulas).
+15. ✅ SVG would be used for math / model / state visuals (deferred to PR #6 — v1 emits text descriptions).
+16. ✅ Uzbek is formal Siz in BOTH system voice AND in-case dialogue (no `sen`/`san` exception authorized at this layer).
+17. ✅ Formulas / numbers / units / source meaning preserved.
+18. ✅ No passive reading blob.
+19. ✅ Completion / pass condition exists; retry state exists.
 
 If any item fails, regenerate.
 
@@ -136,6 +138,11 @@ If any item fails, regenerate.
     { "kind": "decide", "...": "..." },
     { "kind": "justify", "...": "..." }
   ],
+  "decision_process_explanation": {
+    "concept": "<which concept/rule applied — student's own words>",
+    "method": "<which method/approach was used — student's own words>",
+    "mistake": "<which common mistake was avoided — student's own words>"
+  },
   "final_simulation": {
     "correct_path": "<what happens if all decisions are right>",
     "wrong_path": "<what happens if the common mistake is made>",
@@ -162,7 +169,8 @@ A CBP is valid only if the student can say:
 - I know what situation I was in.
 - I know what decision I made.
 - I know which textbook concept helped me.
+- I explained my reasoning before seeing the outcome.
 - I saw what happened because of my choice.
 - I understand the main mistake to avoid.
 
-If any of these five claims aren't supported by the generated output, regenerate.
+If any of these six claims aren't supported by the generated output, regenerate. (The 6th claim is what DPE in §4 step 7 establishes — without DPE in place, the student rationalizes backwards from the consequence and the claim is lost.)
