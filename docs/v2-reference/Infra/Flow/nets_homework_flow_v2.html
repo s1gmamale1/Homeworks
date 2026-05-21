@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NETS Homework Flow v2 — Source-of-Truth Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white: #ffffff;
+  --bg: #fbfbfd;
+  --gray-1: #f5f5f7;
+  --gray-2: #e8e8ed;
+  --gray-3: #d2d2d7;
+  --gray-4: #86868b;
+  --gray-5: #6e6e73;
+  --ink: #1d1d1f;
+  --black: #000000;
+  --blue: #0071e3;
+  --blue-hover: #0077ed;
+
+  --grad-mission:    linear-gradient(135deg, #ff7b54 0%, #c9633a 100%);
+  --grad-recall:     linear-gradient(135deg, #5e9ed6 0%, #4677b8 100%);
+  --grad-philosophy: linear-gradient(135deg, #b388eb 0%, #8a5fc8 100%);
+  --grad-energy:     linear-gradient(135deg, #ffd166 0%, #f4a261 100%);
+  --grad-clarity:    linear-gradient(135deg, #74aa9c 0%, #4a8576 100%);
+  --grad-warning:    linear-gradient(135deg, #ff5e3a 0%, #d97757 100%);
+
+  --font: 'Onest', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 400;
+  line-height: 1.47;
+  font-size: 17px;
+  letter-spacing: -0.022em;
+}
+
+/* ============== NAV ============== */
+.apple-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  height: 44px; display: flex; justify-content: center; align-items: center;
+}
+.apple-nav__inner {
+  width: 100%; max-width: 1024px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 22px;
+}
+.apple-nav__logo {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18px; font-weight: 600; letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.apple-nav__menu { display: flex; list-style: none; gap: 0; }
+.apple-nav__menu a {
+  display: block; padding: 0 11px; height: 44px; line-height: 44px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none; font-size: 12px; font-weight: 400; letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+.apple-nav__menu a:hover { color: var(--white); }
+
+.product-nav {
+  position: sticky; top: 44px; z-index: 999;
+  background: rgba(245, 245, 247, 0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  height: 52px; display: flex; align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+.product-nav__inner {
+  width: 100%; max-width: 1024px; margin: 0 auto;
+  padding: 0 22px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.product-nav__title {
+  font-size: 21px; font-weight: 600; letter-spacing: -0.022em; color: var(--ink);
+}
+.product-nav__title em {
+  font-style: normal; color: var(--gray-5); font-weight: 400;
+}
+.product-nav__links { display: flex; list-style: none; gap: 28px; align-items: center; }
+.product-nav__links a {
+  color: var(--ink); text-decoration: none;
+  font-size: 12px; font-weight: 400; letter-spacing: -0.01em;
+  transition: opacity 0.2s ease;
+}
+.product-nav__links a:hover { opacity: 0.7; }
+
+/* ============== HERO ============== */
+.hero {
+  background: var(--white);
+  padding: 100px 22px 0;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero__eyebrow {
+  font-size: 21px; font-weight: 600; letter-spacing: -0.022em;
+  background: var(--grad-philosophy);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  opacity: 0; animation: fadeUp 0.8s 0.1s forwards;
+}
+.hero__title {
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 600; letter-spacing: -0.045em; line-height: 1.05;
+  color: var(--ink); max-width: 980px; margin: 0 auto;
+  opacity: 0; animation: fadeUp 0.9s 0.25s forwards;
+}
+.hero__title-accent {
+  background: linear-gradient(135deg, #b388eb 0%, #8a5fc8 50%, #5e9ed6 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero__subtitle {
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 400; line-height: 1.4; letter-spacing: -0.022em;
+  color: var(--gray-5); max-width: 720px; margin: 28px auto 0;
+  opacity: 0; animation: fadeUp 0.9s 0.45s forwards;
+}
+.hero__journey {
+  margin: 56px auto 0; max-width: 880px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.9s 0.6s forwards;
+}
+.hero__journey-step {
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  padding: 8px 14px; border-radius: 980px;
+  background: var(--gray-1); color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.hero__journey-arrow { color: var(--gray-4); font-size: 14px; font-weight: 300; }
+
+.hero__visual {
+  margin-top: 80px; width: 100%; height: 480px;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  opacity: 0; animation: fadeUp 1.2s 0.85s forwards;
+}
+.hero__orb {
+  width: 480px; height: 480px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, #b388eb 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, #5e9ed6 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, #74aa9c 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, #ffd166 0%, transparent 40%),
+    linear-gradient(135deg, #8a5fc8, #4677b8);
+  filter: blur(2px);
+  animation: orbSpin 20s linear infinite;
+  box-shadow:
+    0 0 120px rgba(138, 95, 200, 0.4),
+    inset 0 0 80px rgba(255, 255, 255, 0.2);
+}
+.hero__orb-label {
+  position: absolute; font-size: 13px; font-weight: 500; color: var(--white);
+  background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+  padding: 8px 16px; border-radius: 980px; z-index: 2; white-space: nowrap;
+}
+.hero__orb-label--1 { top: 18%; left: 50%; transform: translate(-50%, 0); animation: floatBob 4s ease-in-out infinite; }
+.hero__orb-label--2 { top: 50%; left: 8%; animation: floatBobNoTranslate 5s ease-in-out infinite 0.5s; }
+.hero__orb-label--3 { top: 50%; right: 8%; animation: floatBobNoTranslate 4.5s ease-in-out infinite 1s; }
+.hero__orb-label--4 { bottom: 16%; left: 50%; transform: translate(-50%, 0); animation: floatBob 5.5s ease-in-out infinite 0.3s; }
+
+@keyframes orbSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes floatBob {
+  0%, 100% { transform: translateY(0) translateX(-50%); }
+  50% { transform: translateY(-12px) translateX(-50%); }
+}
+@keyframes floatBobNoTranslate {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============== TILES ============== */
+.tiles { background: var(--white); padding: 12px 11px 0; }
+.tiles__grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 11px;
+}
+.tile {
+  background: var(--gray-1); border-radius: 28px;
+  padding: 60px 40px 40px; min-height: 540px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tile:hover { transform: scale(1.005); }
+.tile--dark { background: var(--black); color: var(--white); }
+.tile__pretitle {
+  font-size: 21px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.022em;
+}
+.tile--dark .tile__pretitle { color: var(--gray-3); }
+.tile__title {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 600; letter-spacing: -0.045em; line-height: 1.05; margin-bottom: 14px;
+}
+.tile__sub {
+  font-size: 18px; font-weight: 400; color: var(--gray-5);
+  margin-bottom: 24px; max-width: 380px; letter-spacing: -0.022em;
+}
+.tile--dark .tile__sub { color: var(--gray-3); }
+.tile__visual {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  width: 100%; position: relative;
+}
+
+.tile__philosophy {
+  display: flex; flex-direction: column; gap: 8px;
+  text-align: left; max-width: 340px; width: 100%;
+}
+.tile__philosophy-line {
+  font-size: 16px; font-weight: 500; letter-spacing: -0.02em;
+  padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.tile__philosophy-line:last-child { border-bottom: none; }
+.tile__philosophy-line strong { font-weight: 700; color: #ffd166; }
+.tile__philosophy-line--is strong { color: #74aa9c; }
+
+.tile__pattern {
+  display: flex; flex-direction: column; gap: 10px;
+  font-family: var(--mono); font-size: 14px; font-weight: 500;
+  text-align: left; width: 100%; max-width: 360px;
+}
+.tile__pattern-row {
+  display: grid; grid-template-columns: 24px 1fr;
+  gap: 12px; align-items: center;
+  padding: 12px 16px; background: var(--white); border-radius: 12px;
+}
+.tile__pattern-num {
+  font-weight: 700;
+  background: var(--grad-philosophy);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============== SCENE ============== */
+.scene {
+  padding: 120px 22px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.scene--dark { background: var(--black); color: var(--white); }
+.scene--gray { background: var(--gray-1); }
+.scene__inner { max-width: 980px; margin: 0 auto; }
+.scene__eyebrow {
+  font-size: 21px; font-weight: 600; letter-spacing: -0.022em;
+  margin-bottom: 8px;
+  background: var(--grad-philosophy);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+.scene__eyebrow--mission  { background: var(--grad-mission);  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.scene__eyebrow--clarity  { background: var(--grad-clarity);  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.scene__eyebrow--energy   { background: var(--grad-energy);   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.scene__eyebrow--recall   { background: var(--grad-recall);   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.scene__eyebrow--warning  { background: var(--grad-warning);  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.scene--dark .scene__eyebrow {
+  background: linear-gradient(135deg, #ffd166, #ff8c5a);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.scene__title {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 600; letter-spacing: -0.04em; line-height: 1.04;
+  margin-bottom: 24px; color: inherit;
+}
+.scene__title em { font-style: normal; color: var(--gray-5); font-weight: 600; }
+.scene--dark .scene__title em { color: var(--gray-4); }
+.scene__sub {
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: 400; line-height: 1.4; letter-spacing: -0.022em;
+  color: var(--gray-5); max-width: 720px; margin: 0 auto 48px;
+}
+.scene--dark .scene__sub { color: var(--gray-3); }
+.scene__art {
+  margin: 0 auto; max-width: 980px; border-radius: 28px;
+  padding: 60px 40px; background: var(--white);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.scene--gray .scene__art { background: var(--white); }
+.scene--dark .scene__art {
+  background: #1d1d1f; box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ============== FLOW GRID (4-LANE HORIZONTAL) ============== */
+.flow-grid-wrap {
+  max-width: 1200px; margin: 0 auto;
+}
+
+.flow-tab-label {
+  display: block; width: fit-content; margin: 0 auto 28px;
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray-5);
+  padding: 8px 18px; background: var(--gray-1); border-radius: 980px;
+}
+.flow-tab-label::before { content: '⌥ '; opacity: 0.5; }
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.7fr 1.25fr 1.1fr;
+  gap: 18px;
+  position: relative;
+  text-align: left;
+}
+
+.lane {
+  background: var(--white);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--gray-2);
+  display: flex; flex-direction: column;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.lane:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.07);
+}
+
+.lane__head {
+  padding: 18px 22px 16px;
+  color: var(--white);
+}
+.lane__head--clarity    { background: var(--grad-clarity); }
+.lane__head--energy     { background: var(--grad-energy); color: var(--ink); }
+.lane__head--mission    { background: var(--grad-mission); }
+.lane__head--philosophy { background: var(--grad-philosophy); }
+
+.lane__chip {
+  display: block;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  opacity: 0.82; margin-bottom: 6px;
+}
+.lane__title {
+  font-size: 19px; font-weight: 600; letter-spacing: -0.022em;
+  line-height: 1.2;
+}
+
+.lane__body {
+  padding: 16px 14px;
+  display: flex; flex-direction: column; gap: 8px; flex: 1;
+}
+
+.station {
+  background: var(--gray-1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid transparent;
+  transition: background 0.2s ease;
+}
+.station:hover { background: var(--gray-2); }
+.station--clarity  { border-left-color: #4a8576; }
+.station--recall   { border-left-color: #4677b8; }
+.station--mission  { border-left-color: #c9633a; }
+.station--philosophy { border-left-color: #8a5fc8; }
+.station--boss {
+  background: var(--ink); color: var(--white);
+  border-left: 3px solid #ffd166;
+  position: relative;
+}
+.station--boss:hover { background: #2a2a2c; }
+.station--boss::after {
+  content: '★'; position: absolute;
+  top: 10px; right: 14px;
+  color: #ffd166; font-size: 13px;
+}
+
+.station__name {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: -0.012em; line-height: 1.3;
+}
+.station__hint {
+  font-size: 11.5px; color: var(--gray-5);
+  margin-top: 4px; letter-spacing: -0.01em; line-height: 1.45;
+}
+.station--boss .station__hint { color: var(--gray-3); }
+
+.station-arrow {
+  text-align: center;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gray-4); padding: 4px 0 2px;
+}
+.station-arrow::before { content: '↓ '; }
+
+.divider-label {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-5);
+  margin: 2px 4px 4px;
+}
+.divider-label::before, .divider-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--gray-2);
+}
+
+.gate-body {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 28px 14px; text-align: center;
+}
+.gate-body__icon {
+  font-size: 36px; margin-bottom: 14px;
+  background: linear-gradient(135deg, #ffd166, #c9941a);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+.gate-body__text {
+  font-size: 12.5px; color: var(--gray-5);
+  letter-spacing: -0.01em; line-height: 1.5;
+}
+.gate-body__pill {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--gray-1); color: var(--ink);
+  padding: 6px 12px; border-radius: 980px;
+  margin-top: 14px;
+}
+
+/* arrows between columns */
+.lane + .lane::before {
+  content: '→';
+  position: absolute;
+  top: 50%; left: -14px;
+  transform: translateY(-50%);
+  font-size: 18px; font-weight: 300;
+  color: var(--gray-3);
+  z-index: 2;
+}
+
+.flow-annotations {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.7fr 1.25fr 1.1fr;
+  gap: 18px;
+  text-align: center;
+}
+.flow-annotations__cell {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gray-4);
+}
+
+@media (max-width: 880px) {
+  .flow-grid { grid-template-columns: 1fr; }
+  .lane + .lane::before {
+    content: '↓';
+    left: 50%; top: -14px;
+    transform: translateX(-50%);
+  }
+  .flow-annotations { grid-template-columns: 1fr; }
+}
+
+/* ============== GLOBAL FORBIDS ============== */
+.global-forbids {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+  max-width: 880px; margin: 0 auto;
+}
+.global-forbid {
+  background: var(--white); border-radius: 22px;
+  padding: 40px 36px; text-align: left;
+  border-top: 4px solid #d97757;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.global-forbid:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+.global-forbid__num {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.1em; color: #d97757;
+  margin-bottom: 14px;
+}
+.global-forbid__title {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.025em;
+  line-height: 1.2; color: var(--ink);
+}
+
+/* ============== SECTION DETAIL CARDS ============== */
+.sections-grid {
+  display: grid; grid-template-columns: 1fr; gap: 22px;
+  max-width: 980px; margin: 0 auto;
+}
+.section-card {
+  background: var(--white); border-radius: 28px;
+  padding: 48px 44px; text-align: left;
+  display: grid; grid-template-columns: 200px 1fr; gap: 40px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.section-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+.section-card__left {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.section-card__chip {
+  display: inline-block;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 980px; color: var(--white);
+  align-self: flex-start;
+}
+.section-card__chip--clarity { background: #4a8576; }
+.section-card__chip--recall { background: #4677b8; }
+.section-card__chip--energy { background: #c9941a; }
+.section-card__chip--philosophy { background: #8a5fc8; }
+.section-card__chip--mission { background: #c9633a; }
+.section-card__chip--ink { background: var(--ink); }
+.section-card__name {
+  font-size: 26px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15;
+}
+.section-card__role {
+  font-size: 14px; color: var(--gray-5); letter-spacing: -0.012em; line-height: 1.5;
+}
+.section-card__right {
+  display: flex; flex-direction: column; gap: 20px;
+}
+.section-card__block-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-4); margin-bottom: 6px;
+}
+.section-card__body {
+  font-size: 16px; line-height: 1.55; color: var(--ink); letter-spacing: -0.012em;
+}
+.section-card__feel {
+  font-style: italic; color: var(--gray-5); font-size: 15px;
+  padding-left: 14px; border-left: 3px solid var(--gray-2);
+  margin-top: 8px;
+}
+.section-card__forbids {
+  background: var(--gray-1); border-radius: 18px; padding: 24px 28px;
+}
+.section-card__forbids ul { list-style: none; }
+.section-card__forbids li {
+  padding: 8px 0 8px 22px; position: relative;
+  font-size: 15px; line-height: 1.5; color: var(--ink); letter-spacing: -0.012em;
+}
+.section-card__forbids li::before {
+  content: '✕';
+  position: absolute; left: 0; top: 7px;
+  font-size: 13px; color: #d97757; font-weight: 700;
+}
+.section-card__forbids li strong { font-weight: 600; }
+
+/* ============== BUZAN TABLE ============== */
+.buzan-table {
+  max-width: 880px; margin: 0 auto;
+  background: var(--white); border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.buzan-row {
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: 32px; padding: 22px 32px;
+  border-bottom: 1px solid var(--gray-2);
+  text-align: left; align-items: center;
+}
+.buzan-row:last-child { border-bottom: none; }
+.buzan-row__section {
+  font-size: 16px; font-weight: 600; letter-spacing: -0.012em;
+  display: flex; align-items: center; gap: 12px;
+}
+.buzan-row__dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.buzan-row__dot--clarity { background: #4a8576; }
+.buzan-row__dot--recall  { background: #4677b8; }
+.buzan-row__dot--energy  { background: #c9941a; }
+.buzan-row__dot--mission { background: #c9633a; }
+.buzan-row__dot--ink     { background: var(--ink); }
+.buzan-row__dot--philosophy { background: #8a5fc8; }
+.buzan-row__role {
+  font-size: 15px; color: var(--gray-5); line-height: 1.5; letter-spacing: -0.012em;
+}
+
+/* ============== ALL RULES GRID ============== */
+.rules-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  max-width: 1024px; margin: 0 auto;
+}
+.rule-cell {
+  background: var(--white); border-radius: 14px;
+  padding: 20px 24px;
+  display: flex; gap: 16px; align-items: flex-start;
+  border: 1px solid var(--gray-2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.rule-cell:hover {
+  transform: translateX(2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+.rule-cell__num {
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  color: var(--gray-4); flex-shrink: 0; padding-top: 1px;
+  min-width: 24px;
+}
+.rule-cell__text {
+  font-size: 15px; line-height: 1.5; letter-spacing: -0.012em; color: var(--ink);
+}
+.rule-cell__text strong { font-weight: 600; }
+.rule-cell--global {
+  background: linear-gradient(135deg, rgba(255, 94, 58, 0.06), rgba(217, 119, 87, 0.06));
+  border-color: rgba(217, 119, 87, 0.2);
+}
+.rule-cell--global .rule-cell__num { color: #d97757; }
+
+/* ============== COMPANIONS / CAVEAT ============== */
+.caveat-scene {
+  background: var(--gray-1); padding: 100px 22px;
+}
+.caveat-box {
+  max-width: 760px; margin: 0 auto;
+  background: var(--white); border-radius: 28px;
+  padding: 56px 48px; text-align: left;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.caveat-box__pretitle {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--grad-clarity);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+.caveat-box__title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600; letter-spacing: -0.025em; line-height: 1.1;
+  margin-bottom: 28px;
+}
+.caveat-box__list {
+  list-style: none; display: flex; flex-direction: column; gap: 18px;
+}
+.caveat-box__list li {
+  display: flex; gap: 14px; align-items: flex-start;
+  font-size: 16px; line-height: 1.5; color: var(--gray-5); letter-spacing: -0.012em;
+}
+.caveat-box__list li strong {
+  font-weight: 600; color: var(--ink);
+}
+.caveat-box__list li::before {
+  content: ''; flex-shrink: 0;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ink); margin-top: 9px;
+}
+
+/* ============== FOOTER ============== */
+.footer {
+  background: var(--white);
+  padding: 60px 22px 40px;
+  border-top: 1px solid var(--gray-2);
+}
+.footer__inner {
+  max-width: 1024px; margin: 0 auto;
+}
+.footer__divider {
+  height: 1px; background: var(--gray-2); margin: 24px 0;
+}
+.footer__legal {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--gray-5);
+  flex-wrap: wrap; gap: 8px;
+}
+
+/* ============== RESPONSIVE ============== */
+@media (max-width: 768px) {
+  .tiles__grid { grid-template-columns: 1fr; }
+  .global-forbids { grid-template-columns: 1fr; }
+  .section-card { grid-template-columns: 1fr; gap: 24px; }
+  .buzan-row { grid-template-columns: 1fr; gap: 8px; padding: 18px 22px; }
+  .rules-grid { grid-template-columns: 1fr; }
+  .hero__visual { height: 360px; }
+  .hero__orb { width: 340px; height: 340px; }
+  .product-nav__links li:not(:last-child) { display: none; }
+  .scene { padding: 80px 22px; }
+  .scene__art { padding: 40px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="apple-nav">
+  <div class="apple-nav__inner">
+    <a href="#" class="apple-nav__logo">Class A Education</a>
+    <ul class="apple-nav__menu">
+      <li><a href="#identity">Identity</a></li>
+      <li><a href="#flow">Flow</a></li>
+      <li><a href="#sections">Sections</a></li>
+      <li><a href="#buzan">Buzan</a></li>
+      <li><a href="#rules">Rules</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- PRODUCT NAV -->
+<div class="product-nav">
+  <div class="product-nav__inner">
+    <div class="product-nav__title">NETS Homework Flow <em>v2</em></div>
+    <ul class="product-nav__links">
+      <li><a href="#flow">The Cycle</a></li>
+      <li><a href="#sections">Each Section</a></li>
+      <li><a href="#rules">20 Forbids</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="identity">
+  <p class="hero__eyebrow">Source-of-Truth</p>
+  <h1 class="hero__title">
+    A guided<br>
+    learning <span class="hero__title-accent">journey.</span>
+  </h1>
+  <p class="hero__subtitle">
+    NETS Homework is a Buzan-Based Guided Learning Journey built on official textbook content. The textbook stays the reference. NETS turns it into a better homework experience.
+  </p>
+
+  <div class="hero__journey">
+    <span class="hero__journey-step">case-based learning</span>
+    <span class="hero__journey-arrow">→</span>
+    <span class="hero__journey-step">memory anchors</span>
+    <span class="hero__journey-arrow">→</span>
+    <span class="hero__journey-step">recall readiness</span>
+    <span class="hero__journey-arrow">→</span>
+    <span class="hero__journey-step">conceptual practice</span>
+    <span class="hero__journey-arrow">→</span>
+    <span class="hero__journey-step">boss mastery</span>
+    <span class="hero__journey-arrow">→</span>
+    <span class="hero__journey-step">reflection</span>
+  </div>
+
+  <div class="hero__visual">
+    <div class="hero__orb"></div>
+    <div class="hero__orb-label hero__orb-label--1">Case-Based Preview</div>
+    <div class="hero__orb-label hero__orb-label--2">Flashcards + Memory Check</div>
+    <div class="hero__orb-label hero__orb-label--3">Practice Arc + Boss</div>
+    <div class="hero__orb-label hero__orb-label--4">Reflection</div>
+  </div>
+</section>
+
+<!-- IDENTITY TILES -->
+<section class="tiles">
+  <div class="tiles__grid">
+    <div class="tile tile--dark">
+      <p class="tile__pretitle">NETS is</p>
+      <h2 class="tile__title">What it should feel like.</h2>
+      <p class="tile__sub">Six commitments the student should experience by the end of every homework.</p>
+      <div class="tile__visual">
+        <div class="tile__philosophy">
+          <div class="tile__philosophy-line tile__philosophy-line--is">A guided <strong>journey</strong></div>
+          <div class="tile__philosophy-line tile__philosophy-line--is">Based on <strong>Buzan principles</strong></div>
+          <div class="tile__philosophy-line tile__philosophy-line--is">Built on <strong>textbook content</strong></div>
+          <div class="tile__philosophy-line tile__philosophy-line--is">Designed to <strong>simplify complexity</strong></div>
+          <div class="tile__philosophy-line tile__philosophy-line--is">Engaging, meaningful, <strong>skill-based</strong></div>
+          <div class="tile__philosophy-line tile__philosophy-line--is">Ends with <strong>mastery proof</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tile">
+      <p class="tile__pretitle">NETS is not</p>
+      <h2 class="tile__title">What it must never become.</h2>
+      <p class="tile__sub">Seven failure modes the rework was designed to escape.</p>
+      <div class="tile__visual">
+        <div class="tile__philosophy" style="color: var(--gray-5);">
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> a textbook replacement</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> an AI-rewritten worksheet</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> a random quiz app</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> a casino XP machine</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> a boss pasted onto boring practice</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> a packed phase chain</div>
+          <div class="tile__philosophy-line" style="border-color: var(--gray-2);"><strong style="color: #d97757;">Not</strong> MCQ pretending to be a game</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE FLOW -->
+<section class="scene scene--gray" id="flow">
+  <div class="scene__inner">
+    <p class="scene__eyebrow scene__eyebrow--recall">The Flow</p>
+    <h2 class="scene__title">Learning prep first.<br><em>Then practice.</em></h2>
+    <p class="scene__sub">
+      The old linear chain is superseded. Learning Sections (any order) gate the Practice Arc. Boss closes it. Reflection debriefs.
+    </p>
+  </div>
+
+  <div class="scene__art" style="max-width: 1240px; padding: 44px 32px;">
+    <div class="flow-grid-wrap">
+      <span class="flow-tab-label">Homework Tab</span>
+
+      <div class="flow-grid">
+
+        <!-- LANE 1: Learning Sections -->
+        <div class="lane">
+          <div class="lane__head lane__head--clarity">
+            <span class="lane__chip">Step 01 · Prep</span>
+            <div class="lane__title">Learning Sections</div>
+          </div>
+          <div class="lane__body">
+            <div class="divider-label">any order</div>
+            <div class="station station--clarity">
+              <div class="station__name">Case-Based Preview</div>
+              <div class="station__hint">Textbook material in a real-life case. Decision checkpoints with consequences.</div>
+            </div>
+            <div class="station station--recall">
+              <div class="station__name">Flashcard Learning</div>
+              <div class="station__hint">Mechanical memorization. No time limit. Infinite review.</div>
+            </div>
+            <div class="station-arrow">required next</div>
+            <div class="station station--recall">
+              <div class="station__name">Memory Check</div>
+              <div class="station__hint">Quizlet-style test. Recall readiness, not mastery.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LANE 2: Unlock Gate -->
+        <div class="lane">
+          <div class="lane__head lane__head--energy">
+            <span class="lane__chip">Step 02 · Gate</span>
+            <div class="lane__title">Unlock Gate</div>
+          </div>
+          <div class="lane__body">
+            <div class="gate-body">
+              <div class="gate-body__icon">⛓</div>
+              <div class="gate-body__text">Both learning branches must satisfy minimum readiness before Practice Arc opens.</div>
+              <div class="gate-body__pill">Enter Practice Arc</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LANE 3: Practice Arc -->
+        <div class="lane">
+          <div class="lane__head lane__head--mission">
+            <span class="lane__chip">Step 03 · Mission Arc</span>
+            <div class="lane__title">Practice Arc</div>
+          </div>
+          <div class="lane__body">
+            <div class="station station--mission">
+              <div class="station__name">Gamified Conceptual Practices</div>
+              <div class="station__hint">Reasoning, debugging, error detection.</div>
+            </div>
+            <div class="station station--mission">
+              <div class="station__name">Interactive Games</div>
+              <div class="station__hint">Skill-matched, not random.</div>
+            </div>
+            <div class="station station--mission">
+              <div class="station__name">Simulations</div>
+              <div class="station__hint">Applied / scenario-based.</div>
+            </div>
+            <div class="station-arrow">peak</div>
+            <div class="station station--boss">
+              <div class="station__name">Boss Arena</div>
+              <div class="station__hint">Why → How → What reasoning chain. Mastery proof.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LANE 4: Reflection -->
+        <div class="lane">
+          <div class="lane__head lane__head--philosophy">
+            <span class="lane__chip">Step 04 · Closure</span>
+            <div class="lane__title">Reflection / Marking</div>
+          </div>
+          <div class="lane__body">
+            <div class="station station--philosophy">
+              <div class="station__name">Student reflection questions</div>
+            </div>
+            <div class="station station--philosophy">
+              <div class="station__name">AI / system feedback</div>
+            </div>
+            <div class="station station--philosophy">
+              <div class="station__name">Score &amp; weak points</div>
+            </div>
+            <div class="station station--philosophy">
+              <div class="station__name">Passed / Not Passed</div>
+            </div>
+            <div class="station station--philosophy">
+              <div class="station__name">Redo route if needed</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flow-annotations">
+        <span class="flow-annotations__cell">Any order · both required</span>
+        <span class="flow-annotations__cell">Chokepoint</span>
+        <span class="flow-annotations__cell">One arc · one boss</span>
+        <span class="flow-annotations__cell">Debrief &amp; mark</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL FORBIDS -->
+<section class="scene" id="global-forbids">
+  <div class="scene__inner">
+    <p class="scene__eyebrow scene__eyebrow--warning">Global Forbids</p>
+    <h2 class="scene__title">Two rules.<br><em>Apply everywhere.</em></h2>
+    <p class="scene__sub">
+      These bind every section of the flow. Textbook fidelity is non-negotiable; everything else is built on top of it.
+    </p>
+  </div>
+
+  <div class="global-forbids">
+    <div class="global-forbid">
+      <div class="global-forbid__num">FORBID 01</div>
+      <div class="global-forbid__title">NETS pretending to replace the official textbook.</div>
+    </div>
+    <div class="global-forbid">
+      <div class="global-forbid__num">FORBID 02</div>
+      <div class="global-forbid__title">Invented textbook claims, facts, formulas, or definitions.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTIONS DETAIL -->
+<section class="scene scene--gray" id="sections">
+  <div class="scene__inner">
+    <p class="scene__eyebrow scene__eyebrow--clarity">Each Section</p>
+    <h2 class="scene__title">Role and forbids,<br><em>one per section.</em></h2>
+    <p class="scene__sub">Every flow stage has a defined role, a feel, and the things it must never become.</p>
+  </div>
+
+  <div class="sections-grid">
+
+    <!-- Case-Based Preview -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--clarity">Learning Section</span>
+        <div class="section-card__name">Case-Based Preview</div>
+        <div class="section-card__role">The NETS learning layer built from textbook material. Teaches through a real-life case, not a passive reading blob.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Includes</div>
+          <div class="section-card__body">Textbook summary · story/case setup · real-life framing · decision checkpoints · SVG/animation moments · AI feedback on decision-making · thought-process summary.</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">Feel</div>
+          <div class="section-card__feel">I just learned this idea, now I immediately use it in a realistic situation.</div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Case Study that loses the original textbook concept.</strong></li>
+            <li><strong>Case Study without checkpoint-based learning.</strong></li>
+            <li><strong>Case Study where the student is not the decision-maker / solver.</strong></li>
+            <li><strong>Checkpoint decisions with no consequence.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flashcard Learning -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--recall">Learning Section</span>
+        <div class="section-card__name">Flashcard Learning</div>
+        <div class="section-card__role">Mechanical memorization of essential terms, formulas, vocabulary, definitions, symbols, anchors.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Student does</div>
+          <div class="section-card__body">Reviews flashcards freely. No time limit. Scrolls and revisits as needed. Must view all flashcards at least once before the Memory Check.</div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Flashcards being counted as conceptual mastery.</strong></li>
+            <li><strong>Flashcards completing the learning branch without Memory Check.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memory Check -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--recall">Required Test</span>
+        <div class="section-card__name">Memory Check</div>
+        <div class="section-card__role">Quizlet-style test generated from the flashcards. Checks memorization readiness, not deep conceptual mastery.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Question types</div>
+          <div class="section-card__body">True/False · Multiple Choice · Tile Match · Term ↔ Definition · Formula ↔ Name · Vocabulary ↔ Meaning.</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">Answers</div>
+          <div class="section-card__feel">Do you know the key cards? — not — Can you apply the concept deeply?</div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Memory Check replacing conceptual Practice Arc.</strong></li>
+            <li><strong>Forced order between Case Study and Flashcards.</strong> <span style="color: var(--gray-5);">(Cross-section)</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unlock Gate -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--energy">Gate</span>
+        <div class="section-card__name">Unlock Gate</div>
+        <div class="section-card__role">Separates learning preparation from actual homework practice. Prevents blind practice.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Unlocks when</div>
+          <div class="section-card__body">Case-Based Preview completed with minimum acceptable result · Flashcards viewed at least once · Memory Check completed with minimum acceptable result.</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">UI</div>
+          <div class="section-card__body">Chain-breaking animation. Button reads <em>Enter Practice Arc</em> / <em>Start Practice Arena</em> / <em>Practice Arc Unlocked</em>. Never <em>Start Homework</em> — student is already inside the Homework Tab.</div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Unlocking Practice Arc without both learning branches completed.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Practice Arc -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--mission">Practice Arc</span>
+        <div class="section-card__name">Practice Arc</div>
+        <div class="section-card__role">The actual homework body. Where games, interactivity, and simulations live. One full mission arc leading to one Boss.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Tests</div>
+          <div class="section-card__body">Conceptual understanding · critical thinking · debugging · error detection · calculation · issue→formula conversion · proof/reasoning · simulation-based application · subject-specific applied skills.</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">Minimum structure</div>
+          <div class="section-card__body">
+            <strong>Full / hard:</strong> Practice Mission(s) → Simulation / Medium-Hard Challenge → Boss Arena.<br>
+            <strong>Lighter / easy:</strong> At least one strong conceptual practice + mini-boss or final challenge.
+          </div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Practice Arc as random disconnected games.</strong></li>
+            <li><strong>Practice Arc focusing mainly on memorization.</strong></li>
+            <li><strong>Practice tasks that do not match target skill.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boss Arena -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--ink">Mastery Peak</span>
+        <div class="section-card__name">Boss Arena</div>
+        <div class="section-card__role">Mastery peak of the Practice Arc. Reasoning chain, not a quiz with HP.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Locked reasoning skeleton</div>
+          <div class="section-card__body">
+            <strong>Why</strong> is this formula / method needed?<br>
+            <strong>How</strong> do you apply it?<br>
+            <strong>What</strong> does the result mean?
+          </div>
+        </div>
+        <div>
+          <div class="section-card__block-title">Tests</div>
+          <div class="section-card__body">Conceptual understanding · application · transfer · explanation · reasoning chain · weak points from earlier activities · integrated lesson mastery.</div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Boss as quiz + HP skin.</strong></li>
+            <li><strong>Boss without Why → How → What reasoning.</strong></li>
+            <li><strong>Boss testing only flashcard recall.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reflection -->
+    <div class="section-card">
+      <div class="section-card__left">
+        <span class="section-card__chip section-card__chip--philosophy">Debrief</span>
+        <div class="section-card__name">Reflection / Marking</div>
+        <div class="section-card__role">Short debrief plus feedback/marking input. Closure and improvement route — not a long essay or generic ritual.</div>
+      </div>
+      <div class="section-card__right">
+        <div>
+          <div class="section-card__block-title">Student may answer</div>
+          <div class="section-card__body">What was hardest? · Why did you make your main decision? · What mistake would you avoid next time? · What concept finally clicked?</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">System outputs</div>
+          <div class="section-card__body">Score · feedback · weak points · strong points · redo recommendation · passed / not-passed status · next-step suggestion.</div>
+        </div>
+        <div>
+          <div class="section-card__block-title">Pass / retake</div>
+          <div class="section-card__body">Use <em>Attempt completed, homework not passed</em> or <em>Needs Retry</em>. Retakes use <strong>same concepts, not exact same questions.</strong></div>
+        </div>
+        <div class="section-card__forbids">
+          <ul>
+            <li><strong>Generic Reflection disconnected from actual performance.</strong></li>
+            <li><strong>Exact-question retake farming.</strong></li>
+            <li><strong>"Not Completed" as the only label after a real attempt.</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- BUZAN DISTRIBUTION -->
+<section class="scene scene--dark" id="buzan">
+  <div class="scene__inner">
+    <p class="scene__eyebrow">Buzan Distribution</p>
+    <h2 class="scene__title">Not a phase.<br><em>A spine.</em></h2>
+    <p class="scene__sub">
+      The old standalone Consolidation phase is superseded. Buzan runs as a cross-flow foundation, with Anchor Lock behavior redistributed across Flashcards, Memory Check, Reflection, and Practice Arc when needed.
+    </p>
+  </div>
+
+  <div class="scene__art">
+    <div class="buzan-table">
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--clarity"></span>Case-Based Preview</div>
+        <div class="buzan-row__role">Story association · visual hooks · simplified concept maps</div>
+      </div>
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--recall"></span>Flashcard Learning</div>
+        <div class="buzan-row__role">Memory anchors · key terms, formulas, vocabulary</div>
+      </div>
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--recall"></span>Memory Check</div>
+        <div class="buzan-row__role">Active recall · retrieval · pattern reinforcement</div>
+      </div>
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--mission"></span>Practice Arc</div>
+        <div class="buzan-row__role">Pattern recognition · mistake linking · applied association</div>
+      </div>
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--ink"></span>Boss Arena</div>
+        <div class="buzan-row__role">Why → How → What chain as the mastery reasoning pattern</div>
+      </div>
+      <div class="buzan-row">
+        <div class="buzan-row__section"><span class="buzan-row__dot buzan-row__dot--philosophy"></span>Reflection</div>
+        <div class="buzan-row__role">Weak-point memory recap · next anchor · learning loop closure</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL 20 RULES QUICK REF -->
+<section class="scene scene--gray" id="rules">
+  <div class="scene__inner">
+    <p class="scene__eyebrow scene__eyebrow--warning">All Flow-Level Forbids</p>
+    <h2 class="scene__title">Twenty rules.<br><em>One scan.</em></h2>
+    <p class="scene__sub">
+      Interaction mechanics, language, and gamification forbids live in companion standards. These twenty are the flow-level ones — what the homework cycle itself must never become.
+    </p>
+  </div>
+
+  <div class="rules-grid">
+    <div class="rule-cell rule-cell--global"><div class="rule-cell__num">01</div><div class="rule-cell__text">Forbid NETS pretending to replace the official textbook.</div></div>
+    <div class="rule-cell rule-cell--global"><div class="rule-cell__num">02</div><div class="rule-cell__text">Forbid invented textbook claims, facts, formulas, or definitions.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">03</div><div class="rule-cell__text">Forbid Case Study that loses the original textbook concept.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">04</div><div class="rule-cell__text">Forbid Case Study without checkpoint-based learning.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">05</div><div class="rule-cell__text">Forbid Case Study where the student is not the decision-maker / solver.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">06</div><div class="rule-cell__text">Forbid checkpoint decisions with no consequence.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">07</div><div class="rule-cell__text">Forbid forced order between Case Study and Flashcards.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">08</div><div class="rule-cell__text">Forbid unlocking Practice Arc without both learning branches completed.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">09</div><div class="rule-cell__text">Forbid Flashcards being counted as conceptual mastery.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">10</div><div class="rule-cell__text">Forbid Flashcards completing the learning branch without Memory Check.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">11</div><div class="rule-cell__text">Forbid Memory Check replacing conceptual Practice Arc.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">12</div><div class="rule-cell__text">Forbid Practice Arc as random disconnected games.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">13</div><div class="rule-cell__text">Forbid Practice Arc focusing mainly on memorization.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">14</div><div class="rule-cell__text">Forbid Practice tasks that do not match target skill.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">15</div><div class="rule-cell__text">Forbid Boss as quiz + HP skin.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">16</div><div class="rule-cell__text">Forbid Boss without Why → How → What reasoning.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">17</div><div class="rule-cell__text">Forbid Boss testing only flashcard recall.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">18</div><div class="rule-cell__text">Forbid generic Reflection disconnected from actual performance.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">19</div><div class="rule-cell__text">Forbid exact-question retake farming.</div></div>
+    <div class="rule-cell"><div class="rule-cell__num">20</div><div class="rule-cell__text">Forbid <em>Not Completed</em> as the only label after a real attempt.</div></div>
+  </div>
+</section>
+
+<!-- COMPANIONS / BOUNDARY -->
+<section class="caveat-scene">
+  <div class="caveat-box">
+    <p class="caveat-box__pretitle">What lives elsewhere</p>
+    <h2 class="caveat-box__title">This doc owns the flow. Three others own the rest.</h2>
+    <ul class="caveat-box__list">
+      <li><strong>Interactivity Standard.</strong> Owns interaction mechanics, fake-interaction rules, speed limits, MCP placement, Boss damage formulas, the C1-C2-C3 interactivity definition. Don't duplicate them here.</li>
+      <li><strong>Uzbek Language Foundation.</strong> Owns language quality, simplification rules, formal register, cultural context. Generation-time contract, not cleanup.</li>
+      <li><strong>Gamification Standard.</strong> Owns XP, rewards, and casino-mechanic guardrails. Comes last in the build order — after the loop is in motion.</li>
+      <li><strong>Open questions remain.</strong> Scoring weights, unlock thresholds, retake scoring method, Easy vs Hard boss behavior, default Practice Arc mission count — tracked in the decision log, not here.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div style="font-size: 12px; color: var(--gray-5); line-height: 1.7;">
+      <p style="margin-bottom: 8px;"><strong>Source:</strong> NETS Homework Flow v2 — source-of-truth reference for the homework cycle and its flow-level forbidden rules. Supersedes the old eight-phase linear chain. Companion standards (Interactivity, Uzbek, Gamification) own their respective domains.</p>
+      <p>Class A Education · NETS = National Education Transformation System · Built on official textbook content.</p>
+    </div>
+    <div class="footer__divider"></div>
+    <div class="footer__legal">
+      <span>Class A Education · NETS Flow v2 · Source-of-Truth</span>
+      <span>Learning prep first. Practice next. Reflection last.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll with offset for fixed nav
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const targetId = this.getAttribute('href');
+    if (targetId === '#') return;
+    const target = document.querySelector(targetId);
+    if (target) {
+      e.preventDefault();
+      const offset = 96;
+      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+    }
+  });
+});
+
+// Intersection-observer fade-in
+const fadeEls = document.querySelectorAll('.scene__inner, .scene__art, .tile, .section-card, .global-forbid, .rule-cell, .buzan-row, .caveat-box, .lane');
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+      fadeObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+fadeEls.forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
+  fadeObserver.observe(el);
+});
+</script>
+
+</body>
+</html>
