@@ -11020,7 +11020,10 @@
             }
         ];
 
+        /* INJECTOR-ANCHOR: MC — do not change keyword (const) or token name.
+           server/services/injector.py:_replace_js_const matches `const\s+MC\s*=`. */
         const MC = {};
+        /* INJECTOR-ANCHOR: CBP — same rule as MC above. */
         const CBP = {};
 
         let state = {

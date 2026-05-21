@@ -171,7 +171,10 @@ class Checkpoint(_Permissive):
 
     kind: Literal["identify", "decide", "justify"]
     question: str
-    options: Optional[List[Any]] = None
+    # Options may be plain strings (MCQ labels) or dicts (rich options
+    # with {label, value, image}). `List[Any]` would let `options: 42`
+    # slip through nested lists; narrow to the legitimate authoring shapes.
+    options: Optional[List[Union[str, Dict[str, Any]]]] = None
     answer_spec: AnswerSpec = Field(default_factory=AnswerSpec)
     learning_block_after: Optional[LearningBlock] = None
     retake_variants: List["Checkpoint"] = Field(default_factory=list)
@@ -215,6 +218,11 @@ class CaseBasedPreview(_Permissive):
 
     @model_validator(mode="after")
     def _validate_checkpoint_order(self) -> "CaseBasedPreview":
+        # CBP requires EXACTLY 3 checkpoints by design (CBP Standard §1, §5).
+        # An empty `CaseBasedPreview()` is intentionally not constructible —
+        # legacy `ContentJSON()` still validates because `case_based_preview`
+        # is Optional and defaults to None. Builder authoring tools should
+        # populate all three checkpoints (placeholders OK) before instantiation.
         if len(self.checkpoints) != 3:
             raise ValueError(
                 f"CaseBasedPreview requires exactly 3 checkpoints "
