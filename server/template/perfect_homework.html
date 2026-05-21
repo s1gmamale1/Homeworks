@@ -8667,6 +8667,78 @@
             </div>
         </div>
 
+        <!-- Flow v2 — Case-Based Preview engine (8 substages) -->
+        <div id="screen-cbp" class="screen v2-surface" hidden>
+            <!-- Substage: setup (dark-section hero) -->
+            <div class="cbp-sub" data-sub="setup">
+                <p class="eyebrow eyebrow--cyan">Case study</p>
+                <h1 class="cbp-hero-title" id="cbp-case-title"></h1>
+                <p class="cbp-hero-role" id="cbp-case-role"></p>
+                <p class="cbp-hero-task" id="cbp-case-task"></p>
+                <div class="cbp-hero-story" id="cbp-case-story"></div>
+                <button type="button" id="cbp-start-btn" class="cbp-cta">Boshlash</button>
+            </div>
+
+            <!-- Substage: ckp1/ckp2/ckp3 (shared checkpoint shell) -->
+            <div class="cbp-sub" data-sub="ckp" hidden>
+                <p class="eyebrow eyebrow--cyan" id="cbp-ckp-eyebrow"></p>
+                <h2 class="cbp-ckp-title" id="cbp-ckp-question"></h2>
+                <span class="cbp-retake-chip pill pill--dark" id="cbp-retake-chip" hidden aria-live="assertive">
+                    Qayta ishlangan / Regenerated
+                </span>
+                <div class="lesson-panel-list cbp-options" role="radiogroup" id="cbp-ckp-options"></div>
+                <div class="cbp-ckp-feedback" id="cbp-ckp-feedback" aria-live="polite" role="status" hidden></div>
+            </div>
+
+            <!-- Substage: lb1 / lb2 (inline learning block) -->
+            <div class="cbp-sub" data-sub="lb" hidden>
+                <p class="eyebrow eyebrow--blue">Tushuntirish</p>
+                <div class="cbp-lb-body" id="cbp-lb-body"></div>
+                <div class="cbp-lb-consequence" id="cbp-lb-consequence"></div>
+                <button type="button" id="cbp-lb-continue" class="cbp-cta">Davom etish</button>
+            </div>
+
+            <!-- Substage: sim (final simulation 3-up) -->
+            <div class="cbp-sub" data-sub="sim" hidden>
+                <p class="eyebrow eyebrow--cyan">Natija</p>
+                <h2 class="cbp-sim-title">Sizning qarorlaringiz natijasi</h2>
+                <div class="cbp-sim-grid feature-grid">
+                    <div class="feature-card cbp-sim-correct">
+                        <h3>To'g'ri yo'l</h3>
+                        <p id="cbp-sim-correct"></p>
+                    </div>
+                    <div class="feature-card cbp-sim-wrong">
+                        <h3>Xato yo'l</h3>
+                        <p id="cbp-sim-wrong"></p>
+                    </div>
+                    <div class="feature-card cbp-sim-review">
+                        <h3>Ko'rib chiqing</h3>
+                        <p id="cbp-sim-review"></p>
+                    </div>
+                </div>
+                <button type="button" id="cbp-sim-continue" class="cbp-cta">Yakuniy fikr</button>
+            </div>
+
+            <!-- Substage: fb (AI feedback summary) -->
+            <div class="cbp-sub" data-sub="fb" hidden>
+                <div class="tutor-card-light cbp-fb-card">
+                    <p class="eyebrow eyebrow--blue">AI fikr-mulohaza</p>
+                    <h3 class="cbp-fb-status" id="cbp-fb-status"></h3>
+                    <p class="cbp-fb-summary" id="cbp-fb-summary"></p>
+                </div>
+                <button type="button" id="cbp-finish-btn" class="cbp-cta">Hubga qaytish</button>
+            </div>
+        </div>
+
+        <!-- Flow v2 — Unlock Gate (chain-breaking moment between Hub and Practice) -->
+        <div id="screen-unlock" class="screen v2-surface" hidden>
+            <div class="unlock-shell">
+                <h1 class="unlock-title">Amaliyot maydoni ochildi</h1>
+                <p class="unlock-sub">Ikkala bo'lim ham bajarildi. Endi amaliyot bosqichiga o'tishingiz mumkin.</p>
+                <button type="button" id="unlock-enter-btn" class="cbp-cta cbp-cta--lg">Amaliyotga kirish</button>
+            </div>
+        </div>
+
         <!-- Stage 1 -->
         <div id="screen-1" class="screen">
             <div class="card quote-card">
@@ -11385,6 +11457,7 @@
             if (cbpBtn) {
                 cbpBtn.addEventListener('click', function () {
                     setStageV2('cbp', 'setup');
+                    if (typeof cbpStart === 'function') cbpStart();
                 });
             }
             if (fcBtn) {
@@ -11396,6 +11469,216 @@
             setStageV2('hub');
             return true;
         }
+
+        // ── CBP RUNTIME ENGINE ──
+        //
+        // 8 substages: setup → ckp1 → lb1 → ckp2 → lb2 → ckp3 → sim → fb
+        //
+        // Gate: >=2 of 3 checkpoints correct → state.v2.cbp.passed = true.
+        // Soft-retry: on a wrong answer, swap in the corresponding entry
+        // from `checkpoints[i].retake_variants` (Flow v2 forbid #19 — never
+        // the identical question). The chip 'Qayta ishlangan' announces the
+        // regenerated variant for sighted + screen-reader users.
+
+        function cbpShowSub(name) {
+            document.querySelectorAll('#screen-cbp .cbp-sub').forEach(function (el) {
+                el.hidden = (el.getAttribute('data-sub') !== name);
+            });
+        }
+
+        function cbpStart() {
+            var cbp = (typeof CBP === 'object' && CBP) ? CBP : null;
+            if (!cbp || !Array.isArray(cbp.checkpoints) || cbp.checkpoints.length !== 3) {
+                console.warn('CBP payload missing or invalid; falling back to Hub.');
+                setStageV2('hub');
+                return;
+            }
+            // Hydrate hero
+            var titleEl = document.getElementById('cbp-case-title');
+            var roleEl = document.getElementById('cbp-case-role');
+            var taskEl = document.getElementById('cbp-case-task');
+            var storyEl = document.getElementById('cbp-case-story');
+            if (titleEl) titleEl.textContent = cbp.title || '';
+            var cs = cbp.case_setup || {};
+            if (roleEl) roleEl.textContent = cs.role ? 'Sizning rolingiz: ' + cs.role : '';
+            if (taskEl) taskEl.textContent = cs.task || '';
+            if (storyEl) storyEl.textContent = cs.story || '';
+            state.v2.ckpIdx = 0;
+            state.v2.cbp.attemptsByIdx = {};
+            state.v2.retakeCountByIdx = {};
+            cbpShowSub('setup');
+        }
+
+        function cbpRenderCheckpoint(idx, isRetake) {
+            var cbp = CBP;
+            if (!cbp || !cbp.checkpoints) return;
+            var original = cbp.checkpoints[idx];
+            // Pick original or a regenerated variant on retake.
+            var active = original;
+            if (isRetake && Array.isArray(original.retake_variants) && original.retake_variants.length > 0) {
+                var variantIdx = state.v2.retakeCountByIdx[idx] || 0;
+                if (variantIdx < original.retake_variants.length) {
+                    active = original.retake_variants[variantIdx];
+                }
+            }
+            // Eyebrow text per kind
+            var kind = active.kind || ['identify', 'decide', 'justify'][idx] || 'identify';
+            var eyebrowMap = { identify: 'Checkpoint 1: Aniqlash', decide: 'Checkpoint 2: Tanlash', justify: 'Checkpoint 3: Asoslash' };
+            var eyebrow = document.getElementById('cbp-ckp-eyebrow');
+            if (eyebrow) eyebrow.textContent = eyebrowMap[kind] || kind;
+            var qEl = document.getElementById('cbp-ckp-question');
+            if (qEl) qEl.textContent = active.question || '';
+            // Render options
+            var optsEl = document.getElementById('cbp-ckp-options');
+            if (optsEl) {
+                optsEl.innerHTML = '';
+                var opts = active.options || [];
+                opts.forEach(function (opt, optIdx) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'lesson-panel';
+                    btn.setAttribute('role', 'radio');
+                    btn.setAttribute('aria-checked', 'false');
+                    btn.setAttribute('data-cbp-opt-idx', String(optIdx));
+                    var label = (typeof opt === 'object' && opt) ? (opt.label || opt.text || '') : String(opt);
+                    btn.textContent = label;
+                    btn.addEventListener('click', function () { cbpAnswer(idx, optIdx, active); });
+                    optsEl.appendChild(btn);
+                });
+            }
+            // Retake chip visibility
+            var chip = document.getElementById('cbp-retake-chip');
+            if (chip) chip.hidden = !isRetake;
+            // Clear feedback area
+            var fb = document.getElementById('cbp-ckp-feedback');
+            if (fb) { fb.hidden = true; fb.textContent = ''; }
+            cbpShowSub('ckp');
+        }
+
+        function cbpAnswer(idx, optIdx, active) {
+            var correct = (active.answer_spec && typeof active.answer_spec.option_index === 'number')
+                ? (active.answer_spec.option_index === optIdx)
+                : false;
+            // Record result
+            state.v2.cbp.attemptsByIdx[idx] = state.v2.cbp.attemptsByIdx[idx] || [];
+            state.v2.cbp.attemptsByIdx[idx].push({ optIdx: optIdx, correct: correct });
+            var fb = document.getElementById('cbp-ckp-feedback');
+            if (correct) {
+                if (fb) { fb.hidden = false; fb.textContent = 'To\'g\'ri.'; }
+                // Advance to learning block (after ckp1, ckp2) or to sim (after ckp3)
+                setTimeout(function () { cbpAdvanceFromCheckpoint(idx); }, 700);
+            } else {
+                // Soft-retry: animate shake, then re-render with the regenerated variant
+                if (fb) { fb.hidden = false; fb.textContent = 'Hali emas.'; }
+                state.v2.retakeCountByIdx[idx] = (state.v2.retakeCountByIdx[idx] || 0) + 1;
+                setTimeout(function () { cbpRenderCheckpoint(idx, true); }, 850);
+            }
+        }
+
+        function cbpAdvanceFromCheckpoint(idx) {
+            var cbp = CBP;
+            var checkpoint = cbp.checkpoints[idx];
+            // After ckp1 or ckp2 -> learning block. After ckp3 -> final simulation.
+            if (idx < 2 && checkpoint.learning_block_after) {
+                cbpRenderLearningBlock(idx, checkpoint.learning_block_after);
+            } else if (idx < 2) {
+                // No LB authored — skip directly to next checkpoint
+                state.v2.ckpIdx = idx + 1;
+                cbpRenderCheckpoint(idx + 1, false);
+            } else {
+                // Past Ckp 3 → final simulation
+                cbpRenderSimulation();
+            }
+        }
+
+        function cbpRenderLearningBlock(idx, lb) {
+            var bodyEl = document.getElementById('cbp-lb-body');
+            var consEl = document.getElementById('cbp-lb-consequence');
+            if (bodyEl) bodyEl.textContent = lb.body || '';
+            if (consEl) consEl.textContent = lb.consequence_preview || '';
+            var btn = document.getElementById('cbp-lb-continue');
+            if (btn) {
+                btn.onclick = function () {
+                    state.v2.ckpIdx = idx + 1;
+                    cbpRenderCheckpoint(idx + 1, false);
+                };
+            }
+            cbpShowSub('lb');
+        }
+
+        function cbpRenderSimulation() {
+            var sim = (CBP && CBP.final_simulation) || {};
+            var c = document.getElementById('cbp-sim-correct');
+            var w = document.getElementById('cbp-sim-wrong');
+            var r = document.getElementById('cbp-sim-review');
+            if (c) c.textContent = sim.correct_path || '';
+            if (w) w.textContent = sim.wrong_path || '';
+            if (r) r.textContent = sim.visual_description || 'Diqqat bilan ko\'rib chiqing.';
+            var btn = document.getElementById('cbp-sim-continue');
+            if (btn) btn.onclick = cbpFinalize;
+            cbpShowSub('sim');
+        }
+
+        function cbpFinalize() {
+            // Compute gate: count checkpoints where the FINAL attempt was correct.
+            var passed = 0;
+            for (var idx = 0; idx < 3; idx++) {
+                var attempts = (state.v2.cbp.attemptsByIdx[idx]) || [];
+                if (attempts.length > 0 && attempts[attempts.length - 1].correct) {
+                    passed++;
+                }
+            }
+            var success = (passed >= 2);
+            state.v2.cbp.passed = success;
+            // Render feedback summary
+            var statusEl = document.getElementById('cbp-fb-status');
+            var summaryEl = document.getElementById('cbp-fb-summary');
+            if (statusEl) statusEl.textContent = success ? 'Topshirildi' : 'Qayta urinish kerak';
+            var fb = (CBP && CBP.feedback_summary) || {};
+            if (summaryEl) {
+                if (success) {
+                    summaryEl.textContent = (fb.student_understood ? 'Siz tushundingiz: ' + fb.student_understood + '. ' : '') +
+                        (fb.what_to_review ? 'Ko\'rib chiqing: ' + fb.what_to_review : '');
+                } else {
+                    summaryEl.textContent = 'Asosiy kontseptlarni qayta ko\'rib chiqing va keyin qayta urinib ko\'ring.';
+                }
+            }
+            // Wire finish button → back to Hub. Hub updates tile status from state.v2.cbp.passed.
+            var finBtn = document.getElementById('cbp-finish-btn');
+            if (finBtn) finBtn.onclick = function () {
+                cbpUpdateHubTileStatus();
+                cbpMaybeOpenUnlockGate();
+                setStageV2('hub');
+            };
+            cbpShowSub('fb');
+        }
+
+        function cbpUpdateHubTileStatus() {
+            var pill = document.querySelector('[data-hub-status="cbp"]');
+            if (!pill) return;
+            if (state.v2.cbp.passed) {
+                pill.textContent = '✓ Passed';
+                pill.classList.add('pill--passed');
+            } else {
+                pill.textContent = 'Needs Retry';
+            }
+        }
+
+        function cbpMaybeOpenUnlockGate() {
+            // Unlock requires BOTH sections (CBP + flashcards/MC) to pass at >=60%.
+            if (state.v2.cbp.passed && state.v2.fc.passed) {
+                setStageV2('unlock');
+            }
+        }
+
+        // Wire CBP entry buttons. The Hub tile click in _v2BootDispatcher
+        // now routes to cbpStart() instead of just setStageV2('cbp').
+        document.addEventListener('DOMContentLoaded', function () {
+            var startBtn = document.getElementById('cbp-start-btn');
+            if (startBtn) startBtn.addEventListener('click', function () { cbpRenderCheckpoint(0, false); });
+            var unlockBtn = document.getElementById('unlock-enter-btn');
+            if (unlockBtn) unlockBtn.addEventListener('click', function () { setStageV2('practice'); });
+        });
 
         // ── PHASE PROGRESS BAR ──────────────────────────────────
         // Dots (1..7) map to phases as before:
