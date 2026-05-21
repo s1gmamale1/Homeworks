@@ -47,13 +47,7 @@ def test_homework_page_injects_cbp_constant(client):
 
 def test_malformed_cbp_rejected_by_schema_validator():
     """4-checkpoint payload — `CaseBasedPreview` validator rejects directly.
-
-    NB: the `/api/homeworks` route currently does NOT run `ContentJSON`
-    validation against incoming `content_json` (it accepts the raw dict).
-    Wiring the route boundary to the schema is a follow-up arc; the
-    schema-level fence is what PR #1 actually ships, and it is verified
-    here against a route-shaped payload.
-    """
+    The schema-level fence is what PR #1 ships."""
     from pydantic import ValidationError
     import pytest as _pytest
 
@@ -63,3 +57,27 @@ def test_malformed_cbp_rejected_by_schema_validator():
     bad["case_based_preview"]["checkpoints"].append(valid_checkpoint("justify"))
     with _pytest.raises(ValidationError):
         CaseBasedPreview(**bad["case_based_preview"])
+
+
+def test_post_homework_rejects_malformed_cbp_at_route_boundary(client):
+    """Backend-integration-audit finding #2: POST `/api/homeworks` previously
+    skipped `_validate_content_json`, silently accepting malformed CBP rows.
+    With the validator wired, a 4-checkpoint CBP must surface a 400 error."""
+    bad = full_content_json_with_cbp()
+    bad["case_based_preview"]["checkpoints"].append(valid_checkpoint("justify"))
+    payload = {
+        "title": "POST validator test",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": bad,
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 400, (
+        f"Expected 400 INVALID_CONTENT for 4-checkpoint CBP; "
+        f"got {resp.status_code}: {resp.text[:300]}"
+    )
+    body = resp.json()
+    # Validator should at least surface a useful error code
+    assert "detail" in body or "error" in body

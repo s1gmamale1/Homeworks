@@ -313,6 +313,13 @@ async def create_homework(hw: HomeworkCreate):
     # on POST/PUT/PATCH).
     _check_no_inline_bloat(final_content)
 
+    # Schema validation (backend-integration-audit finding #2): PUT/PATCH
+    # already run _validate_content_json, but POST historically didn't —
+    # silently accepting malformed CBP (wrong checkpoint count, bad kind
+    # order), broken flashcards shapes, or any structural drift the
+    # Pydantic ContentJSON validator would catch. Apply it here too.
+    _validate_content_json(final_content)
+
     # Stamp synthetic ids on any id-less boss_questions before persist so the
     # row is self-describing for the FB question lookup.
     _normalize_boss_question_ids(final_content)
