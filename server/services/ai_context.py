@@ -18,33 +18,6 @@ from server.db import session_events_repo
 
 _log = logging.getLogger("nets.ai_context")
 
-# Keys allowed in question context for non-preview phases.
-_TUTOR_CONTEXT_SAFE_KEYS: frozenset[str] = frozenset({
-    "id",
-    "question_id",
-    "q",
-    "prompt",
-    "question",
-    "title",
-    "subtitle",
-    "text",
-    "label",
-    "term",
-    "term_html",
-    "cluster",
-    "type",
-    "options",
-    "fields",
-    "front",
-    "tier",
-    "bloom",
-    "pisa",
-    "tags",
-    "damage",
-    "dmg",
-})
-
-
 @dataclass
 class TutorContextPacket:
     session_id: str
@@ -129,21 +102,12 @@ def _find_question_in_content(content: dict, question_id: str) -> Optional[dict]
     return _walk(content)
 
 
-def _redact_question_for_tutor(question: dict, phase: str) -> dict:
-    """Return a safe copy of `question` for LLM prompt context."""
-    if not isinstance(question, dict):
-        return {}
-    if phase == "preview":
-        return dict(question)
-
-    def scrub(value: Any) -> Any:
-        if isinstance(value, dict):
-            return {k: scrub(v) for k, v in value.items() if k in _TUTOR_CONTEXT_SAFE_KEYS}
-        if isinstance(value, list):
-            return [scrub(item) for item in value]
-        return value
-
-    return scrub(question)
+# CBP-aware redactor lives in tutor_redaction.py (single source of truth
+# shared with services/tutor.py). Backend-integration-audit finding #1:
+# this module's previous copy did NOT have the CBP phase branch or the
+# _TUTOR_CONTEXT_CBP_EXTRA_KEYS allow-list, so PR #2's CBP coupling was
+# dead code on the live tutor route until this import landed.
+from .tutor_redaction import _redact_question_for_tutor  # noqa: E402, F401
 
 
 def sanitize_screen_context_v2(

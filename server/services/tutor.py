@@ -778,109 +778,16 @@ async def reflection_feedback(
 
 # Keys we allow from question payloads before they enter the LLM context for
 # practice/boss phases. Bridge B (answer-leak prevention) fails closed:
-# adding a new content field never exposes it until it is reviewed here.
-_TUTOR_CONTEXT_SAFE_KEYS: frozenset[str] = frozenset({
-    "id",
-    "question_id",
-    "q",
-    "prompt",
-    "question",
-    "title",
-    "subtitle",
-    "text",
-    "label",
-    "term",
-    "term_html",
-    "explanation",
-    "flashcard_ref",
-    "cluster",
-    "type",
-    "options",
-    "fields",
-    "front",
-    "tier",
-    "bloom",
-    "pisa",
-    "tags",
-    "damage",
-    "dmg",
-})
-
-
-# CBP-only extension: non-answer-bearing case framing keys that the tutor
-# needs to know about during a Case-Based Preview checkpoint. Unioned with
-# `_TUTOR_CONTEXT_SAFE_KEYS` ONLY when `phase == "case_based"` so the
-# default-deny posture of practice/boss/memory_check is preserved.
-#
-# Explicitly NOT added (these reveal answers and must remain deny-listed):
-#   answer_spec, learning_block_after, consequence_preview, retake_variants,
-#   final_simulation, correct_path, wrong_path, feedback_summary,
-#   completion_rules, expected, accepted_answers, option_index, correct.
-#
-# `visual_plan` is intentionally OMITTED from this allow-list —
-# layout cues (e.g. which option is highlighted, where the correct
-# answer renders on screen) can encode the answer position. Keep it
-# in the default-deny set so any author-supplied visual_plan stays
-# server-side. (backend-tutor-audit finding #6)
-_TUTOR_CONTEXT_CBP_EXTRA_KEYS: frozenset[str] = frozenset({
-    "case_setup",         # container
-    "metadata",            # container
-    "source_extraction",   # container
-    "story",               # case_setup.story
-    "role",                # case_setup.role
-    "task",                # case_setup.task
-    "core_concept",        # source_extraction.core_concept
-    "main_rule",           # source_extraction.main_rule
-    "key_terms",           # source_extraction.key_terms / metadata.key_terms
-    "common_mistake",      # source_extraction.common_mistake
-    "topic",               # metadata.topic
-    "source_concept",      # metadata.source_concept
-    "required_skill",      # metadata.required_skill
-    "kind",                # Checkpoint.kind (identify|decide|justify)
-})
-
-
-def _redact_question_for_tutor(question: dict, phase: str) -> dict:
-    """Return a safe copy of `question` for LLM prompt context.
-
-    Preview phase passes through unchanged so the tutor can explain why X is the
-    answer. Practice/boss phases use an allow-list instead of a leak-key
-    deny-list, so newly introduced fields like work/hints/solution_text fail
-    closed by default.
-    """
-    if not isinstance(question, dict):
-        return {}
-    if phase == "preview":
-        # Preview is the only phase where the answer is allowed in context.
-        return dict(question)
-
-    # CBP needs the case framing (case_setup, metadata, source_extraction +
-    # their non-answer-bearing inner keys) to give the tutor enough context
-    # to scaffold without revealing the answer. The extension is applied
-    # ONLY for `case_based`; practice/boss/memory_check keep the strict
-    # default-deny allow-list.
-    # Phase -> safe-keys table (explicit, exhaustive, easy to extend).
-    # Replaces the prior `if phase == "case_based":` branch —
-    # promoting the policy to data prevents a future phase rename
-    # from silently demoting CBP to the strict allow-list
-    # (backend-tutor-audit finding #2).
-    _PHASE_SAFE_KEYS = {
-        "case_based": _TUTOR_CONTEXT_SAFE_KEYS | _TUTOR_CONTEXT_CBP_EXTRA_KEYS,
-    }
-    safe_keys = _PHASE_SAFE_KEYS.get(phase, _TUTOR_CONTEXT_SAFE_KEYS)
-
-    def scrub(value: Any) -> Any:
-        if isinstance(value, dict):
-            return {
-                k: scrub(v)
-                for k, v in value.items()
-                if k in safe_keys
-            }
-        if isinstance(value, list):
-            return [scrub(item) for item in value]
-        return value
-
-    return scrub(question)
+# Tutor redaction primitives now live in tutor_redaction.py (the single
+# source of truth shared with ai_context.py - see backend-integration-audit
+# finding #1). Re-export here so existing imports (from server.services.tutor
+# import _redact_question_for_tutor and the frozensets) keep working.
+from .tutor_redaction import (  # noqa: E402, F401
+    _TUTOR_CONTEXT_SAFE_KEYS,
+    _TUTOR_CONTEXT_CBP_EXTRA_KEYS,
+    _PHASE_SAFE_KEYS,
+    _redact_question_for_tutor,
+)
 
 
 def _format_history_for_prompt(turns: list[dict]) -> str:

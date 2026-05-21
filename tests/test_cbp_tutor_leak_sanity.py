@@ -41,6 +41,27 @@ def test_cbp_extras_does_NOT_contain_answer_bearing_keys():
     assert not leaked, f"CBP extras must not include answer-bearing keys: {leaked}"
 
 
+def test_redactor_is_single_source_in_ai_context_and_tutor():
+    """Regression fence for backend-integration-audit finding #1.
+
+    The live `/api/ai/tutor/chat` route runs through
+    `services/ai_context.py::build_tutor_context`, which previously had its
+    OWN copy of `_redact_question_for_tutor` and a STALE safe-keys list
+    (missing `explanation`, `flashcard_ref`, and the CBP phase branch).
+    Result: PR #2's CBP coupling was dead code on the live path.
+
+    Both modules must now point at the same function object (the one in
+    `services/tutor_redaction.py`). If a future refactor re-introduces a
+    duplicate redactor in either module, this test fails loudly.
+    """
+    from server.services.ai_context import _redact_question_for_tutor as ai_redact
+    from server.services.tutor import _redact_question_for_tutor as tutor_redact
+    assert ai_redact is tutor_redact, (
+        "Redactor must be single-sourced via tutor_redaction.py - "
+        "ai_context.py and tutor.py must NOT re-define it."
+    )
+
+
 def test_safe_keys_and_cbp_extras_are_disjoint_or_intentional():
     """Confirms the two sets don't have accidental overlap that would mask
     intent. Some overlap is fine (e.g., if `options` were in both); flag
