@@ -807,6 +807,33 @@ _TUTOR_CONTEXT_SAFE_KEYS: frozenset[str] = frozenset({
 })
 
 
+# CBP-only extension: non-answer-bearing case framing keys that the tutor
+# needs to know about during a Case-Based Preview checkpoint. Unioned with
+# `_TUTOR_CONTEXT_SAFE_KEYS` ONLY when `phase == "case_based"` so the
+# default-deny posture of practice/boss/memory_check is preserved.
+#
+# Explicitly NOT added (these reveal answers and must remain deny-listed):
+#   answer_spec, learning_block_after, consequence_preview, retake_variants,
+#   final_simulation, correct_path, wrong_path, feedback_summary,
+#   completion_rules, expected, accepted_answers, option_index, correct.
+_TUTOR_CONTEXT_CBP_EXTRA_KEYS: frozenset[str] = frozenset({
+    "case_setup",         # container
+    "metadata",            # container
+    "source_extraction",   # container
+    "story",               # case_setup.story
+    "role",                # case_setup.role
+    "task",                # case_setup.task
+    "core_concept",        # source_extraction.core_concept
+    "main_rule",           # source_extraction.main_rule
+    "key_terms",           # source_extraction.key_terms / metadata.key_terms
+    "common_mistake",      # source_extraction.common_mistake
+    "topic",               # metadata.topic
+    "source_concept",      # metadata.source_concept
+    "required_skill",      # metadata.required_skill
+    "kind",                # Checkpoint.kind (identify|decide|justify)
+})
+
+
 def _redact_question_for_tutor(question: dict, phase: str) -> dict:
     """Return a safe copy of `question` for LLM prompt context.
 
@@ -821,12 +848,22 @@ def _redact_question_for_tutor(question: dict, phase: str) -> dict:
         # Preview is the only phase where the answer is allowed in context.
         return dict(question)
 
+    # CBP needs the case framing (case_setup, metadata, source_extraction +
+    # their non-answer-bearing inner keys) to give the tutor enough context
+    # to scaffold without revealing the answer. The extension is applied
+    # ONLY for `case_based`; practice/boss/memory_check keep the strict
+    # default-deny allow-list.
+    if phase == "case_based":
+        safe_keys = _TUTOR_CONTEXT_SAFE_KEYS | _TUTOR_CONTEXT_CBP_EXTRA_KEYS
+    else:
+        safe_keys = _TUTOR_CONTEXT_SAFE_KEYS
+
     def scrub(value: Any) -> Any:
         if isinstance(value, dict):
             return {
                 k: scrub(v)
                 for k, v in value.items()
-                if k in _TUTOR_CONTEXT_SAFE_KEYS
+                if k in safe_keys
             }
         if isinstance(value, list):
             return [scrub(item) for item in value]
