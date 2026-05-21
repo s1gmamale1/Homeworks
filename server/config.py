@@ -5,7 +5,15 @@ from dotenv import load_dotenv
 
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / ".env")
+# override=True makes .env the source of truth for env vars even when the
+# shell already has them set. Without this, a stale `$env:OPENAI_API_KEY=""`
+# (empty) or wrongly-quoted value from a previous PowerShell session
+# silently blocks the real key in .env from loading — symptom on
+# 2026-05-20 was OpenAIProvider.is_available() returning False even with
+# a valid key in .env. The shell-shadow class of bugs is harder to debug
+# than the rare case of a legitimate shell override, so .env wins by
+# default; export a fresh shell var only when intentionally probing.
+load_dotenv(BASE_DIR / ".env", override=True)
 
 
 def get_db_path() -> Path:

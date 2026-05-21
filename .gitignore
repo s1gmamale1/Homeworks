@@ -90,3 +90,4 @@ nets.db.bak.*
 # Uvicorn run logs from local dev (caught by *.log too, but explicit for clarity)
 uvicorn.stdout.log
 uvicorn.stderr.log
+.claude-flow
