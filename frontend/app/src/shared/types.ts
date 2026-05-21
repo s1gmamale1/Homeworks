@@ -136,6 +136,7 @@ export interface MemoryCheckItem {
   type: MemoryCheckItemType;
   prompt: string;
   options?: string[];
+  flashcard_ref?: string;
   // Explicit leak guard — the redactor strips this subtree before delivery.
   answer_spec?: never;
 }

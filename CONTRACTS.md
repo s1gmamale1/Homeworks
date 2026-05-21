@@ -755,7 +755,7 @@ Practice-Arc unlock gate.
 {
   "items": [
     {
-      "type": "mcq | fill_blank | choose_explanation | true_false | tile_match | term_definition",
+      "type": "mcq | fill_blank | choose_explanation | true_false",
       "prompt": "string",
       "options": ["..."],
       "answer_spec": { /* AnswerSpec — STRIPPED before hydration */ },
