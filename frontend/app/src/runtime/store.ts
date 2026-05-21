@@ -4,7 +4,8 @@
 
 import { create } from "zustand";
 import type {
-  BossTurnResult,
+  BossGenerateQuestionResponse,
+  BossSubmitAnswerResponse,
   CheckAnswerResult,
   GateState,
   HydratePayload,
@@ -13,7 +14,10 @@ import type {
   TutorTurn,
 } from "../shared/types";
 import {
-  bossTurn,
+  ApiError,
+  bossGenerateQuestion,
+  bossStart,
+  bossSubmitAnswer,
   getGateState,
   submitCheckpoint,
   submitMemoryCheckItem,
@@ -120,22 +124,36 @@ interface PracticeState {
   finished: boolean; // whole arc cleared (Boss defeated / skipped)
 }
 
-// Boss Arena (F4): the mastery peak. HP is frontend-authoritative (the backend
-// adapter mirrors the client cursor); correctness/damage are ALWAYS read from
-// the server boss-turn response — the boss never self-grades. The turn loop
-// walks boss_questions in order; each defeated answer drains HP by the
-// server-returned `damage_dealt`. status drives win/lose rendering.
+// Boss Arena (F4): the mastery peak. PLAN-5 dynamic boss — questions are
+// generated per-turn by Kimi against the student's adaptive context; HP /
+// damage / trials / current_difficulty are all SERVER-AUTHORITATIVE (the
+// /boss/submit-answer response carries the absolute new HP, NOT a delta to
+// subtract). status drives intro / fighting / won / lost rendering.
+//
+// Lifecycle: startBoss → POST /boss/start (server picks resume vs fresh via
+// the 30-min staleness window) → loadNextQuestion → POST /boss/generate-question
+// → bossAnswer → POST /boss/submit-answer → auto-chain to loadNextQuestion if
+// boss_status is still "active". 502 on /generate-question (anti-rep / floor /
+// drift retry exhaustion) is surfaced as `generateError` for the UI to render a
+// "Try again" CTA per Boss Arena spec §10 (forbids fixed-question fallback).
 export type BossStatus = "intro" | "fighting" | "won" | "lost";
 
 interface BossState {
-  hp: number; // boss HP remaining (drains as the student lands hits)
+  // Plan-5 server session — opened by /boss/start, drives every subsequent call.
+  bossSessionId: string | null;
+  hp: number; // server-authoritative absolute HP (NOT a client-mutated cursor)
   maxHp: number;
-  questionIndex: number; // current boss question
-  attemptNumber: number; // attempts on the current question (for hint gating)
+  trialsLeft: number; // server-tracked trials remaining
+  currentDifficulty: string; // server's current difficulty tier (e.g. "easy" | "medium" | "hard")
+  currentQuestion: BossGenerateQuestionResponse | null; // server-generated; null while loading
+  questionIndex: number; // local turn counter for display only (no longer indexes a static array)
+  attemptNumber: number; // legacy — Plan-5 has no "retry same Q"; PR-3 removes from UI
   status: BossStatus;
-  lastResult: BossTurnResult | null; // most recent server turn (damage/response/hint)
-  submitting: boolean;
-  submitError: string | null;
+  lastResult: BossSubmitAnswerResponse | null; // most recent server submit (is_correct/damage/hp/outcome…)
+  submitting: boolean; // bossAnswer in flight
+  loadingQuestion: boolean; // loadNextQuestion in flight
+  submitError: string | null; // generic submit / session-open error surface
+  generateError: string | null; // /generate-question 502-style error (PR-3 surfaces "Try again")
 }
 
 // Reflection / Debrief (F5): the closing screen after the Boss. A short
@@ -217,10 +235,11 @@ interface RuntimeState {
   setGameIndex: (index: number) => void;
 
   // ---- Boss Arena (F4) ----
-  startBoss: () => void; // intro → fighting; sizes HP from boss_meta/default
-  bossAnswer: (answer: string) => Promise<BossTurnResult | null>;
-  advanceBossQuestion: () => void; // next boss question after a landed hit
-  retryBoss: () => void; // restart the fight from full HP
+  startBoss: () => Promise<void>; // POST /boss/start → loadNextQuestion → status "fighting"
+  loadNextQuestion: () => Promise<void>; // POST /boss/generate-question; 502 → generateError
+  bossAnswer: (answer: string) => Promise<BossSubmitAnswerResponse | null>; // POST /boss/submit-answer + auto-chain
+  advanceBossQuestion: () => void; // dismiss the turn-summary surface (PR-3 removes from UI)
+  retryBoss: () => Promise<void>; // restart with force_fresh: true
 
   // ---- Reflection / Debrief (F5) ----
   enterReflection: () => void; // Boss finish → closing screen; seeds prompts + perf
@@ -268,18 +287,25 @@ const initialPractice: PracticeState = {
 };
 
 // Grade-band-style HP defaults mirror the backend's _fb_default_hp; the actual
-// HP arrives from boss_meta.starting_hp_override when authored, else this.
+// HP arrives from /boss/start (server-authoritative) — this is just the
+// placeholder while the session is still being opened.
 const DEFAULT_BOSS_HP = 100;
 
 const initialBoss: BossState = {
+  bossSessionId: null,
   hp: DEFAULT_BOSS_HP,
   maxHp: DEFAULT_BOSS_HP,
+  trialsLeft: 0,
+  currentDifficulty: "medium",
+  currentQuestion: null,
   questionIndex: 0,
   attemptNumber: 1,
   status: "intro",
   lastResult: null,
   submitting: false,
+  loadingQuestion: false,
   submitError: null,
+  generateError: null,
 };
 
 // Default reflection prompts (Flow v2 "What was hardest? Why did you make your
@@ -619,74 +645,150 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
 
   // ---- Boss Arena (F4) ----
 
-  // Begin the fight. HP comes from boss_meta.starting_hp_override when authored
-  // (the backend uses the same field as its max-HP source), else the default.
-  startBoss: () => {
-    const { payload } = get();
+  // Open the Plan-5 boss session and fetch the first question. Plan-5's
+  // 30-min staleness window means we can call /boss/start unconditionally:
+  // the server decides resume-vs-fresh and returns the live session state.
+  // Only flip status → "fighting" once the first question lands; until then
+  // we stay on the intro screen with a loading affordance.
+  startBoss: async () => {
+    const { hwId, sessionId, payload } = get();
     const meta = payload?.content_json.boss_meta;
-    const hp =
+    const maxHpOverride =
       typeof meta?.starting_hp_override === "number" && meta.starting_hp_override >= 10
         ? meta.starting_hp_override
-        : DEFAULT_BOSS_HP;
+        : undefined;
+
     set({
       boss: {
         ...initialBoss,
-        hp,
-        maxHp: hp,
-        status: "fighting",
+        status: "intro",
+        submitting: true,
       },
     });
+
+    try {
+      const start = await bossStart(
+        sessionId,
+        hwId,
+        maxHpOverride !== undefined ? { maxHp: maxHpOverride } : undefined
+      );
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          bossSessionId: start.boss_session_id,
+          hp: start.hp,
+          maxHp: start.max_hp,
+          trialsLeft: start.trials_left,
+          currentDifficulty: start.current_difficulty,
+          submitting: false,
+          submitError: null,
+        },
+      }));
+    } catch (err) {
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          submitting: false,
+          submitError: (err as Error).message || "Couldn't open the boss session.",
+        },
+      }));
+      return;
+    }
+
+    await get().loadNextQuestion();
+    set((st) =>
+      st.boss.currentQuestion ? { boss: { ...st.boss, status: "fighting" } } : {}
+    );
   },
 
-  // Submit one boss answer. Correctness + damage come straight from the server
-  // (phase=final-boss resolves the expected answer by question_id; the client
-  // holds no answer). On a correct hit we drain HP by the server's
-  // `damage_dealt`; HP hitting 0 is the WIN. On a miss we bump the attempt
-  // counter (server gates hints on attempt ≥ 2). The boss never self-grades.
-  bossAnswer: async (answer) => {
-    const { hwId, sessionId, payload, boss } = get();
-    const questions = payload?.content_json.boss_questions ?? [];
-    const question = questions[boss.questionIndex];
-    // Backend _fb_find_boss_question resolves by q.id, else the canonical
-    // synthetic "bq_{i}" / "{i}". Use bq_{i} when the question has no authored id.
-    const questionId = question?.id ?? `bq_${boss.questionIndex}`;
-    const bossType = payload?.content_json.boss_meta?.boss_type;
+  // Fetch the next adaptive question from Plan-5. Surfaces 502 (anti-rep /
+  // skill-floor / drift retry exhaustion) as `generateError` for the UI to
+  // render a user-triggered "Try again" CTA per Boss Arena spec §10
+  // (forbids static fallback). Resets per-question scaffold (attemptNumber,
+  // lastResult) so the UI shows the fresh question cleanly.
+  loadNextQuestion: async () => {
+    const { boss } = get();
+    if (!boss.bossSessionId) return;
+    set((st) => ({
+      boss: {
+        ...st.boss,
+        loadingQuestion: true,
+        generateError: null,
+      },
+    }));
+    try {
+      const q = await bossGenerateQuestion(boss.bossSessionId);
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          currentQuestion: q,
+          currentDifficulty: q.difficulty,
+          // Bump the local turn counter only after the FIRST question lands.
+          questionIndex: st.boss.currentQuestion ? st.boss.questionIndex + 1 : 0,
+          attemptNumber: 1,
+          loadingQuestion: false,
+          // NOTE: do NOT clear lastResult here — bossAnswer chains into this
+          // action immediately after setting lastResult for the just-finished
+          // turn, and the UI relies on lastResult to render the feedback card
+          // alongside the next question. Use advanceBossQuestion() to dismiss
+          // the turn summary explicitly.
+        },
+      }));
+    } catch (err) {
+      const retryExhausted = err instanceof ApiError && err.status === 502;
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          loadingQuestion: false,
+          generateError: retryExhausted
+            ? "The boss is regrouping — try again."
+            : (err as Error).message || "Couldn't fetch the next question.",
+        },
+      }));
+    }
+  },
 
+  // Submit one boss answer to Plan-5. The server is HP-authoritative —
+  // response.hp is the absolute new boss HP, NOT a delta; response.is_correct
+  // and response.boss_status are canonical. On a non-terminal turn we
+  // auto-chain to loadNextQuestion (every submission consumes one trial and
+  // Plan-5 advances; there is no "retry same Q" path —
+  // `should_retry_same_skill` only signals that the NEXT question targets the
+  // same skill). On terminal (won/failed) we surface outcome/stars/outcome_xp
+  // via lastResult for the results screen.
+  bossAnswer: async (answer) => {
+    const { boss } = get();
+    if (!boss.bossSessionId || !boss.currentQuestion) return null;
     set((st) => ({ boss: { ...st.boss, submitting: true, submitError: null } }));
     try {
-      const res = await bossTurn(hwId, sessionId, questionId, answer, {
-        hpRemaining: boss.hp,
-        attemptNumber: boss.attemptNumber,
-        bossType,
-      });
-      // attempts_max gates losses: null/absent = unlimited (the student can
-      // keep swinging). When authored, a wrong answer that exhausts the cap
-      // ends the fight as a loss. The server's per-turn `correct` is canonical.
-      const attemptsMax = payload?.content_json.boss_meta?.attempts_max ?? null;
-      set((st) => {
-        const dmg = Number(res.damage_dealt) || 0;
-        const hp = Math.max(0, st.boss.hp - dmg);
-        const won = hp <= 0;
-        const nextAttempt = res.correct ? st.boss.attemptNumber : st.boss.attemptNumber + 1;
-        const lost =
-          !won &&
-          !res.correct &&
-          typeof attemptsMax === "number" &&
-          nextAttempt > attemptsMax;
-        return {
-          boss: {
-            ...st.boss,
-            submitting: false,
-            hp,
-            lastResult: res,
-            // Wrong answer → same question, next attempt (unlocks server hint).
-            // Correct answer keeps the attempt counter; advanceBossQuestion
-            // resets it when moving on.
-            attemptNumber: nextAttempt,
-            status: won ? "won" : lost ? "lost" : st.boss.status,
-          },
-        };
-      });
+      const res = await bossSubmitAnswer(
+        boss.bossSessionId,
+        boss.currentQuestion.question_id,
+        answer
+      );
+      const nextStatus: BossStatus =
+        res.boss_status === "won"
+          ? "won"
+          : res.boss_status === "failed"
+            ? "lost"
+            : "fighting";
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          submitting: false,
+          hp: res.hp,
+          trialsLeft: res.trials_left,
+          currentDifficulty: res.current_difficulty,
+          lastResult: res,
+          status: nextStatus,
+        },
+      }));
+      if (res.boss_status === "active") {
+        // Auto-load the next adaptive question. Failures here surface via
+        // generateError; the UI can render a "Try again" CTA without losing
+        // the just-rendered turn feedback.
+        await get().loadNextQuestion();
+      }
       return res;
     } catch (err) {
       set((st) => ({
@@ -700,34 +802,63 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     }
   },
 
-  // Move to the next boss question after a landed hit. If the boss still has HP
-  // but we've run out of authored questions, loop back to the first question
-  // (the boss isn't down yet — the student keeps attacking). Resets attempts.
+  // Dismiss the turn-summary surface so the freshly auto-loaded question shows.
+  // Kept as a no-op shim for BossArena's current "Press the attack" CTA; PR-3
+  // removes that CTA and this action with it.
   advanceBossQuestion: () =>
-    set((st) => {
-      const total = get().payload?.content_json.boss_questions?.length ?? 0;
-      const next = total > 0 ? (st.boss.questionIndex + 1) % total : 0;
-      return {
-        boss: {
-          ...st.boss,
-          questionIndex: next,
-          attemptNumber: 1,
-          lastResult: null,
-        },
-      };
-    }),
+    set((st) => ({ boss: { ...st.boss, lastResult: null } })),
 
-  // Restart the fight from full HP (after a loss or for a replay).
-  retryBoss: () => {
-    const { boss } = get();
+  // Restart the fight: ask Plan-5 to archive the prior session and spawn a
+  // fresh one, then re-fetch the first question. force_fresh skips the
+  // staleness-window auto-resume.
+  retryBoss: async () => {
+    const { hwId, sessionId, payload } = get();
+    const meta = payload?.content_json.boss_meta;
+    const maxHpOverride =
+      typeof meta?.starting_hp_override === "number" && meta.starting_hp_override >= 10
+        ? meta.starting_hp_override
+        : undefined;
+
     set({
       boss: {
         ...initialBoss,
-        hp: boss.maxHp,
-        maxHp: boss.maxHp,
-        status: "fighting",
+        status: "intro",
+        submitting: true,
       },
     });
+
+    try {
+      const start = await bossStart(sessionId, hwId, {
+        ...(maxHpOverride !== undefined ? { maxHp: maxHpOverride } : {}),
+        forceFresh: true,
+      });
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          bossSessionId: start.boss_session_id,
+          hp: start.hp,
+          maxHp: start.max_hp,
+          trialsLeft: start.trials_left,
+          currentDifficulty: start.current_difficulty,
+          submitting: false,
+          submitError: null,
+        },
+      }));
+    } catch (err) {
+      set((st) => ({
+        boss: {
+          ...st.boss,
+          submitting: false,
+          submitError: (err as Error).message || "Couldn't restart the boss.",
+        },
+      }));
+      return;
+    }
+
+    await get().loadNextQuestion();
+    set((st) =>
+      st.boss.currentQuestion ? { boss: { ...st.boss, status: "fighting" } } : {}
+    );
   },
 
   // ---- Reflection / Debrief (F5) ----

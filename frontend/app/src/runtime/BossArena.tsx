@@ -35,8 +35,10 @@ export default function BossArena({ onComplete }: GameProps) {
   const questions = (payload?.content_json.boss_questions ?? []) as BossQuestion[];
   const meta = payload?.content_json.boss_meta;
   const bossName = meta?.name ?? "The Boss";
-  const question = questions[boss.questionIndex];
-  const questionText = question?.prompt ?? question?.q ?? "Defend your reasoning.";
+  // PR-2: question text now comes from the Plan-5 server response. Static
+  // boss_questions[] is read only by the empty-state guard below; PR-3 drops
+  // that branch in favor of Plan-5's 502 / no-question-loaded UI states.
+  const questionText = boss.currentQuestion?.question_text ?? "Defend your reasoning.";
 
   const [answer, setAnswer] = useState("");
 
@@ -132,7 +134,7 @@ export default function BossArena({ onComplete }: GameProps) {
 
   // ---- fighting ----
   const result = boss.lastResult;
-  const justHit = result?.correct === true;
+  const justHit = result?.is_correct === true;
   const hpPct = boss.maxHp > 0 ? Math.max(0, Math.min(100, (boss.hp / boss.maxHp) * 100)) : 0;
 
   const onSubmit = () => {
@@ -167,26 +169,25 @@ export default function BossArena({ onComplete }: GameProps) {
         {questionText}
       </Title>
 
-      {/* turn feedback: boss line + damage / hint */}
+      {/* turn feedback: boss line + damage. Plan-5 returns a single
+          `feedback` string (no separate hint field); PR-3 redesigns this
+          surface to show "Wrong, moving on" + a "Next question →" CTA. */}
       {result && (
         <div
-          className={`${s.turn} ${result.correct ? s.turnHit : s.turnMiss}`}
+          className={`${s.turn} ${result.is_correct ? s.turnHit : s.turnMiss}`}
           role="status"
           data-testid="boss-turn-result"
         >
           <div className={s.turnHead}>
-            {result.correct ? (
+            {result.is_correct ? (
               <Pill tone="good">
-                Hit · −{result.damage_dealt} HP
+                Hit · −{result.damage} HP
               </Pill>
             ) : (
               <Pill tone="warn">Blocked · no damage</Pill>
             )}
           </div>
-          {result.boss_response && <p className={s.bossLine}>{result.boss_response}</p>}
-          {!result.correct && result.hint && (
-            <p className={s.hintLine}>Hint: {result.hint}</p>
-          )}
+          {result.feedback && <p className={s.bossLine}>{result.feedback}</p>}
         </div>
       )}
 
