@@ -8639,6 +8639,34 @@
             </div>
         </div>
 
+        <!-- Flow v2 — Learning Hub (Tile A: CBP, Tile B: Flashcards/Memory Check) -->
+        <div id="screen-hub" class="screen v2-surface" hidden>
+            <div class="hub-shell">
+                <p class="eyebrow eyebrow--blue">Boshlash uchun bittasini tanlang</p>
+                <h1 class="hub-title">Mavzuni o'rganishni qaerdan boshlaysiz?</h1>
+
+                <div class="hub-tiles" role="group" aria-label="Learning sections">
+                    <button type="button" id="hub-tile-cbp" class="hub-tile hub-tile--dark"
+                            aria-label="Case-Based Preview — vaziyat orqali o'rganish">
+                        <span class="hub-tile__eyebrow eyebrow--cyan">Case study</span>
+                        <span class="hub-tile__title">Vaziyat orqali o'rganing</span>
+                        <span class="hub-tile__desc">Real hayotiy vaziyatda 3 ta qaror oling.</span>
+                        <span class="hub-tile__pill" data-hub-status="cbp">Not started</span>
+                    </button>
+
+                    <button type="button" id="hub-tile-fc" class="hub-tile hub-tile--light"
+                            aria-label="Flashcards va Memory Check">
+                        <span class="hub-tile__eyebrow eyebrow--cyan">Flashcards</span>
+                        <span class="hub-tile__title">Kartochkalar bilan eslab qoling</span>
+                        <span class="hub-tile__desc">Asosiy terminlarni o'rganing va testdan o'ting.</span>
+                        <span class="hub-tile__pill" data-hub-status="fc">Not started</span>
+                    </button>
+                </div>
+
+                <p class="hub-foot">Ikkala bo'lim ham ≥60% bajarilsa, amaliyot ochiladi.</p>
+            </div>
+        </div>
+
         <!-- Stage 1 -->
         <div id="screen-1" class="screen">
             <div class="card quote-card">
@@ -11035,13 +11063,30 @@
             // sets this to true on entry and clears it after the transition
             // settles (transitionend OR 420ms safety fallback).
             cardSwitching: false,
-            touchStart: null
+            touchStart: null,
+            // Flow v2 sub-state (active when CBP is populated)
+            v2: {
+                active: false,
+                stage: null,      // 'hub' | 'cbp' | 'fc' | 'mc' | 'unlock' | 'practice' | 'reflection'
+                sub: null,        // for cbp: 'setup'|'ckp1'|'lb1'|'ckp2'|'lb2'|'ckp3'|'sim'|'fb'
+                ckpIdx: 0,
+                retakeCountByIdx: {},
+                heroSeen: false,
+                cbp: { passed: false, attemptsByIdx: {} },
+                fc: { passed: false }
+            }
         };
 
         // DOM Elements
         let btn, btnText;
 
         function init() {
+            // Flow v2 dispatcher — if the homework carries CBP content,
+            // route through the v2 stage machine and skip the legacy boot.
+            if (typeof _v2BootDispatcher === 'function' && _v2BootDispatcher()) {
+                return;
+            }
+
             btn = document.getElementById('action-button');
             btnText = btn ? btn.querySelector('.btn-text') : null;
 
@@ -11284,6 +11329,72 @@
                     detail: { phase: phaseName, stage: n, questionId: null }
                 }));
             } catch (e) { /* widget optional */ }
+        }
+
+        // ── FLOW V2 STAGE SETTER (parallel to setStage; doesn't touch legacy) ──
+        //
+        // Stages:
+        //   'hub'        → #screen-hub  (two-tile Learning Hub)
+        //   'cbp'        → #screen-cbp (PR #6 fills it in)
+        //   'fc'         → reuses legacy #screen-3 (flashcards)
+        //   'mc'         → #screen-mc (PR #233 shipped this)
+        //   'unlock'     → #screen-unlock (PR #6)
+        //   'practice'   → existing Practice Arc screens
+        //   'reflection' → existing #screen-reflection
+        //
+        // Sub-state lives on state.v2; this function only sets stage/sub and
+        // toggles the visible .screen container. CBP substage detail-rendering
+        // lands in PR #6.
+        function setStageV2(stage, sub) {
+            if (!state.v2) return;
+            state.v2.active = true;
+            state.v2.stage = stage;
+            state.v2.sub = sub || null;
+
+            // Hide all v1 screens; show only the v2 stage container.
+            document.querySelectorAll('.screen').forEach(function (el) { el.hidden = true; });
+            var target = document.getElementById('screen-' + stage);
+            if (target) target.hidden = false;
+
+            // Mirror the legacy phase-change event for the tutor widget.
+            try {
+                var phaseName = 'preview';
+                if (stage === 'cbp') phaseName = 'case_based';
+                else if (stage === 'mc') phaseName = 'memory_check';
+                else if (stage === 'practice') phaseName = 'practice';
+                else if (stage === 'reflection') phaseName = 'preview';
+                document.dispatchEvent(new CustomEvent('nets:phase-change', {
+                    detail: { phase: phaseName, stage: stage, sub: sub || null, questionId: null }
+                }));
+            } catch (e) { /* widget optional */ }
+        }
+
+        // Detect v2 mode and route the boot. v1 homeworks are untouched.
+        function _v2BootDispatcher() {
+            var isV2 = (
+                typeof CBP === 'object' && CBP !== null && Object.keys(CBP).length > 0
+            );
+            if (!isV2) return false;
+
+            // Activate v2 tokens + a11y rules (PR #4's _tokens.css).
+            document.documentElement.setAttribute('data-flow', 'v2');
+
+            // Wire the two Hub tiles. PR #6 replaces these stub handlers.
+            var cbpBtn = document.getElementById('hub-tile-cbp');
+            var fcBtn = document.getElementById('hub-tile-fc');
+            if (cbpBtn) {
+                cbpBtn.addEventListener('click', function () {
+                    setStageV2('cbp', 'setup');
+                });
+            }
+            if (fcBtn) {
+                fcBtn.addEventListener('click', function () {
+                    alert('Flashcards bo\'limi PR #6 da ulanadi.');
+                });
+            }
+
+            setStageV2('hub');
+            return true;
         }
 
         // ── PHASE PROGRESS BAR ──────────────────────────────────
