@@ -3,6 +3,9 @@
 // Every call throws on a non-2xx response so callers can surface error UI.
 
 import type {
+  BossGenerateQuestionResponse,
+  BossStartResponse,
+  BossSubmitAnswerResponse,
   BossTurnResult,
   CheckAnswerResult,
   GateState,
@@ -212,6 +215,91 @@ export function bossTurn(
       hp_remaining: opts.hpRemaining,
       attempt_number: opts.attemptNumber,
       ...(opts.bossType ? { boss_type: opts.bossType } : {}),
+    }),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Plan-5 dynamic boss — adaptive per-turn flow.
+//
+// Replaces the static bossTurn() path: each turn is a sequenced call of
+// `/boss/start` (once, on entry — server auto-resumes a fresh session if one
+// exists), `/boss/generate-question` (every turn, fetches the next adaptive
+// question), then `/boss/submit-answer` (grades + drains HP + decrements
+// trials). The server is authoritative for HP / damage / trial accounting;
+// the client never derives correctness or simulates damage.
+//
+// Failure mode: `/boss/generate-question` can return HTTP 502 on retry
+// exhaustion (anti-repetition / language drift / per-skill difficulty
+// floor). The Boss Arena spec §10 forbids fixed-question fallback, so the
+// runtime must surface a "Try again" UI on these errors — see PR notes.
+// ---------------------------------------------------------------------------
+
+/** Open a Plan-5 boss session. Idempotent within the staleness window. */
+export function bossStart(
+  sessionId: string,
+  homeworkId: string,
+  opts?: {
+    maxHp?: number;
+    trialsLeft?: number;
+    initialDifficulty?: string;
+    forceFresh?: boolean;
+  }
+): Promise<BossStartResponse> {
+  return request<BossStartResponse>("/api/ai/boss/start", {
+    method: "POST",
+    body: JSON.stringify({
+      session_id: sessionId,
+      homework_id: homeworkId,
+      ...(typeof opts?.maxHp === "number" ? { max_hp: opts.maxHp } : {}),
+      ...(typeof opts?.trialsLeft === "number" ? { trials_left: opts.trialsLeft } : {}),
+      ...(opts?.initialDifficulty ? { initial_difficulty: opts.initialDifficulty } : {}),
+      ...(opts?.forceFresh ? { force_fresh: true } : {}),
+    }),
+  });
+}
+
+/**
+ * Fetch the next adaptive question for an active boss session.
+ *
+ * Throws ApiError on 502 — the runtime should catch that specifically and
+ * surface a "Try again" affordance (Boss Arena spec §10 forbids falling back
+ * to a static question pool). `recentBossPhrases` is forwarded so the
+ * generator can vary surface form across turns.
+ */
+export function bossGenerateQuestion(
+  bossSessionId: string,
+  recentBossPhrases: string[] = []
+): Promise<BossGenerateQuestionResponse> {
+  return request<BossGenerateQuestionResponse>("/api/ai/boss/generate-question", {
+    method: "POST",
+    body: JSON.stringify({
+      boss_session_id: bossSessionId,
+      recent_boss_phrases: recentBossPhrases,
+    }),
+  });
+}
+
+/**
+ * Submit the student's answer for the current boss question.
+ *
+ * Plan-5 semantics: every submission consumes one trial. There is no
+ * "retry the same question" path — `should_retry_same_skill: true` in the
+ * response signals that the NEXT generated question should target the same
+ * skill, not that the student gets another shot at this one. The server
+ * returns absolute `hp` (NOT a delta to subtract from the client's cursor).
+ */
+export function bossSubmitAnswer(
+  bossSessionId: string,
+  questionId: string,
+  studentAnswer: string
+): Promise<BossSubmitAnswerResponse> {
+  return request<BossSubmitAnswerResponse>("/api/ai/boss/submit-answer", {
+    method: "POST",
+    body: JSON.stringify({
+      boss_session_id: bossSessionId,
+      question_id: questionId,
+      student_answer: studentAnswer,
     }),
   });
 }

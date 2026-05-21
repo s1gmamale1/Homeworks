@@ -347,3 +347,83 @@ export interface BossTurnResult {
   stars?: number;
   outcome_xp?: number;
 }
+
+// ---------------------------------------------------------------------------
+// Plan-5 dynamic boss — adaptive per-turn generation.
+//
+// The React BossArena will migrate from the static `bossTurn()` flow (above)
+// to this set of endpoints: `/boss/start` opens a session, each turn calls
+// `/generate-question` then `/submit-answer`, and the server is authoritative
+// for HP / damage / trial accounting. These types mirror Pydantic models in
+// server/routes/ai_plan5.py (BossStartResponse, BossGenerateQuestionResponse,
+// BossSubmitAnswerResponse).
+// ---------------------------------------------------------------------------
+
+/**
+ * Response from POST /api/ai/boss/start. Opens a Plan-5 boss session for a
+ * (session_id, homework_id) pair. The server's staleness window (~30 min)
+ * auto-resumes an existing active session if recent, else spawns a fresh one
+ * — so the client can call this unconditionally on boss entry and let the
+ * server decide resume-vs-fresh. `weak_topics` / `strong_topics` derive from
+ * upstream phase_attempts; `missing_context_flags` surfaces gaps like
+ * `no_attempts` / `empty_metrics` for diagnostics.
+ */
+export interface BossStartResponse {
+  boss_session_id: string;
+  hp: number;
+  max_hp: number;
+  trials_left: number;
+  current_difficulty: string;
+  weak_topics: string[];
+  strong_topics: string[];
+  missing_context_flags: string[];
+}
+
+/**
+ * Response from POST /api/ai/boss/generate-question. The LLM produces one
+ * adaptive question targeted to the student's weakest unaddressed skill at
+ * the current difficulty tier. `question_text` is student-safe (no answer
+ * keys — the server holds them, keyed by `question_id`). `why_this_question`
+ * is internal diagnostics; the runtime may surface it or hide it.
+ *
+ * On retry exhaustion (anti-repetition / language-drift / per-skill floor
+ * violation), this endpoint returns HTTP 502. The client must handle that
+ * with a user-triggered retry — fallback to static questions is forbidden
+ * per Boss Arena spec §10 ("Fixed question pools... defeats the design").
+ */
+export interface BossGenerateQuestionResponse {
+  question_id: string;
+  question_text: string;
+  target_skill: string;
+  difficulty: string;
+  why_this_question: string;
+  boss_session_id: string;
+}
+
+/**
+ * Response from POST /api/ai/boss/submit-answer. Server is authoritative:
+ * the returned `hp` is the absolute new boss HP (NOT a delta to subtract),
+ * `trials_left` is the new trials remaining, and `boss_status` is the
+ * canonical terminal-vs-active signal. Per Plan-5 semantics every submission
+ * consumes one trial — there is no "retry the same question" path.
+ *
+ * On terminal status (`won` | `failed`), the optional outcome triplet
+ * (`outcome` / `stars` / `outcome_xp`) is populated by compute_boss_outcome.
+ */
+export interface BossSubmitAnswerResponse {
+  is_correct: boolean;
+  score: number;
+  confidence: number;
+  feedback: string;
+  damage: number;
+  hp: number;
+  trials_left: number;
+  current_difficulty: string;
+  boss_status: "active" | "won" | "failed";
+  should_retry_same_skill: boolean;
+  misconception_tags: string[];
+  // Terminal-only — populated when boss_status != "active"
+  outcome?: string | null;
+  stars?: number | null;
+  outcome_xp?: number | null;
+}
