@@ -322,6 +322,7 @@ async def init_db() -> None:
             "ALTER TABLE sessions ADD COLUMN performance_summary_json TEXT",
             "ALTER TABLE sessions ADD COLUMN boss_state_json TEXT",
             "ALTER TABLE sessions ADD COLUMN updated_at TEXT",
+            "ALTER TABLE sessions ADD COLUMN boss_xp_earned INTEGER NOT NULL DEFAULT 0",
         ):
             try:
                 await db.execute(migration)

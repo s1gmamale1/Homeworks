@@ -25,7 +25,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from .. import db
-from ..db import boss_session_repo, boss_repo, session_events_repo, attempts_repo
+from ..db import boss_session_repo, boss_repo, session_events_repo, attempts_repo, session_repo
 from ..services import boss_context_builder, boss_dynamic
 
 
@@ -404,6 +404,17 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
             "hp_remaining": new_hp,
             "trials_left": new_trials,
         })
+        # Persist outcome_xp on the parent session row at boss terminal state.
+        # Fires on both `won` and `failed` — spec §6 allows partial XP when
+        # HP ≤ 40% of start so non-zero values are legitimate on `failed`.
+        # Best-effort: a DB hiccup must not break the answer-submission response.
+        try:
+            xp = outcome_payload.get("outcome_xp")
+            parent_session_id = (updated or state).get("session_id")
+            if parent_session_id and xp is not None:
+                await session_repo.update_session_boss_xp(parent_session_id, int(xp))
+        except Exception as exc:
+            _log.warning("boss_xp_persist_failed (plan5 path): %s", exc)
 
     return BossSubmitAnswerResponse(
         is_correct=verdict.is_correct,

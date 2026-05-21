@@ -33,3 +33,23 @@ async def create_session(session_id: str, homework_id: str, student_name: str, s
         await db.commit()
     finally:
         await db.close()
+
+
+async def update_session_boss_xp(session_id: str, xp: int) -> None:
+    """Persist `outcome_xp` to sessions.boss_xp_earned at boss defeat.
+
+    Boss is once-per-session per spec, but no DB constraint enforces it —
+    last-write-wins if a duplicate defeat fires (e.g., retry path). Column
+    defaults to 0 and is overwritten with the integer XP value computed by
+    the boss outcome helper (legacy `_boss_outcome_for` or Plan-5
+    `boss_dynamic.compute_boss_outcome`).
+    """
+    db = await connect()
+    try:
+        await db.execute(
+            "UPDATE sessions SET boss_xp_earned = ? WHERE id = ?",
+            (int(xp), session_id),
+        )
+        await db.commit()
+    finally:
+        await db.close()

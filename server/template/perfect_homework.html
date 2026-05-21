@@ -6591,6 +6591,18 @@
         .screen-results-mastery.perf-mid  { background: rgba(234,179,8,0.06); border-left: 3px solid var(--perf-mid);  }
         .screen-results-mastery.perf-bad  { background: rgba(239,68,68,0.06); border-left: 3px solid var(--perf-bad);  }
 
+        /* Cycle-end echo of the boss outcome_xp shown on the boss card.
+           Reuses the boss-result-xp accent so the reward signal is
+           visually continuous between the boss screen and results.
+           Hidden by default; renderResults() unhides + populates when
+           bossState.outcomeXp > 0 (boss reached terminal state this session). */
+        .screen-results-boss-xp {
+            font-size: 15px; font-weight: 700;
+            color: var(--accent-good, #35c66f);
+            text-align: center;
+            margin: 12px 0 4px;
+        }
+
         .screen-results-closing {
             font-size: 12px;
             color: var(--text-dim);
@@ -9483,6 +9495,7 @@
                 <div class="screen-results-phases" id="results-phases"></div>
                 <div class="screen-results-amr" id="results-amr"></div>
                 <div class="screen-results-mastery" id="results-mastery"></div>
+                <div class="screen-results-boss-xp" id="results-boss-xp" style="display:none;"></div>
                 <div class="screen-results-closing" id="results-closing"></div>
                 <div class="screen-results-actions" id="results-actions"></div>
             </div>
@@ -9712,6 +9725,7 @@
                 'res.tip_novice':        "Mavzuni qaytadan ko'rib chiqing. Hint Ladder va Flash Card'larni qayta o'qing, so'ng yana urinib ko'ring.",
                 'res.closed_format':     "Yopiq-format javoblar tahlilingiz: ",
                 'res.closing':           'Hisobot saqlandi. Keyingi takrorlash 1 kun ichida.',
+                'res.boss_xp':           "Boss yengildi: +{n} XP",
                 // misc
                 'gb.break_done':         "O'yin tanaffusi tugadi!",
                 // phase announcement card labels (Bug #4)
@@ -10045,6 +10059,7 @@
                 'res.tip_novice':        'Перепройдите тему. Перечитайте Hint Ladder и Flash Cards, затем попробуйте снова.',
                 'res.closed_format':     'Анализ закрытых ответов: ',
                 'res.closing':           'Отчёт сохранён. Следующее повторение через 1 день.',
+                'res.boss_xp':           'Босс побеждён: +{n} XP',
                 'gb.break_done':         'Игровой перерыв окончен!',
                 // phase announcement card labels (Bug #4)
                 'phase.game_breaks':     'Игровой перерыв',
@@ -10377,6 +10392,7 @@
                 'res.tip_novice':        'Revisit the topic. Re-read the Hint Ladder and Flash Cards, then try again.',
                 'res.closed_format':     'Closed-format analysis: ',
                 'res.closing':           'Report saved. Next review in 1 day.',
+                'res.boss_xp':           'Boss defeated: +{n} XP',
                 'gb.break_done':         'Game break finished!',
                 // phase announcement card labels (Bug #4)
                 'phase.game_breaks':     'Game Break',
@@ -20862,6 +20878,24 @@ Prezident ertaga hisobot kutmoqda.`,
             if (masteryEl) {
                 masteryEl.textContent = card.coaching_tip || '';
                 masteryEl.className = 'screen-results-mastery ' + card.perf_class;
+            }
+
+            // Cycle-end boss XP echo. Reads in-memory bossState.outcomeXp
+            // (set during boss play this session); persisted to
+            // sessions.boss_xp_earned by the server for cross-session reads
+            // — a follow-up PR can read the persisted value via the
+            // scorecard endpoint when reload-survival matters.
+            const bossXpEl = document.getElementById('results-boss-xp');
+            if (bossXpEl) {
+                const xp = (typeof bossState !== 'undefined' && bossState && typeof bossState.outcomeXp === 'number')
+                    ? bossState.outcomeXp
+                    : 0;
+                if (xp > 0) {
+                    bossXpEl.textContent = RT('res.boss_xp').replace('{n}', String(xp));
+                    bossXpEl.style.display = '';
+                } else {
+                    bossXpEl.style.display = 'none';
+                }
             }
 
             const closingEl = document.getElementById('results-closing');

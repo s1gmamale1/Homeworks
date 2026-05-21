@@ -14,6 +14,7 @@ from ..services import tutor, ai_orchestrator, injector, ai_debug, ai_context, a
 from ..services.slur_filter import classify, detect_slurs
 from ..services import warnings as warnings_svc
 from .. import db
+from ..db import session_repo
 
 router = APIRouter(tags=["ai-tutor"])
 
@@ -1672,6 +1673,14 @@ async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
         response["outcome"] = outcome
         response["stars"] = stars
         response["outcome_xp"] = int(outcome_xp)
+        # Persist outcome_xp on the session row so it survives reload and
+        # feeds future analytics (streak counter, cross-session XP totals).
+        # Best-effort: a DB hiccup must not break the boss-defeat response.
+        try:
+            if req.session_id:
+                await session_repo.update_session_boss_xp(req.session_id, int(outcome_xp))
+        except Exception as exc:
+            _log.warning("boss_xp_persist_failed (legacy path): %s", exc)
 
     return response
 
