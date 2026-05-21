@@ -95,7 +95,7 @@ class CaseBasedPreview(_Permissive):
     completion_rules: dict  # {pass_condition: "ge_2_of_3", retry_condition: ...}
 
 class MemoryCheckItem(_Permissive):
-    type: Literal["mcq", "fill_blank", "choose_explanation", "true_false", "tile_match", "term_definition"]
+    type: Literal["mcq", "fill_blank", "choose_explanation", "true_false"]
     prompt: str
     options: Optional[list[str]]
     answer_spec: AnswerSpec      # reuses existing AnswerSpec from content.py:45-68

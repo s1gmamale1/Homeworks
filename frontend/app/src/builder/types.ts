@@ -68,6 +68,7 @@ export interface DraftCaseBasedPreview {
 // ---- Flashcards + Memory Check (authored) ----------------------------------
 
 export interface DraftFlashcard {
+  id?: string;
   term: string;
   def: string;
   hint?: string;
@@ -83,6 +84,7 @@ export type MemoryCheckItemType =
 export interface DraftMemoryCheckItem {
   type: MemoryCheckItemType;
   prompt: string;
+  flashcard_ref?: string;
   // Present for option types (mcq / true_false / choose_explanation); empty
   // for fill_blank.
   options: string[];

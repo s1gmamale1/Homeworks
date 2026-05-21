@@ -92,6 +92,12 @@ export function emptyFlashcard(): DraftFlashcard {
   return { term: "", def: "", hint: "", example: "" };
 }
 
+function flashcardRef(card: DraftFlashcard | undefined, index: number): string {
+  const authored = card?.id?.trim();
+  if (authored) return authored;
+  return `fc_${index + 1}`;
+}
+
 export function emptyMemoryItem(
   type: MemoryCheckItemType = "mcq"
 ): DraftMemoryCheckItem {
@@ -159,7 +165,8 @@ export function toContentJson(draft: BuilderDraft): Record<string, unknown> {
       final_simulation: { ...cbp.final_simulation },
       feedback_summary: { ...cbp.feedback_summary },
     },
-    flashcards: draft.flashcards.map((c) => ({
+    flashcards: draft.flashcards.map((c, i) => ({
+      id: flashcardRef(c, i),
       term: c.term,
       def: c.def,
       ...(c.hint ? { hint: c.hint } : {}),
@@ -172,11 +179,13 @@ export function toContentJson(draft: BuilderDraft): Record<string, unknown> {
           ? {
               type: it.type,
               prompt: it.prompt,
+              ...(it.flashcard_ref ? { flashcard_ref: it.flashcard_ref } : {}),
               answer_spec: { ...it.answer_spec },
             }
           : {
               type: it.type,
               prompt: it.prompt,
+              ...(it.flashcard_ref ? { flashcard_ref: it.flashcard_ref } : {}),
               options: [...it.options],
               answer_spec: {
                 ...it.answer_spec,
@@ -471,9 +480,10 @@ export function fromContentJson(raw: unknown): BuilderDraft {
   };
 
   // ---- Flashcards ----
-  base.flashcards = asArr(c.flashcards).map((rc) => {
+  base.flashcards = asArr(c.flashcards).map((rc, i) => {
     const card = asObj(rc);
     return {
+      id: asStr(card.id) || `fc_${i + 1}`,
       term: asStr(card.term, asStr(card.front)),
       def: asStr(card.def, asStr(card.definition, asStr(card.back))),
       hint: asStr(card.hint) || undefined,
@@ -495,12 +505,13 @@ export function fromContentJson(raw: unknown): BuilderDraft {
     ) as MemoryCheckItemType;
     const options =
       type === "fill_blank" ? [] : asArr(item.options).map((o) => asStr(o));
-    return {
-      type,
-      prompt: asStr(item.prompt),
-      options,
-      answer_spec: coerceAnswerSpec(item.answer_spec, options),
-    };
+      return {
+        type,
+        prompt: asStr(item.prompt),
+        flashcard_ref: asStr(item.flashcard_ref) || undefined,
+        options,
+        answer_spec: coerceAnswerSpec(item.answer_spec, options),
+      };
   });
 
   // ---- Practice Arc ----

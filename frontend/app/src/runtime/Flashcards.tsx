@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useRuntimeStore } from "./store";
 import { Eyebrow, Title, Lead, Button } from "../shared/ui/primitives";
-import type { Flashcard } from "../shared/types";
+import type { Flashcard, MemoryCheckItem } from "../shared/types";
 import s from "./Flashcards.module.css";
+
+function cardRef(card: Flashcard | undefined, index: number): string {
+  const authored = card?.id?.trim();
+  if (authored) return authored;
+  return `fc_${index + 1}`;
+}
 
 // Tile B, study half: a flippable deck (front ↔ back) with "Bildim/Bilmadim"
 // recall buttons. The student must view every card ≥1× before "Start Memory
@@ -21,6 +27,7 @@ export function Flashcards() {
   const goto = useRuntimeStore((st) => st.goto);
 
   const cards = (payload?.content_json.flashcards ?? []) as Flashcard[];
+  const memoryItems = (payload?.content_json.memory_check?.items ?? []) as MemoryCheckItem[];
   const total = cards.length;
   const card = cards[cardIndex] as Flashcard | undefined;
 
@@ -59,6 +66,25 @@ export function Flashcards() {
 
   const allViewed = viewedCards.length >= total;
   const isRetry = weakItems.length > 0;
+  const weakCardRefs = new Set(
+    weakItems
+      .map((i) => memoryItems[i]?.flashcard_ref)
+      .filter((ref): ref is string => !!ref)
+  );
+  const weakCardIndices = new Set(
+    weakItems
+      .map((i) => {
+        const ref = memoryItems[i]?.flashcard_ref;
+        if (ref) {
+          const match = cards.findIndex((c, idx) => cardRef(c, idx) === ref);
+          if (match >= 0) return match;
+        }
+        return i < total ? i : -1;
+      })
+      .filter((i) => i >= 0)
+  );
+  const currentWeak =
+    weakCardIndices.has(cardIndex) || weakCardRefs.has(cardRef(card, cardIndex));
 
   const onFlip = () => {
     setFlipped((f) => !f);
@@ -89,12 +115,19 @@ export function Flashcards() {
         </span>
       </div>
 
-      <Progress current={cardIndex} viewed={viewedCards} total={total} />
+      <Progress
+        current={cardIndex}
+        viewed={viewedCards}
+        weak={weakCardIndices}
+        total={total}
+      />
 
       <div className={s.cardScene}>
         <button
           type="button"
-          className={`${s.card} ${flipped ? s.cardFlipped : ""}`}
+          className={`${s.card} ${flipped ? s.cardFlipped : ""} ${
+            currentWeak ? s.cardWeak : ""
+          }`}
           onClick={onFlip}
           aria-label={flipped ? "Show front of card" : "Show back of card"}
           aria-pressed={flipped}
@@ -102,6 +135,7 @@ export function Flashcards() {
         >
           <span className={`${s.face} ${s.faceFront}`} aria-hidden={flipped}>
             <span className={s.faceLabel}>Front</span>
+            {currentWeak && <span className={s.weakChip}>Weak — review</span>}
             <p className={s.faceText}>{card?.front ?? card?.term}</p>
             {card?.hint && <span className={s.faceHint}>Hint: {card.hint}</span>}
             <span className={s.flipHint}>Tap to flip →</span>
@@ -202,10 +236,12 @@ function BackToHub({ onClick }: { onClick: () => void }) {
 function Progress({
   current,
   viewed,
+  weak,
   total,
 }: {
   current: number;
   viewed: number[];
+  weak?: Set<number>;
   total: number;
 }) {
   return (
@@ -214,6 +250,8 @@ function Progress({
         const cls =
           i === current
             ? s.dotActive
+            : weak?.has(i)
+            ? s.dotWeak
             : viewed.includes(i)
             ? s.dotDone
             : "";

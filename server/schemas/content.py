@@ -720,10 +720,13 @@ class CaseBasedPreview(_Permissive):
     completion_rules: Optional[Dict[str, Any]] = None
 
 
+MemoryCheckItemType = Literal["mcq", "fill_blank", "choose_explanation", "true_false"]
+
+
 class MemoryCheckItem(_Permissive):
     """One Quizlet-style Memory Check item. answer_spec stripped server-side."""
 
-    type: Optional[str] = None  # mcq | fill_blank | choose_explanation | true_false | tile_match | term_definition
+    type: Optional[MemoryCheckItemType] = None
     prompt: Optional[str] = None
     options: Optional[List[str]] = None
     answer_spec: Optional[AnswerSpec] = None
@@ -735,7 +738,7 @@ class MemoryCheck(_Permissive):
 
     items: Optional[List[MemoryCheckItem]] = None
     pass_threshold_pct: Optional[int] = None  # default 60 (runtime)
-    modes_enabled: Optional[List[str]] = None
+    modes_enabled: Optional[List[MemoryCheckItemType]] = None
     retake_pool_size: Optional[int] = None
 
 
