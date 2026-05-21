@@ -816,6 +816,12 @@ _TUTOR_CONTEXT_SAFE_KEYS: frozenset[str] = frozenset({
 #   answer_spec, learning_block_after, consequence_preview, retake_variants,
 #   final_simulation, correct_path, wrong_path, feedback_summary,
 #   completion_rules, expected, accepted_answers, option_index, correct.
+#
+# `visual_plan` is intentionally OMITTED from this allow-list —
+# layout cues (e.g. which option is highlighted, where the correct
+# answer renders on screen) can encode the answer position. Keep it
+# in the default-deny set so any author-supplied visual_plan stays
+# server-side. (backend-tutor-audit finding #6)
 _TUTOR_CONTEXT_CBP_EXTRA_KEYS: frozenset[str] = frozenset({
     "case_setup",         # container
     "metadata",            # container
@@ -853,10 +859,15 @@ def _redact_question_for_tutor(question: dict, phase: str) -> dict:
     # to scaffold without revealing the answer. The extension is applied
     # ONLY for `case_based`; practice/boss/memory_check keep the strict
     # default-deny allow-list.
-    if phase == "case_based":
-        safe_keys = _TUTOR_CONTEXT_SAFE_KEYS | _TUTOR_CONTEXT_CBP_EXTRA_KEYS
-    else:
-        safe_keys = _TUTOR_CONTEXT_SAFE_KEYS
+    # Phase -> safe-keys table (explicit, exhaustive, easy to extend).
+    # Replaces the prior `if phase == "case_based":` branch —
+    # promoting the policy to data prevents a future phase rename
+    # from silently demoting CBP to the strict allow-list
+    # (backend-tutor-audit finding #2).
+    _PHASE_SAFE_KEYS = {
+        "case_based": _TUTOR_CONTEXT_SAFE_KEYS | _TUTOR_CONTEXT_CBP_EXTRA_KEYS,
+    }
+    safe_keys = _PHASE_SAFE_KEYS.get(phase, _TUTOR_CONTEXT_SAFE_KEYS)
 
     def scrub(value: Any) -> Any:
         if isinstance(value, dict):

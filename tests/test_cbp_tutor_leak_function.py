@@ -16,6 +16,10 @@ def test_no_leak_from_any_answer_bearing_field_in_full_cbp_question():
     sentinels = {
         "answer_expected": "MAGIC_LEAK_S01_ANSWER_EXPECTED",
         "accepted_answer": "MAGIC_LEAK_S02_ACCEPTED",
+        # S03 covers final_simulation.visual_description — added per the
+        # backend-tutor-audit gap (text paraphrasing the correct path is
+        # answer-bearing and must not leak).
+        "final_sim_visual": "MAGIC_LEAK_S03_SIM_VISUAL",
         "lb_body": "MAGIC_LEAK_S04_LB_BODY",
         "lb_consequence": "MAGIC_LEAK_S05_LB_CONSEQ",
         "retake_question": "MAGIC_LEAK_S06_RETAKE_Q",
@@ -56,6 +60,7 @@ def test_no_leak_from_any_answer_bearing_field_in_full_cbp_question():
         "final_simulation": {
             "correct_path": sentinels["final_sim_correct"],
             "wrong_path": sentinels["final_sim_wrong"],
+            "visual_description": sentinels["final_sim_visual"],
         },
         "feedback_summary": {
             "student_understood": sentinels["feedback_understood"],
