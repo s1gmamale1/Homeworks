@@ -49,6 +49,22 @@ def test_template_keeps_existing_mc_stub():
     assert "const MC = {};" in tpl
 
 
+def test_decision_process_explanation_field_present():
+    """Backend-prompts-audit finding F1: CBP Standard §5 + Infra family
+    prompts ALL mandate a Decision Process Explanation (DPE) step between
+    Checkpoint 3 and final_simulation. The CaseBasedPreview schema must
+    carry a `decision_process_explanation` field so generators can populate
+    the three sub-prompts (concept / method / mistake)."""
+    from server.schemas.content import CaseBasedPreview, DecisionProcessExplanation
+    assert "decision_process_explanation" in CaseBasedPreview.model_fields
+    fld = CaseBasedPreview.model_fields["decision_process_explanation"]
+    args = typing.get_args(fld.annotation)
+    assert DecisionProcessExplanation in (fld.annotation, *args)
+    assert "concept" in DecisionProcessExplanation.model_fields
+    assert "method" in DecisionProcessExplanation.model_fields
+    assert "mistake" in DecisionProcessExplanation.model_fields
+
+
 def test_checkpoint_kinds_are_locked_literal():
     from server.schemas.content import Checkpoint
     fld = Checkpoint.model_fields["kind"]
