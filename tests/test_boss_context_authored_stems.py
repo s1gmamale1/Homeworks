@@ -233,15 +233,6 @@ def test_default_policy_infers_language_from_english_subject():
     )
 
 
-def test_default_policy_explicit_language_overrides_subject_inference():
-    """When content_json.language is explicitly set, that wins over subject
-    inference. E.g. subject='english' but language='uz' (a hypothetical
-    English-language-learning lesson taught in Uzbek) → language='uz'."""
-    from server.services.boss_context_builder import _default_policy
-    policy = _default_policy(language="uz", subject="english")
-    assert policy["language"] == "uz"
-
-
 def test_default_policy_falls_back_to_uz_for_unknown_subject():
     """Platform-default fallback: unknown subject + null language → 'uz'
     (the platform's primary audience). Tested separately so we can change

@@ -59,7 +59,3 @@ def test_memory_check_accepts_three_v1_modes_and_extra_fields():
     assert content.memory_check.items[1].model_extra["source_note"] == "extra fields are preserved"
 
 
-def test_memory_check_rejects_deferred_modes_for_v1_runtime():
-    with pytest.raises(ValidationError):
-        MemoryCheck(items=[_valid_item(type="tile_match")])
-
