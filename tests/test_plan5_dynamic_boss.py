@@ -99,13 +99,19 @@ def test_generated_question_rejected_when_paraphrase_of_previous():
     assert "repeats_previous" in str(exc.value)
 
 
-def test_generated_question_rejected_when_near_duplicate_slips_past_strict_equality():
-    # Regression for the 2026-05-13 bug: Kimi returned a question for Q2 that
-    # differed from Q1 by only a punctuation/word tweak, which strict equality
-    # (the pre-fix anti-repetition check) let through. SequenceMatcher.ratio
-    # >= 0.85 must catch it. Fixture: trailing period + one-digit change — NOT
-    # byte-equal after whitespace normalize, so the pre-fix code passed this
-    # through; the new fuzzy check must reject it.
+def test_generated_question_allows_near_duplicate_at_threshold_1_point_0():
+    # Design change (2026-05-21, prompt v5): the SequenceMatcher fuzzy threshold
+    # was raised from 0.85 to 1.0 — only byte-identical duplicates (caught by
+    # the `prev_text == norm_new` branch) are rejected post-gateway. Variation
+    # responsibility moves to the prompt itself (Rule 3 in
+    # boss-question-generator.md v5), which now spells out concrete variation
+    # axes + a self-check directive. The narrow-topic-homework case (every
+    # candidate scoring 0.93+ vs. a prior question) used to 502; now it passes
+    # and we measure prompt quality empirically rather than letting the
+    # hard-coded floor block legitimate runs.
+    #
+    # This fixture (one-digit change + trailing period — similarity ≈ 0.94)
+    # used to fail under the 0.85 threshold; under 1.0 it must pass.
     asked = [{"question_text": "Find the absolute error of 12.345 meters"}]
     raw = {
         "question_text": "Find the absolute error of 12.346 meters.",
@@ -114,9 +120,8 @@ def test_generated_question_rejected_when_near_duplicate_slips_past_strict_equal
         "target_skill": "absolyut_xatolik",
         "difficulty": "medium",
     }
-    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
-        boss_dynamic._validate_generated_question(raw, asked_questions=asked)
-    assert "repeats_previous" in str(exc.value)
+    # No exception — the near-duplicate now flows through to the runtime.
+    boss_dynamic._validate_generated_question(raw, asked_questions=asked)
 
 
 def test_generated_question_passes_when_topically_related_but_substantively_different():

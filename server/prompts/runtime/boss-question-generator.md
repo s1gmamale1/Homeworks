@@ -1,4 +1,4 @@
-<!-- prompt-version: boss-question-generator:v4 -->
+<!-- prompt-version: boss-question-generator:v5 -->
 # Boss Question Generator (Plan 7 §6)
 
 > **🔒 OUTPUT LANGUAGE — STRICT, FIRST RULE.** Read `INPUT.output_language`
@@ -37,8 +37,38 @@ You will receive a JSON `INPUT` block with these fields:
 1. **Generate exactly one question.** Not two; not a list.
 2. **Target the student's weakest skill first** (`weak_topics[0]`) unless every
    weak topic has already been asked — then move to a related skill.
-3. **Never repeat or paraphrase a question** in `asked_questions[]`. Substantively
-   different stem; ideally different surface form.
+3. **Never repeat or paraphrase a question** in `asked_questions[]`. The runtime
+   only rejects byte-identical duplicates server-side (variation is YOUR job,
+   not the floor's). Before you finalize, do the following self-check:
+
+   **(a) Scan `asked_questions[]` end-to-end.** Read every prior `question_text`
+       in full. Don't assume the next slot is free just because the skill is
+       different.
+
+   **(b) Vary on at least TWO of these axes simultaneously:**
+       - *Surface form* (sentence structure, declarative vs. interrogative,
+         narrative wrapper vs. bare math)
+       - *Framing* (real-world scenario vs. abstract symbol-only vs.
+         comparison/justify-why prompt)
+       - *Numbers* (different operand magnitudes / signs / units)
+       - *Sub-skill emphasis* (compute vs. explain vs. spot-the-error vs.
+         predict-the-consequence)
+
+       Changing numbers ALONE is NOT variation. A stem like
+       *"Solve 3/4 ÷ 5"* followed by *"Solve 5/6 ÷ 3"* counts as a repeat —
+       same surface form, same framing, same sub-skill. Either change the
+       framing (*"A baker splits 5/6 of a kg…"*) or the sub-skill
+       (*"Find the mistake in this division: 3/4 ÷ 5 = 3/20 ÷ 4"*).
+
+   **(c) Self-reject before output.** If your draft `question_text` reads as a
+       paraphrase or near-rewrite of ANY entry in `asked_questions[]`,
+       regenerate before returning. The student perceives "same question with
+       one number changed" as broken, not adaptive.
+
+   **(d) Substantively different stem.** When the topic spine is narrow
+       (e.g. an entire boss focused on one operation), lean harder on framing
+       and sub-skill variation — the topic anchor doesn't force the question
+       shape.
 4. **The question must be answerable** from the homework content the student
    already worked through (`phase_summaries`). Don't invent topics that aren't
    present.

@@ -51,7 +51,7 @@ _log = logging.getLogger("nets.boss_dynamic")
 # ---- Prompt versions (Plan 7 §8) ------------------------------------------
 
 PROMPT_VERSION = {
-    "boss-question-generator": "v4",
+    "boss-question-generator": "v5",
     # boss-answer-checker bumped 2026-05-14:
     #   v2 (Bug B) — front-loaded language banner so feedback is written in
     #     the homework's language and misconception_tags avoid English
@@ -438,14 +438,27 @@ def _validate_generated_question(
     if drift:
         raise BossQuestionRejected(drift, raw=raw)
 
-    # Anti-repetition: reject when the new question is too similar to any
-    # already-asked one. Strict equality (the original implementation) missed
-    # near-paraphrases — Kimi could change one number, swap punctuation, or
-    # tweak word order and still ship "the same question" from a student's POV.
-    # SequenceMatcher.ratio() on whitespace-collapsed lowercase strings gives a
-    # 0..1 similarity score; 0.85 is high enough to allow legitimate topical
-    # overlap (two different absolute-error problems on different inputs) but
-    # low enough to catch paraphrases.
+    # Anti-repetition: the canonical floor is "no byte-identical duplicates"
+    # (after whitespace + case normalize) — enforced by the `prev_text ==
+    # norm_new` branch below.
+    #
+    # The fuzzy SequenceMatcher.ratio() check is configurable via
+    # _DUP_SIMILARITY_THRESHOLD. We previously held it at 0.85 to catch
+    # one-number-swap paraphrases server-side, but in practice on narrow-topic
+    # homeworks (e.g. an entire boss focused on fraction division) the LLM
+    # legitimately cannot clear 0.85 within the existing 1-shot retry — every
+    # candidate scores 0.93+ vs. a prior question and the route 502s. That
+    # surfaces in the React arena as the "Try again → Refresh" escalation,
+    # which is the safety net working as designed but a poor end-to-end UX
+    # for the topic-narrow case.
+    #
+    # As of 2026-05-21 we delegate variation to the prompt itself (Rule 3 in
+    # boss-question-generator.md, v5) and pin the runtime threshold at 1.0:
+    # only byte-identical duplicates are rejected post-gateway. The prompt
+    # carries explicit variation axes + a self-check directive; if quality
+    # regresses we tune the prompt (or temporarily lower this threshold) and
+    # measure rather than relying on a hard-coded floor that doesn't know the
+    # homework's topic breadth.
     #
     # NOTE (2026-05-13): An earlier comment claimed "BossQuestionRejected
     # triggers the gateway repair retry." That was inaccurate. The gateway's
@@ -454,7 +467,7 @@ def _validate_generated_question(
     # historically surfaced as an immediate 502. generate_boss_question now
     # implements a single manual retry for the `repeats_previous` case
     # specifically (see line ~490).
-    _DUP_SIMILARITY_THRESHOLD = 0.85
+    _DUP_SIMILARITY_THRESHOLD = 1.0
     norm_new = " ".join(question_text.lower().split())
     for prev in asked_questions or []:
         prev_text = " ".join(str(prev.get("question_text") or "").lower().split())
