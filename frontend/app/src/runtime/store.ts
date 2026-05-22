@@ -9,6 +9,7 @@ import type {
   CheckAnswerResult,
   GateState,
   HydratePayload,
+  IntegrityNudge,
   ReasoningResult,
   ReflectionDebrief,
   ReflectionPerformance,
@@ -28,6 +29,7 @@ import {
   tutorChat,
 } from "../shared/api";
 import { resolveGameOrder } from "./gameOrder";
+import type { AnswerTelemetry } from "./hooks/useAnswerTelemetry";
 
 export type Screen = "hub" | "cbp" | "fc" | "practice" | "reflection";
 
@@ -111,6 +113,9 @@ interface CbpState {
   reasoningText: string; // the student's typed reasoning (controlled textarea)
   reasoningResult: ReasoningResult | null; // server verdict (passed/score/feedback)
   reasoningSubmitting: boolean; // POST in flight
+  // Advisory anti-cheat nudge from the latest CBP submit (checkpoint OR
+  // reasoning). Display-only; NEVER feeds correctness / gate / advance.
+  lastNudge: IntegrityNudge | null;
 }
 
 interface FcState {
@@ -127,6 +132,9 @@ interface FcState {
   lastCorrect: boolean | null; // correctness of the just-submitted item
   submitting: boolean;
   submitError: string | null;
+  // Advisory anti-cheat nudge from the latest Memory Check submit. Display-only;
+  // NEVER feeds correctness / gate / score / advance.
+  lastNudge: IntegrityNudge | null;
 }
 
 // Practice Arc (F4): a linear rail of game keys → Boss last. The arc tracks
@@ -225,20 +233,34 @@ interface RuntimeState {
 
   // ---- CBP sub-machine ----
   enterCheckpoint: (index: number) => void;
-  submitCheckpointAnswer: (index: number, answer: string) => Promise<CheckAnswerResult | null>;
+  submitCheckpointAnswer: (
+    index: number,
+    answer: string,
+    tele?: Partial<AnswerTelemetry>
+  ) => Promise<CheckAnswerResult | null>;
   advanceFromLearningBlock: () => void;
   setReasoningText: (text: string) => void;
-  submitReasoning: () => Promise<ReasoningResult | null>;
+  submitReasoning: (
+    tele?: Partial<AnswerTelemetry>
+  ) => Promise<ReasoningResult | null>;
   enterSimulation: () => void;
   finishCbp: () => Promise<void>;
   retryCheckpoint: (index: number) => void;
+  // Dismiss the advisory CBP integrity nudge (display-only; no flow effect).
+  dismissCbpNudge: () => void;
 
   // ---- Flashcards / Memory Check sub-machine (Tile B) ----
   enterFlashcards: () => void;
   setCardIndex: (index: number) => void;
   markViewed: (index: number) => void;
   startMemoryCheck: () => void;
-  submitMemoryItem: (index: number, answer: string) => Promise<CheckAnswerResult | null>;
+  submitMemoryItem: (
+    index: number,
+    answer: string,
+    tele?: Partial<AnswerTelemetry>
+  ) => Promise<CheckAnswerResult | null>;
+  // Dismiss the advisory Memory Check integrity nudge (display-only; no flow).
+  dismissMcNudge: () => void;
   advanceMemoryItem: () => void;
   finishMemoryCheck: () => Promise<void>;
   retryMemoryCheck: () => void;
@@ -251,7 +273,10 @@ interface RuntimeState {
   // ---- Boss Arena (F4) — dynamic (Plan 5) ----
   startBoss: () => Promise<void>; // POST /start → load first question → fighting
   loadNextQuestion: () => Promise<void>; // POST /generate-question
-  submitBossAnswer: (answer: string) => Promise<BossSubmitAnswerResponse | null>;
+  submitBossAnswer: (
+    answer: string,
+    tele?: Partial<AnswerTelemetry>
+  ) => Promise<BossSubmitAnswerResponse | null>;
   requestHint: () => void; // LOCAL cost tracker only (no server hint endpoint)
   retryBoss: () => Promise<void>; // POST /start force_fresh → restart clean
 
@@ -280,6 +305,7 @@ const initialCbp: CbpState = {
   reasoningText: "",
   reasoningResult: null,
   reasoningSubmitting: false,
+  lastNudge: null,
 };
 
 const initialFc: FcState = {
@@ -294,6 +320,7 @@ const initialFc: FcState = {
   lastCorrect: null,
   submitting: false,
   submitError: null,
+  lastNudge: null,
 };
 
 const initialPractice: PracticeState = {
@@ -403,15 +430,16 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
         checkpointIndex: index,
         lastFeedback: null,
         lastLearningBlock: null,
+        lastNudge: null,
         submitError: null,
       },
     })),
 
-  submitCheckpointAnswer: async (index, answer) => {
+  submitCheckpointAnswer: async (index, answer, tele) => {
     const { hwId, sessionId } = get();
     set((st) => ({ cbp: { ...st.cbp, submitting: true, submitError: null } }));
     try {
-      const res = await submitCheckpoint(hwId, sessionId, index, answer);
+      const res = await submitCheckpoint(hwId, sessionId, index, answer, tele);
       set((st) => {
         const results = [...st.cbp.results];
         results[index] = res.correct;
@@ -422,6 +450,8 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
             results,
             lastFeedback: res.feedback,
             lastLearningBlock: res.learning_block,
+            // Advisory only — surfaced beside the learning block, never gates.
+            lastNudge: res.integrity_nudge ?? null,
             // Always advance to the learning block so the student reads the
             // teaching beat; the gate decides pass/fail at the end.
             subStage: "learningBlock",
@@ -466,6 +496,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
           ...st.cbp,
           subStage: "reasoning",
           reasoningResult: null,
+          lastNudge: null,
           submitError: null,
         },
       }));
@@ -481,16 +512,22 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   // a fail we keep the student on the reasoning step to edit + resubmit (the
   // step teaches but never blocks — the gate is the MCQ checkpoints). Either
   // way the typed text + result stay in state for the feedback panel.
-  submitReasoning: async () => {
+  submitReasoning: async (tele) => {
     const { hwId, sessionId, cbp } = get();
     const text = cbp.reasoningText.trim();
     set((st) => ({
       cbp: { ...st.cbp, reasoningSubmitting: true, submitError: null },
     }));
     try {
-      const res = await submitReasoning(hwId, sessionId, text);
+      const res = await submitReasoning(hwId, sessionId, text, tele);
       set((st) => ({
-        cbp: { ...st.cbp, reasoningSubmitting: false, reasoningResult: res },
+        cbp: {
+          ...st.cbp,
+          reasoningSubmitting: false,
+          reasoningResult: res,
+          // Advisory only — surfaced beside the reasoning verdict, never gates.
+          lastNudge: res.integrity_nudge ?? null,
+        },
       }));
       if (res.passed) {
         get().enterSimulation();
@@ -525,9 +562,14 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
         checkpointIndex: index,
         lastFeedback: null,
         lastLearningBlock: null,
+        lastNudge: null,
         submitError: null,
       },
     })),
+
+  // Advisory only — clearing the nudge changes NO flow/gate/correctness state.
+  dismissCbpNudge: () =>
+    set((st) => ({ cbp: { ...st.cbp, lastNudge: null } })),
 
   // ---- Flashcards / Memory Check sub-machine (Tile B) ----
 
@@ -566,11 +608,11 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   // Submit one Memory Check item. `answer` is pre-shaped by the component
   // (option index as string, or typed text for fill_blank). Correctness comes
   // straight from the server response — we never self-grade.
-  submitMemoryItem: async (index, answer) => {
+  submitMemoryItem: async (index, answer, tele) => {
     const { hwId, sessionId } = get();
     set((st) => ({ fc: { ...st.fc, submitting: true, submitError: null } }));
     try {
-      const res = await submitMemoryCheckItem(hwId, sessionId, index, answer);
+      const res = await submitMemoryCheckItem(hwId, sessionId, index, answer, tele);
       set((st) => {
         const results = [...st.fc.results];
         results[index] = res.correct;
@@ -587,6 +629,8 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
             scorePct,
             lastCorrect: res.correct,
             lastFeedback: res.feedback,
+            // Advisory only — surfaced beside MC feedback, never gates.
+            lastNudge: res.integrity_nudge ?? null,
           },
         };
       });
@@ -615,12 +659,22 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     const next = order.slice(pos + 1).find((i) => fc.results[i] === null);
     if (next !== undefined) {
       set((st) => ({
-        fc: { ...st.fc, itemIndex: next, lastFeedback: null, lastCorrect: null },
+        fc: {
+          ...st.fc,
+          itemIndex: next,
+          lastFeedback: null,
+          lastCorrect: null,
+          lastNudge: null,
+        },
       }));
     } else {
       void get().finishMemoryCheck();
     }
   },
+
+  // Advisory only — clearing the nudge changes NO flow/gate/score state.
+  dismissMcNudge: () =>
+    set((st) => ({ fc: { ...st.fc, lastNudge: null } })),
 
   // End of a Memory Check pass: refetch the server gate, then show the result.
   // The component reads gateState.mc.passed to branch pass vs. soft-retry.
@@ -648,6 +702,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
           itemIndex: weakItems[0] ?? 0,
           lastFeedback: null,
           lastCorrect: null,
+          lastNudge: null,
           submitError: null,
         },
       };
@@ -825,7 +880,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   // answer and resets to 0 on a wrong one. boss_status maps to our status
   // (won → won, failed → lost, active → fighting); on "active" we auto-chain
   // to the next question. The boss NEVER self-grades.
-  submitBossAnswer: async (answer) => {
+  submitBossAnswer: async (answer, tele) => {
     const { boss } = get();
     if (!boss.bossSessionId || !boss.currentQuestion) return null;
     const questionId = boss.currentQuestion.question_id;
@@ -835,6 +890,12 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
         bossSessionId: boss.bossSessionId,
         questionId,
         studentAnswer: answer,
+        ...(typeof tele?.client_time_ms === "number"
+          ? { clientTimeMs: tele.client_time_ms }
+          : {}),
+        ...(typeof tele?.paste_detected === "boolean"
+          ? { pasteDetected: tele.paste_detected }
+          : {}),
       });
       const nextStatus: BossStatus =
         res.boss_status === "won"

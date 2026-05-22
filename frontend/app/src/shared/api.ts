@@ -17,8 +17,29 @@ import type {
   TileMatchResult,
   TutorChatResult,
 } from "./types";
+import type { AnswerTelemetry } from "../runtime/hooks/useAnswerTelemetry";
 
 const BASE = "";
+
+/**
+ * Build the additive telemetry sub-object for a submit request body. Only emits
+ * keys that are actually present, so an absent (or empty) `tele` contributes
+ * NOTHING to the request — existing callers/tests see an identical body. These
+ * are ADVISORY behavioral signals (timing + paste), never a correctness claim.
+ */
+function teleBody(
+  tele?: Partial<AnswerTelemetry>
+): Record<string, number | boolean> {
+  if (!tele) return {};
+  const out: Record<string, number | boolean> = {};
+  if (typeof tele.client_time_ms === "number") {
+    out.client_time_ms = tele.client_time_ms;
+  }
+  if (typeof tele.paste_detected === "boolean") {
+    out.paste_detected = tele.paste_detected;
+  }
+  return out;
+}
 
 class ApiError extends Error {
   constructor(message: string, public status: number, public url: string) {
@@ -86,7 +107,8 @@ export function submitCheckpoint(
   hwId: string,
   sessionId: string,
   checkpointIndex: number,
-  answer: string
+  answer: string,
+  tele?: Partial<AnswerTelemetry>
 ): Promise<CheckAnswerResult> {
   return request<CheckAnswerResult>("/api/ai/check-answer", {
     method: "POST",
@@ -97,6 +119,9 @@ export function submitCheckpoint(
       question_id: `cbp_ck${checkpointIndex}`,
       item_index: checkpointIndex,
       student_answer: answer,
+      // Advisory anti-cheat telemetry — optional, additive, never a correctness
+      // claim. Spread only the keys present so absent telemetry changes nothing.
+      ...teleBody(tele),
     }),
   });
 }
@@ -117,7 +142,8 @@ export function submitMemoryCheckItem(
   hwId: string,
   sessionId: string,
   itemIndex: number,
-  answer: string
+  answer: string,
+  tele?: Partial<AnswerTelemetry>
 ): Promise<CheckAnswerResult> {
   return request<CheckAnswerResult>("/api/ai/check-answer", {
     method: "POST",
@@ -128,6 +154,7 @@ export function submitMemoryCheckItem(
       question_id: `mc_item${itemIndex}`,
       item_index: itemIndex,
       student_answer: answer,
+      ...teleBody(tele),
     }),
   });
 }
@@ -142,7 +169,8 @@ export function submitMemoryCheckItem(
 export function submitReasoning(
   hwId: string,
   sessionId: string,
-  text: string
+  text: string,
+  tele?: Partial<AnswerTelemetry>
 ): Promise<ReasoningResult> {
   return request<ReasoningResult>("/api/ai/check-answer", {
     method: "POST",
@@ -151,6 +179,7 @@ export function submitReasoning(
       session_id: sessionId,
       phase: "case_based_preview_reasoning",
       reasoning_text: text,
+      ...teleBody(tele),
     }),
   });
 }
@@ -276,6 +305,10 @@ export function bossSubmitAnswer(opts: {
   bossSessionId: string;
   questionId: string;
   studentAnswer: string;
+  // Advisory anti-cheat telemetry — optional, additive, never a correctness
+  // claim. Omitted from the body when absent so existing callers are unchanged.
+  clientTimeMs?: number;
+  pasteDetected?: boolean;
 }): Promise<BossSubmitAnswerResponse> {
   return request<BossSubmitAnswerResponse>("/api/ai/boss/submit-answer", {
     method: "POST",
@@ -283,6 +316,12 @@ export function bossSubmitAnswer(opts: {
       boss_session_id: opts.bossSessionId,
       question_id: opts.questionId,
       student_answer: opts.studentAnswer,
+      ...(typeof opts.clientTimeMs === "number"
+        ? { client_time_ms: opts.clientTimeMs }
+        : {}),
+      ...(typeof opts.pasteDetected === "boolean"
+        ? { paste_detected: opts.pasteDetected }
+        : {}),
     }),
   });
 }

@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import s from "./MemoryPalace.module.css";
 
 // ---------------------------------------------------------------------------
@@ -174,6 +175,12 @@ function PalaceGame({
   const [recallIdx, setRecallIdx]           = useState(0);
   const [recallPickedConcept, setRecallPick]= useState<string | null>(null);
 
+  // Advisory anti-cheat (tap-only → timing only, no paste). Re-baselines each
+  // recall station so per-station elapsed_ms reflects real recall latency, and
+  // captures it into a ref-map at each confirm.
+  const tele = useAnswerTelemetry(recallIdx);
+  const recallElapsedRef = useRef<Record<number, number>>({});
+
   // Submission state.
   const [submitting, setSubmitting]         = useState(false);
   const [error, setError]                   = useState<string | null>(null);
@@ -210,6 +217,8 @@ function PalaceGame({
   // ---- Recall phase handlers ----
   const onRecallConfirm = useCallback(async () => {
     if (!recallPickedConcept) return;
+    // Capture this station's recall latency (advisory; tap-only timing).
+    recallElapsedRef.current[recallIdx] = tele.read().client_time_ms;
     const updatedPicks = { ...recallPicks, [recallIdx]: recallPickedConcept };
     setRecallPicks(updatedPicks);
 
@@ -220,11 +229,12 @@ function PalaceGame({
       return;
     }
 
-    // All picks collected — build recall_results and POST.
+    // All picks collected — build recall_results and POST. elapsed_ms now
+    // carries the real per-station recall latency (advisory; was hardcoded 0).
     const recallResults = Array.from({ length: totalStations }, (_, i) => ({
       location_idx: i,
       picked_concept_id: updatedPicks[i] ?? null,
-      elapsed_ms: 0,
+      elapsed_ms: recallElapsedRef.current[i] ?? 0,
     }));
 
     setSubmitting(true);
@@ -242,7 +252,7 @@ function PalaceGame({
     } finally {
       setSubmitting(false);
     }
-  }, [recallPickedConcept, recallPicks, recallIdx, totalStations, hwId, sessionId, placements]);
+  }, [recallPickedConcept, recallPicks, recallIdx, totalStations, hwId, sessionId, placements, tele]);
 
   // ---- Render by phase ----
   return (

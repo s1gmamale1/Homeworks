@@ -3,7 +3,10 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import IntegrityNudge from "../IntegrityNudge";
 import s from "./SentenceFill.module.css";
+import type { ClipboardEventHandler } from "react";
 
 // ---------------------------------------------------------------------------
 // Sentence Fill — cloze passage game (Practice Arc).
@@ -41,6 +44,8 @@ interface SfResponse {
   correct_answer?: string | null;
   explanation?: string | null;
   xp?: { base: number; first_attempt_bonus: number; total: number };
+  // Optional advisory anti-cheat nudge — never answer-bearing.
+  integrity_nudge?: { type: string; message: string } | null;
 }
 
 // Per-blank runtime state
@@ -130,6 +135,10 @@ function SentenceFillInner({
   const [error, setError] = useState<string | null>(null);
   // flash timer refs
   const flashTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Advisory anti-cheat: re-baseline timing/paste per blank (item + focused
+  // blank); the advisory nudge from the server, if any.
+  const tele = useAnswerTelemetry(`${itemIdx}:${focusedBlank ?? "none"}`);
+  const [nudge, setNudge] = useState<{ type: string; message: string } | null>(null);
 
   const item = items[itemIdx];
   const totalItems = items.length;
@@ -150,6 +159,7 @@ function SentenceFillInner({
         setBlanks(makeBlankStates(countBlanks(items[itemIdx + 1].passage)));
         setFocusedBlank(null);
         setError(null);
+        setNudge(null);
       } else {
         setComplete(true);
       }
@@ -184,7 +194,9 @@ function SentenceFillInner({
         blank_idx: blankIdx,
         student_value: trimmed,
         attempt_number: blanks[blankIdx].attempts + 1,
+        ...tele.read(),
       });
+      setNudge(res.integrity_nudge ?? null);
 
       const flash: "correct" | "wrong" = res.correct ? "correct" : "wrong";
 
@@ -338,6 +350,7 @@ function SentenceFillInner({
                 onKeyDown={(e) => onInputKeyDown(e, i)}
                 onBlur={() => item.mode === "free_recall" && onInputBlur(i)}
                 onSubmit={() => submitBlank(i, blanks[i].value)}
+                onPaste={tele.onPaste}
               />
             )}
           </span>
@@ -389,6 +402,10 @@ function SentenceFillInner({
         </div>
       )}
 
+      {/* Advisory anti-cheat nudge — beside the passage/feedback, never gates
+          blank progress or advance. */}
+      <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
+
       {error && (
         <p className={s.error} role="alert">
           {error}
@@ -411,6 +428,8 @@ interface BlankWidgetProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onBlur: () => void;
   onSubmit: () => void;
+  // Advisory anti-cheat — observe paste on the free-recall input.
+  onPaste?: ClipboardEventHandler;
 }
 
 function BlankWidget({
@@ -423,6 +442,7 @@ function BlankWidget({
   onKeyDown,
   onBlur,
   onSubmit,
+  onPaste,
 }: BlankWidgetProps) {
   const { locked, correct, value, submitting, flash, revealedAnswer } = state;
 
@@ -486,6 +506,7 @@ function BlankWidget({
         onFocus={onFocus}
         onKeyDown={onKeyDown}
         onBlur={onBlur}
+        onPaste={onPaste}
         disabled={submitting}
         aria-label={`Blank ${idx + 1}`}
         data-testid={`sf-blank-input-${idx}`}

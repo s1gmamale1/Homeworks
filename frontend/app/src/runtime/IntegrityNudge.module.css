@@ -1,0 +1,101 @@
+/* ============================================================
+   IntegrityNudge.module.css — Apple-glass soft-friction card.
+   Built on shared primitives (FeatureCard / Pill / Button / Lead) with the
+   SECURITY category accent (--grad-security red), mirroring the BossArena /
+   TileMatch security recipe:
+     • white card, 20px radius, soft diffusion shadow (from FeatureCard)
+     • 4px security-gradient top-accent bar
+     • soft red corner glow
+     • gentle entrance, gated behind prefers-reduced-motion → instant
+   Advisory only — this card NEVER gates progress; it mounts BESIDE the
+   existing feedback / Continue area.
+   ============================================================ */
+
+.nudge {
+  position: relative;
+  overflow: hidden;
+  margin-top: 16px;
+  padding: 20px 22px;
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  outline: none;
+  z-index: 1;
+}
+/* Visible-but-quiet focus ring when the card receives focus (Esc-dismiss). */
+.body:focus-visible {
+  border-radius: 14px;
+  box-shadow: 0 0 0 3px var(--boss-accent-ring, rgba(201, 58, 58, 0.18));
+}
+
+/* 4px security-gradient top-accent bar (Hub .cardAccent / BossArena ::before). */
+.accent {
+  position: absolute;
+  inset: -20px -22px auto -22px;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-security, linear-gradient(135deg, #e05252, #c93a3a));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft red corner glow (Hub .cardGlow / BossArena ::after). */
+.glow {
+  position: absolute;
+  right: -56px;
+  top: -56px;
+  width: 168px;
+  height: 168px;
+  border-radius: 999px;
+  background: rgba(201, 58, 58, 0.18);
+  filter: blur(48px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tag {
+  align-self: flex-start;
+}
+
+.message {
+  margin: 0;
+  color: var(--v2-text, #1d1d1f);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+/* Gentle entrance — gated behind reduced-motion (instant for those users). */
+@media (prefers-reduced-motion: no-preference) {
+  .nudge {
+    animation: nudgeIn 320ms var(--landing-spring, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nudge {
+    animation: none;
+  }
+}
+
+@keyframes nudgeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

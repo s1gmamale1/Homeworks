@@ -432,7 +432,21 @@ describe("answer-leak guarantee", () => {
     for (const forbidden of ["expected", "expected_answer", "rubric", "answer", "answer_spec", "correct", "accepted_answers"]) {
       expect(keys).not.toContain(forbidden);
     }
-    expect(keys.sort()).toEqual(["bossSessionId", "questionId", "studentAnswer"]);
+    // The boss submit carries the student's answer plus OPTIONAL advisory
+    // anti-cheat telemetry (timing/paste) — never an answer key. We assert the
+    // identity fields are present and every remaining key is an allowed
+    // advisory one (so a regression can't smuggle in an extra field).
+    expect(keys).toContain("bossSessionId");
+    expect(keys).toContain("questionId");
+    expect(keys).toContain("studentAnswer");
+    const allowed = new Set([
+      "bossSessionId",
+      "questionId",
+      "studentAnswer",
+      "clientTimeMs",
+      "pasteDetected",
+    ]);
+    for (const k of keys) expect(allowed).toContain(k);
   });
 
   it("the generate-question response type carries no answer-bearing field", () => {

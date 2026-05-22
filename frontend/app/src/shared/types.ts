@@ -173,12 +173,31 @@ export interface GateState {
   reflection_passed?: boolean;
 }
 
+// ---- Integrity nudge (process-supervision anti-cheat — ADVISORY ONLY) ----
+//
+// A soft-friction signal the SERVER may attach to a submit response on a strong
+// behavioral flag. It is teacher-facing intelligence surfaced to the student as
+// a small, dismissible nudge — it NEVER blocks progress, gates, re-grades, or
+// carries any answer-bearing field. The UI renders `message` as TEXT only.
+export interface IntegrityNudge {
+  type: string;
+  message: string;
+  // Defensive leak guards — a nudge is never allowed to smuggle an answer or
+  // flip a server-authoritative verdict.
+  expected?: never;
+  answer?: never;
+  correct?: never;
+}
+
 // ---- Per-interaction submit ----
 
 export interface CheckAnswerResult {
   correct: boolean;
   feedback: string;
   learning_block: string | null;
+  // Optional advisory nudge (only set on a strong server-side flag). Never
+  // answer-bearing; never decides correctness or unlock.
+  integrity_nudge?: IntegrityNudge | null;
 }
 
 /**
@@ -194,6 +213,8 @@ export interface ReasoningResult {
   passed: boolean;
   score: number;
   feedback: string;
+  // Optional advisory nudge — see IntegrityNudge. Non-blocking, no answer.
+  integrity_nudge?: IntegrityNudge | null;
 }
 
 // ---- F4: Practice Arc spine ----
@@ -261,6 +282,8 @@ export interface TileMatchResult {
   timer?: { remaining_seconds: number; delta_seconds: number };
   xp?: Record<string, number>;
   completion_bonus_xp?: number;
+  // Optional advisory nudge — see IntegrityNudge. Non-blocking, no answer.
+  integrity_nudge?: IntegrityNudge | null;
 }
 
 /**
@@ -466,6 +489,8 @@ export interface BossSubmitAnswerResponse {
   stars?: number | null;
   outcome_xp?: number | null;
   coverage?: { why: number; how: number; what: number } | null;
+  // Optional advisory nudge — see IntegrityNudge. Non-blocking, no answer.
+  integrity_nudge?: IntegrityNudge | null;
   // Leak guards — the verdict reveals feedback, not the expected answer.
   expected?: never;
   expected_answer?: never;

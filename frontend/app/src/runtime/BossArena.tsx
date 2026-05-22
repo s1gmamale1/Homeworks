@@ -3,6 +3,8 @@ import type { KeyboardEvent } from "react";
 import { useRuntimeStore, COMBO_BONUS_THRESHOLD } from "./store";
 import type { GameProps } from "./GameHost";
 import { DarkSection, Eyebrow, Title, Lead, Button, Pill } from "../shared/ui/primitives";
+import IntegrityNudge from "./IntegrityNudge";
+import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import s from "./BossArena.module.css";
 
 // ---------------------------------------------------------------------------
@@ -52,11 +54,21 @@ export default function BossArena({ onComplete }: GameProps) {
 
   // Reset inputs whenever a new question arrives.
   const qid = q?.question_id ?? null;
+  // Advisory anti-cheat — ONE hook keyed on the question id (re-baselines per
+  // question, matching the input-reset effect below). Shared by all WHW inputs.
+  const tele = useAnswerTelemetry(qid);
+  // Local advisory-nudge dismissal — display-only; resets per question so a new
+  // turn can surface a fresh nudge. NEVER touches the server verdict.
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
   useEffect(() => {
     setWhy("");
     setHow("");
     setWhat("");
+    setNudgeDismissed(false);
   }, [qid]);
+
+  // The advisory nudge rides on the server's last verdict (no extra store).
+  const nudge = nudgeDismissed ? null : boss.lastResult?.integrity_nudge ?? null;
 
   // ---- intro ----
   if (boss.status === "intro") {
@@ -184,7 +196,7 @@ export default function BossArena({ onComplete }: GameProps) {
     const answer = structured
       ? `Why: ${why.trim()}\nHow: ${how.trim()}\nWhat: ${trimmedWhat}`
       : trimmedWhat;
-    void submitBossAnswer(answer);
+    void submitBossAnswer(answer, tele.read());
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -272,6 +284,7 @@ export default function BossArena({ onComplete }: GameProps) {
                           disabled={boss.submitting}
                           placeholder={step.hint}
                           onChange={(e) => setValue(e.target.value)}
+                          onPaste={tele.onPaste}
                           data-testid={`boss-input-${step.key}`}
                         />
                       </div>
@@ -296,6 +309,7 @@ export default function BossArena({ onComplete }: GameProps) {
                     disabled={boss.submitting}
                     rows={3}
                     onChange={(e) => setWhat(e.target.value)}
+                    onPaste={tele.onPaste}
                     data-testid="boss-input-what"
                   />
                 </div>
@@ -362,6 +376,10 @@ export default function BossArena({ onComplete }: GameProps) {
                 )}
               </div>
             )}
+
+            {/* Advisory anti-cheat nudge — beside the turn result, never gates
+                the Attack button below. */}
+            <IntegrityNudge nudge={nudge} onDismiss={() => setNudgeDismissed(true)} />
 
             {boss.submitError && (
               <p className={s.error} role="alert">

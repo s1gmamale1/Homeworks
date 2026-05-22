@@ -3,6 +3,8 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import IntegrityNudge from "../IntegrityNudge";
 import s from "./MysteryBox.module.css";
 
 // ---------------------------------------------------------------------------
@@ -29,6 +31,8 @@ interface MysteryBoxItem {
 interface MysteryBoxResponse {
   correct: boolean;
   feedback: string;
+  // Optional advisory anti-cheat nudge — never answer-bearing.
+  integrity_nudge?: { type: string; message: string } | null;
 }
 
 type BoxStatus = "sealed" | "open" | "solved" | "missed";
@@ -104,6 +108,9 @@ function MysteryBoxInner({
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [complete, setComplete] = useState(false);
+  // Advisory anti-cheat: re-baseline timing/paste each time a box opens.
+  const tele = useAnswerTelemetry(activeIdx);
+  const [nudge, setNudge] = useState<{ type: string; message: string } | null>(null);
 
   const totalBoxes = items.length;
   const answeredCount = boxes.filter(
@@ -123,6 +130,7 @@ function MysteryBoxInner({
     }
     setActiveIdx(idx);
     setError(null);
+    setNudge(null);
   }
 
   async function submitAnswer(idx: number) {
@@ -147,8 +155,10 @@ function MysteryBoxInner({
         {
           item_index: idx,
           student_answer: trimmed,
+          ...tele.read(),
         }
       );
+      setNudge(res.integrity_nudge ?? null);
 
       const newStatus: BoxStatus = res.correct ? "solved" : "missed";
 
@@ -321,6 +331,7 @@ function MysteryBoxInner({
                   });
                 }}
                 onKeyDown={(e) => onKeyDown(e, activeIdx)}
+                onPaste={tele.onPaste}
                 disabled={activeBox.submitting}
                 aria-label={`Answer for box ${activeIdx + 1}`}
                 data-testid="mb-answer-input"
@@ -347,6 +358,9 @@ function MysteryBoxInner({
               )}
             </div>
           )}
+
+          {/* Advisory anti-cheat nudge — beside feedback, never gates flow. */}
+          <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
         </div>
       )}
 

@@ -3,6 +3,8 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import IntegrityNudge from "../IntegrityNudge";
 import s from "./AdaptiveQuiz.module.css";
 
 // ---------------------------------------------------------------------------
@@ -31,6 +33,9 @@ interface AdaptiveQuizItem {
 interface QuizResponse {
   correct: boolean;
   feedback: string;
+  // Optional advisory anti-cheat nudge (server-set on a strong flag only).
+  // Never answer-bearing; never decides correctness.
+  integrity_nudge?: { type: string; message: string } | null;
 }
 
 // Per-item submission result stored for display until the student advances.
@@ -95,6 +100,9 @@ function AdaptiveQuizInner({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [complete, setComplete] = useState(false);
+  // Advisory anti-cheat: per-item timing + paste; advisory nudge from server.
+  const tele = useAnswerTelemetry(itemIdx);
+  const [nudge, setNudge] = useState<{ type: string; message: string } | null>(null);
 
   const item = items[itemIdx];
   const questionText = item.q ?? item.prompt ?? "";
@@ -112,8 +120,10 @@ function AdaptiveQuizInner({
       const res = await submitGameAnswer<QuizResponse>(hwId, sessionId, "adaptive-quiz", {
         item_index: itemIdx,
         student_answer: trimmed,
+        ...tele.read(),
       });
       setResult({ correct: res.correct, feedback: res.feedback });
+      setNudge(res.integrity_nudge ?? null);
     } catch (err) {
       setError((err as Error).message || "Could not check that answer.");
     } finally {
@@ -146,6 +156,7 @@ function AdaptiveQuizInner({
       setSelectedOption(null);
       setResult(null);
       setError(null);
+      setNudge(null);
     } else {
       setComplete(true);
     }
@@ -260,6 +271,7 @@ function AdaptiveQuizInner({
               placeholder="Type your answer…"
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              onPaste={tele.onPaste}
               disabled={result !== null || submitting}
               aria-label="Your answer"
               data-testid="aq-text-input"
@@ -299,6 +311,10 @@ function AdaptiveQuizInner({
             </div>
           </div>
         )}
+
+        {/* Advisory anti-cheat nudge — mounts BESIDE feedback, never gates the
+            Next/Finish button above. */}
+        <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
 
         {error && (
           <p className={s.error} role="alert" data-testid="aq-error">

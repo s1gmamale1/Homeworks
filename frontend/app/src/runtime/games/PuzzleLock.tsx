@@ -3,6 +3,8 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import IntegrityNudge from "../IntegrityNudge";
 import s from "./PuzzleLock.module.css";
 
 // ---------------------------------------------------------------------------
@@ -36,6 +38,8 @@ interface PuzzleLockItem {
 interface PuzzleLockResponse {
   correct: boolean;
   feedback: string;
+  // Optional advisory anti-cheat nudge — never answer-bearing.
+  integrity_nudge?: { type: string; message: string } | null;
 }
 
 type TumblerState = "locked" | "open" | "wrong";
@@ -100,6 +104,9 @@ function PuzzleLockInner({
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [allOpen, setAllOpen] = useState(false);
+  // Advisory anti-cheat: timing + paste per tumbler; advisory nudge from server.
+  const tele = useAnswerTelemetry(currentIdx);
+  const [nudge, setNudge] = useState<{ type: string; message: string } | null>(null);
 
   // Track whether the current tumbler is shaking (wrong answer)
   const [shaking, setShaking] = useState(false);
@@ -139,8 +146,9 @@ function PuzzleLockInner({
         hwId,
         sessionId,
         "puzzle-lock",
-        { item_index: currentIdx, student_answer: trimmed }
+        { item_index: currentIdx, student_answer: trimmed, ...tele.read() }
       );
+      setNudge(res.integrity_nudge ?? null);
 
       if (res.correct) {
         // Tumbler clicks open
@@ -309,6 +317,7 @@ function PuzzleLockInner({
               placeholder="Your answer…"
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={onKeyDown}
+              onPaste={tele.onPaste}
               disabled={submitting}
               aria-label={`Answer for tumbler ${currentIdx + 1}`}
               data-testid="pl-answer-input"
@@ -334,6 +343,9 @@ function PuzzleLockInner({
             <span className={s.feedbackText}>{feedback}</span>
           </div>
         )}
+
+        {/* Advisory anti-cheat nudge — beside feedback, never gates retry. */}
+        <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
 
         {error && (
           <p className={s.error} role="alert" data-testid="pl-error">

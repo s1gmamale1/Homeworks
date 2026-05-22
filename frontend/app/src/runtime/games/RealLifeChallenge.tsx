@@ -3,7 +3,10 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
+import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import IntegrityNudge from "../IntegrityNudge";
 import s from "./RealLifeChallenge.module.css";
+import type { ClipboardEventHandler } from "react";
 
 // ---------------------------------------------------------------------------
 // Real-Life Challenge — 5-step expert role-play decision game.
@@ -84,6 +87,8 @@ interface RLCStepResult {
   outcome: string | null;
   total_xp: number | null;
   rubric_breakdown: Record<string, number> | null;
+  // Optional advisory anti-cheat nudge — never answer-bearing.
+  integrity_nudge?: { type: string; message: string } | null;
 }
 
 // Decision step: pick one option from a list.
@@ -186,12 +191,15 @@ function ReasoningStep({
   onChange,
   submitting,
   result,
+  onPaste,
 }: {
   step: RLCStep;
   value: string;
   onChange: (v: string) => void;
   submitting: boolean;
   result: RLCStepResult | null;
+  // Advisory anti-cheat — observe paste on the reasoning textarea only.
+  onPaste?: ClipboardEventHandler;
 }) {
   const minChars = step.min_chars ?? 80;
   const tooShort = value.trim().length < minChars;
@@ -202,6 +210,7 @@ function ReasoningStep({
         placeholder={step.placeholder ?? "Write your reasoning here…"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onPaste={onPaste}
         disabled={submitting || result !== null}
         rows={5}
         aria-label="Reasoning answer"
@@ -349,6 +358,9 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
   const [stepResult, setStepResult] = useState<RLCStepResult | null>(null);
   // The final step's result for the completion screen.
   const [finalResult, setFinalResult] = useState<RLCStepResult | null>(null);
+  // Advisory anti-cheat: timing/paste per step (used only on the reasoning step).
+  const tele = useAnswerTelemetry(stepIndex);
+  const [nudge, setNudge] = useState<{ type: string; message: string } | null>(null);
 
   // Empty content: graceful skip.
   if (!rlcCase || steps.length === 0) {
@@ -411,7 +423,11 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
     };
     if (isDecisionKind) extra.selected_option_id = pickedId;
     else if (isConceptKind) extra.selected_chip_id = pickedId;
-    else if (isReasoningKind) extra.reasoning_text = reasoningText;
+    else if (isReasoningKind) {
+      extra.reasoning_text = reasoningText;
+      // Advisory telemetry forwarded ONLY on the typed reasoning step.
+      Object.assign(extra, tele.read());
+    }
 
     try {
       const res = await submitGameAnswer<RLCStepResult>(
@@ -421,6 +437,7 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
         extra
       );
       setStepResult(res);
+      setNudge(res.integrity_nudge ?? null);
       if (res.complete) {
         setFinalResult(res);
       }
@@ -440,6 +457,7 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
     setReasoningText("");
     setStepResult(null);
     setError(null);
+    setNudge(null);
   };
 
   const isLastStep = stepIndex === steps.length - 1;
@@ -497,6 +515,7 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
             onChange={setReasoningText}
             submitting={submitting}
             result={stepResult}
+            onPaste={tele.onPaste}
           />
         )}
       </FeatureCard>
@@ -527,6 +546,10 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
           isLast={isLastStep}
         />
       ) : null}
+
+      {/* Advisory anti-cheat nudge — beside feedback, never gates the Next/See
+          results button above. */}
+      <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
     </div>
   );
 }
