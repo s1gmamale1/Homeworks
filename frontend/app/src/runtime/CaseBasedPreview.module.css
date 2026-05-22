@@ -428,6 +428,25 @@
 }
 
 /* =====================================================================
+   TEXT PAGE (AUTHORED-ORDER walker — a `text` block)
+   A glass story/teaching card on the standard Apple base, spaced like the
+   learning block. Display-only; reduced-motion safe (entrance disabled below).
+   ===================================================================== */
+.textCard {
+  composes: appleCard;
+  margin-top: 24px;
+  padding: 28px;
+  animation: cardIn 640ms var(--landing-spring) 100ms both;
+}
+.textBody {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink, #1d1d1f);
+  white-space: pre-wrap;
+}
+
+/* =====================================================================
    REASONING STEP (Decision Process Explanation)
    A typed-reasoning card with a live char-count gate, then a server
    feedback panel (good = emerald tint, warn = amber tint on the same base).
@@ -638,6 +657,7 @@
   .hero,
   .lbCardGood,
   .lbCardWarn,
+  .textCard,
   .reasoningCard,
   .reasoningResultGood,
   .reasoningResultWarn,

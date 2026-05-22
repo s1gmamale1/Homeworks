@@ -33,18 +33,43 @@ const GB_ARRAY_TO_KEY: Record<string, string> = {
   gb_puzzle_lock: "puzzle_lock",
   gb_adaptive_quiz: "adaptive_quiz",
   gb_story_mode: "story_mode",
+  // Division-3 practice games (8). Content lives under these gb_* fields.
+  gb_error_detection: "error_detection",
+  gb_memory_matching: "memory_matching",
+  gb_jigsaw_matching: "jigsaw_matching",
+  gb_assembly: "assembly",
+  gb_sentence_repair: "sentence_repair",
+  gb_ttt_grid: "ttt_grid",
+  gb_problem_trace: "problem_trace",
+  gb_counterexample: "counterexample",
+  gb_dependency_chain: "dependency_chain",
+  gb_confidence_check: "confidence_check",
 };
 
 // Canonical fallback order for derived arcs — keeps a sensible difficulty
 // ramp regardless of object-key iteration order on content_json.
 const DERIVED_ORDER: string[] = [
+  // --- warm-up: recognition / recall ---
   "gb_tile_match",
+  "gb_memory_matching",
   "gb_sentence_fill",
+  "gb_sentence_repair",
+  "gb_error_detection",
+  // --- middle: relational + sequencing ---
+  "gb_jigsaw_matching",
+  "gb_assembly",
   "gb_mystery_box",
   "gb_puzzle_lock",
   "gb_adaptive_quiz",
   "gb_memory_palace",
   "gb_story_mode",
+  // --- late: multi-step reasoning + decision ---
+  "gb_problem_trace",
+  "gb_dependency_chain",
+  "gb_ttt_grid",
+  "gb_counterexample",
+  // --- capstone: metacognition + decision role-play ---
+  "gb_confidence_check",
   "gb_ttt",
   "real_life_challenge",
 ];

@@ -1,0 +1,147 @@
+/* ============================================================
+   JigsawMatching.module.css — game-specific layer.
+
+   The card frame, checkpoint flow, DPE box, result tier and 3D-press
+   buttons all come from _practiceShared.module.css (via the shared kit).
+   This file only styles what is unique to Jigsaw Matching: the grid of
+   source-supported PIECES the student reasons over, the case-setup lead,
+   and the completion block.
+
+   Visual language (per _DIV3_CONTRACT.md "Design tokens"): Hub Apple-glass,
+   --grad-game purple accent, pieces rendered as elegant connectable tiles
+   with a subtle notch/edge — NOT childish puzzle-piece clipart.
+   ============================================================ */
+
+/* Mirror the shared kit's purple accent tokens + light-theme pin so this
+   surface never flips white text on a dark OS, and so the piece tiles read
+   in the same --grad-game family even when used standalone. */
+.pieceGrid,
+.caseSetup,
+.done {
+  --pg-grad: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  --pg-solid: #8a5fc8;
+  --pg-edge: #6b4fa8;
+  --pg-tint: rgba(179, 136, 235, 0.1);
+  --pg-tint-soft: rgba(179, 136, 235, 0.05);
+  --jm-text: #1d1d1f;
+  --jm-text-muted: #6e6e73;
+}
+
+/* ---- pieces grid: elegant connectable tiles ---- */
+.pieceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* Each piece is a glass tile with a notched right edge + tab, so two read as
+   "connectable" without resorting to literal jigsaw clipart. The notch is a
+   conic/radial cut made with a mask, kept extremely subtle. */
+.piece {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, var(--pg-tint-soft));
+  border: 1.5px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: visible;
+  transition:
+    transform 220ms var(--landing-spring, cubic-bezier(.16, 1, .3, 1)),
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+.piece:hover {
+  transform: translateY(-2px);
+  border-color: var(--pg-solid);
+  box-shadow: 0 8px 22px rgba(138, 95, 200, 0.16);
+}
+
+/* subtle left-edge accent bar — the "connect here" hint */
+.piece::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--pg-grad);
+  opacity: 0.55;
+}
+
+/* the connecting "tab": a small rounded nub on the right edge that visually
+   reads as a puzzle connector, refined rather than cartoonish */
+.piece::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateY(-50%) rotate(45deg);
+  border-radius: 3px;
+  background: linear-gradient(135deg, #fff, var(--pg-tint));
+  border: 1.5px solid rgba(0, 0, 0, 0.07);
+  border-left: none;
+  border-bottom: none;
+  z-index: -1;
+}
+
+.pieceLabel {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--jm-text);
+}
+.pieceRole {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pg-solid);
+}
+
+/* ---- case-setup lead ---- */
+.caseSetup {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--jm-text);
+}
+
+/* ---- footer (Start / Next / Finish) ---- */
+.foot {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---- completion block ---- */
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.doneNote {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--jm-text-muted);
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .piece {
+    transition: none;
+  }
+  .piece:hover {
+    transform: none;
+  }
+}

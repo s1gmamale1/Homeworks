@@ -57,10 +57,28 @@ export interface DraftFeedbackSummary {
   what_to_review: string;
 }
 
+// Additive ORDERED overlay describing how the author laid out the case: an
+// arbitrary-order, arbitrary-count sequence of text pages + checkpoints.
+//   - {type:"text", title?, body?} — a story / teaching page rendered inline.
+//   - {type:"checkpoint", ref}      — references checkpoints[ref] (the canonical
+//                                      grading source). The ref indirection is
+//                                      hidden from the author in the editor.
+// `checkpoints[]` STAYS the grading source of truth; `blocks[]` only carries
+// presentation order. Older drafts have no `blocks` and are seeded on first
+// edit (see CbpEditor back-compat).
+export type DraftCbpBlock =
+  | { type: "text"; title?: string; body?: string }
+  | { type: "checkpoint"; ref: number };
+
 export interface DraftCaseBasedPreview {
   title: string;
   case_setup: DraftCaseSetup;
-  checkpoints: DraftCheckpoint[]; // exactly 3
+  // Variable-length now (was hardcoded "exactly 3"). Authors add/remove
+  // checkpoints freely; `blocks[]` references entries here by index.
+  checkpoints: DraftCheckpoint[];
+  // Optional ordered presentation overlay (text pages + checkpoint refs). When
+  // absent, the runtime falls back to the legacy story → 3-checkpoint layout.
+  blocks?: DraftCbpBlock[];
   final_simulation: DraftFinalSimulation;
   feedback_summary: DraftFeedbackSummary;
 }

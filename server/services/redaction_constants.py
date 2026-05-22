@@ -86,5 +86,26 @@ ANSWER_BEARING_KEYS = frozenset(
         "ans_all",
         # distractors enumerate the wrong options' grading metadata
         "distractors",
+        # Practice Arc games (Ibo PR #248: Memory/Jigsaw Matching, Error
+        # Detection, Assembly). Answer-side fields stripped at hydration.
+        "expected_order",         # Assembly — solution sequence
+        "is_broken",              # Error Detection — which work-block carries the error
+        "correction",             # Error Detection — expected correction text
+        # Division-3 Practices (per _DIV3_CONTRACT.md). Uniform MCQ key + the 4
+        # new games' server-only grading keys. Stripped at every nesting depth.
+        "correct_index",          # uniform MCQ checkpoint — index of the right option
+        "expected_components",    # DPE grading anchor (sentence-repair / memory- & jigsaw-matching)
+        "correction_answer_spec", # Error Detection — correction grading spec
+        "meter_deltas",           # TTT-Grid — per-cell per-meter score impact
+        "best_cell_id",           # TTT-Grid — the winning cell id
+        "answer_case_id",         # Counterexample — the case that breaks the rule
+        "breaks_rule",            # Counterexample — which rule the case breaks
+        "final_answer",           # Problem-Trace — optional final answer
+        # Division-3 Practices — 2 MORE games. (`correct_index` above already
+        # covers both new games' MCQ keys.) `carry_label` is the only NEW
+        # server-only field: it encodes a Dependency-Chain step's RESULT (e.g.
+        # "x = 5 →") which is surfaced by the server ONLY after a correct answer,
+        # so it must be stripped from hydration like any answer-bearing field.
+        "carry_label",            # Dependency-Chain — a step's carried result token
     }
 )

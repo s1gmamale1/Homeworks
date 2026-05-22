@@ -165,6 +165,16 @@ export function LearningHub() {
     return () => window.removeEventListener("pointerdown", prime);
   }, []);
 
+  // ---- Fresh server gate on every hub entry (stale-gate fix) -----------------
+  // The hub renders status + unlock STRICTLY off the server gate. Refetch it on
+  // mount so returning to the hub after a checkpoint (or a sibling tab) always
+  // reflects the authoritative state — fixes "checkpoint not marked but D3
+  // opened" where a stale in-memory gate let the reveal/unlock fire early. The
+  // unlock truth stays the server boolean; this only keeps it current.
+  useEffect(() => {
+    void useRuntimeStore.getState().refreshGateState();
+  }, []);
+
   // ---- Hidden → reveal: one play-once flag per homework, animation-only -------
   // The flag NEVER decides unlock — that's `unlocked` (server truth). It only
   // gates whether the celebration plays. Key matches the brief exactly.

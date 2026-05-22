@@ -10,6 +10,7 @@ import type {
   AuthoredAnswerSpec,
   BuilderDraft,
   CheckpointKind,
+  DraftCbpBlock,
   DraftCheckpoint,
   DraftFlashcard,
   DraftMemoryCheckItem,
@@ -144,21 +145,33 @@ export function toContentJson(draft: BuilderDraft): Record<string, unknown> {
   const games = draft.practice_arc.games.filter((g) => g !== "boss");
   games.push("boss");
 
+  // Additive ORDERED overlay. Emitted ONLY when authored (present + non-empty)
+  // so legacy homeworks keep their bare case_setup + checkpoints shape. The
+  // runtime walks blocks[] when present, else falls back to the legacy layout.
+  const cbpBlocks = (cbp.blocks ?? []).map((b) =>
+    b.type === "text"
+      ? compact({ type: "text", title: b.title, body: b.body })
+      : { type: "checkpoint", ref: b.ref }
+  );
+
+  const caseBasedPreview: Record<string, unknown> = {
+    title: cbp.title,
+    case_setup: { ...cbp.case_setup },
+    checkpoints: cbp.checkpoints.map((ck) => ({
+      kind: ck.kind,
+      question: ck.question,
+      options: [...ck.options],
+      answer_spec: { ...ck.answer_spec, option_count: ck.options.length },
+      learning_block: ck.learning_block,
+    })),
+    final_simulation: { ...cbp.final_simulation },
+    feedback_summary: { ...cbp.feedback_summary },
+  };
+  if (cbpBlocks.length > 0) caseBasedPreview.blocks = cbpBlocks;
+
   const base: Record<string, unknown> = {
     flow_version: "v2",
-    case_based_preview: {
-      title: cbp.title,
-      case_setup: { ...cbp.case_setup },
-      checkpoints: cbp.checkpoints.map((ck) => ({
-        kind: ck.kind,
-        question: ck.question,
-        options: [...ck.options],
-        answer_spec: { ...ck.answer_spec, option_count: ck.options.length },
-        learning_block: ck.learning_block,
-      })),
-      final_simulation: { ...cbp.final_simulation },
-      feedback_summary: { ...cbp.feedback_summary },
-    },
+    case_based_preview: caseBasedPreview,
     flashcards: draft.flashcards.map((c) => ({
       term: c.term,
       def: c.def,
@@ -431,32 +444,48 @@ export function fromContentJson(raw: unknown): BuilderDraft {
   };
   const rawCheckpoints = asArr(cbp.checkpoints);
   if (rawCheckpoints.length > 0) {
-    base.case_based_preview.checkpoints = rawCheckpoints
-      .slice(0, 3)
-      .map((rck, i) => {
-        const ck = asObj(rck);
-        const options = asArr(ck.options).map((o) => asStr(o));
-        const opts = options.length ? options : ["", "", "", ""];
-        const spec = coerceAnswerSpec(ck.answer_spec, opts);
-        return {
-          kind: (CHECKPOINT_KINDS.includes(asStr(ck.kind) as CheckpointKind)
-            ? asStr(ck.kind)
-            : CHECKPOINT_KINDS[i % 3]) as CheckpointKind,
-          question: asStr(ck.question),
-          options: opts,
-          answer_spec:
-            spec.type === "option_index"
-              ? spec
-              : optionIndexSpec(0, opts.length),
-          learning_block: asStr(ck.learning_block),
-        };
-      });
-    // Pad to exactly 3 so the editor invariant holds.
-    while (base.case_based_preview.checkpoints.length < 3) {
-      base.case_based_preview.checkpoints.push(
-        emptyCheckpoint(CHECKPOINT_KINDS[base.case_based_preview.checkpoints.length])
-      );
+    // Variable-length now (the "exactly 3" lock is gone). Keep every authored
+    // checkpoint; blocks[] references them by index.
+    base.case_based_preview.checkpoints = rawCheckpoints.map((rck, i) => {
+      const ck = asObj(rck);
+      const options = asArr(ck.options).map((o) => asStr(o));
+      const opts = options.length ? options : ["", "", "", ""];
+      const spec = coerceAnswerSpec(ck.answer_spec, opts);
+      return {
+        kind: (CHECKPOINT_KINDS.includes(asStr(ck.kind) as CheckpointKind)
+          ? asStr(ck.kind)
+          : CHECKPOINT_KINDS[i % 3]) as CheckpointKind,
+        question: asStr(ck.question),
+        options: opts,
+        answer_spec:
+          spec.type === "option_index" ? spec : optionIndexSpec(0, opts.length),
+        learning_block: asStr(ck.learning_block),
+      };
+    });
+  }
+
+  // ---- blocks[] (additive ordered overlay) ----
+  // Read it back ONLY when present + valid. Drop checkpoint refs that point
+  // outside the checkpoints[] array so a malformed blob never strands the
+  // editor. When absent, leave `blocks` undefined → CbpEditor seeds it lazily.
+  const cpLen = base.case_based_preview.checkpoints.length;
+  const rawBlocks = asArr(cbp.blocks);
+  if (rawBlocks.length > 0) {
+    const blocks: DraftCbpBlock[] = [];
+    for (const rb of rawBlocks) {
+      const b = asObj(rb);
+      if (asStr(b.type) === "checkpoint") {
+        const ref = asNum(b.ref, -1);
+        if (ref >= 0 && ref < cpLen) blocks.push({ type: "checkpoint", ref });
+      } else if (asStr(b.type) === "text") {
+        blocks.push({
+          type: "text",
+          ...(optStr(b.title) !== undefined ? { title: optStr(b.title) } : {}),
+          ...(optStr(b.body) !== undefined ? { body: optStr(b.body) } : {}),
+        });
+      }
     }
+    if (blocks.length > 0) base.case_based_preview.blocks = blocks;
   }
   const sim = asObj(cbp.final_simulation);
   base.case_based_preview.final_simulation = {

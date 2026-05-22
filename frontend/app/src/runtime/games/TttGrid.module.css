@@ -1,0 +1,239 @@
+/* TttGrid.module.css — "Decision Grid" game layer over _practiceShared.
+   Reads like a strategy / analytics panel, not a kids' tic-tac-toe board:
+   the meters are the persistent readout, the cells are Apple-glass decision
+   tiles, the chosen cell lights up with the --grad-game purple accent.
+   Card frame, MCQ flow, DPE box + the StateMeters bars live in _practiceShared;
+   this file styles the board grid, the meters panel chrome, and the
+   completion screen. Light-theme pinned so text never flips on a dark OS. */
+
+/* Light-theme pin — keep ink dark regardless of the OS color scheme. */
+.metersPanel,
+.complete,
+.skipNote,
+.board {
+  --v2-text: #1d1d1f;
+  --v2-text-muted: #6e6e73;
+  --grad-game: linear-gradient(135deg, #b388eb, #8a5fc8);
+  --game-solid: #8a5fc8;
+  --game-edge: #6b4fa8;
+}
+
+.note {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+.foot {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+}
+
+/* ── State-meters panel — the persistent analytics readout ─────────────── */
+.metersPanel {
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(179, 136, 235, 0.06), rgba(138, 95, 200, 0.03));
+  border: 1px solid rgba(138, 95, 200, 0.14);
+}
+
+.metersHead {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--game-solid, #8a5fc8);
+}
+
+/* ── Board prompt + grid ───────────────────────────────────────────────── */
+.boardPrompt {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-text, #1d1d1f);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--ttt-cols, 3), 1fr);
+  gap: 12px;
+}
+
+/* Decision tile — Apple-glass, square-ish, label-forward. Overrides the
+   default .choice from _practiceShared so cells read as a strategy board. */
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 96px;
+  padding: 16px;
+  text-align: left;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease, background 0.2s ease;
+}
+
+.cell:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(138, 95, 200, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-color: rgba(138, 95, 200, 0.3);
+}
+
+.cell:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.cell:disabled {
+  cursor: default;
+}
+
+.cellType {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--game-solid, #8a5fc8);
+  opacity: 0.85;
+}
+
+.cellLabel {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--v2-text, #1d1d1f);
+}
+
+/* Chosen / correct cell — light it up with the --grad-game purple accent.
+   These state classes are owned by THIS module (applied from the component),
+   not the hashed _practiceShared .choice* classes. */
+.cellSelected,
+.cellCorrect {
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  border-color: var(--game-edge, #6b4fa8);
+  box-shadow: 0 16px 38px rgba(138, 95, 200, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cellSelected .cellLabel,
+.cellCorrect .cellLabel,
+.cellSelected .cellType,
+.cellCorrect .cellType {
+  color: #fff;
+  opacity: 1;
+}
+
+/* Wrong pick — calm red wash, not a harsh buzzer. */
+.cellWrong {
+  background: rgba(255, 59, 48, 0.08);
+  border-color: rgba(255, 59, 48, 0.4);
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.12);
+}
+
+.cellWrong .cellLabel {
+  color: #c0392b;
+}
+
+/* ── Cell verdict feedback ─────────────────────────────────────────────── */
+.cellFeedback {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cellFeedbackCorrect {
+  background: rgba(52, 199, 89, 0.1);
+  color: #1d7a3e;
+}
+
+.cellFeedbackWrong {
+  background: rgba(255, 149, 0, 0.1);
+  color: #9a5b00;
+}
+
+/* ── Completion screen ─────────────────────────────────────────────────── */
+.complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.completeNote {
+  margin: 0;
+  max-width: 38ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+.complete .metersPanel {
+  width: 100%;
+}
+
+.complete .foot {
+  justify-content: center;
+}
+
+/* ── Inline skip note (sparsely-authored item) ─────────────────────────── */
+.skipNote {
+  padding: 6px 0;
+}
+
+/* ── Mount animation + reduced-motion ──────────────────────────────────── */
+@keyframes tttCellIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.board .cell {
+  animation: tttCellIn 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Subtle stagger so the board resolves like a dealt hand, not all at once. */
+.board .cell:nth-child(2) { animation-delay: 0.04s; }
+.board .cell:nth-child(3) { animation-delay: 0.08s; }
+.board .cell:nth-child(4) { animation-delay: 0.12s; }
+.board .cell:nth-child(5) { animation-delay: 0.16s; }
+.board .cell:nth-child(6) { animation-delay: 0.2s; }
+.board .cell:nth-child(7) { animation-delay: 0.24s; }
+.board .cell:nth-child(8) { animation-delay: 0.28s; }
+.board .cell:nth-child(9) { animation-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cell,
+  .board .cell {
+    animation: none;
+    transition: none;
+  }
+  .cell:hover:not(:disabled),
+  .cell:active:not(:disabled),
+  .cell:global(.choiceSelected),
+  .cell:global(.choiceCorrect) {
+    transform: none;
+  }
+}

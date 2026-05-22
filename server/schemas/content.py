@@ -775,6 +775,29 @@ class DecisionProcessExplanation(_Permissive):
     pass_score: Optional[int] = None
 
 
+class CaseBlock(_Permissive):
+    """One entry in CaseBasedPreview.blocks[] — a PRESENTATION-ORDER overlay
+    that lets authors interleave text pages and checkpoints in the sequence
+    they want shown (additive; absent on legacy/v1 CBPs).
+
+    A `blocks[]` entry is a presentation reference ONLY — it never carries
+    grading data. `checkpoints[]` stays the canonical checkpoint list; a
+    checkpoint block just points at it via `ref` = the index into
+    `CaseBasedPreview.checkpoints`. So grading (ai.py
+    `_check_answer_case_based_preview`) and gate_state index `checkpoints[ref]`
+    unchanged, and redaction needs no new key: text blocks carry no answer
+    fields, and a checkpoint block carries only an int `ref` (the answer lives
+    in `checkpoints[].answer_spec`, already stripped server-side).
+    """
+
+    type: Optional[str] = None            # "text" | "checkpoint"
+    # ---- text block (student-visible) ----
+    title: Optional[str] = None
+    body: Optional[str] = None
+    # ---- checkpoint block — presentation-order reference into checkpoints[] ----
+    ref: Optional[int] = None             # index into CaseBasedPreview.checkpoints
+
+
 class CaseBasedPreview(_Permissive):
     """Tile A of the Learning Hub — guided 3-checkpoint real-life learning case."""
 
@@ -784,6 +807,11 @@ class CaseBasedPreview(_Permissive):
     visual_plan: Optional[List[Dict[str, Any]]] = None
     case_setup: Optional[Dict[str, Any]] = None   # {story, role, task}
     checkpoints: Optional[List[CaseCheckpoint]] = None
+    # Presentation-order overlay of text pages + checkpoint refs (additive).
+    # A PRESENTATION layer only: `checkpoints[]` above stays canonical; a
+    # checkpoint block carries `ref` = index into `checkpoints[]`. No grading
+    # or redaction change — see CaseBlock docstring.
+    blocks: Optional[List[CaseBlock]] = None
     # Open-ended AI-graded reasoning step after the 3 MCQ checkpoints (additive).
     decision_process_explanation: Optional[DecisionProcessExplanation] = None
     final_simulation: Optional[Dict[str, Any]] = None  # {correct_path(redacted), wrong_path}
@@ -808,6 +836,199 @@ class MemoryCheck(_Permissive):
     pass_threshold_pct: Optional[int] = None  # default 60 (runtime)
     modes_enabled: Optional[List[str]] = None
     retake_pool_size: Optional[int] = None
+
+
+# --------------------------------------------------------------------------- #
+# Practice Arc games (Ibo PR #248) — Memory Matching, Jigsaw Matching,        #
+# Error Detection, Assembly. All `_Permissive` so the redactor can strip      #
+# answer_spec / is_correct / acceptable_keywords / is_broken / expected_order #
+# at the hydration boundary without schema churn.                             #
+# --------------------------------------------------------------------------- #
+
+
+class MemoryMatchingItem(_Permissive):
+    """One memory-matching case per the Infra spec: 3 MCQ checkpoints
+    (identify → decide → justify) + Decision-Process-Explanation (DPE) +
+    consequence summary. The client renders one item; multiple items per
+    homework just means more cases."""
+
+    id: Optional[str] = None
+    case_setup: Optional[str] = None
+    pairs: Optional[List[Dict[str, Any]]] = None
+    checkpoints: Optional[List[Dict[str, Any]]] = None       # each {question, options, correct_index⛔ | answer_spec}
+    dpe: Optional[Dict[str, Any]] = None                     # {prompt, acceptable_keywords[]}
+    dpe_prompt: Optional[str] = None
+    expected_components: Optional[List[str]] = None          # server-only — DPE grading anchor
+    consequence: Optional[Dict[str, Any]] = None             # {correct_path, wrong_path}
+
+
+class JigsawMatchingItem(_Permissive):
+    """One jigsaw-matching case per spec: pick two source-supported nodes
+    that fit together, identify the relationship type, justify the choice."""
+
+    id: Optional[str] = None
+    case_setup: Optional[str] = None
+    pieces: Optional[List[Dict[str, Any]]] = None            # {id, label, role}
+    checkpoints: Optional[List[Dict[str, Any]]] = None
+    dpe: Optional[Dict[str, Any]] = None
+    dpe_prompt: Optional[str] = None
+    expected_components: Optional[List[str]] = None          # server-only — DPE grading anchor
+    consequence: Optional[Dict[str, Any]] = None
+
+
+class ErrorDetectionItem(_Permissive):
+    """One error-detection task per spec: a piece of work containing exactly
+    one error. Student finds the broken block, then types the correction.
+    Server grades both the spot and the correction text."""
+
+    id: Optional[str] = None
+    instructions: Optional[str] = None
+    pattern: Optional[str] = None                            # "math" | "grammar" | "science"
+    work_blocks: Optional[List[Dict[str, Any]]] = None       # {id, text, is_broken⛔}
+    correction_answer_spec: Optional[AnswerSpec] = None      # server-only — AI/deterministic correction
+    hint: Optional[str] = None
+    why_prompt: Optional[str] = None                         # optional WHY-stage open-ended prompt
+
+
+class AssemblyItem(_Permissive):
+    """Order-the-pieces puzzle. Spec folder for Assembly is empty in the
+    Infra zip; this is the minimal contract: ordered list of pieces +
+    expected sequence. The student arranges pieces; server verifies order."""
+
+    id: Optional[str] = None
+    instructions: Optional[str] = None
+    pieces: Optional[List[Dict[str, Any]]] = None            # {id, label}
+    expected_order: Optional[List[str]] = None               # server-only — redactor strips
+
+
+# --------------------------------------------------------------------------- #
+# Division-3 Practices — 4 NEW Practice Arc games (per _DIV3_CONTRACT.md).     #
+#                                                                               #
+# All `_Permissive` (extra="allow"); every field Optional except `id`.         #
+# Validators are ADVISORY only — they never raise at the PUT/PATCH boundary    #
+# (the boundary must accept partial/draft authoring). Answer-bearing fields    #
+# (`correct_index`, `expected_components`, `meter_deltas`, `best_cell_id`,     #
+# `answer_case_id`, `breaks_rule`, `final_answer`, `correction_answer_spec`)   #
+# are stripped at hydration via ANSWER_BEARING_KEYS — never schema-enforced.   #
+# --------------------------------------------------------------------------- #
+
+
+class SentenceRepairItem(_Permissive):
+    """gb_sentence_repair — one broken sentence + 3 MCQ checkpoints
+    (which-phrase-breaks-it → best-repair → which-explanation) + an open-ended
+    Decision-Process-Explanation (DPE). Each checkpoint is a uniform MCQ
+    `{q|question, options, correct_index⛔}`. `expected_components` anchors the
+    DPE grading and is server-only."""
+
+    id: Optional[str] = None
+    broken_sentence: Optional[str] = None
+    checkpoints: Optional[List[Dict[str, Any]]] = None       # each {q|question, options, correct_index⛔}
+    dpe_prompt: Optional[str] = None
+    expected_components: Optional[List[str]] = None          # server-only — DPE grading anchor
+
+    @model_validator(mode="after")
+    def _advise(self) -> "SentenceRepairItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
+
+
+class TttGridItem(_Permissive):
+    """gb_ttt_grid — a decision-grid game. A concept-checkpoint MCQ frames the
+    rule, the student picks the best cell (`best_cell_id`), then a
+    justify-checkpoint MCQ confirms the reasoning, followed by an open-ended
+    DPE. Each cell carries `meter_deltas⛔` (per-meter score impact). `meters`
+    is the student-visible list of meter names; `meter_deltas` + `best_cell_id`
+    are server-only."""
+
+    id: Optional[str] = None
+    grid_size: Optional[str] = None                          # "3x3" | "2x2"
+    concept_checkpoint: Optional[Dict[str, Any]] = None      # MCQ {q|question, options, correct_index⛔}
+    cells: Optional[List[Dict[str, Any]]] = None             # {id, label, type, meter_deltas⛔}
+    best_cell_id: Optional[str] = None                       # server-only — winning cell
+    justify_checkpoint: Optional[Dict[str, Any]] = None      # MCQ {q|question, options, correct_index⛔}
+    dpe_prompt: Optional[str] = None
+    meters: Optional[List[str]] = None                       # student-visible meter names
+
+    @model_validator(mode="after")
+    def _advise(self) -> "TttGridItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
+
+
+class ProblemTraceItem(_Permissive):
+    """gb_problem_trace — a worked problem revealed step-by-step. Each step has
+    a `reveal_text` (shown after the student commits) and a `predict` MCQ the
+    student answers BEFORE the reveal. `final_answer⛔` is optional and
+    server-only."""
+
+    id: Optional[str] = None
+    problem: Optional[str] = None
+    steps: Optional[List[Dict[str, Any]]] = None             # {id, reveal_text, predict:MCQ{...,correct_index⛔}}
+    final_answer: Optional[Union[str, int, float]] = None    # server-only (optional)
+
+    @model_validator(mode="after")
+    def _advise(self) -> "ProblemTraceItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
+
+
+class CounterexampleItem(_Permissive):
+    """gb_counterexample — a claim + candidate cases; the student picks the case
+    that breaks the rule (`answer_case_id`). `breaks_rule` carries the broken
+    rule text. An optional explanation MCQ + open-ended DPE follow. Both
+    `answer_case_id` and `breaks_rule` are server-only."""
+
+    id: Optional[str] = None
+    claim: Optional[str] = None
+    prompt: Optional[str] = None
+    cases: Optional[List[Dict[str, Any]]] = None             # {id, label}
+    answer_case_id: Optional[str] = None                     # server-only — the breaking case
+    breaks_rule: Optional[str] = None                        # server-only — which rule it breaks
+    explanation_checkpoint: Optional[Dict[str, Any]] = None  # optional MCQ {q|question, options, correct_index⛔}
+    dpe_prompt: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _advise(self) -> "CounterexampleItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
+
+
+class DependencyChainItem(_Permissive):
+    """gb_dependency_chain — TRANSFER / multi-step application. A scenario frames
+    a problem; the student SOLVES a sequence of linked sub-questions where each
+    answer feeds the next (Q1 → its result carries into Q2 → … → final). Each
+    step is a uniform MCQ `{id, prompt, options, correct_index⛔, carry_label?}`.
+    Distinct from problem_trace (which REVEALS a given worked solution) — here
+    the student computes each linked step themselves. `correct_index` and
+    `carry_label` are server-only (carry_label encodes the step's result, e.g.
+    "x = 5 →", surfaced by the server ONLY after a correct answer)."""
+
+    id: Optional[str] = None
+    scenario: Optional[str] = None
+    steps: Optional[List[Dict[str, Any]]] = None             # {id, prompt, options, correct_index⛔, carry_label?⛔}
+
+    @model_validator(mode="after")
+    def _advise(self) -> "DependencyChainItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
+
+
+class ConfidenceCheckItem(_Permissive):
+    """gb_confidence_check — metacognition. The student answers a uniform MCQ AND
+    rates confidence (sure/maybe/guess). The CLIENT derives the calibration
+    verdict from {correct, confidence} (e.g. Sure+Correct=Mastered,
+    Sure+Wrong=Misconception, Guess+Correct=Lucky). The server only grades the
+    MCQ; `correct_index` is server-only."""
+
+    id: Optional[str] = None
+    question: Optional[str] = None
+    options: Optional[List[str]] = None
+    correct_index: Optional[int] = None                      # server-only — index of the right option
+
+    @model_validator(mode="after")
+    def _advise(self) -> "ConfidenceCheckItem":
+        # Advisory only — never raises at the PUT boundary.
+        return self
 
 
 # --------------------------------------------------------------------------- #
@@ -865,6 +1086,24 @@ class ContentJSON(_Permissive):
     # See MemoryPalaceGame / MemoryPalaceConfig docstrings + NAMESPACE NOTE above.
     gb_memory_palace: Optional[MemoryPalaceGame] = None
     gb_memory_palace_config: Optional[MemoryPalaceConfig] = None
+    # Practice Arc games (Ibo PR #248) — answer-bearing fields stripped at
+    # hydration (ANSWER_BEARING_KEYS).
+    gb_memory_matching: Optional[List[MemoryMatchingItem]] = None
+    gb_jigsaw_matching: Optional[List[JigsawMatchingItem]] = None
+    gb_error_detection: Optional[List[ErrorDetectionItem]] = None
+    gb_assembly: Optional[List[AssemblyItem]] = None
+    # Division-3 Practices — 4 NEW games (per _DIV3_CONTRACT.md). Each list is an
+    # array of full case items rendered sequentially by the React runtime; all
+    # answer-bearing fields are stripped at the hydration boundary.
+    gb_sentence_repair: Optional[List[SentenceRepairItem]] = None
+    gb_ttt_grid: Optional[List[TttGridItem]] = None
+    gb_problem_trace: Optional[List[ProblemTraceItem]] = None
+    gb_counterexample: Optional[List[CounterexampleItem]] = None
+    # Division-3 Practices — 2 MORE games (Dependency Chain = multi-step transfer;
+    # Confidence Calibration = metacognition). Answer-bearing fields (correct_index
+    # on both, carry_label on dependency-chain steps) stripped at hydration.
+    gb_dependency_chain: Optional[List[DependencyChainItem]] = None
+    gb_confidence_check: Optional[List[ConfidenceCheckItem]] = None
 
     # Phase 7
     reflection: Optional[ReflectionPhase] = None

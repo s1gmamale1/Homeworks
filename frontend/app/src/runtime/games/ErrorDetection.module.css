@@ -1,0 +1,322 @@
+/* ============================================================
+   ErrorDetection.module.css — Apple-glass, --grad-game purple,
+   light-theme pin, reduced-motion.
+   Contract: _DIV3_CONTRACT.md § design tokens
+   ============================================================ */
+
+/* Light-theme pin — prevents --v2-text from flipping white on dark OS */
+.shell {
+  --v2-text: #1d1d1f;
+  --v2-text-muted: #6e6e73;
+}
+
+/* ── Card shell override: purple top-bar + glow ── */
+.shell::before {
+  content: "";
+  display: block;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.shell::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  right: -12px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(179, 136, 235, 0.26) 0%, transparent 70%);
+  filter: blur(52px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Instructions line ── */
+.instructions {
+  font-size: 15px;
+  color: var(--v2-text, #1d1d1f);
+  line-height: 1.55;
+  font-weight: 500;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Hint banner (revealed after 3 wrong taps) ── */
+.hintBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(139, 95, 200, 0.08);
+  border: 1px solid rgba(139, 95, 200, 0.18);
+  font-size: 13.5px;
+  color: #6b4fa8;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  animation: hintSlide 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hintIcon {
+  font-style: normal;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+@keyframes hintSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Work blocks container ── */
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Individual block chip — PressChoice override ── */
+/*
+  PressChoice provides its own .choice base class; we add .block as an
+  EXTRA class. These rules narrow only the ErrorDetection chips:
+  larger text, left-aligned, full-width, detective-neutral bg.
+*/
+.block {
+  text-align: left !important;
+  width: 100%;
+  font-size: 15px !important;
+  font-weight: 450;
+  padding: 13px 16px !important;
+  border-radius: 14px !important;
+  /* chip-style neutral background */
+  background: rgba(15, 23, 42, 0.03) !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.07) !important;
+  color: var(--v2-text, #1d1d1f) !important;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms ease;
+}
+
+.block:hover:not(:disabled) {
+  background: rgba(139, 95, 200, 0.05) !important;
+  border-color: rgba(139, 95, 200, 0.22) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 14px rgba(139, 95, 200, 0.1) !important;
+}
+
+.block:active:not(:disabled) {
+  transform: translateY(3px) !important;
+  box-shadow: none !important;
+}
+
+.block:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* ── Wrong-spot feedback + penalty ── */
+.spotFeedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 59, 48, 0.06);
+  border: 1px solid rgba(255, 59, 48, 0.15);
+  position: relative;
+  z-index: 1;
+  animation: feedbackPop 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes feedbackPop {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.spotFeedbackText {
+  font-size: 13.5px;
+  color: #c0392b;
+  font-weight: 500;
+  flex: 1;
+}
+
+.penaltyPill {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #c0392b;
+  background: rgba(255, 59, 48, 0.1);
+  border-radius: 100px;
+  padding: 2px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Correction stage ── */
+.correctionWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+  animation: correctionIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes correctionIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.spotSuccessBanner {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1a7f56;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+  margin: 0;
+}
+
+.correctionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-muted, #6e6e73);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.correctionInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(15, 23, 42, 0.12);
+  font-size: 16px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--v2-text, #1d1d1f);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.correctionInput:focus {
+  border-color: #8a5fc8;
+  box-shadow: 0 0 0 3px rgba(139, 95, 200, 0.14);
+}
+
+.correctionInput::placeholder {
+  color: #aeaeb2;
+}
+
+.correctionFeedbackWrong {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #c0392b;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 59, 48, 0.06);
+  border: 1px solid rgba(255, 59, 48, 0.15);
+  margin: 0;
+}
+
+.correctionFeedbackCorrect {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1a7f56;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.2);
+  margin: 0;
+}
+
+/* ── WHY stage ── */
+.whyWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+  animation: correctionIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── DONE screen ── */
+.doneWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+  animation: correctionIn 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tierLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-muted, #6e6e73);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tierMeta {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(139, 95, 200, 0.05);
+  border: 1px solid rgba(139, 95, 200, 0.12);
+}
+
+.tierMetaLine {
+  font-size: 14px;
+  color: var(--v2-text, #1d1d1f);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ── Footer action row ── */
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .shell::before,
+  .shell::after { animation: none; }
+  .hintBanner   { animation: none; }
+  .spotFeedback { animation: none; }
+  .correctionWrap { animation: none; }
+  .whyWrap  { animation: none; }
+  .doneWrap { animation: none; }
+
+  .block                  { transition: none; }
+  .block:hover:not(:disabled) { transform: none !important; box-shadow: none !important; }
+  .block:active:not(:disabled) { transform: none !important; }
+
+  .correctionInput { transition: none; }
+}

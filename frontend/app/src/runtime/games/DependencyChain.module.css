@@ -1,0 +1,269 @@
+/* DependencyChain.module.css — game-specific layer over _practiceShared.
+   A multi-step "chain" of linked sub-questions: each solved link surfaces a
+   carried result that visibly feeds the next step. Serious + analytical, NOT
+   gamey — reads like a worked transfer problem. Inherits the shell's --pg-*
+   purple accent + light-theme pin from _practiceShared.module.css; we re-pin
+   --v2-text via var() fallbacks so the ink never flips white on a dark OS even
+   when this module loads in isolation. */
+
+/* ---- scenario framing card ---- */
+.scenario {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  border: 1px solid var(--pg-tint, rgba(179, 136, 235, 0.18));
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--v2-text, #1d1d1f);
+}
+
+.progress {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-solid, #8a5fc8);
+}
+
+/* ---- chain progress rail: nodes joined by connectors, fill as forged ---- */
+.rail {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.node {
+  position: relative;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.18));
+  border: 1.5px solid var(--pg-tint, rgba(179, 136, 235, 0.3));
+  transition: background 240ms ease, border-color 240ms ease;
+}
+.node:not(:last-child) {
+  margin-right: 28px;
+}
+.connector {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 28px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--pg-tint, rgba(179, 136, 235, 0.25));
+  transition: background 240ms ease;
+}
+.nodeDone {
+  background: var(--pg-solid, #8a5fc8);
+  border-color: var(--pg-edge, #6b4fa8);
+}
+.nodeDone .connector {
+  background: var(--pg-solid, #8a5fc8);
+}
+.nodeActive {
+  background: var(--pg-grad, linear-gradient(135deg, #b388eb, #8a5fc8));
+  border-color: var(--pg-edge, #6b4fa8);
+  box-shadow: 0 0 0 4px var(--pg-tint, rgba(179, 136, 235, 0.18));
+}
+
+/* ---- the current link's MCQ card ---- */
+.stepCard {
+  padding: 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1.5px solid var(--pg-tint, rgba(179, 136, 235, 0.22));
+  box-shadow: 0 2px 14px rgba(138, 95, 200, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stepPrompt {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--v2-text, #1d1d1f);
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---- carry chips: the result one link passes to the next ---- */
+.carryIn,
+.carryOut {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.carryOut {
+  animation: carryForm 420ms var(--landing-spring, cubic-bezier(.16, 1, .3, 1)) both;
+}
+@keyframes carryForm {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.carryChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  border: 1px solid var(--pg-solid, #8a5fc8);
+  color: var(--pg-edge, #6b4fa8);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.carryNote {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+/* ---- per-step feedback strip (mirrors the shared kit's feedback look) ---- */
+.feedback {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  color: var(--v2-text, #1d1d1f);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.feedbackCorrect {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.25);
+  color: #1d7a37;
+}
+.feedbackWrong {
+  background: rgba(255, 59, 48, 0.07);
+  border-color: rgba(255, 59, 48, 0.2);
+  color: #b3261e;
+}
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #b3261e;
+}
+
+/* ---- completed chain (end-of-item summary) ---- */
+.chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.link {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: start;
+  gap: 14px;
+  padding: 0 0 16px 0;
+}
+.link:last-child {
+  padding-bottom: 0;
+}
+.link::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 26px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.2));
+}
+.link:last-child::before {
+  display: none;
+}
+.linkIndex {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  border: 1.5px solid var(--pg-solid, #8a5fc8);
+  color: var(--pg-edge, #6b4fa8);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.linkBody {
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.linkPrompt {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--v2-text, #1d1d1f);
+}
+.carryDone {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  color: var(--pg-edge, #6b4fa8);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- end-of-item summary ---- */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.scoreLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+}
+.scoreLine strong {
+  color: var(--v2-text, #1d1d1f);
+  font-variant-numeric: tabular-nums;
+}
+
+.foot {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .carryOut {
+    animation: none;
+  }
+  .node,
+  .connector {
+    transition: none;
+  }
+}

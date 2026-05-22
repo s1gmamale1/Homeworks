@@ -1,0 +1,188 @@
+/* ConfidenceCheck.module.css — game-specific layer over _practiceShared.
+   A metacognition / calibration game: an MCQ + a confidence rating, resolving
+   to a calibration verdict (Mastered / Misconception / Solid / Lucky / gap).
+   Serious + reflective, NOT gamey. Inherits the shell's --pg-* purple accent +
+   light-theme pin from _practiceShared.module.css; we re-pin --v2-text via
+   var() fallbacks so the ink never flips white on a dark OS even when this
+   module loads in isolation. */
+
+/* ---- question ---- */
+.question {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  border: 1px solid var(--pg-tint, rgba(179, 136, 235, 0.18));
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--v2-text, #1d1d1f);
+}
+
+/* ---- MCQ options ---- */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---- confidence rating row ---- */
+.confBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.confKicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pg-solid, #8a5fc8);
+}
+.confRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.conf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid var(--pg-tint, rgba(179, 136, 235, 0.22));
+  cursor: pointer;
+  transition: transform 200ms cubic-bezier(.16, 1, .3, 1),
+    border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+.conf:hover:not(:disabled),
+.conf:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--pg-solid, #8a5fc8);
+}
+.conf:disabled {
+  cursor: default;
+}
+.confActive {
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  border-color: var(--pg-solid, #8a5fc8);
+  box-shadow: 0 0 0 4px var(--pg-tint, rgba(179, 136, 235, 0.16));
+}
+.confLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--v2-text, #1d1d1f);
+}
+.confHint {
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+/* ---- calibration verdict ---- */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  animation: verdictIn 420ms cubic-bezier(.16, 1, .3, 1) both;
+}
+@keyframes verdictIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.verdictLabel {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--v2-text, #1d1d1f);
+}
+.verdictBlurb {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+/* Calibration tones — the four+ quadrants get distinct, meaningful color.
+   "danger" (confidently wrong) is loudest; "mastered" is the confident green. */
+.tone_mastered {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.32);
+}
+.tone_mastered .verdictLabel { color: #1d7a37; }
+
+.tone_danger {
+  background: rgba(255, 59, 48, 0.09);
+  border-color: rgba(255, 59, 48, 0.35);
+}
+.tone_danger .verdictLabel { color: #b3261e; }
+
+.tone_solid {
+  background: rgba(0, 122, 255, 0.08);
+  border-color: rgba(0, 122, 255, 0.28);
+}
+.tone_solid .verdictLabel { color: #0a5bd0; }
+
+.tone_review {
+  background: rgba(255, 149, 0, 0.1);
+  border-color: rgba(255, 149, 0, 0.3);
+}
+.tone_review .verdictLabel { color: #b35c00; }
+
+.tone_lucky {
+  background: rgba(255, 204, 0, 0.12);
+  border-color: rgba(255, 204, 0, 0.4);
+}
+.tone_lucky .verdictLabel { color: #8a6d00; }
+
+.tone_gap {
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  border-color: var(--pg-solid, #8a5fc8);
+}
+.tone_gap .verdictLabel { color: var(--pg-edge, #6b4fa8); }
+
+/* ---- score line + footer ---- */
+.scoreLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+}
+.scoreLine strong {
+  color: var(--v2-text, #1d1d1f);
+  font-variant-numeric: tabular-nums;
+}
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #b3261e;
+}
+.foot {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .verdict {
+    animation: none;
+  }
+  .conf {
+    transition: none;
+  }
+  .conf:hover:not(:disabled),
+  .conf:focus-visible:not(:disabled) {
+    transform: none;
+  }
+}

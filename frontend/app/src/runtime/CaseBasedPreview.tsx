@@ -12,7 +12,6 @@ import {
 } from "../shared/ui/primitives";
 import type { Checkpoint, CheckpointKind } from "../shared/types";
 import CbpBackdrop from "./CbpBackdrop";
-import CbpJourney from "./CbpJourney";
 import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { acknowledgeNudge } from "../shared/api";
@@ -29,8 +28,17 @@ const KIND_LABEL: Record<CheckpointKind, string> = {
 // gate (80) so the client soft-gate and the server's hard 400 agree.
 const MIN_REASONING_CHARS = 80;
 
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // The Case-Based Preview sub-machine:
-//   setup → (checkpoint → learningBlock) ×3 → reasoning → sim → feedback
+//   LEGACY (no authored blocks[]):
+//     setup → (checkpoint → learningBlock) ×N → reasoning → sim → feedback
+//   AUTHORED-ORDER (case_based_preview.blocks present + non-empty):
+//     setup → walk blocks[] in order — a `text` block → textPage, a `checkpoint`
+//     block → checkpoint(ref) → learningBlock — then reasoning → sim → feedback.
 // Correctness is NEVER assumed client-side — we read the server `{correct}` /
 // `{passed}`. The MCQ checkpoints stay the gated, server-authoritative grade;
 // the reasoning step is server-graded but non-blocking.
@@ -44,6 +52,8 @@ export function CaseBasedPreview() {
       return <CheckpointStage />;
     case "learningBlock":
       return <LearningBlockStage />;
+    case "textPage":
+      return <TextPageStage />;
     case "reasoning":
       return <ReasoningStage />;
     case "sim":
@@ -56,23 +66,19 @@ export function CaseBasedPreview() {
 }
 
 // Full-bleed immersive shell: the living CbpBackdrop sits at z0 (aurora + blobs
-// + pointer trail), the winding CbpJourney rides above the content stage, and
-// the per-substage content animates in at z1. The shell re-pins the §4 contrast
-// tokens so a dark-OS visitor never washes out the ink.
+// + pointer trail) and the per-substage content animates in at z1. The shell
+// re-pins the §4 contrast tokens so a dark-OS visitor never washes out the ink.
 function Shell({
   children,
   testid,
-  journey = true,
 }: {
   children: ReactNode;
   testid: string;
-  journey?: boolean;
 }) {
   return (
     <main className={s.shell} data-testid={testid}>
       <CbpBackdrop />
       <div className={s.stage} key={testid}>
-        {journey && <CbpJourney />}
         {children}
       </div>
     </main>
@@ -83,9 +89,16 @@ function Shell({
 function Setup() {
   const payload = useRuntimeStore((st) => st.payload);
   const enterCheckpoint = useRuntimeStore((st) => st.enterCheckpoint);
+  const enterBlock = useRuntimeStore((st) => st.enterBlock);
   const goto = useRuntimeStore((st) => st.goto);
   const cbp = payload?.content_json.case_based_preview;
   const setup = cbp?.case_setup;
+
+  // AUTHORED-ORDER: when blocks[] is authored + non-empty, "Begin" walks the
+  // blocks from index 0. Otherwise it enters the first checkpoint (legacy flow).
+  const blocks = cbp?.blocks;
+  const hasBlocks = Array.isArray(blocks) && blocks.length > 0;
+  const begin = () => (hasBlocks ? enterBlock(0) : enterCheckpoint(0));
 
   return (
     <Shell testid="cbp-setup">
@@ -113,7 +126,7 @@ function Setup() {
             )}
           </div>
           <div className={s.heroCta}>
-            <Button variant="blue" onClick={() => enterCheckpoint(0)} data-testid="cbp-begin">
+            <Button variant="blue" onClick={begin} data-testid="cbp-begin">
               Begin checkpoints →
             </Button>
           </div>
@@ -124,22 +137,50 @@ function Setup() {
 }
 
 // ---- checkpoint: question + options as LessonPanel rows ----
+// INLINE MARKING (core bug fix): after submit, the tapped option renders its
+// SERVER-CONFIRMED state — green `correct` if results[index] === true, red
+// `wrong` if false — for a short marked window, THEN the store advances to the
+// teaching beat. This makes "it was marked" obvious; the client never decides
+// correctness (it only renders the server `{correct}`). Reduced-motion safe:
+// under reduce we skip the hold and reveal the learning block immediately, so
+// the marked state still flashes but the flow doesn't dwell on motion.
+const MARK_HOLD_MS = 900;
+
 function CheckpointStage() {
   const payload = useRuntimeStore((st) => st.payload);
   const index = useRuntimeStore((st) => st.cbp.checkpointIndex);
   const submitting = useRuntimeStore((st) => st.cbp.submitting);
   const submitError = useRuntimeStore((st) => st.cbp.submitError);
+  const results = useRuntimeStore((st) => st.cbp.results);
   const submit = useRuntimeStore((st) => st.submitCheckpointAnswer);
+  const reveal = useRuntimeStore((st) => st.revealCheckpointLearningBlock);
 
   const checkpoints = payload?.content_json.case_based_preview?.checkpoints ?? [];
   const total = checkpoints.length || 3;
   const checkpoint = checkpoints[index] as Checkpoint | undefined;
   const [selected, setSelected] = useState<number | null>(null);
+  // `marked` flips true once the server verdict lands, so the chosen option
+  // paints green/red before the teaching beat. Server-confirmed only.
+  const [marked, setMarked] = useState(false);
   // Advisory anti-cheat — MCQ taps → timing only (no paste handler needed).
   const tele = useAnswerTelemetry(index);
 
-  // Reset selection whenever we move to a different checkpoint.
-  useEffect(() => setSelected(null), [index]);
+  // Reset selection + marking whenever we move to a different checkpoint.
+  useEffect(() => {
+    setSelected(null);
+    setMarked(false);
+  }, [index]);
+
+  // Once marked, hold the green/red state briefly, then reveal the learning
+  // block. Under reduced motion we advance on the next tick (no dwell). The
+  // store guards revealCheckpointLearningBlock() to only fire from the
+  // checkpoint substage, so a late timer can't bounce a later stage back.
+  useEffect(() => {
+    if (!marked) return;
+    const hold = prefersReducedMotion() ? 0 : MARK_HOLD_MS;
+    const t = setTimeout(() => reveal(), hold);
+    return () => clearTimeout(t);
+  }, [marked, reveal]);
 
   if (!checkpoint) {
     return (
@@ -149,13 +190,23 @@ function CheckpointStage() {
     );
   }
 
-  const onSubmit = () => {
-    if (selected === null || submitting) return;
+  const onSubmit = async () => {
+    if (selected === null || submitting || marked) return;
     // Tap-MCQ checkpoints grade by option index (answer_spec.type=option_index).
     // We submit the tapped index as a string; the server holds the expected
     // index and decides correctness — the client never self-grades. Telemetry
     // is advisory only (timing for these taps).
-    void submit(index, String(selected), tele.read());
+    const res = await submit(index, String(selected), tele.read());
+    // Only enter the marked window on a successful grade; an error keeps the
+    // options interactive so the student can retry the submit.
+    if (res) setMarked(true);
+  };
+
+  // Server-confirmed correctness of the tapped option (once marked).
+  const optionState = (i: number): "idle" | "active" | "correct" | "wrong" => {
+    if (selected !== i) return "idle";
+    if (!marked) return "active";
+    return results[index] ? "correct" : "wrong";
   };
 
   return (
@@ -172,8 +223,8 @@ function CheckpointStage() {
             key={i}
             eyebrow={`Option ${String.fromCharCode(65 + i)}`}
             title={opt}
-            state={selected === i ? "active" : "idle"}
-            disabled={submitting}
+            state={optionState(i)}
+            disabled={submitting || marked}
             onClick={() => setSelected(i)}
           />
         ))}
@@ -189,10 +240,10 @@ function CheckpointStage() {
         <Button
           variant="blue"
           onClick={onSubmit}
-          disabled={selected === null || submitting}
+          disabled={selected === null || submitting || marked}
           data-testid="cbp-submit"
         >
-          {submitting ? "Checking…" : "Submit answer"}
+          {submitting ? "Checking…" : marked ? "Marked ✓" : "Submit answer"}
         </Button>
       </div>
     </Shell>
@@ -202,6 +253,7 @@ function CheckpointStage() {
 // ---- learningBlock: server feedback + learning_block after submit ----
 function LearningBlockStage() {
   const index = useRuntimeStore((st) => st.cbp.checkpointIndex);
+  const blockIndex = useRuntimeStore((st) => st.cbp.blockIndex);
   const results = useRuntimeStore((st) => st.cbp.results);
   const feedback = useRuntimeStore((st) => st.cbp.lastFeedback);
   const learningBlock = useRuntimeStore((st) => st.cbp.lastLearningBlock);
@@ -213,16 +265,39 @@ function LearningBlockStage() {
   const hwId = useRuntimeStore((st) => st.hwId);
   const sessionId = useRuntimeStore((st) => st.sessionId);
 
+  const cbp = payload?.content_json.case_based_preview;
+  const blocks = cbp?.blocks;
+  const hasBlocks = Array.isArray(blocks) && blocks.length > 0;
   const correct = results[index];
-  const total = payload?.content_json.case_based_preview?.checkpoints?.length ?? 3;
-  const isLast = index + 1 >= total;
+
+  // "Last teaching beat" decides the Continue label (→ reasoning vs → next).
+  //   AUTHORED-ORDER: no further blocks sit after this cursor.
+  //   LEGACY: this is the final checkpoint.
+  const checkpointTotal = cbp?.checkpoints?.length ?? 3;
+  const isLast = hasBlocks
+    ? blockIndex + 1 >= blocks.length
+    : index + 1 >= checkpointTotal;
+  // Whether the homework authored an open-ended reasoning step — mirrors the
+  // store's enterCbpClose() routing so the last-beat CTA reads honestly.
+  const hasReasoning = Boolean(
+    cbp?.decision_process_explanation?.prompt
+  );
+  // The "Checkpoint X of Y" counter: in authored order, count only checkpoint
+  // blocks and show this checkpoint's position among them; legacy uses index.
+  const checkpointBlocks = hasBlocks
+    ? blocks.filter((b): b is { type: "checkpoint"; ref: number } => b.type === "checkpoint")
+    : [];
+  const ckPosition = hasBlocks
+    ? checkpointBlocks.findIndex((b) => b.ref === index) + 1
+    : index + 1;
+  const ckTotal = hasBlocks ? checkpointBlocks.length : checkpointTotal;
 
   return (
     <Shell testid="cbp-learning-block">
       <div className={s.lbHead}>
         {correct ? <Pill tone="good">✓ Correct</Pill> : <Pill tone="warn">Not quite</Pill>}
         <span className={s.lbCounter}>
-          Checkpoint {index + 1} of {total}
+          Checkpoint {ckPosition} of {ckTotal}
         </span>
       </div>
 
@@ -253,7 +328,47 @@ function LearningBlockStage() {
           </Button>
         )}
         <Button variant="blue" onClick={advance} data-testid="cbp-continue">
-          {isLast ? "Explain your reasoning →" : "Next checkpoint →"}
+          {isLast
+            ? hasReasoning
+              ? "Explain your reasoning →"
+              : "Continue →"
+            : "Next checkpoint →"}
+        </Button>
+      </div>
+    </Shell>
+  );
+}
+
+// ---- textPage: authored story/text block (AUTHORED-ORDER walker only) ----
+// A `text` block in case_based_preview.blocks[] renders here: a glass card with
+// the authored title + body + a "Continue →" CTA that steps the walker to the
+// next block. Display-only — no grading, no answer content, no gate effect.
+function TextPageStage() {
+  const payload = useRuntimeStore((st) => st.payload);
+  const blockIndex = useRuntimeStore((st) => st.cbp.blockIndex);
+  const advance = useRuntimeStore((st) => st.advanceFromTextPage);
+
+  const blocks = payload?.content_json.case_based_preview?.blocks ?? [];
+  const block = blocks[blockIndex];
+  const isText = block?.type === "text";
+  const title = isText ? block.title : undefined;
+  const body = isText ? block.body : undefined;
+
+  return (
+    <Shell testid="cbp-text-page">
+      <Eyebrow>Case Study</Eyebrow>
+      {title && <Title size="section">{title}</Title>}
+      <FeatureCard className={s.textCard}>
+        {body ? (
+          <p className={s.textBody}>{body}</p>
+        ) : (
+          <Lead className={s.lbText}>Continue when you're ready.</Lead>
+        )}
+      </FeatureCard>
+
+      <div className={s.actions}>
+        <Button variant="blue" onClick={advance} data-testid="cbp-text-continue">
+          Continue →
         </Button>
       </div>
     </Shell>
@@ -300,7 +415,7 @@ function ReasoningStage() {
   };
 
   return (
-    <Shell testid="cbp-reasoning-stage" journey>
+    <Shell testid="cbp-reasoning-stage">
       <Eyebrow>Decision Process</Eyebrow>
       <Title size="section">Explain your reasoning.</Title>
       <Lead>{promptText}</Lead>

@@ -1,0 +1,143 @@
+/* CounterexampleHunt.module.css
+   Game-specific layer over _practiceShared.
+   Hub Apple-glass, --grad-game purple accent.
+   Light-theme pin: --v2-text / --v2-text-muted set by .shell in _practiceShared.
+   ---------------------------------------------------------------------- */
+
+/* ---- assertion / claim card ---- */
+.claimCard {
+  position: relative;
+  padding: 18px 20px 18px;
+  border-radius: 16px;
+  background: rgba(179, 136, 235, 0.07);
+  border: 1.5px solid rgba(179, 136, 235, 0.22);
+  /* left accent stripe */
+  border-left: 4px solid #8a5fc8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: claimIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes claimIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.claimLabel {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a5fc8;
+  line-height: 1;
+}
+
+.claimText {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--v2-text, #1d1d1f);
+}
+
+/* ---- pick-phase prompt ---- */
+.prompt {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+/* ---- candidate case grid ---- */
+.caseGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Override PressChoice to carry a subtle left "indicator" dot */
+.caseChoice {
+  position: relative;
+  padding-left: 20px !important;
+}
+
+.caseChoice::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(138, 95, 200, 0.35);
+  transition: background 200ms ease;
+}
+
+.caseChoice:hover::before,
+.caseChoice:focus-visible::before {
+  background: #8a5fc8;
+}
+
+/* ---- pick feedback (wrong verdict) ---- */
+.feedbackWrong {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 59, 48, 0.07);
+  border: 1px solid rgba(255, 59, 48, 0.18);
+  font-size: 14px;
+  line-height: 1.4;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+/* ---- empty-state note ---- */
+.emptyNote {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+  font-style: italic;
+}
+
+/* ---- result phase ---- */
+.resultRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resultBlurb {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-text-muted, #6e6e73);
+}
+
+/* ---- foot: CTA row ---- */
+.foot {
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---- reduced-motion: strip all animations / transforms ---- */
+@media (prefers-reduced-motion: reduce) {
+  .claimCard {
+    animation: none;
+  }
+  .caseChoice::before {
+    transition: none;
+  }
+}

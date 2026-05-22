@@ -86,7 +86,24 @@ export interface CaseBasedPreview {
   // safe fields survive hydration (the keyword buckets / rubric / pass_score are
   // stripped server-side). When absent, the runtime skips the reasoning step.
   decision_process_explanation?: DecisionProcessExplanation;
+  // Optional AUTHORED-ORDER walker. When present + non-empty the LEARNING flow
+  // walks `blocks` in order — a `text` block renders a story/text page, a
+  // `checkpoint` block renders the canonical `checkpoints[ref]` (server still
+  // grades it as `checkpoints[]`, so `ref` MUST index into that array). When
+  // absent/empty the runtime keeps the legacy (cp→lb)×N flow. Additive only —
+  // `checkpoints[]` stays the canonical, server-graded source.
+  blocks?: CbpBlock[];
 }
+
+/**
+ * One authored CBP block. `text` is a story/teaching page (title + body); a
+ * `checkpoint` block points at `checkpoints[ref]` by index — the server grades
+ * it as the canonical checkpoint, so `ref` is an index into the (frozen)
+ * `checkpoints[]` array, NOT a separate question payload.
+ */
+export type CbpBlock =
+  | { type: "text"; title?: string; body?: string }
+  | { type: "checkpoint"; ref: number };
 
 /** Student-safe view of the reasoning step — prompt + min length only. */
 export interface DecisionProcessExplanation {

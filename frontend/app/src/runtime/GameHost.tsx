@@ -46,6 +46,17 @@ export const GAME_LABELS: Record<string, string> = {
   puzzle_lock: "Puzzle Lock",
   adaptive_quiz: "Adaptive Quiz",
   story_mode: "Story Mode",
+  // Division-3 practice games (8)
+  error_detection: "Error Detection",
+  memory_matching: "Memory Matching",
+  jigsaw_matching: "Jigsaw Matching",
+  assembly: "Assembly",
+  sentence_repair: "Sentence Repair",
+  ttt_grid: "Decision Grid",
+  problem_trace: "Problem Trace",
+  counterexample: "Counterexample Hunt",
+  dependency_chain: "Dependency Chain",
+  confidence_check: "Confidence Check",
 };
 
 // The registry. tile_match + boss + the four backend-backed games are live;
@@ -60,6 +71,17 @@ const GAME_REGISTRY: Record<string, ComponentType<GameProps>> = {
   adaptive_quiz: lazy(() => import("./games/AdaptiveQuiz")),
   mystery_box: lazy(() => import("./games/MysteryBox")),
   puzzle_lock: lazy(() => import("./games/PuzzleLock")),
+  // Division-3 practice games (8) — 4 vendored (Ibo) + 4 new stubs.
+  error_detection: lazy(() => import("./games/ErrorDetection")),
+  memory_matching: lazy(() => import("./games/MemoryMatching")),
+  jigsaw_matching: lazy(() => import("./games/JigsawMatching")),
+  assembly: lazy(() => import("./games/Assembly")),
+  sentence_repair: lazy(() => import("./games/SentenceRepair")),
+  ttt_grid: lazy(() => import("./games/TttGrid")),
+  problem_trace: lazy(() => import("./games/ProblemTrace")),
+  counterexample: lazy(() => import("./games/CounterexampleHunt")),
+  dependency_chain: lazy(() => import("./games/DependencyChain")),
+  confidence_check: lazy(() => import("./games/ConfidenceCheck")),
   boss: lazy(() => import("./BossArena")),
 };
 

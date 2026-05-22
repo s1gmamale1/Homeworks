@@ -141,6 +141,30 @@ class CheckAnswerRequest(BaseModel):
     subphase: Optional[str] = None
     nudge_response: Optional[str] = None
 
+    # Division-3 Practices phase fields (per _DIV3_CONTRACT.md §"Request
+    # contract"). Each new phase reuses `homework_id`/`session_id`/`item_id`
+    # plus a subset of these. All Optional so existing callers are unaffected;
+    # each handler validates the fields it actually needs.
+    #   - uniform MCQ checkpoint: checkpoint_index + selected_index
+    #   - error-detection: stage ("spot"|"correction"|"why") + block_id + correction
+    #   - assembly: order
+    #   - problem-trace: step_index + selected_index
+    #   - counterexample: selected_case_id (+ checkpoint_index/selected_index for
+    #     the optional explanation MCQ)
+    #   - DPE / open-ended: reasoning_text (already defined above)
+    #   - escape hatch: payload_json
+    checkpoint_index: Optional[int] = None
+    selected_index: Optional[int] = None
+    stage: Optional[str] = None              # error-detection: "spot" | "correction" | "why"
+    block_id: Optional[str] = None           # error-detection: the work-block the student tapped
+    correction: Optional[str] = None         # error-detection (correction stage): typed fix
+    order: Optional[list[str]] = None        # assembly: the ordered piece ids
+    step_index: Optional[int] = None         # problem-trace + dependency-chain: which step's MCQ
+    selected_case_id: Optional[str] = None   # counterexample: the case the student picked
+    cell_id: Optional[str] = None            # ttt-grid: the cell the student picked
+    confidence: Optional[str] = None         # confidence-check: "sure" | "maybe" | "guess"
+    payload_json: Optional[dict[str, Any]] = None  # escape hatch — avoid unless needed
+
 
 class FinalizeCheckAnswerRequest(BaseModel):
     phase: str
@@ -3212,6 +3236,627 @@ async def _check_answer_puzzle_lock(req: CheckAnswerRequest) -> dict:
     )
 
 
+# ===========================================================================
+# Division-3 Practices — 8 per-phase grading handlers (per _DIV3_CONTRACT.md).
+#
+# Phases: error-detection, memory-matching, jigsaw-matching, assembly,
+#         sentence-repair, ttt-grid, problem-trace, counterexample.
+#
+# Each handler:
+#   1. validate ids (homework_id + item_id) → 400 on missing
+#   2. await _enforce_practice_unlocked(req)   (these ARE practice-arc games)
+#   3. fetch hw → find item by item_id in content_json.<field>
+#   4. grade per contract (MCQ deterministic; assembly order; error-detection
+#      spot=is_broken block; DPE/open-ended = the LOCKED pending_ai seam)
+#   5. _add_phase_attempt(subphase=...) — best-effort persistence
+#   6. student-safe return — NEVER any ⛔ server-only field.
+#
+# The LOCKED DPE seam shape (do not change):
+#   {correct:false, passed:null, score:null, pending_ai:true, feedback:<uz>}
+# ===========================================================================
+
+# Locked open-ended seam feedback string (contract §"Response contract").
+_DPE_SEAM_FEEDBACK = "Javobingiz AI tomonidan baholanadi — natija tez orada."
+
+# Reusable student-facing feedback (no expected value ever leaked).
+_DIV3_CORRECT_FB = "To'g'ri!"
+_DIV3_WRONG_FB = "Noto'g'ri javob."
+
+# Error Detection result tiers (contract §"Game complete").
+_ED_TIERS = ("Sharp Eye", "Good Detective", "Half-Found", "Hali emas")
+
+
+def _div3_find_item(content_json: dict, field: str, item_id: str) -> Optional[dict]:
+    """Locate a Division-3 practice item by id within content_json.<field>.
+
+    `<field>` is a top-level list (gb_error_detection, gb_sentence_repair, ...).
+    Returns the matching dict or None.
+    """
+    if not isinstance(content_json, dict):
+        return None
+    items = content_json.get(field)
+    if not isinstance(items, list):
+        return None
+    for item in items:
+        if isinstance(item, dict) and item.get("id") == item_id:
+            return item
+    return None
+
+
+async def _div3_load_item(req: "CheckAnswerRequest", phase: str, field: str) -> dict:
+    """Shared preamble for every Division-3 handler.
+
+    Validates ids → enforces the practice gate → fetches the homework →
+    resolves the item. Returns the item dict; raises HTTPException on any
+    failure (400 / 403 / 404). The gate runs AFTER id presence but BEFORE
+    content resolution, mirroring the existing practice-arc handlers so the
+    locked-session tests fire on a bare homework.
+    """
+    if not req.homework_id or not req.item_id:
+        raise HTTPException(400, detail={
+            "error": f"homework_id and item_id required for phase={phase}",
+            "code": "DIV3_MISSING_IDS",
+        })
+
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    await _enforce_practice_unlocked(req)
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+    content = hw.get("content_json") or {}
+    item = _div3_find_item(content, field, req.item_id)
+    if item is None:
+        raise HTTPException(404, detail={
+            "error": f"{phase} item {req.item_id!r} not found in {field}",
+            "code": "DIV3_ITEM_NOT_FOUND",
+        })
+    return item
+
+
+async def _div3_persist(
+    req: "CheckAnswerRequest",
+    *,
+    phase: str,
+    subphase: str,
+    student_answer: str,
+    correct: Optional[int],
+    score: Optional[float],
+    feedback: str,
+    checker_source: Optional[str] = None,
+) -> None:
+    """Best-effort attempt persistence (mirrors the CBP/2B handlers)."""
+    session_id = req.session_id or "default"
+    try:
+        from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+        await _add_phase_attempt(
+            session_id=session_id,
+            hw_id=req.homework_id,
+            phase=phase,
+            subphase=subphase,
+            question_id=req.question_id or f"{phase}_{req.item_id}",
+            item_id=req.item_id,
+            attempt_number=req.attempt_number or 1,
+            student_answer=student_answer,
+            checker_source=checker_source or f"phase_adapter:{phase}",
+            correct=correct,
+            score=score,
+            feedback=feedback,
+        )
+    except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+        _log.warning("%s: failed to persist attempt: %s", phase, _e)
+
+
+def _div3_dpe_seam() -> dict:
+    """The LOCKED open-ended seam response (contract §"Response contract")."""
+    return {
+        "correct": False,
+        "passed": None,
+        "score": None,
+        "pending_ai": True,
+        "feedback": _DPE_SEAM_FEEDBACK,
+    }
+
+
+def _div3_mcq_checkpoint(checkpoint: Any) -> Optional[int]:
+    """Read `correct_index` off an authored MCQ checkpoint dict.
+
+    Returns the int index, or None when the checkpoint is malformed (no int
+    `correct_index`). Never leaks the value to the client — only used to
+    compute the boolean verdict server-side.
+    """
+    if not isinstance(checkpoint, dict):
+        return None
+    ci = checkpoint.get("correct_index")
+    if isinstance(ci, bool) or not isinstance(ci, int):
+        return None
+    return ci
+
+
+def _div3_grade_mcq(
+    checkpoint: Any,
+    selected_index: Optional[int],
+    *,
+    is_last: bool,
+) -> dict:
+    """Deterministic MCQ grade — compares selected_index == correct_index.
+
+    Returns the contract MCQ response `{correct, feedback, advance}`. NEVER
+    includes correct_index or any option text. `advance` is True when this was
+    the last graded checkpoint before the DPE / next phase.
+    """
+    correct_index = _div3_mcq_checkpoint(checkpoint)
+    if correct_index is None:
+        raise HTTPException(400, detail={
+            "error": "checkpoint is missing a valid correct_index",
+            "code": "DIV3_BAD_CHECKPOINT",
+        })
+    if not isinstance(selected_index, int) or isinstance(selected_index, bool):
+        raise HTTPException(400, detail={
+            "error": "selected_index (int) required for an MCQ checkpoint",
+            "code": "DIV3_MISSING_SELECTION",
+        })
+    is_correct = selected_index == correct_index
+    return {
+        "correct": is_correct,
+        "feedback": _DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+        "advance": bool(is_last),
+    }
+
+
+# ---------------------------------------------------------------------------
+# error-detection — phase="error-detection"
+# Stages: "spot" (block_id == is_broken block), "correction" (deterministic
+# normalize vs correction_answer_spec, else seam), "why" (open-ended seam).
+# ---------------------------------------------------------------------------
+
+async def _check_answer_error_detection(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "error-detection", "gb_error_detection")
+    stage = (req.stage or "spot").strip()
+
+    if stage == "spot":
+        if not req.block_id:
+            raise HTTPException(400, detail={
+                "error": "block_id required for stage=spot",
+                "code": "ED_MISSING_BLOCK_ID",
+            })
+        blocks = item.get("work_blocks") or []
+        broken_id = None
+        valid_ids = set()
+        for b in blocks:
+            if not isinstance(b, dict):
+                continue
+            bid = b.get("id")
+            valid_ids.add(bid)
+            if b.get("is_broken"):
+                broken_id = bid
+        if req.block_id not in valid_ids:
+            raise HTTPException(400, detail={
+                "error": f"block_id {req.block_id!r} not found in work_blocks",
+                "code": "ED_BAD_BLOCK_ID",
+            })
+        is_correct = req.block_id == broken_id
+        await _div3_persist(
+            req, phase="error-detection", subphase="spot",
+            student_answer=str(req.block_id),
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=_DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+        )
+        return {
+            "correct": is_correct,
+            "feedback": _DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+            # spotting the block is not the last graded step (correction follows).
+            "advance": bool(is_correct),
+        }
+
+    if stage == "correction":
+        student_correction = (req.correction or "").strip()
+        spec = item.get("correction_answer_spec")
+        # Deterministic-normalize path: only when the spec is a simple exact /
+        # fuzzy text spec with an `expected`. Otherwise fall to the AI seam.
+        det_verdict: Optional[bool] = None
+        if isinstance(spec, dict):
+            spec_type = str(spec.get("type") or "")
+            if spec_type in ("text_exact", "text_fuzzy") and spec.get("expected") is not None:
+                from ..services import answer_checker as _answer_checker
+                det = _answer_checker.check(spec, student_correction)
+                det_verdict = det.get("verdict") == "correct"
+        if det_verdict is not None:
+            await _div3_persist(
+                req, phase="error-detection", subphase="correction",
+                student_answer=student_correction,
+                correct=1 if det_verdict else 0,
+                score=1.0 if det_verdict else 0.0,
+                feedback=_DIV3_CORRECT_FB if det_verdict else _DIV3_WRONG_FB,
+            )
+            return {
+                "correct": det_verdict,
+                "feedback": _DIV3_CORRECT_FB if det_verdict else _DIV3_WRONG_FB,
+                "advance": bool(det_verdict),
+            }
+        # AI seam — persist as pending and return the locked seam shape.
+        await _div3_persist(
+            req, phase="error-detection", subphase="correction",
+            student_answer=student_correction, correct=0, score=0.0,
+            feedback=_DPE_SEAM_FEEDBACK,
+        )
+        return _div3_dpe_seam()
+
+    if stage == "why":
+        # Open-ended WHY explanation — always the AI seam.
+        await _div3_persist(
+            req, phase="error-detection", subphase="why",
+            student_answer=(req.reasoning_text or "").strip(),
+            correct=0, score=0.0, feedback=_DPE_SEAM_FEEDBACK,
+        )
+        return _div3_dpe_seam()
+
+    raise HTTPException(400, detail={
+        "error": f"unknown stage {stage!r} (expected spot|correction|why)",
+        "code": "ED_BAD_STAGE",
+    })
+
+
+# ---------------------------------------------------------------------------
+# Shared "MCQ checkpoints + DPE" handler — Memory Matching, Jigsaw Matching,
+# Sentence Repair all share the exact shape: a `checkpoints` list of uniform
+# MCQs (graded by checkpoint_index/selected_index) then an open-ended DPE
+# (graded by the seam) signalled by reasoning_text / no checkpoint_index.
+# ---------------------------------------------------------------------------
+
+async def _check_answer_checkpoints_then_dpe(
+    req: CheckAnswerRequest, *, phase: str, field: str,
+) -> dict:
+    item = await _div3_load_item(req, phase, field)
+    checkpoints = item.get("checkpoints") or []
+
+    # DPE branch: no checkpoint_index supplied → treat as the open-ended step.
+    if req.checkpoint_index is None:
+        await _div3_persist(
+            req, phase=phase, subphase="dpe",
+            student_answer=(req.reasoning_text or "").strip(),
+            correct=0, score=0.0, feedback=_DPE_SEAM_FEEDBACK,
+        )
+        return _div3_dpe_seam()
+
+    idx = req.checkpoint_index
+    if isinstance(idx, bool) or not isinstance(idx, int) or idx < 0 or idx >= len(checkpoints):
+        raise HTTPException(400, detail={
+            "error": (
+                f"checkpoint_index {idx} out of range — "
+                f"{field} item has {len(checkpoints)} checkpoint(s)"
+            ),
+            "code": "DIV3_BAD_CHECKPOINT_INDEX",
+        })
+
+    is_last = idx == len(checkpoints) - 1
+    result = _div3_grade_mcq(checkpoints[idx], req.selected_index, is_last=is_last)
+    await _div3_persist(
+        req, phase=phase, subphase=f"checkpoint_{idx}",
+        student_answer=str(req.selected_index),
+        correct=1 if result["correct"] else 0,
+        score=1.0 if result["correct"] else 0.0,
+        feedback=result["feedback"],
+    )
+    return result
+
+
+async def _check_answer_memory_matching(req: CheckAnswerRequest) -> dict:
+    return await _check_answer_checkpoints_then_dpe(
+        req, phase="memory-matching", field="gb_memory_matching"
+    )
+
+
+async def _check_answer_jigsaw_matching(req: CheckAnswerRequest) -> dict:
+    return await _check_answer_checkpoints_then_dpe(
+        req, phase="jigsaw-matching", field="gb_jigsaw_matching"
+    )
+
+
+async def _check_answer_sentence_repair(req: CheckAnswerRequest) -> dict:
+    return await _check_answer_checkpoints_then_dpe(
+        req, phase="sentence-repair", field="gb_sentence_repair"
+    )
+
+
+# ---------------------------------------------------------------------------
+# assembly — phase="assembly" — order == expected_order (deterministic).
+# ---------------------------------------------------------------------------
+
+async def _check_answer_assembly(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "assembly", "gb_assembly")
+    if req.order is None or not isinstance(req.order, list):
+        raise HTTPException(400, detail={
+            "error": "order (list of piece ids) required for phase=assembly",
+            "code": "ASM_MISSING_ORDER",
+        })
+    expected = item.get("expected_order") or []
+    student_order = [str(x) for x in req.order]
+    is_correct = student_order == [str(x) for x in expected]
+    await _div3_persist(
+        req, phase="assembly", subphase="order",
+        student_answer=",".join(student_order),
+        correct=1 if is_correct else 0,
+        score=1.0 if is_correct else 0.0,
+        feedback=_DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+    )
+    # Assembly is single-shot → completing the order completes the game.
+    return {
+        "correct": is_correct,
+        "complete": True,
+        "feedback": _DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+    }
+
+
+# ---------------------------------------------------------------------------
+# ttt-grid — phase="ttt-grid"
+# Two MCQs (concept_checkpoint -> checkpoint_index 0, justify_checkpoint -> 1)
+# + a cell pick (cell_id == best_cell_id) + an open-ended DPE (seam).
+# Dispatch precedence: checkpoint_index (an MCQ) → cell_id (the cell pick) →
+# reasoning_text (the DPE seam). Matches the contract's request field names
+# exactly (checkpoint_index / selected_index, cell_id, reasoning_text).
+# ---------------------------------------------------------------------------
+
+async def _check_answer_ttt_grid(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "ttt-grid", "gb_ttt_grid")
+
+    # 1) MCQ checkpoints — concept (index 0) / justify (index 1).
+    if req.checkpoint_index is not None:
+        idx = req.checkpoint_index
+        if idx == 0:
+            checkpoint = item.get("concept_checkpoint")
+            subphase = "concept"
+        elif idx == 1:
+            checkpoint = item.get("justify_checkpoint")
+            subphase = "justify"
+        else:
+            raise HTTPException(400, detail={
+                "error": "checkpoint_index for ttt-grid must be 0 (concept) or 1 (justify)",
+                "code": "TTTG_BAD_CHECKPOINT_INDEX",
+            })
+        # justify (idx 1) is the last graded checkpoint before the DPE.
+        result = _div3_grade_mcq(checkpoint, req.selected_index, is_last=(idx == 1))
+        await _div3_persist(
+            req, phase="ttt-grid", subphase=subphase,
+            student_answer=str(req.selected_index),
+            correct=1 if result["correct"] else 0,
+            score=1.0 if result["correct"] else 0.0,
+            feedback=result["feedback"],
+        )
+        return result
+
+    # 2) Cell pick — cell_id == best_cell_id (deterministic).
+    cell_id = req.cell_id
+    if cell_id is not None:
+        cells = item.get("cells") or []
+        valid_ids = {c.get("id") for c in cells if isinstance(c, dict)}
+        if cell_id not in valid_ids:
+            raise HTTPException(400, detail={
+                "error": f"cell_id {cell_id!r} not found in cells",
+                "code": "TTTG_BAD_CELL_ID",
+            })
+        is_correct = cell_id == item.get("best_cell_id")
+        # Post-decision feedback: echo the PICKED cell's meter deltas so the client
+        # can animate the State Meters. This is the consequence of the student's own
+        # choice (already made) — not a leak of which cell is best.
+        picked = next((c for c in cells if isinstance(c, dict) and c.get("id") == cell_id), {})
+        meter_deltas = picked.get("meter_deltas") or {}
+        await _div3_persist(
+            req, phase="ttt-grid", subphase="cell_pick",
+            student_answer=str(cell_id),
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=_DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+        )
+        return {
+            "correct": is_correct,
+            "feedback": _DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+            "advance": bool(is_correct),
+            "meters_delta": meter_deltas,
+        }
+
+    # 3) DPE — open-ended seam.
+    await _div3_persist(
+        req, phase="ttt-grid", subphase="dpe",
+        student_answer=(req.reasoning_text or "").strip(),
+        correct=0, score=0.0, feedback=_DPE_SEAM_FEEDBACK,
+    )
+    return _div3_dpe_seam()
+
+
+# ---------------------------------------------------------------------------
+# problem-trace — phase="problem-trace"
+# Per-step predict MCQ: step_index selects steps[step_index].predict; grade
+# selected_index == predict.correct_index.
+# ---------------------------------------------------------------------------
+
+async def _check_answer_problem_trace(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "problem-trace", "gb_problem_trace")
+    steps = item.get("steps") or []
+
+    if req.step_index is None:
+        raise HTTPException(400, detail={
+            "error": "step_index required for phase=problem-trace",
+            "code": "PT_MISSING_STEP_INDEX",
+        })
+    si = req.step_index
+    if isinstance(si, bool) or not isinstance(si, int) or si < 0 or si >= len(steps):
+        raise HTTPException(400, detail={
+            "error": f"step_index {si} out of range — item has {len(steps)} step(s)",
+            "code": "PT_BAD_STEP_INDEX",
+        })
+    step = steps[si]
+    predict = step.get("predict") if isinstance(step, dict) else None
+    is_last = si == len(steps) - 1
+    result = _div3_grade_mcq(predict, req.selected_index, is_last=is_last)
+    await _div3_persist(
+        req, phase="problem-trace", subphase=f"step_{si}",
+        student_answer=str(req.selected_index),
+        correct=1 if result["correct"] else 0,
+        score=1.0 if result["correct"] else 0.0,
+        feedback=result["feedback"],
+    )
+    return result
+
+
+# ---------------------------------------------------------------------------
+# counterexample — phase="counterexample"
+# Primary pick: selected_case_id == answer_case_id (deterministic).
+# Optional explanation MCQ: checkpoint_index/selected_index against
+# explanation_checkpoint. Optional DPE: reasoning_text → seam.
+# ---------------------------------------------------------------------------
+
+async def _check_answer_counterexample(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "counterexample", "gb_counterexample")
+
+    # Optional explanation MCQ.
+    if req.checkpoint_index is not None:
+        checkpoint = item.get("explanation_checkpoint")
+        if not isinstance(checkpoint, dict):
+            raise HTTPException(400, detail={
+                "error": "no explanation_checkpoint authored on this item",
+                "code": "CE_NO_EXPLANATION",
+            })
+        result = _div3_grade_mcq(checkpoint, req.selected_index, is_last=True)
+        await _div3_persist(
+            req, phase="counterexample", subphase="explanation",
+            student_answer=str(req.selected_index),
+            correct=1 if result["correct"] else 0,
+            score=1.0 if result["correct"] else 0.0,
+            feedback=result["feedback"],
+        )
+        return result
+
+    # Primary case pick.
+    if req.selected_case_id is not None:
+        cases = item.get("cases") or []
+        valid_ids = {c.get("id") for c in cases if isinstance(c, dict)}
+        if req.selected_case_id not in valid_ids:
+            raise HTTPException(400, detail={
+                "error": f"selected_case_id {req.selected_case_id!r} not found in cases",
+                "code": "CE_BAD_CASE_ID",
+            })
+        is_correct = req.selected_case_id == item.get("answer_case_id")
+        await _div3_persist(
+            req, phase="counterexample", subphase="case_pick",
+            student_answer=str(req.selected_case_id),
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=_DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+        )
+        # Whether more steps follow depends on authored content; advance on
+        # correct so the client can move to the optional explanation / DPE.
+        return {
+            "correct": is_correct,
+            "feedback": _DIV3_CORRECT_FB if is_correct else _DIV3_WRONG_FB,
+            "advance": bool(is_correct),
+        }
+
+    # DPE — open-ended seam.
+    await _div3_persist(
+        req, phase="counterexample", subphase="dpe",
+        student_answer=(req.reasoning_text or "").strip(),
+        correct=0, score=0.0, feedback=_DPE_SEAM_FEEDBACK,
+    )
+    return _div3_dpe_seam()
+
+
+# ---------------------------------------------------------------------------
+# dependency-chain — phase="dependency-chain"
+# TRANSFER / multi-step application. A scenario frames a problem; the student
+# SOLVES a chain of linked MCQ steps. Each step grades selected_index ==
+# steps[step_index].correct_index. On a CORRECT answer the server surfaces the
+# step's `carry_label` (e.g. "x = 5 →") so the client can feed it into the next
+# step's prompt — `carry_label` is server-only (redacted at hydration), so the
+# only way the client gets it is by answering correctly. Distinct from
+# problem-trace (which reveals a GIVEN worked solution; here the student solves).
+# ---------------------------------------------------------------------------
+
+async def _check_answer_dependency_chain(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "dependency-chain", "gb_dependency_chain")
+    steps = item.get("steps") or []
+
+    if req.step_index is None:
+        raise HTTPException(400, detail={
+            "error": "step_index required for phase=dependency-chain",
+            "code": "DC_MISSING_STEP_INDEX",
+        })
+    si = req.step_index
+    if isinstance(si, bool) or not isinstance(si, int) or si < 0 or si >= len(steps):
+        raise HTTPException(400, detail={
+            "error": f"step_index {si} out of range — item has {len(steps)} step(s)",
+            "code": "DC_BAD_STEP_INDEX",
+        })
+    step = steps[si]
+    is_last = si == len(steps) - 1
+    # The step itself IS the MCQ checkpoint ({prompt|q|question, options, correct_index}).
+    result = _div3_grade_mcq(step, req.selected_index, is_last=is_last)
+    await _div3_persist(
+        req, phase="dependency-chain", subphase=f"step_{si}",
+        student_answer=str(req.selected_index),
+        correct=1 if result["correct"] else 0,
+        score=1.0 if result["correct"] else 0.0,
+        feedback=result["feedback"],
+    )
+    # On a correct answer surface the carried result so it can feed the next
+    # step. carry_label is server-only — never returned on a wrong answer.
+    if result["correct"]:
+        carry = step.get("carry_label")
+        if isinstance(carry, str) and carry:
+            result["carry"] = carry
+    return result
+
+
+# ---------------------------------------------------------------------------
+# confidence-check — phase="confidence-check"
+# Metacognition. The student answers a uniform MCQ AND rates confidence
+# ("sure" | "maybe" | "guess"). The server grades the MCQ only
+# (selected_index == correct_index); the calibration verdict (Mastered /
+# Misconception / Solid / Lucky / Known-gap) is CLIENT-derived from
+# {correct, confidence}. The single item IS the MCQ; advance is always true
+# (one question per item). `confidence` is echoed back for symmetry but never
+# changes the grade.
+# ---------------------------------------------------------------------------
+
+async def _check_answer_confidence_check(req: CheckAnswerRequest) -> dict:
+    item = await _div3_load_item(req, "confidence-check", "gb_confidence_check")
+    # The item itself is the MCQ ({question|q, options, correct_index}).
+    result = _div3_grade_mcq(item, req.selected_index, is_last=True)
+    confidence = (req.confidence or "").strip().lower() or None
+    await _div3_persist(
+        req, phase="confidence-check", subphase="answer",
+        student_answer=str(req.selected_index),
+        correct=1 if result["correct"] else 0,
+        score=1.0 if result["correct"] else 0.0,
+        feedback=result["feedback"],
+    )
+    # Echo confidence so the client can render its locally-derived calibration
+    # verdict alongside the server's authoritative correctness.
+    if confidence:
+        result["confidence"] = confidence
+    return result
+
+
+# Module-level phase → handler map. The route dispatcher iterates this BEFORE
+# the tutor fallback; tests reference it to drive each phase generically.
+_DIV3_PHASE_HANDLERS = {
+    "error-detection": _check_answer_error_detection,
+    "memory-matching": _check_answer_memory_matching,
+    "jigsaw-matching": _check_answer_jigsaw_matching,
+    "assembly": _check_answer_assembly,
+    "sentence-repair": _check_answer_sentence_repair,
+    "ttt-grid": _check_answer_ttt_grid,
+    "problem-trace": _check_answer_problem_trace,
+    "counterexample": _check_answer_counterexample,
+    "dependency-chain": _check_answer_dependency_chain,
+    "confidence-check": _check_answer_confidence_check,
+}
+
+
 @router.post("/ai/runtime/submit-answer")
 async def submit_runtime_answer(req: RuntimeAnswerSubmitRequest):
     from ..services.runtime_answer_resolver import resolve_runtime_answer
@@ -3479,6 +4124,23 @@ async def check_answer(req: CheckAnswerRequest):
             result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:puzzle-lock"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # -----------------------------------------------------------------------
+    # Division-3 Practices — 8 new practice-arc games (per _DIV3_CONTRACT.md).
+    # All server-gated; each resolves its item from content_json and NEVER
+    # returns a ⛔ server-only field. Same back-compat gate (require homework_id)
+    # as every branch above, registered BEFORE the tutor fallback.
+    # -----------------------------------------------------------------------
+    if req.phase in _DIV3_PHASE_HANDLERS and req.homework_id:
+        try:
+            result = await _DIV3_PHASE_HANDLERS[req.phase](req)
+            return _attach_check_answer_debug(
+                req, result, checker_path=f"phase_adapter:{req.phase}"
             )
         except HTTPException:
             raise

@@ -1,0 +1,191 @@
+/* ProblemTrace.module.css — game-specific layer over _practiceShared.
+   An elegant step-by-step "solution trace": revealed steps stack like a clean
+   derivation (math/logic feel) with a connecting spine, and the prediction is a
+   focused MCQ card. Serious + analytical, NOT gamey. Inherits the shell's
+   --pg-* purple accent + light-theme pin from _practiceShared.module.css; we
+   re-pin --v2-text locally so the ink never flips white on a dark OS even when
+   this module loads in isolation. */
+
+.problem {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  border: 1px solid var(--pg-tint, rgba(179, 136, 235, 0.18));
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--v2-text, #1d1d1f);
+}
+
+.progress {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-solid, #8a5fc8);
+}
+
+/* ---- the derivation: numbered steps stacked along a left spine ---- */
+.trace {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.traceStep {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: start;
+  gap: 14px;
+  padding: 0 0 16px 0;
+}
+.traceStep:last-child {
+  padding-bottom: 0;
+}
+/* the connecting spine running through the step numbers */
+.traceStep::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 26px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.2));
+}
+.traceStep:last-child::before {
+  display: none;
+}
+.traceIndex {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--pg-tint, rgba(179, 136, 235, 0.12));
+  border: 1.5px solid var(--pg-solid, #8a5fc8);
+  color: var(--pg-edge, #6b4fa8);
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.traceText {
+  padding-top: 4px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--v2-text, #1d1d1f);
+  /* preserve authored line breaks in derivation lines */
+  white-space: pre-wrap;
+}
+/* the just-revealed line draws the eye with a soft slide-in + tint */
+.traceStepNew .traceIndex {
+  background: var(--pg-grad, linear-gradient(135deg, #b388eb, #8a5fc8));
+  color: #fff;
+}
+.traceStepNew .traceText {
+  animation: ptReveal 420ms var(--landing-spring, cubic-bezier(.16, 1, .3, 1)) both;
+}
+@keyframes ptReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- the prediction MCQ card ---- */
+.predictCard {
+  padding: 18px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1.5px solid var(--pg-tint, rgba(179, 136, 235, 0.22));
+  box-shadow: 0 2px 14px rgba(138, 95, 200, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.predictKicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pg-solid, #8a5fc8);
+}
+.predictQuestion {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--v2-text, #1d1d1f);
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---- per-step feedback strip (mirrors the shared kit's feedback look) ---- */
+.feedback {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  background: var(--pg-tint-soft, rgba(179, 136, 235, 0.05));
+  color: var(--v2-text, #1d1d1f);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.feedbackCorrect {
+  background: rgba(52, 199, 89, 0.1);
+  border-color: rgba(52, 199, 89, 0.25);
+  color: #1d7a37;
+}
+.feedbackWrong {
+  background: rgba(255, 59, 48, 0.07);
+  border-color: rgba(255, 59, 48, 0.2);
+  color: #b3261e;
+}
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #b3261e;
+}
+
+/* ---- end-of-item summary ---- */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.scoreLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--v2-text-muted, #6e6e73);
+}
+.scoreLine strong {
+  color: var(--v2-text, #1d1d1f);
+  font-variant-numeric: tabular-nums;
+}
+
+.foot {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .traceStepNew .traceText {
+    animation: none;
+  }
+}

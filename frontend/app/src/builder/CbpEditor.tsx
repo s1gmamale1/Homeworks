@@ -1,6 +1,7 @@
 import type {
   CheckpointKind,
   DraftCaseBasedPreview,
+  DraftCbpBlock,
   DraftCheckpoint,
 } from "./types";
 import { optionIndexSpec } from "./draft";
@@ -21,10 +22,42 @@ const KIND_OPTIONS: { value: CheckpointKind; label: string }[] = [
   { value: "justify", label: "Justify" },
 ];
 
-// Authors the Case-Based Preview: title, case_setup, EXACTLY 3 checkpoints
-// (each with an option-index answer picker + learning_block), final_simulation,
-// feedback_summary. The option-index picker writes
-// {type:"option_index", expected:<idx>, option_count:<n>}.
+const CHECKPOINT_KINDS: CheckpointKind[] = ["identify", "decide", "justify"];
+
+function newCheckpoint(kind: CheckpointKind): DraftCheckpoint {
+  return {
+    kind,
+    question: "",
+    options: ["", "", "", ""],
+    answer_spec: optionIndexSpec(0, 4),
+    learning_block: "",
+  };
+}
+
+// Seed an ordered `blocks[]` overlay for a legacy draft that only has
+// case_setup + checkpoints[]: the story becomes the first TEXT page, then one
+// CHECKPOINT block per existing checkpoint in index order. This runs once, the
+// first time the author touches the editor on an old homework, so older
+// homeworks open cleanly while still emitting case_setup + checkpoints for
+// runtime back-compat.
+function seedBlocks(value: DraftCaseBasedPreview): DraftCbpBlock[] {
+  const blocks: DraftCbpBlock[] = [];
+  const story = value.case_setup.story;
+  if (story && story.trim() !== "") {
+    blocks.push({ type: "text", title: "Story", body: story });
+  }
+  value.checkpoints.forEach((_ck, i) => {
+    blocks.push({ type: "checkpoint", ref: i });
+  });
+  return blocks;
+}
+
+// Authors the Case-Based Preview as an ORDERED, reorderable list of blocks —
+// TEXT PAGES + CHECKPOINTS in any order/count. Each checkpoint block edits
+// checkpoints[ref] inline (the ref indirection is hidden from the author);
+// checkpoints[] STAYS the canonical grading source. Plus the unchanged
+// final_simulation + feedback_summary cards. case_setup + checkpoints are still
+// emitted (via toContentJson) for runtime back-compat.
 export function CbpEditor({
   value,
   onChange,
@@ -34,12 +67,74 @@ export function CbpEditor({
 }) {
   const patch = (p: Partial<DraftCaseBasedPreview>) => onChange({ ...value, ...p });
 
-  const patchCheckpoint = (i: number, p: Partial<DraftCheckpoint>) => {
+  // Back-compat: a loaded draft may have NO `blocks`. Seed them lazily so the
+  // ordered list always has something to render. We never mutate `value` here —
+  // we just compute the working list; the first edit persists it via patch().
+  const blocks: DraftCbpBlock[] = value.blocks ?? seedBlocks(value);
+
+  const setBlocks = (next: DraftCbpBlock[]) => patch({ blocks: next });
+
+  const patchCheckpoint = (ref: number, p: Partial<DraftCheckpoint>) => {
     const checkpoints = value.checkpoints.map((ck, idx) =>
-      idx === i ? { ...ck, ...p } : ck
+      idx === ref ? { ...ck, ...p } : ck
     );
-    patch({ checkpoints });
+    // Persist seeded blocks alongside the checkpoint edit so the overlay sticks.
+    onChange({ ...value, checkpoints, blocks });
   };
+
+  // ---- block-level mutations (operate on blocks[]; keep refs valid) ----
+
+  const addTextPage = () => {
+    setBlocks([...blocks, { type: "text", title: "", body: "" }]);
+  };
+
+  const addCheckpoint = () => {
+    // Append a new checkpoint; its index is the canonical ref. Cycle the
+    // suggested kind (identify → decide → justify → identify …) by count.
+    const newRef = value.checkpoints.length;
+    const kind = CHECKPOINT_KINDS[newRef % CHECKPOINT_KINDS.length];
+    onChange({
+      ...value,
+      checkpoints: [...value.checkpoints, newCheckpoint(kind)],
+      blocks: [...blocks, { type: "checkpoint", ref: newRef }],
+    });
+  };
+
+  const moveBlock = (i: number, delta: number) => {
+    const j = i + delta;
+    if (j < 0 || j >= blocks.length) return;
+    const next = [...blocks];
+    [next[i], next[j]] = [next[j], next[i]];
+    // Reorder ONLY changes presentation order; refs point into checkpoints[] by
+    // index, so they remain valid + untouched.
+    setBlocks(next);
+  };
+
+  const removeBlock = (i: number) => {
+    const block = blocks[i];
+    if (block.type !== "checkpoint") {
+      // Text page: just drop it.
+      setBlocks(blocks.filter((_, idx) => idx !== i));
+      return;
+    }
+    // Checkpoint block: drop its checkpoints[] entry, drop the block, and FIX UP
+    // every remaining checkpoint block whose ref was past the removed one so all
+    // refs stay valid + contiguous against the shrunken checkpoints[] array.
+    const removedRef = block.ref;
+    const checkpoints = value.checkpoints.filter((_, idx) => idx !== removedRef);
+    const nextBlocks = blocks
+      .filter((_, idx) => idx !== i)
+      .map((b) =>
+        b.type === "checkpoint" && b.ref > removedRef
+          ? { ...b, ref: b.ref - 1 }
+          : b
+      );
+    onChange({ ...value, checkpoints, blocks: nextBlocks });
+  };
+
+  // Stable, per-render keys so React doesn't lose focus on edit/reorder. We use
+  // the array index — order changes are explicit (move buttons re-render).
+  let checkpointCount = 0;
 
   return (
     <div className={s.editor}>
@@ -49,16 +144,6 @@ export function CbpEditor({
             value={value.title}
             onChange={(v) => patch({ title: v })}
             placeholder="e.g. The Reactor Pressure Crisis"
-          />
-        </Field>
-        <Field label="Story" hint="The dramatic setup the student reads first">
-          <TextArea
-            value={value.case_setup.story}
-            rows={4}
-            onChange={(v) =>
-              patch({ case_setup: { ...value.case_setup, story: v } })
-            }
-            placeholder="Set the scene…"
           />
         </Field>
         <Field label="Your role">
@@ -81,58 +166,159 @@ export function CbpEditor({
         </Field>
       </EditorCard>
 
-      {value.checkpoints.map((ck, i) => (
-        <EditorCard key={i} title={`Checkpoint ${i + 1}`}>
-          <Field label="Kind">
-            <Select<CheckpointKind>
-              value={ck.kind}
-              options={KIND_OPTIONS}
-              onChange={(kind) => patchCheckpoint(i, { kind })}
+      <p className={s.help}>
+        Build the case as an ordered sequence of text pages and checkpoints. The
+        student reads each block in this order; reorder with the arrows.
+      </p>
+
+      {blocks.map((block, i) => {
+        const rowControls = (
+          <span className={s.cardActions}>
+            <SmallButton onClick={() => moveBlock(i, -1)} disabled={i === 0}>
+              ↑
+            </SmallButton>
+            <SmallButton
+              onClick={() => moveBlock(i, 1)}
+              disabled={i === blocks.length - 1}
+            >
+              ↓
+            </SmallButton>
+            <SmallButton tone="danger" onClick={() => removeBlock(i)}>
+              Remove
+            </SmallButton>
+          </span>
+        );
+
+        if (block.type === "text") {
+          return (
+            <EditorCard
+              key={`block-${i}`}
+              title="Text page"
+              actions={rowControls}
+            >
+              <Field label="Page title" hint="Optional heading">
+                <TextInput
+                  value={block.title ?? ""}
+                  onChange={(v) =>
+                    setBlocks(
+                      blocks.map((b, idx) =>
+                        idx === i && b.type === "text"
+                          ? { ...b, title: v }
+                          : b
+                      )
+                    )
+                  }
+                  placeholder="e.g. The Setup"
+                />
+              </Field>
+              <Field label="Body" hint="Story or teaching text the student reads">
+                <TextArea
+                  value={block.body ?? ""}
+                  rows={4}
+                  onChange={(v) =>
+                    setBlocks(
+                      blocks.map((b, idx) =>
+                        idx === i && b.type === "text"
+                          ? { ...b, body: v }
+                          : b
+                      )
+                    )
+                  }
+                  placeholder="Set the scene…"
+                />
+              </Field>
+            </EditorCard>
+          );
+        }
+
+        // checkpoint block — edit checkpoints[ref] inline. Guard against a
+        // dangling ref (shouldn't happen given the bookkeeping, but stay total).
+        const ref = block.ref;
+        const ck = value.checkpoints[ref];
+        if (!ck) {
+          return (
+            <EditorCard
+              key={`block-${i}`}
+              title="Checkpoint (missing)"
+              actions={rowControls}
+            >
+              <p className={s.empty}>
+                This checkpoint lost its data. Remove it and add a fresh one.
+              </p>
+            </EditorCard>
+          );
+        }
+        checkpointCount += 1;
+        const cpNumber = checkpointCount;
+        return (
+          <EditorCard
+            key={`block-${i}`}
+            title={`Checkpoint ${cpNumber}`}
+            actions={rowControls}
+          >
+            <Field label="Kind">
+              <Select<CheckpointKind>
+                value={ck.kind}
+                options={KIND_OPTIONS}
+                onChange={(kind) => patchCheckpoint(ref, { kind })}
+              />
+            </Field>
+            <Field label="Question">
+              <TextArea
+                value={ck.question}
+                onChange={(question) => patchCheckpoint(ref, { question })}
+                placeholder="What does the student decide here?"
+              />
+            </Field>
+            <OptionEditor
+              options={ck.options}
+              correctIndex={ck.answer_spec.expected}
+              onOptionChange={(oi, v) => {
+                const options = ck.options.map((o, idx) => (idx === oi ? v : o));
+                patchCheckpoint(ref, { options });
+              }}
+              onCorrectChange={(oi) =>
+                patchCheckpoint(ref, {
+                  answer_spec: optionIndexSpec(oi, ck.options.length),
+                })
+              }
+              onAddOption={() =>
+                patchCheckpoint(ref, { options: [...ck.options, ""] })
+              }
+              onRemoveOption={(oi) => {
+                const options = ck.options.filter((_, idx) => idx !== oi);
+                const expected = Math.min(
+                  ck.answer_spec.expected,
+                  options.length - 1
+                );
+                patchCheckpoint(ref, {
+                  options,
+                  answer_spec: optionIndexSpec(
+                    Math.max(0, expected),
+                    options.length
+                  ),
+                });
+              }}
             />
-          </Field>
-          <Field label="Question">
-            <TextArea
-              value={ck.question}
-              onChange={(question) => patchCheckpoint(i, { question })}
-              placeholder="What does the student decide here?"
-            />
-          </Field>
-          <OptionEditor
-            options={ck.options}
-            correctIndex={ck.answer_spec.expected}
-            onOptionChange={(oi, v) => {
-              const options = ck.options.map((o, idx) => (idx === oi ? v : o));
-              patchCheckpoint(i, { options });
-            }}
-            onCorrectChange={(oi) =>
-              patchCheckpoint(i, {
-                answer_spec: optionIndexSpec(oi, ck.options.length),
-              })
-            }
-            onAddOption={() =>
-              patchCheckpoint(i, { options: [...ck.options, ""] })
-            }
-            onRemoveOption={(oi) => {
-              const options = ck.options.filter((_, idx) => idx !== oi);
-              const expected = Math.min(
-                ck.answer_spec.expected,
-                options.length - 1
-              );
-              patchCheckpoint(i, {
-                options,
-                answer_spec: optionIndexSpec(Math.max(0, expected), options.length),
-              });
-            }}
-          />
-          <Field label="Learning block" hint="Taught after they answer">
-            <TextArea
-              value={ck.learning_block}
-              onChange={(learning_block) => patchCheckpoint(i, { learning_block })}
-              placeholder="The teaching beat the student reads next…"
-            />
-          </Field>
-        </EditorCard>
-      ))}
+            <Field label="Learning block" hint="Taught after they answer">
+              <TextArea
+                value={ck.learning_block}
+                onChange={(learning_block) =>
+                  patchCheckpoint(ref, { learning_block })
+                }
+                placeholder="The teaching beat the student reads next…"
+              />
+            </Field>
+          </EditorCard>
+        );
+      })}
+
+      <div className={s.gamePicker}>
+        <SmallButton onClick={addTextPage}>+ Add text page</SmallButton>
+        <SmallButton tone="primary" onClick={addCheckpoint}>
+          + Add checkpoint
+        </SmallButton>
+      </div>
 
       <EditorCard title="Final simulation">
         <Field
@@ -203,14 +389,6 @@ export function CbpEditor({
           />
         </Field>
       </EditorCard>
-
-      <p className={s.note}>
-        <SmallButton onClick={() => undefined} disabled>
-          3 checkpoints fixed
-        </SmallButton>
-        The Case-Based Preview always runs exactly 3 checkpoints — identify,
-        decide, justify.
-      </p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { create } from "zustand";
 import type {
   BossGenerateQuestionResponse,
   BossSubmitAnswerResponse,
+  CbpBlock,
   CheckAnswerResult,
   GateState,
   HydratePayload,
@@ -62,7 +63,12 @@ export function screenToTutorPhase(
 }
 
 // CBP sub-machine:
-//   setup → ck0 → lb0 → ck1 → lb1 → ck2 → lb2 → reasoning → sim → feedback.
+//   LEGACY (no authored blocks[]):
+//     setup → ck0 → lb0 → ck1 → lb1 → ck2 → lb2 → reasoning → sim → feedback.
+//   AUTHORED-ORDER (content_json.case_based_preview.blocks present + non-empty):
+//     setup → walk blocks[] IN ORDER — a `text` block → textPage, a `checkpoint`
+//     block → checkpoint(ref) → learningBlock — then the FIXED close:
+//     reasoning (if authored) → sim → feedback.
 // The "reasoning" step (open-ended Decision Process Explanation) sits between
 // the last learning block and the simulation; it's server-graded but
 // non-blocking (a failed pass still advances to sim after a resubmit).
@@ -70,6 +76,7 @@ export type CbpSubStage =
   | "setup"
   | "checkpoint"
   | "learningBlock"
+  | "textPage"
   | "reasoning"
   | "sim"
   | "feedback";
@@ -101,9 +108,25 @@ function ensureSessionId(injected: string | null): string {
   return fresh;
 }
 
+// ---- AUTHORED-ORDER walker helpers (blocks[]) ----
+// `blocks[]` is the authored CBP order: `text` pages interleaved with
+// `checkpoint` blocks (each pointing at the canonical `checkpoints[ref]`). These
+// pure helpers read the payload; they NEVER decide correctness or gate state.
+
+// Returns the authored `blocks[]` ONLY when present + non-empty, else null. A
+// null result is the signal to fall back to the EXACT legacy flow.
+function cbpBlocks(payload: HydratePayload | null): CbpBlock[] | null {
+  const blocks = payload?.content_json.case_based_preview?.blocks;
+  return Array.isArray(blocks) && blocks.length > 0 ? blocks : null;
+}
+
 interface CbpState {
   subStage: CbpSubStage;
-  checkpointIndex: number; // 0..2 — current checkpoint
+  checkpointIndex: number; // current checkpoint index (legacy 0..2; authored = block.ref)
+  // AUTHORED-ORDER walker cursor: 0-based position in `blocks[]`. -1 = the
+  // walker isn't active (legacy flow, or before the first block). Only consulted
+  // when `blocks[]` is present + non-empty; ignored entirely on the legacy path.
+  blockIndex: number;
   results: boolean[]; // per-checkpoint correctness (server-confirmed)
   lastFeedback: string | null; // feedback for the just-submitted checkpoint
   lastLearningBlock: string | null; // learning block returned post-submit
@@ -233,12 +256,25 @@ interface RuntimeState {
 
   // ---- CBP sub-machine ----
   enterCheckpoint: (index: number) => void;
+  // AUTHORED-ORDER walker: render the authored block at this cursor (text page
+  // or canonical checkpoint), or route to the fixed close past the last block.
+  enterBlock: (blockIndex: number) => void;
+  // Route into the FIXED closing stages: reasoning (if a prompt is authored),
+  // else straight to the simulation. Shared by both flows.
+  enterCbpClose: () => void;
   submitCheckpointAnswer: (
     index: number,
     answer: string,
     tele?: Partial<AnswerTelemetry>
   ) => Promise<CheckAnswerResult | null>;
+  // Reveal the teaching beat AFTER the inline correct/wrong marking window. The
+  // component calls this once the tapped option has shown its server-confirmed
+  // green/red state; it flips the substage to the learning block.
+  revealCheckpointLearningBlock: () => void;
   advanceFromLearningBlock: () => void;
+  // AUTHORED-ORDER walker: advance past the current `text` block to the next
+  // block (or the fixed close when blocks are exhausted). No-op on legacy.
+  advanceFromTextPage: () => void;
   setReasoningText: (text: string) => void;
   submitReasoning: (
     tele?: Partial<AnswerTelemetry>
@@ -297,6 +333,7 @@ interface RuntimeState {
 const initialCbp: CbpState = {
   subStage: "setup",
   checkpointIndex: 0,
+  blockIndex: -1,
   results: [false, false, false],
   lastFeedback: null,
   lastLearningBlock: null,
@@ -435,6 +472,53 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
       },
     })),
 
+  // AUTHORED-ORDER walker: render the block at `blockIndex`. A `text` block →
+  // the textPage substage; a `checkpoint` block → the checkpoint substage for
+  // `checkpoints[ref]` (so the submit uses index=ref and the server grades it as
+  // the canonical checkpoint). When the cursor runs off the end → the fixed
+  // close (reasoning if authored, else straight to sim). Only used when
+  // `blocks[]` is present; the legacy path never calls this.
+  enterBlock: (blockIndex) => {
+    const { payload } = get();
+    const blocks = cbpBlocks(payload);
+    if (!blocks) {
+      // Defensive: no authored blocks → never strand the student here.
+      get().enterCheckpoint(0);
+      return;
+    }
+    if (blockIndex >= blocks.length) {
+      get().enterCbpClose();
+      return;
+    }
+    const block = blocks[blockIndex];
+    if (block.type === "checkpoint") {
+      set((st) => ({
+        cbp: {
+          ...st.cbp,
+          subStage: "checkpoint",
+          blockIndex,
+          // ref indexes the canonical checkpoints[] the server grades.
+          checkpointIndex: block.ref,
+          lastFeedback: null,
+          lastLearningBlock: null,
+          lastNudge: null,
+          submitError: null,
+        },
+      }));
+    } else {
+      // text block → a story/teaching page.
+      set((st) => ({
+        cbp: {
+          ...st.cbp,
+          subStage: "textPage",
+          blockIndex,
+          lastNudge: null,
+          submitError: null,
+        },
+      }));
+    }
+  },
+
   submitCheckpointAnswer: async (index, answer, tele) => {
     const { hwId, sessionId } = get();
     set((st) => ({ cbp: { ...st.cbp, submitting: true, submitError: null } }));
@@ -452,9 +536,12 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
             lastLearningBlock: res.learning_block,
             // Advisory only — surfaced beside the learning block, never gates.
             lastNudge: res.integrity_nudge ?? null,
-            // Always advance to the learning block so the student reads the
-            // teaching beat; the gate decides pass/fail at the end.
-            subStage: "learningBlock",
+            // Stay on the checkpoint so the tapped option can render its
+            // server-confirmed correct/wrong state (the inline-marking fix). The
+            // component drives the advance to the teaching beat via
+            // revealCheckpointLearningBlock() after a short marked window. The
+            // gate still decides pass/fail at the end.
+            subStage: "checkpoint",
           },
         };
       });
@@ -471,36 +558,71 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     }
   },
 
+  // Flip to the teaching beat once the inline correct/wrong marking has shown.
+  // Idempotent + guarded: only transitions FROM the checkpoint substage so a
+  // double-call (e.g. a fired timer after the student already advanced) can't
+  // bounce a later stage back to the learning block.
+  revealCheckpointLearningBlock: () =>
+    set((st) =>
+      st.cbp.subStage === "checkpoint"
+        ? { cbp: { ...st.cbp, subStage: "learningBlock" } }
+        : {}
+    ),
+
   advanceFromLearningBlock: () => {
     const { cbp, payload } = get();
+    const blocks = cbpBlocks(payload);
+    // AUTHORED-ORDER: a learning block always follows a checkpoint block, so
+    // step the walker cursor to the next block (enterBlock routes off-the-end →
+    // the fixed close).
+    if (blocks) {
+      get().enterBlock(cbp.blockIndex + 1);
+      return;
+    }
+    // LEGACY: walk the checkpoints[] linearly; the close follows the last one.
     const total = payload?.content_json.case_based_preview?.checkpoints?.length ?? 3;
     const next = cbp.checkpointIndex + 1;
     if (next < total) {
       get().enterCheckpoint(next);
     } else {
-      // All checkpoints done. If the homework authored an open-ended reasoning
-      // step, go there (server-graded but non-blocking; submitReasoning() then
-      // routes onward via enterSimulation()). If not (legacy / no reasoning
-      // authored), skip straight to the simulation — never strand the student
-      // on an empty reasoning step the server would 404.
-      const hasReasoning = Boolean(
-        payload?.content_json.case_based_preview?.decision_process_explanation
-          ?.prompt
-      );
-      if (!hasReasoning) {
-        get().enterSimulation();
-        return;
-      }
-      set((st) => ({
-        cbp: {
-          ...st.cbp,
-          subStage: "reasoning",
-          reasoningResult: null,
-          lastNudge: null,
-          submitError: null,
-        },
-      }));
+      get().enterCbpClose();
     }
+  },
+
+  // AUTHORED-ORDER walker: leave the current `text` page → the next block (or
+  // the fixed close past the last block). No-op on the legacy path (no textPage
+  // substage is ever reached there).
+  advanceFromTextPage: () => {
+    const { cbp, payload } = get();
+    const blocks = cbpBlocks(payload);
+    if (!blocks) return;
+    get().enterBlock(cbp.blockIndex + 1);
+  },
+
+  // The FIXED close, shared by both flows. If the homework authored an
+  // open-ended reasoning step, go there (server-graded but non-blocking;
+  // submitReasoning() then routes onward via enterSimulation()). If not, skip
+  // straight to the simulation — never strand the student on an empty reasoning
+  // step the server would 404.
+  enterCbpClose: () => {
+    const { payload } = get();
+    const hasReasoning = Boolean(
+      payload?.content_json.case_based_preview?.decision_process_explanation
+        ?.prompt
+    );
+    if (!hasReasoning) {
+      get().enterSimulation();
+      return;
+    }
+    set((st) => ({
+      cbp: {
+        ...st.cbp,
+        subStage: "reasoning",
+        reasoningResult: null,
+        lastNudge: null,
+        submitError: null,
+      },
+    }));
   },
 
   // Controlled textarea binding for the reasoning step.

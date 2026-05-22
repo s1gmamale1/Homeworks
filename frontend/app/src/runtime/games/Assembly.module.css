@@ -1,0 +1,179 @@
+/* ============================================================
+   Assembly.module.css — Division-3 practice game.
+   Hub Apple-glass recipe + --grad-game purple accent.
+   Light-theme pinned: --v2-text never flips on dark OS.
+   Reuses GameShell from _practiceShared for card frame;
+   these classes style the game-specific internals only.
+   ============================================================ */
+
+/* ---- light-theme pin (contract §Design tokens) ---- */
+/* GameShell already carries the .shell pin; we add it here
+   as a belt-and-suspenders for any wrapper that bypasses it. */
+
+/* ---- game tokens ---- */
+:local {
+  --asm-seq-bg: linear-gradient(135deg, #b388eb, #8a5fc8);
+  --asm-seq-size: 28px;
+  --asm-row-radius: 14px;
+  --asm-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Instructions ---- */
+.instructions {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--v2-text, #1d1d1f);
+}
+
+/* ---- Ordered piece list ---- */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  counter-reset: assembly-counter;
+}
+
+/* ---- Single piece row ---- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: var(--asm-row-radius);
+  background: #fff;
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 160ms var(--asm-spring);
+}
+.row:focus-within {
+  border-color: #8a5fc8;
+  box-shadow: 0 0 0 3px rgba(138, 95, 200, 0.18);
+}
+
+/* ---- Sequence badge ---- */
+.seq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--asm-seq-size);
+  height: var(--asm-seq-size);
+  border-radius: 8px;
+  background: var(--asm-seq-bg);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+
+/* ---- Piece label text ---- */
+.pieceLabel {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--v2-text, #1d1d1f);
+}
+
+/* ---- ↑↓ arrow controls ---- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.arrowBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 26px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.06);
+  transition:
+    transform 100ms var(--asm-spring),
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 100ms ease;
+}
+.arrowBtn:hover:not(:disabled) {
+  border-color: #8a5fc8;
+  background: rgba(179, 136, 235, 0.1);
+}
+.arrowBtn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 transparent;
+}
+.arrowBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.arrowBtn:focus-visible {
+  outline: 2px solid #8a5fc8;
+  outline-offset: 2px;
+}
+
+/* ---- Server feedback banners ---- */
+.feedbackCorrect,
+.feedbackWrong {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.feedbackCorrect {
+  background: rgba(52, 199, 89, 0.1);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  color: #1d7a37;
+}
+.feedbackWrong {
+  background: rgba(255, 59, 48, 0.07);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  color: #b3261e;
+}
+
+/* ---- Result tier ---- */
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgba(179, 136, 235, 0.08);
+  border: 1px solid rgba(138, 95, 200, 0.2);
+}
+
+/* ---- Footer ---- */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .arrowBtn {
+    transition: none;
+  }
+}
