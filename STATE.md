@@ -616,3 +616,25 @@ Shipped in PRs #252 (backend) and #253 (frontend).
   `BOSS_GEN_REJECTED`. The React `BossArena` shows a graceful "Try again"
   error state; a single retry succeeds in practice. This is a provider-side
   latency issue, not a contract bug.
+
+---
+
+## Academic-Integrity / Anti-Cheat — COMPLETE (DaddysBranch, PRs #255 backend + #256 frontend)
+
+Process-supervision-first per `docs/NETS_Academic_Integrity_AntiCheat_Research.md` — **no detection software**; signals are teacher intelligence, never auto-punishment. Policy published in `docs/AI_Use_Matrix.md`.
+
+### Working (verified live + tested)
+- **AI hardening:** student free-text `<UNTRUSTED>`-fenced at every grader holding the answer key (CBP-reasoning, RLC, generic/math/language answer-checkers) → closes a prompt-injection path; boss-context deny-list reuses `redaction_constants.ANSWER_BEARING_KEYS`; legacy boss-turn HP clamped server-side; `TILE_MATCH_SECRET` startup guard.
+- **Behavioral signals (advisory):** `client_time_ms` (server-clamped) + `paste_detected` → `phase_attempts.time_ms` + `session_events` `integrity:paste`. **Never affect score/is_correct/hp/gating.**
+- **Flag engine** (`server/services/integrity_signals.py`): `too_fast` (opt-in), `paste_on_assessment`, `sudden_mastery` (pre≤0.40 ∧ post≥0.90 ∧ ≥3 items). Conservative + false-positive-resistance test.
+- **Engine wired on BOTH submit paths:** the dynamic boss (`ai_plan5`) and a shared `_attach_integrity` hook on `/api/ai/check-answer` (CBP / Memory-Check / games) — all 3 divisions covered.
+- **Review-Queue integrity routing:** `review_queue` gains `integrity_reason/severity/kind/session_id`; `GET /ai/review-queue?kind=integrity`; integrity rows can't be mis-resolved as grades.
+- **Soft friction:** a strong flag adds `integrity_nudge {type,message}` to the response → dismissible, non-blocking `IntegrityNudge` card beside the feedback (verified in a live browser walk: 3rd aced CBP checkpoint with seeded low mastery → nudge shown, answer still graded ✓, Continue unaffected — `docs/screenshots/integrity-3-nudge.png`).
+- **Teacher Authentication-of-Authorship** (§9.6): `authorship_affirmations` + `POST/GET /api/integrity/affirm[ations]`(+`/view`); affirmations resolve linked integrity flags. Verified live (flag id resolved via affirmation).
+- **AI Use Matrix** constant `server/services/ai_use_policy.py` + FE mirror `aiUsePolicy.ts`.
+
+### Verification
+Full pytest **3306 passed** (incl. injection/leak canaries, signal-ingestion, flag-engine + false-positive-resistance, the `/check-answer` G1 hook, review-routing, soft-friction non-blocking, affirmation endpoints) · FE **64 vitest** (telemetry, nudge renders + non-blocking + advisory-only) · live API end-to-end (flags→review-queue→affirmation, grade unchanged) · Playwright nudge walk (`scripts/e2e/integrity_walk.cjs`).
+
+### Deferred (out of scope)
+Proctored exam-sim lockdown; Turnitin/detection integration; full teacher dashboard UI (affirmation is API + minimal `/view`); `sophistication_jump` flag (stub).
