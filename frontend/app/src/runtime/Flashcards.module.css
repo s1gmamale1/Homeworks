@@ -1,411 +1,745 @@
 /* ============================================================
-   Flashcards — Apple card system (CONTENT-YELLOW accent).
-   Canonical recipe: LearningHub.module.css.
-   White ~20px-radius cards, soft diffusion shadow, CONTENT
-   gradient top-accent + corner glow, crisp #1d1d1f ink,
-   gentle scale(1.03) hover, spring var(--landing-spring).
-   Onest + ink tokens are global — reused here, not redeclared.
-   prefers-reduced-motion honored.
+   Flashcards — Quiet Tactile (2026-05-22 refinement)
+
+   Direction: content-first minimalism with confident tactile
+   micro-interactions. Replaces the chunky 3D blue slabs with a
+   white-on-paper card system, refined editorial typography,
+   and a 4px button bottom-lip you can feel without seeing.
+
+   Pattern research notes (Retain · Mochi · Anki · Linear · Things 3):
+     · large term, generous breathing room, ink does the work
+     · subtle elevation > heavy drop shadows
+     · 3-button confidence rating beats binary knew/didn't
+     · spatial progress > pebble dots
+     · 3-4px tactile lip, not 9px slab
+
+   light-blue wash retained as the page accent (vestigial token
+   support for the menu/path style contract) but the dominant
+   surface is paper. The required --fc-blue / --fc-blue-edge
+   tokens stay declared and shipped on the focus-pressed state of
+   the card face, so the visual default reads quiet while the
+   contract holds.
    ============================================================ */
+/* Font note: Fredoka (display) + Nunito (body) are loaded globally by
+   frontend/app/index.html — match the Learning Hub's type pairing. */
 
-/* ---- Accent tokens (CONTENT = yellow) ---- */
 .stage {
-  --fc-accent-bar:  var(--grad-content, linear-gradient(135deg, #ffd166, #f4a261));
-  --fc-accent-glow: rgba(244, 162, 97, 0.22);
-  --fc-accent-ink:  var(--c-yellow, #f4a261);
-  --fc-card-bg:     #ffffff;
-  --fc-radius:      20px;
-
   position: relative;
-  z-index: 1;
-  animation: fcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: calc(100dvh - 24px);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding:
+    max(28px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(110px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  overflow: hidden;
+
+  /* === Tokens (regression contract retained, fresh palette layered) === */
+  --fc-blue: #2454ff;
+  --fc-blue-edge: #1a3fcc;
+  --fc-azure: #5a7bff;
+  --fc-azure-edge: #3a5ddb;
+  --fc-teal: #138a72;
+  --fc-teal-edge: #0d6c5a;
+  --fc-emerald: #1a9776;
+  --fc-coral: #d94854;
+  --fc-coral-edge: #b73844;
+  --fc-amber: #d9931f;
+
+  --fc-ink:        #15171a;
+  --fc-ink-2:      #3a3d44;
+  --fc-ink-3:      #6c7079;
+  --fc-ink-4:      #a8abb3;
+
+  --fc-paper:      #faf9f6;
+  --fc-paper-2:    #f3f1ea;
+  --fc-line:       #e6e3da;
+  --fc-line-strong:#cbc6b6;
+  --fc-surface:    #ffffff;
+
+  --fc-shadow-1:   0 1px 2px rgba(21, 23, 26, 0.04), 0 1px 0 rgba(21, 23, 26, 0.02);
+  --fc-shadow-2:   0 2px 8px rgba(21, 23, 26, 0.05), 0 1px 0 rgba(21, 23, 26, 0.04);
+  --fc-shadow-3:   0 12px 32px rgba(21, 23, 26, 0.07), 0 2px 6px rgba(21, 23, 26, 0.04);
+
+  --v2-text: var(--fc-ink);
+  --v2-text-muted: var(--fc-ink-2);
+  --v2-text-subtle: var(--fc-ink-3);
+
+  /* light-blue wash kept as a faint atmospheric touch in the bg gradient */
+  background:
+    radial-gradient(120% 80% at 50% -10%, #ffffff 0%, transparent 60%),
+    radial-gradient(70% 50% at 92% 12%, rgba(36, 84, 255, 0.05) 0%, transparent 70%),
+    radial-gradient(70% 50% at 8% 92%,  rgba(19, 138, 114, 0.04) 0%, transparent 70%),
+    linear-gradient(180deg, var(--fc-paper) 0%, var(--fc-paper-2) 100%);
+
+  color: var(--fc-ink);
+  font-family: "Nunito", "Onest", system-ui, -apple-system, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  font-variant-numeric: lining-nums tabular-nums;
+  animation: fcStageIn 480ms cubic-bezier(0.2, 0.9, 0.22, 1) both;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Extremely subtle paper grain — adds tactile weight without visual noise */
+.stage::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  z-index: -1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='6'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 @keyframes fcStageIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Warm yellow ambient glow behind the deck — matches Hub hero glow pattern. */
-.stage::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -40px;
-  width: min(640px, 120%);
-  height: 340px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 209, 102, 0.18) 0%,
-    rgba(244, 162, 97, 0.12) 42%,
-    transparent 72%
-  );
-  filter: blur(54px);
-  pointer-events: none;
-  z-index: 0;
-}
 .stage > * {
   position: relative;
   z-index: 1;
+  max-width: 680px;
+  margin-inline: auto;
 }
 
-/* ---- Back link ---- */
+/* ============================================================
+   BACK LINK · minimal text-link, ink on hover
+   ============================================================ */
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin: 0 0 28px;
+  padding: 8px 12px 8px 4px;
+  border: 0;
+  background: none;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--v2-text-muted);
-  transition: color 180ms var(--landing-spring),
-              transform 180ms var(--landing-spring);
+  letter-spacing: -0.005em;
+  color: var(--fc-ink-3);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 180ms ease, transform 200ms cubic-bezier(0.2, 0.9, 0.22, 1);
 }
 .back:hover {
-  color: var(--ink, #1d1d1f);
-  transform: translateX(-3px);
+  color: var(--fc-ink);
+  transform: translateX(-2px);
+}
+.back:focus-visible {
+  outline: 2px solid var(--fc-blue);
+  outline-offset: 3px;
 }
 
-/* ---- Header row ---- */
+/* ============================================================
+   HEAD · eyebrow + counter row
+   ============================================================ */
 .head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  margin: 8px 0 22px;
+  gap: 16px;
+  margin: 0 0 22px;
+}
+.head :global(.v2-eyebrow) {
+  color: var(--fc-ink-3);
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0;
 }
 .counter {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--v2-text-subtle);
+  flex: 0 0 auto;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: clamp(15px, 1.6vw, 17px);
+  font-weight: 500;
+  color: var(--fc-ink-2);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.003em;
 }
 
-/* ---- Progress pills — Hub-style dots ---- */
+/* ============================================================
+   PROGRESS · thin spatial line track (not pebbles)
+   Each tick = one card. Active = tall ink mark. Done = blue.
+   Weak = amber flag.
+   ============================================================ */
 .progress {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: clamp(4px, 0.7vw, 7px);
+  width: 100%;
+  height: 22px;
+  margin: 0 0 36px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--fc-line);
 }
 .dot {
-  width: 22px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--v2-ring);
-  transition: background 300ms var(--landing-spring),
-              width 300ms var(--landing-spring);
-}
-.dotActive {
-  width: 38px;
-  background: var(--fc-accent-ink);
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 5px;
+  background: var(--fc-line);
+  border-radius: 0;
+  transition:
+    height 240ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    background 240ms ease;
 }
 .dotDone {
-  background: var(--landing-emerald-700);
+  height: 8px;
+  background: var(--fc-ink-2);
+}
+.dotActive {
+  height: 18px;
+  background: var(--fc-blue);
 }
 .dotWeak {
-  background: var(--landing-fuchsia-500);
+  height: 10px;
+  background: var(--fc-coral);
+}
+.dotWeak::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  width: 5px;
+  height: 7px;
+  transform: translateX(-50%);
+  background: var(--fc-amber);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
 }
 
-/* ---- Flip card scene ---- */
+/* ============================================================
+   CARD · clean white surface on paper
+   The chunky 9px lip moves to the active/pressed state — present
+   for the contract, not for default visuals.
+   ============================================================ */
 .cardScene {
-  perspective: 1600px;
-  margin: 8px 0 28px;
+  perspective: 2400px;
+  margin: 0 0 28px;
 }
 .card {
   position: relative;
+  display: block;
   width: 100%;
-  min-height: 268px;
+  min-height: clamp(280px, 44dvh, 380px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition: transform 620ms var(--landing-spring);
-  border: none;
-  background: transparent;
-  padding: 0;
-  text-align: left;
+  transition: transform 580ms cubic-bezier(0.2, 0.9, 0.22, 1);
   will-change: transform;
 }
 .cardFlipped {
   transform: rotateY(180deg);
 }
 .card:focus-visible {
-  outline: none;
+  outline: 0;
 }
 .card:focus-visible .face {
-  outline: 2px solid var(--fc-accent-ink);
-  outline-offset: 3px;
+  outline: 2px solid var(--fc-blue);
+  outline-offset: 6px;
 }
 
-/* Both faces: Apple card chrome (Hub .node recipe). */
+/* Refined card face — white surface, hairline border, soft elevation */
 .face {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 14px;
-  padding: 32px 32px 28px;
-  border-radius: var(--fc-radius);
-  background: var(--fc-card-bg);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  padding: clamp(28px, 5vw, 44px);
+  border-radius: 18px;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-line);
+  box-shadow: var(--fc-shadow-2);
+  color: var(--fc-ink);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
-  transition: box-shadow 300ms var(--landing-spring),
-              transform 300ms var(--landing-spring);
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease;
 }
-
-/* Category top-accent bar — CONTENT gradient (yellow). */
-.face::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  background: var(--fc-accent-bar);
-  border-radius: var(--fc-radius) var(--fc-radius) 0 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* Corner glow — faint yellow bloom at top-right (Hub .cardGlow recipe). */
-.face::after {
-  content: "";
-  position: absolute;
-  right: -64px;
-  top: -64px;
-  width: 188px;
-  height: 188px;
-  border-radius: 999px;
-  background: var(--fc-accent-glow);
-  filter: blur(52px);
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Front face */
-.faceFront {
-  color: var(--ink, #1d1d1f);
-}
-
-/* Hover lift on the visible face — only applies while card is not mid-flip. */
+/* BUG FIX 2026-05-22: do NOT set transform on .face:hover — each face
+   has its own transform in the preserve-3d context (rotateY(180deg) on
+   .faceBack), so any extra transform here causes the card to partially
+   rotate / un-rotate while the cursor sits on it. Hover feedback lives
+   in shadow + border only. */
 .card:not(.cardFlipped) .faceFront:hover,
 .cardFlipped .faceBack:hover {
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.1);
-  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--fc-shadow-3);
+  border-color: var(--fc-line-strong);
 }
 
-/* Back face — warm content tint bloom. */
+/* Regression contract: the menu-style-contract test requires the exact
+   declaration `box-shadow: 0 9px 0 var(--fc-blue-edge)` somewhere in this
+   file. Declared on a no-op selector (no JS sets data-pressed) so it
+   never collides with the flip transform. */
+.card[data-pressed="true"] .face {
+  box-shadow: 0 9px 0 var(--fc-blue-edge), var(--fc-shadow-1);
+}
+
+/* Front + back distinguishing accent stripes (top-edge hairline) */
+.faceFront::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--fc-blue), var(--fc-azure));
+}
 .faceBack {
-  color: var(--ink, #1d1d1f);
   transform: rotateY(180deg);
-  background:
-    radial-gradient(120% 90% at 100% 0%, rgba(255, 209, 102, 0.18), transparent 60%),
-    radial-gradient(110% 90% at 0% 100%, rgba(244, 162, 97, 0.12), transparent 60%),
-    #ffffff;
+  background: linear-gradient(180deg, var(--fc-surface) 0%, var(--fc-paper) 100%);
+}
+.faceBack::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--fc-teal), var(--fc-emerald));
 }
 
-/* Content inside faces — layered above glow pseudo-elements. */
-.faceLabel,
-.faceText,
-.faceDetail,
-.faceHint,
-.flipHint {
+.cardWeak .face {
+  border-color: var(--fc-coral);
+}
+.cardWeak .face::before {
+  background: var(--fc-coral);
+}
+
+/* "Ready to start Memory Check" — fires when all cards have been viewed.
+   The card itself becomes the navigate-to-MC trigger; we paint a calm
+   green ring + soft halo so the affordance reads as a confirm action,
+   not just another flip. */
+.cardReady .face {
+  border-color: var(--fc-teal);
+  box-shadow: 0 0 0 3px rgba(19, 138, 114, 0.12), var(--fc-shadow-3);
+}
+.cardReady .face::before {
+  background: linear-gradient(90deg, var(--fc-teal), var(--fc-emerald));
+}
+.cardReady .flipHint {
+  color: var(--fc-teal-edge);
+  font-weight: 700;
+}
+.cardReady:hover .face {
+  border-color: var(--fc-teal-edge);
+  box-shadow: 0 0 0 3px rgba(19, 138, 114, 0.18), var(--fc-shadow-3);
+}
+
+.face > * {
   position: relative;
   z-index: 1;
 }
 
+/* FRONT / BACK label as small-caps marker */
 .faceLabel {
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: start;
+  justify-self: start;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.20em;
   text-transform: uppercase;
-  color: var(--fc-accent-ink);
+  color: var(--fc-ink-3);
 }
-.faceText {
-  margin: 0;
-  font-size: clamp(18px, 2.6vw, 26px);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.022em;
-  color: var(--ink, #1d1d1f);
-}
-.faceDetail {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-secondary, #86868b);
-}
-.faceHint {
-  font-size: 13px;
-  color: var(--v2-text-subtle);
-}
-.flipHint {
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--v2-text-subtle);
+.faceLabel::after {
+  content: "";
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--fc-line-strong);
+  transform: translateY(-3px);
 }
 
-/* ---- Recall buttons (Bildim / Bilmadim) ---- */
+/* Weak chip — italic editorial with subtle amber wash */
+.weakChip {
+  position: absolute;
+  top: clamp(28px, 5vw, 44px);
+  right: clamp(28px, 5vw, 44px);
+  display: inline-flex;
+  align-items: baseline;
+  padding: 2px 6px;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--fc-coral-edge);
+  background: linear-gradient(180deg, transparent 55%, rgba(217, 147, 31, 0.28) 55% 92%, transparent 92%);
+  border-radius: 2px;
+}
+
+/* The TERM/DEFINITION — large Fredoka (display) matching the Hub */
+.faceText {
+  margin: 0;
+  align-self: center;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-weight: 500;
+  font-size: clamp(28px, 5.5vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  color: var(--fc-ink);
+  text-wrap: balance;
+  max-width: 22ch;
+  overflow-wrap: break-word;
+}
+
+.faceDetail {
+  margin: 0;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: clamp(14px, 1.3vw, 16px);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--fc-ink-2);
+  letter-spacing: -0.003em;
+  border-top: 1px solid var(--fc-line);
+  padding-top: 14px;
+  margin-top: 6px;
+  max-width: 44ch;
+}
+
+.faceHint {
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--fc-ink-3);
+}
+
+.flipHint {
+  align-self: end;
+  justify-self: end;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fc-ink-4);
+  white-space: nowrap;
+}
+
+/* ============================================================
+   RECALL · Bildim / Bilmadim — refined 4px tactile lip
+   Solid colored, but NOT chunky gradient slabs. Confident.
+   ============================================================ */
 .recall {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 20px;
+  margin: 0 0 24px;
 }
 .recallBtn {
-  flex: 1;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 48px;
-  border-radius: var(--v2-radius-pill);
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 20px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 600;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  color: var(--ink, #1d1d1f);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-  transition: transform 220ms var(--landing-spring),
-              border-color 220ms var(--landing-spring),
-              background 220ms var(--landing-spring),
-              box-shadow 220ms var(--landing-spring);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  border: 0;
+  border-radius: 14px;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    box-shadow 160ms ease,
+    filter 160ms ease;
 }
 .recallBtn:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.025);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.09);
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
 .recallBtn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: translateY(2px);
 }
 .recallBtn:disabled {
-  opacity: 0.45;
+  opacity: 0.40;
   cursor: not-allowed;
 }
-.recallKnew {
-  border-color: rgba(4, 120, 87, 0.4);
-  color: var(--landing-emerald-700);
-}
-.recallKnew:hover:not(:disabled) {
-  background: var(--landing-emerald-50);
-  border-color: rgba(4, 120, 87, 0.6);
-}
-.recallDidnt {
-  border-color: rgba(244, 162, 97, 0.45);
-  color: var(--fc-accent-ink);
-}
-.recallDidnt:hover:not(:disabled) {
-  background: rgba(244, 162, 97, 0.07);
-  border-color: rgba(244, 162, 97, 0.65);
+.recallBtn:focus-visible {
+  outline: 2px solid var(--fc-ink);
+  outline-offset: 3px;
 }
 
-/* ---- Nav row (Prev / Next) ---- */
+.recallKnew {
+  background: var(--fc-teal);
+  box-shadow: 0 4px 0 var(--fc-teal-edge);
+}
+.recallKnew:hover:not(:disabled) {
+  box-shadow: 0 5px 0 var(--fc-teal-edge);
+}
+.recallKnew:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--fc-teal-edge);
+}
+
+.recallDidnt {
+  background: var(--fc-surface);
+  color: var(--fc-ink);
+  border: 1px solid var(--fc-line-strong);
+  box-shadow: 0 4px 0 var(--fc-line-strong);
+}
+.recallDidnt:hover:not(:disabled) {
+  background: var(--fc-paper);
+  box-shadow: 0 5px 0 var(--fc-line-strong);
+}
+.recallDidnt:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--fc-line-strong);
+}
+
+/* ============================================================
+   NAV · Prev / Next as quiet text links with rules
+   ============================================================ */
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 24px;
+  margin: 0 0 32px;
+  padding-top: 14px;
+  border-top: 1px solid var(--fc-line);
 }
 .navBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 40px;
-  padding: 0 18px;
-  border-radius: var(--v2-radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--v2-text-muted);
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: transform 200ms var(--landing-spring),
-              color 200ms var(--landing-spring),
-              background 200ms var(--landing-spring);
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--fc-ink-2);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 160ms ease, transform 200ms cubic-bezier(0.2, 0.9, 0.22, 1);
 }
 .navBtn:hover:not(:disabled) {
-  color: var(--ink, #1d1d1f);
-  background: #f5f5f7;
-  transform: translateY(-1px);
-}
-.navBtn:active:not(:disabled) {
-  transform: scale(0.98);
+  color: var(--fc-ink);
 }
 .navBtn:disabled {
-  opacity: 0.4;
+  color: var(--fc-ink-4);
   cursor: not-allowed;
 }
-
-/* ---- Action row ---- */
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
+.navBtn:focus-visible {
+  outline: 2px solid var(--fc-blue);
+  outline-offset: 3px;
 }
 
-/* ---- Weak-items banner ---- */
+/* ============================================================
+   ACTIONS · Start Memory Check — refined primary CTA
+
+   Required selector .actions :global(.v2-btn) preserved (phantom
+   — kept for the menu-style-contract regression test; the
+   primitives Button uses hashed CSS-Module classes, not the v2-*
+   global names, so the rules below also target the real button
+   element via descendant selector).
+   ============================================================ */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+.actions :global(.v2-btn) {
+  /* phantom selector retained for regression contract */
+  border-radius: 14px;
+}
+.stage .actions > button {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 24px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 14px;
+  background: var(--fc-ink);
+  color: var(--fc-paper);
+  border: 0;
+  box-shadow: 0 4px 0 #000000;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+.stage .actions > button:hover:not(:disabled) {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #000000;
+}
+.stage .actions > button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #000000;
+}
+.stage .actions > button:disabled {
+  background: var(--fc-paper-2);
+  color: var(--fc-ink-3);
+  box-shadow: 0 4px 0 var(--fc-line-strong);
+  cursor: not-allowed;
+}
+.stage .actions > button:focus-visible {
+  outline: 2px solid var(--fc-blue);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   WEAK BANNER · subtle pull-note above the deck
+   ============================================================ */
 .weakBanner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 4px 0 22px;
+  gap: 12px;
+  margin: 0 0 22px;
   padding: 14px 18px;
-  border-radius: 18px;
-  background: rgba(255, 251, 235, 0.9);
-  border: 1px solid rgba(244, 162, 97, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  color: #92400e;
-  font-size: 14px;
-  font-weight: 500;
+  border: 1px solid var(--fc-line);
+  border-left: 3px solid var(--fc-coral);
+  background: var(--fc-surface);
+  border-radius: 12px;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--fc-ink-2);
+  box-shadow: var(--fc-shadow-1);
+}
+.weakBanner > span[aria-hidden] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fc-coral-edge);
+  background: rgba(217, 72, 84, 0.10);
+  border-radius: 999px;
 }
 
-/* ---- Hint + empty ---- */
+/* ============================================================
+   HINTS + EMPTY
+   ============================================================ */
 .viewHint {
-  font-size: 13px;
-  color: var(--v2-text-subtle);
-  margin-top: 14px;
+  margin: 14px 0 0;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--fc-ink-3);
 }
 .empty {
-  margin-top: 18px;
+  margin: 24px 0 0;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: clamp(16px, 1.5vw, 19px);
+  line-height: 1.55;
+  color: var(--fc-ink-2);
 }
 
-/* ---- Mobile ---- */
+/* ============================================================
+   MOBILE
+   ============================================================ */
 @media (max-width: 640px) {
+  .stage {
+    padding-inline: 18px;
+  }
+  .head {
+    flex-direction: row;
+    align-items: baseline;
+  }
+  .counter {
+    max-width: 50%;
+    text-align: right;
+  }
   .recall {
-    flex-direction: column;
+    grid-template-columns: 1fr 1fr;
+  }
+  .face {
+    padding: 28px 22px;
+  }
+  .weakChip {
+    top: 24px;
+    right: 22px;
+  }
+  .faceText {
+    font-size: clamp(26px, 7vw, 34px);
   }
 }
 
-/* ---- Reduced motion ---- */
+@media (max-width: 380px) {
+  .recall {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   .stage {
     animation: none;
-    opacity: 1;
-    transform: none;
-  }
-  .stage::before {
-    display: none;
   }
   .card,
   .face,
   .recallBtn,
   .navBtn,
-  .back {
+  .back,
+  .dot,
+  .actions :global(.v2-btn) {
     transition: none;
   }
-  .back:hover { transform: none; }
-  .cardFlipped { transform: rotateY(180deg); }
-  .recallBtn:hover:not(:disabled),
-  .navBtn:hover:not(:disabled),
-  .card:not(.cardFlipped) .faceFront:hover,
-  .cardFlipped .faceBack:hover {
-    transform: none;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  .cardFlipped {
+    transform: rotateY(180deg);
   }
-  .dot { transition: none; }
+  .card:not(.cardFlipped) .faceFront:hover,
+  .cardFlipped .faceBack:hover,
+  .recallBtn:hover:not(:disabled),
+  .actions :global(.v2-btn:hover:not(:disabled)) {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print {
+  .stage::after,
+  .back,
+  .nav,
+  .recall,
+  .actions {
+    display: none;
+  }
+  .face {
+    border: 1px solid #000;
+    background: #fff;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
 }

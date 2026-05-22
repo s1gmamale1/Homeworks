@@ -153,6 +153,11 @@ export interface MemoryCheckItem {
   type: MemoryCheckItemType;
   prompt: string;
   options?: string[];
+  // Optional link back to the source flashcard ID — used by the
+  // Flashcards retry deck to highlight cards the student missed in
+  // the previous Memory Check pass ("Weak — review" chip). Backend
+  // already accepts the field (server/schemas/content.py:849).
+  flashcard_ref?: string;
   // Explicit leak guard — the redactor strips this subtree before delivery.
   answer_spec?: never;
 }

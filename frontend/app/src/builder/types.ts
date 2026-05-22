@@ -86,6 +86,7 @@ export interface DraftCaseBasedPreview {
 // ---- Flashcards + Memory Check (authored) ----------------------------------
 
 export interface DraftFlashcard {
+  id?: string;
   term: string;
   def: string;
   hint?: string;
@@ -101,6 +102,10 @@ export type MemoryCheckItemType =
 export interface DraftMemoryCheckItem {
   type: MemoryCheckItemType;
   prompt: string;
+  // Optional link to the source flashcard by id — used by the Flashcards
+  // retry deck to mark cards the student missed in the previous MC pass
+  // ("Weak — review" chip). PR #246 origin; backend already accepts it.
+  flashcard_ref?: string;
   // Present for option types (mcq / true_false / choose_explanation); empty
   // for fill_blank.
   options: string[];

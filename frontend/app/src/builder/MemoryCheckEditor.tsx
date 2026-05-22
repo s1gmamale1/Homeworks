@@ -56,11 +56,23 @@ export function MemoryCheckEditor({
   const changeItemType = (i: number, type: MemoryCheckItemType) => {
     const fresh = emptyMemoryItem(type);
     fresh.prompt = memoryCheck.items[i].prompt;
+    fresh.flashcard_ref = memoryCheck.items[i].flashcard_ref;
     onMemoryCheckChange({
       ...memoryCheck,
       items: memoryCheck.items.map((it, idx) => (idx === i ? fresh : it)),
     });
   };
+
+  // Source-flashcard options for the per-item dropdown — "no link" sentinel
+  // first, then each authored flashcard. The id falls back to `fc_${i+1}` so
+  // unauthored cards still get a stable handle for the weak-retry mapping.
+  const flashcardOptions = [
+    { value: "", label: "No linked card" },
+    ...flashcards.map((card, i) => ({
+      value: card.id || `fc_${i + 1}`,
+      label: `${i + 1}. ${card.term || "Untitled card"}`,
+    })),
+  ];
 
   return (
     <div className={s.editor}>
@@ -182,6 +194,15 @@ export function MemoryCheckEditor({
                 value={item.prompt}
                 rows={2}
                 onChange={(prompt) => patchItem(i, { prompt })}
+              />
+            </Field>
+            <Field label="Source flashcard" hint="highlighted on retry when missed">
+              <Select<string>
+                value={item.flashcard_ref ?? ""}
+                options={flashcardOptions}
+                onChange={(flashcard_ref) =>
+                  patchItem(i, { flashcard_ref: flashcard_ref || undefined })
+                }
               />
             </Field>
 

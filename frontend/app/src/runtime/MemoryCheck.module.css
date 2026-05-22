@@ -1,364 +1,573 @@
 /* ============================================================
-   Memory Check — Apple card system (LANGUAGE-GREEN accent).
-   Canonical recipe: LearningHub.module.css.
-   White ~20px-radius cards, soft diffusion shadow, LANGUAGE
-   gradient top-accent + corner glow, crisp #1d1d1f ink,
-   gentle scale(1.03) hover, spring var(--landing-spring).
-   Onest + ink tokens are global — reused here, not redeclared.
-   prefers-reduced-motion honored.
+   Memory Check — Quiet Tactile (companion to Flashcards)
+
+   Same paper-on-paper foundation, refined option cards (white
+   surface, hairline border, soft elevation, NOT chunky 3D slab),
+   Fredoka feedback body, refined ink CTA. Connects to
+   Flashcards as one continuous learning sub-flow without
+   resorting to colored slabs.
    ============================================================ */
+/* Font note: Fredoka (display) + Nunito (body) are loaded globally by
+   frontend/app/index.html — match the Learning Hub's type pairing. */
 
-/* ---- Accent tokens (LANGUAGE = green) ---- */
 .stage {
-  --mc-accent-bar:  var(--grad-language, linear-gradient(135deg, #74aa9c, #4a8576));
-  --mc-accent-glow: rgba(116, 170, 156, 0.22);
-  --mc-accent-ink:  var(--c-green, #4a8576);
-  --mc-card-bg:     #ffffff;
-  --mc-radius:      20px;
-
   position: relative;
-  z-index: 1;
-  animation: mcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: calc(100dvh - 24px);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding:
+    max(28px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(110px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  overflow: hidden;
+
+  --mc-blue: #2454ff;
+  --mc-blue-edge: #1a3fcc;
+  --mc-azure: #5a7bff;
+  --mc-teal: #138a72;
+  --mc-teal-edge: #0d6c5a;
+  --mc-emerald: #1a9776;
+  --mc-coral: #d94854;
+  --mc-coral-edge: #b73844;
+  --mc-amber: #d9931f;
+
+  --mc-ink:        #15171a;
+  --mc-ink-2:      #3a3d44;
+  --mc-ink-3:      #6c7079;
+  --mc-ink-4:      #a8abb3;
+
+  --mc-paper:      #faf9f6;
+  --mc-paper-2:    #f3f1ea;
+  --mc-line:       #e6e3da;
+  --mc-line-strong:#cbc6b6;
+  --mc-surface:    #ffffff;
+
+  --mc-shadow-1:   0 1px 2px rgba(21, 23, 26, 0.04), 0 1px 0 rgba(21, 23, 26, 0.02);
+  --mc-shadow-2:   0 2px 8px rgba(21, 23, 26, 0.05), 0 1px 0 rgba(21, 23, 26, 0.04);
+
+  --v2-text: var(--mc-ink);
+  --v2-text-muted: var(--mc-ink-2);
+  --v2-text-subtle: var(--mc-ink-3);
+
+  background:
+    radial-gradient(120% 80% at 50% -10%, #ffffff 0%, transparent 60%),
+    radial-gradient(70% 50% at 92% 12%, rgba(36, 84, 255, 0.05) 0%, transparent 70%),
+    radial-gradient(70% 50% at 8% 92%,  rgba(19, 138, 114, 0.04) 0%, transparent 70%),
+    linear-gradient(180deg, var(--mc-paper) 0%, var(--mc-paper-2) 100%);
+
+  color: var(--mc-ink);
+  font-family: "Nunito", "Onest", system-ui, -apple-system, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  font-variant-numeric: lining-nums tabular-nums;
+  animation: mcStageIn 480ms cubic-bezier(0.2, 0.9, 0.22, 1) both;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Same subtle paper grain */
+.stage::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  z-index: -1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 @keyframes mcStageIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Cool green ambient glow behind the quiz. */
-.stage::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -40px;
-  width: min(640px, 120%);
-  height: 340px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(116, 170, 156, 0.16) 0%,
-    rgba(74, 133, 118, 0.1) 44%,
-    transparent 72%
-  );
-  filter: blur(54px);
-  pointer-events: none;
-  z-index: 0;
-}
 .stage > * {
   position: relative;
   z-index: 1;
+  max-width: 680px;
+  margin-inline: auto;
 }
 
-/* ---- Back link ---- */
+/* ============================================================
+   BACK LINK
+   ============================================================ */
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin: 0 0 28px;
+  padding: 8px 12px 8px 4px;
+  border: 0;
+  background: none;
   font-size: 13px;
   font-weight: 600;
-  color: var(--v2-text-muted);
-  transition: color 180ms var(--landing-spring),
-              transform 180ms var(--landing-spring);
+  letter-spacing: -0.005em;
+  color: var(--mc-ink-3);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 180ms ease, transform 200ms cubic-bezier(0.2, 0.9, 0.22, 1);
 }
 .back:hover {
-  color: var(--ink, #1d1d1f);
-  transform: translateX(-3px);
+  color: var(--mc-ink);
+  transform: translateX(-2px);
+}
+.back:focus-visible {
+  outline: 2px solid var(--mc-blue);
+  outline-offset: 3px;
 }
 
-/* ---- Header row ---- */
+/* ============================================================
+   HEAD
+   ============================================================ */
 .head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  margin: 8px 0 18px;
+  gap: 16px;
+  margin: 0 0 22px;
+}
+.head :global(.v2-eyebrow) {
+  /* phantom selector retained for parity with Flashcards */
+  margin: 0;
+}
+.stage .head > p {
+  color: var(--mc-ink-3);
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0;
 }
 .counter {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--v2-text-subtle);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: clamp(15px, 1.6vw, 17px);
+  font-weight: 500;
+  color: var(--mc-ink-2);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.003em;
 }
 .score {
-  font-size: 13px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-style: normal;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--mc-accent-ink);
+  color: var(--mc-teal);
 }
 
-/* ---- Progress pills — Hub-style dots ---- */
+/* ============================================================
+   PROGRESS · spatial line track
+   ============================================================ */
 .progress {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: clamp(4px, 0.7vw, 7px);
+  width: 100%;
+  height: 22px;
+  margin: 0 0 32px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--mc-line);
 }
 .dot {
-  width: 22px;
-  height: 6px;
-  border-radius: 999px;
-  background: var(--v2-ring);
-  transition: background 300ms var(--landing-spring),
-              width 300ms var(--landing-spring);
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 5px;
+  background: var(--mc-line);
+  border-radius: 0;
+  transition: height 240ms cubic-bezier(0.2, 0.9, 0.22, 1), background 240ms ease;
 }
 .dotActive {
-  width: 38px;
-  background: var(--mc-accent-ink);
+  height: 18px;
+  background: var(--mc-blue);
 }
 .dotCorrect {
-  background: var(--landing-emerald-700);
+  height: 8px;
+  background: var(--mc-teal);
 }
 .dotWrong {
-  background: var(--landing-fuchsia-500);
+  height: 8px;
+  background: var(--mc-coral);
 }
 
-/* ---- Kind pill spacing ---- */
+/* ============================================================
+   KIND PILL · subtle accent chip
+   ============================================================ */
 .kind {
-  margin-top: 6px;
+  margin: 0 0 14px;
+}
+/* The Pill primitive renders <span class="primitives_pill primitives_pillAccent">.
+   Target the actual rendered span; the v2-pill selector is phantom parity. */
+.kind :global(.v2-pill) {
+  display: inline-flex;
+}
+.stage .kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(36, 84, 255, 0.08);
+  color: var(--mc-blue-edge);
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(36, 84, 255, 0.18);
+}
+.stage .kind > * {
+  background: transparent !important;
+  color: inherit !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
 }
 
-/* ---- Option rows (LessonPanel handles row chrome, we control the grid) ---- */
+/* The prompt — large Fredoka. Title primitive renders <h1>. */
+:global(.v2-title) {
+  /* phantom selector retained */
+  display: block;
+}
+.stage h1 {
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: clamp(24px, 5.5vw, 36px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.018em;
+  color: var(--mc-ink);
+  text-wrap: balance;
+  margin: 0 0 24px;
+  max-width: 30ch;
+}
+
+/* ============================================================
+   OPTIONS · refined white cards (override LessonPanel)
+   ============================================================ */
 .options {
   display: grid;
   gap: 10px;
-  margin-top: 24px;
+  margin: 0 0 24px;
 }
-
-/* ---- Fill-in-blank input ---- */
-.fillWrap {
-  margin-top: 24px;
-}
-.fillLabel {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--v2-text-subtle);
-  margin-bottom: 8px;
-}
-.fillInput {
+.options :global(button) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 56px;
-  padding: 0 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  background: #ffffff;
-  color: var(--ink, #1d1d1f);
-  font-size: 16px;
-  font-weight: 500;
-  font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: border-color 200ms var(--landing-spring),
-              box-shadow 200ms var(--landing-spring),
-              background 200ms var(--landing-spring);
+  min-height: 60px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--mc-surface);
+  border: 1px solid var(--mc-line);
+  color: var(--mc-ink);
+  box-shadow: var(--mc-shadow-1);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
 }
-.fillInput::placeholder {
-  color: var(--v2-text-subtle);
+.options :global(button:hover:not(:disabled)) {
+  border-color: var(--mc-ink-3);
+  transform: translateY(-1px);
+  box-shadow: var(--mc-shadow-2);
 }
-.fillInput:hover:not(:disabled) {
-  background: #fafafa;
-  border-color: rgba(0, 0, 0, 0.12);
+.options :global(button:active:not(:disabled)) {
+  transform: translateY(1px);
+  box-shadow: var(--mc-shadow-1);
 }
-.fillInput:focus {
-  outline: none;
-  border-color: var(--mc-accent-ink);
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(116, 170, 156, 0.15);
+.options :global(button[aria-pressed="true"]) {
+  background: rgba(36, 84, 255, 0.04);
+  border-color: var(--mc-blue);
+  color: var(--mc-blue-edge);
+  box-shadow: 0 0 0 3px rgba(36, 84, 255, 0.10), var(--mc-shadow-1);
 }
-.fillInput:disabled {
-  opacity: 0.6;
+.options :global(button:disabled) {
+  opacity: 0.85;
   cursor: not-allowed;
 }
 
-/* ---- Action row ---- */
+/* ============================================================
+   FILL INPUT · refined white card with subtle border
+   ============================================================ */
+.fillWrap {
+  margin: 0 0 20px;
+}
+.fillLabel {
+  display: block;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mc-ink-3);
+  margin-bottom: 10px;
+}
+.fillInput {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid var(--mc-line-strong);
+  background: var(--mc-surface);
+  color: var(--mc-ink);
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: var(--mc-shadow-1);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.fillInput::placeholder {
+  color: var(--mc-ink-4);
+  font-weight: 400;
+}
+.fillInput:hover:not(:disabled) {
+  border-color: var(--mc-ink-3);
+}
+.fillInput:focus {
+  outline: none;
+  border-color: var(--mc-blue);
+  box-shadow: 0 0 0 3px rgba(36, 84, 255, 0.12), var(--mc-shadow-1);
+}
+.fillInput:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   ACTIONS · ink CTA (matches Flashcards Start MC)
+   ============================================================ */
 .actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
-  margin-top: 28px;
+  margin: 0;
 }
-
-/* ---- Error / submission warning ---- */
-.error {
-  margin-top: 18px;
-  padding: 14px 18px;
-  border-radius: var(--mc-radius);
-  background: rgba(255, 251, 235, 0.9);
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  color: #92400e;
+.actions :global(.v2-btn) {
+  /* phantom selector kept for parity with Flashcards regression contract */
+  border-radius: 14px;
+}
+.stage .actions > button {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 24px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 14px;
+  background: var(--mc-ink);
+  color: var(--mc-paper);
+  border: 0;
+  box-shadow: 0 4px 0 #000000;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.2, 0.9, 0.22, 1),
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+.stage .actions > button:hover:not(:disabled) {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #000000;
+}
+.stage .actions > button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #000000;
+}
+.stage .actions > button:disabled {
+  background: var(--mc-paper-2);
+  color: var(--mc-ink-3);
+  box-shadow: 0 4px 0 var(--mc-line-strong);
+  cursor: not-allowed;
+}
+.stage .actions > button:focus-visible {
+  outline: 2px solid var(--mc-blue);
+  outline-offset: 3px;
 }
 
-/* ---- Inline feedback — Apple card treatment with semantic colour tints ---- */
+/* ============================================================
+   ERROR
+   ============================================================ */
+.error {
+  margin: 14px 0 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--mc-surface);
+  border: 1px solid var(--mc-line);
+  border-left: 3px solid var(--mc-coral);
+  color: var(--mc-coral-edge);
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: var(--mc-shadow-1);
+}
+
+/* ============================================================
+   FEEDBACK · refined card with semantic accent
+   ============================================================ */
 .feedback {
   position: relative;
-  margin-top: 22px;
-  padding: 22px 24px;
-  border-radius: var(--mc-radius);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  background: var(--mc-card-bg);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  margin: 22px 0 0;
+  padding: 18px 22px;
+  border: 1px solid var(--mc-line);
+  border-radius: 14px;
+  background: var(--mc-surface);
+  box-shadow: var(--mc-shadow-2);
   overflow: hidden;
-  animation: mcFeedbackIn 360ms var(--landing-spring) both;
+  animation: mcFeedbackIn 320ms cubic-bezier(0.2, 0.9, 0.22, 1) both;
 }
-
-/* Accent top bar on the feedback card. */
 .feedback::before {
   content: "";
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 4px;
-  border-radius: var(--mc-radius) var(--mc-radius) 0 0;
-  z-index: 2;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mc-blue);
 }
-
-/* Good feedback: green tint + green bar. */
 .feedbackGood {
-  border-color: rgba(4, 120, 87, 0.25);
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(52, 211, 153, 0.14), transparent 60%),
-    rgba(236, 253, 245, 0.9);
+  border-left: 3px solid var(--mc-teal);
 }
 .feedbackGood::before {
-  background: linear-gradient(135deg, #34d399, var(--landing-emerald-700));
+  background: var(--mc-teal);
 }
-
-/* Wrong feedback: fuchsia tint + fuchsia bar. */
 .feedbackWrong {
-  border-color: rgba(217, 70, 239, 0.25);
-  background:
-    radial-gradient(120% 120% at 0% 0%, rgba(217, 70, 239, 0.11), transparent 60%),
-    rgba(255, 251, 235, 0.9);
+  border-left: 3px solid var(--mc-coral);
 }
 .feedbackWrong::before {
-  background: linear-gradient(135deg, #e879f9, var(--landing-fuchsia-500));
+  background: var(--mc-coral);
 }
 
 @keyframes mcFeedbackIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .feedbackHead {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   position: relative;
   z-index: 1;
 }
 .feedbackBody {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--ink, #1d1d1f);
-  position: relative;
-  z-index: 1;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.003em;
+  color: var(--mc-ink);
 }
 
-/* ---- Result screen ---- */
+/* ============================================================
+   RESULT
+   ============================================================ */
 .resultHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 22px;
+  margin-bottom: 28px;
 }
 
-/* FeatureCard from primitives wraps this — we layer in Apple card extras. */
 .resultCard {
-  margin-top: 28px;
+  margin: 28px 0 0;
   display: grid;
-  gap: 18px;
+  gap: 20px;
   position: relative;
   overflow: hidden;
-  border-radius: var(--mc-radius) !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--mc-line) !important;
+  background: var(--mc-surface) !important;
+  box-shadow: var(--mc-shadow-2) !important;
   padding: 28px !important;
-}
-
-/* Green corner glow on the result card — Hub .cardGlow recipe. */
-.resultCard::after {
-  content: "";
-  position: absolute;
-  right: -56px;
-  top: -56px;
-  width: 180px;
-  height: 180px;
-  border-radius: 999px;
-  background: var(--mc-accent-glow);
-  filter: blur(48px);
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 0;
 }
 
 .resultStat {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  position: relative;
-  z-index: 1;
+  gap: 10px;
 }
 .resultBig {
-  font-size: clamp(36px, 7vw, 56px);
-  font-weight: 700;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif;
+  font-size: clamp(44px, 8vw, 64px);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink, #1d1d1f);
-  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.028em;
+  color: var(--mc-ink);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .resultUnit {
-  font-size: 15px;
+  font-family: "Nunito", "Onest", system-ui, sans-serif;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--v2-text-subtle);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mc-ink-3);
 }
 
-/* Progress bar — green accent. */
 .resultBar {
   position: relative;
   height: 10px;
   border-radius: 999px;
-  background: var(--v2-ring);
+  background: var(--mc-paper-2);
   overflow: hidden;
-  z-index: 1;
 }
 .resultBarFill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--mc-accent-ink), #74aa9c);
-  box-shadow: 0 0 12px rgba(116, 170, 156, 0.4);
-  transition: width var(--landing-dur-lg, 1050ms) var(--landing-spring);
+  background: var(--mc-blue);
+  transition: width 980ms cubic-bezier(0.2, 0.9, 0.22, 1);
 }
 .resultBarFill.pass {
-  background: linear-gradient(90deg, #34d399, var(--landing-emerald-700));
-  box-shadow: 0 0 16px rgba(4, 120, 87, 0.4);
+  background: var(--mc-teal);
 }
 .resultThreshold {
   position: absolute;
-  top: -3px;
-  bottom: -3px;
+  top: -4px;
+  bottom: -4px;
   width: 2px;
-  background: var(--v2-text-subtle);
-  z-index: 1;
+  background: var(--mc-ink);
+  opacity: 0.30;
 }
 
-/* ---- Reduced motion ---- */
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width: 640px) {
+  .stage {
+    padding-inline: 18px;
+  }
+  .options :global(button) {
+    min-height: 56px;
+    padding: 12px 16px;
+  }
+  .counter {
+    max-width: 55%;
+    text-align: right;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   .stage {
     animation: none;
-    opacity: 1;
-    transform: none;
-  }
-  .stage::before {
-    display: none;
   }
   .feedback {
     animation: none;
@@ -366,10 +575,16 @@
     transform: none;
   }
   .back,
+  .options :global(button),
   .fillInput,
-  .dot {
+  .dot,
+  .resultBarFill,
+  .actions :global(.v2-btn) {
     transition: none;
   }
-  .back:hover { transform: none; }
-  .resultBarFill { transition: none; }
+  .back:hover,
+  .options :global(button:hover:not(:disabled)),
+  .actions :global(.v2-btn:hover:not(:disabled)) {
+    transform: none;
+  }
 }
