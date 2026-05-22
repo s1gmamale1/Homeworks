@@ -204,7 +204,7 @@ ALLOWED_PERSONA_TRAITS: tuple[str, ...] = ("challenger", "mentor", "analyst")
 
 # Allowed phase strings. Any unknown phase received from the client is rejected
 # at the route boundary so the tutor's mode logic only ever sees known values.
-ALLOWED_PHASES: tuple[str, ...] = ("preview", "practice", "boss")
+ALLOWED_PHASES: tuple[str, ...] = ("preview", "practice", "boss", "case_based", "memory_check")
 
 # Max length for the per-question framing wrapper rendered above each boss Q.
 BOSS_FRAMING_MAX_CHARS: int = 180
@@ -791,6 +791,8 @@ _TUTOR_CONTEXT_SAFE_KEYS: frozenset[str] = frozenset({
     "label",
     "term",
     "term_html",
+    "explanation",
+    "flashcard_ref",
     "cluster",
     "type",
     "options",
