@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useRuntimeStore } from "./store";
 import { LearningHub } from "./LearningHub";
 import { CaseBasedPreview } from "./CaseBasedPreview";
@@ -6,6 +7,8 @@ import { MemoryCheck } from "./MemoryCheck";
 import { PracticeArc } from "./PracticeArc";
 import { Reflection } from "./Reflection";
 import { TutorWidget } from "./TutorWidget";
+import SoundToggle from "./SoundToggle";
+import { initGlobalPrime, play } from "./sfx";
 
 // Screen switch driven by the store (state, not URL routes — prevents
 // gate-skipping). The Flashcards/Memory-Check tile (fc) is an F3 addition;
@@ -21,10 +24,27 @@ export function V2FlowController() {
   const screen = useRuntimeStore((st) => st.screen);
   const fcSubStage = useRuntimeStore((st) => st.fc.subStage);
 
+  // App-wide audio prime: a single one-time pointer/keydown listener resumes the
+  // AudioContext on the visitor's FIRST interaction (browsers start it
+  // suspended), so a cue fired from ANY screen — not just the Hub — is audible.
+  useEffect(() => initGlobalPrime(), []);
+
+  // Screen-transition cue — fire on every screen change EXCEPT the initial mount
+  // (the first render shouldn't sound). play() is mute-checked + debounced.
+  const firstScreen = useRef(true);
+  useEffect(() => {
+    if (firstScreen.current) {
+      firstScreen.current = false;
+      return;
+    }
+    play("screen");
+  }, [screen]);
+
   return (
     <>
       <CurrentScreen screen={screen} fcSubStage={fcSubStage} />
       <TutorWidget />
+      <SoundToggle />
     </>
   );
 }

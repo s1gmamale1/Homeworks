@@ -9,6 +9,7 @@ import {
   PressButton,
   ResultTier,
 } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./ConfidenceCheck.module.css";
 
 // ---------------------------------------------------------------------------
@@ -220,7 +221,16 @@ function ConfidenceCheckInner({
       }
       const calibration = calibrate(correct, confidence);
       setVerdict({ correct, calibration });
-      if (calibration.tone === "mastered") setMastered((m) => m + 1);
+      if (calibration.tone === "mastered") {
+        play("correct");
+        setMastered((m) => m + 1);
+      } else if (calibration.tone === "solid") {
+        // solid = Maybe+Correct — encouraging
+        play("correct");
+      } else {
+        // danger (Sure+Wrong = overconfident), review, lucky (underconfident), gap
+        play("wrong");
+      }
     } catch (err) {
       setError((err as Error).message || "Couldn't check that answer.");
     } finally {
@@ -280,7 +290,7 @@ function ConfidenceCheckInner({
               className={`${s.conf}${confidence === level ? ` ${s.confActive}` : ""}`}
               disabled={busy || locked}
               aria-pressed={confidence === level}
-              onClick={() => setConfidence(level)}
+              onClick={() => { play("tick"); setConfidence(level); }}
               data-testid={`confidence_check-conf-${level}`}
             >
               <span className={s.confLabel}>{label}</span>

@@ -5,6 +5,7 @@ import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import IntegrityNudge from "../IntegrityNudge";
+import { play } from "../sfx";
 import s from "./AdaptiveQuiz.module.css";
 
 // ---------------------------------------------------------------------------
@@ -124,6 +125,11 @@ function AdaptiveQuizInner({
       });
       setResult({ correct: res.correct, feedback: res.feedback });
       setNudge(res.integrity_nudge ?? null);
+      if (res.correct) {
+        play("correct");
+      } else {
+        play("wrong");
+      }
     } catch (err) {
       setError((err as Error).message || "Could not check that answer.");
     } finally {
@@ -246,7 +252,7 @@ function AdaptiveQuizInner({
                     .filter(Boolean)
                     .join(" ")}
                   disabled={isAnswered || submitting}
-                  onClick={() => handleOptionSelect(opt)}
+                  onClick={() => { play("tick"); handleOptionSelect(opt); }}
                   data-testid={`aq-option-${i}`}
                   aria-pressed={isSelected}
                 >

@@ -5,6 +5,7 @@ import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import IntegrityNudge from "../IntegrityNudge";
+import { play } from "../sfx";
 import s from "./MysteryBox.module.css";
 
 // ---------------------------------------------------------------------------
@@ -160,6 +161,12 @@ function MysteryBoxInner({
       );
       setNudge(res.integrity_nudge ?? null);
 
+      if (res.correct) {
+        play("correct");
+      } else {
+        play("wrong");
+      }
+
       const newStatus: BoxStatus = res.correct ? "solved" : "missed";
 
       setBoxes((prev) => {
@@ -179,6 +186,7 @@ function MysteryBoxInner({
         );
         if (allDone) {
           // Delay slightly so student sees the last verdict.
+          play("complete");
           setTimeout(() => setComplete(true), 900);
         }
         return next;
@@ -268,7 +276,7 @@ function MysteryBoxInner({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              onClick={() => openBox(idx)}
+              onClick={() => { if (box.status === "sealed") play("tick"); openBox(idx); }}
               aria-label={`Box ${idx + 1}${box.status !== "sealed" ? `, ${box.status}` : ""}`}
               aria-pressed={isActive}
               data-testid={`mb-box-${idx}`}

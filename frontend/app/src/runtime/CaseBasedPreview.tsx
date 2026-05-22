@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRuntimeStore } from "./store";
 import {
@@ -16,6 +16,7 @@ import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { acknowledgeNudge } from "../shared/api";
 import s from "./CaseBasedPreview.module.css";
+import { play } from "./sfx";
 
 const KIND_LABEL: Record<CheckpointKind, string> = {
   identify: "Identify",
@@ -561,6 +562,15 @@ function FeedbackStage() {
   const cbpGate = gate?.cbp;
   const passed = cbpGate?.passed ?? false;
 
+  // Fire "complete" once on mount when the CBP is passed.
+  const firedRef = useRef(false);
+  useEffect(() => {
+    if (passed && !firedRef.current) {
+      firedRef.current = true;
+      play("complete");
+    }
+  }, [passed]);
+
   return (
     <Shell testid="cbp-feedback">
       <div className={s.lbHead}>
@@ -625,7 +635,11 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 // ---- shared bits ----
 function BackToHub({ onClick }: { onClick: () => void }) {
   return (
-    <button className={s.back} onClick={onClick} type="button">
+    <button
+      className={s.back}
+      onClick={() => { play("tick"); onClick(); }}
+      type="button"
+    >
       ← Back to Hub
     </button>
   );

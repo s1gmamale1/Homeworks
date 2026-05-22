@@ -5,6 +5,7 @@ import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import IntegrityNudge from "../IntegrityNudge";
+import { play } from "../sfx";
 import s from "./PuzzleLock.module.css";
 
 // ---------------------------------------------------------------------------
@@ -161,13 +162,17 @@ function PuzzleLockInner({
         const newOpenCount = next.filter((t) => t === "open").length;
         if (newOpenCount >= total) {
           // All tumblers open — lock pops open
+          play("correct");
+          play("complete");
           setAllOpen(true);
         } else {
+          play("correct");
           // Advance to next locked tumbler
           const nextIdx = next.findIndex((t, i) => i > currentIdx && t === "locked");
           setCurrentIdx(nextIdx >= 0 ? nextIdx : currentIdx + 1);
         }
       } else {
+        play("wrong");
         // Wrong — shake + show feedback, allow retry
         setFeedback(res.feedback || "Not quite — try again.");
 
@@ -326,7 +331,7 @@ function PuzzleLockInner({
             <button
               type="button"
               className={s.submitBtn}
-              onClick={handleSubmit}
+              onClick={() => { play("tick"); handleSubmit(); }}
               disabled={submitting || !inputValue.trim()}
               aria-label="Submit answer"
               data-testid="pl-submit"

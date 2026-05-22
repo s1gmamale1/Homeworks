@@ -4,6 +4,7 @@ import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
+import { play } from "../sfx";
 import s from "./MemoryPalace.module.css";
 
 // ---------------------------------------------------------------------------
@@ -246,6 +247,11 @@ function PalaceGame({
         recall_results: recallResults,
       });
       setResult(res);
+      if (res.outcome === "perfect" || res.outcome === "yaxshi") {
+        play("complete");
+      } else {
+        play("wrong");
+      }
       setPhase("result");
     } catch (err) {
       setError((err as Error).message || "Couldn't submit your palace. Try again.");
@@ -475,7 +481,7 @@ function PlacePhase({
                 isPlaced   && s.optionUsed,
               ].filter(Boolean).join(" ")}
               disabled={isPlaced}
-              onClick={() => onPick(c.id)}
+              onClick={() => { play("tick"); onPick(c.id); }}
               aria-pressed={isSelected}
               data-testid={`mp-place-option-${c.id}`}
             >
@@ -571,7 +577,7 @@ function RecallPhase({
               className={[s.optionBtn, isSelected && s.optionSelected]
                 .filter(Boolean).join(" ")}
               disabled={submitting}
-              onClick={() => onPick(c.id)}
+              onClick={() => { play("tick"); onPick(c.id); }}
               aria-pressed={isSelected}
               data-testid={`mp-recall-option-${c.id}`}
             >

@@ -2,6 +2,7 @@ import { useRuntimeStore } from "./store";
 import { Eyebrow, Title, Lead, Button, FeatureCard } from "../shared/ui/primitives";
 import { GameHost, gameLabel } from "./GameHost";
 import LivingBackdrop from "./LivingBackdrop";
+import { play } from "./sfx";
 import s from "./PracticeArc.module.css";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ export function PracticeArc() {
           <Title size="hero">Nothing to practice yet.</Title>
           <Lead>This homework has no practice games. Head back to the Hub.</Lead>
           <div className={s.actions}>
-            <Button variant="blue" onClick={() => goto("hub")} data-testid="arc-back-hub">
+            <Button variant="blue" onClick={() => { play("tick"); goto("hub"); }} data-testid="arc-back-hub">
               ← Back to Hub
             </Button>
           </div>
@@ -57,7 +58,7 @@ export function PracticeArc() {
             <Rail order={gameOrder} current={currentGameIndex} completed={completed} done />
           </FeatureCard>
           <div className={s.actions}>
-            <Button variant="blue" onClick={() => goto("hub")} data-testid="arc-finish-hub">
+            <Button variant="blue" onClick={() => { play("tick"); goto("hub"); }} data-testid="arc-finish-hub">
               Back to Hub →
             </Button>
           </div>
@@ -70,7 +71,7 @@ export function PracticeArc() {
     <main className="v2-shell" data-testid="screen-practice">
       <LivingBackdrop variant="purple" />
       <div className={s.inner}>
-        <button className={s.back} type="button" onClick={() => goto("hub")}>
+        <button className={s.back} type="button" onClick={() => { play("tick"); goto("hub"); }}>
           ← Back to Hub
         </button>
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRuntimeStore } from "./store";
+import { play } from "./sfx";
 import s from "./TutorWidget.module.css";
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,10 @@ export function TutorWidget() {
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // Guard: skip the very first mount so open=false on load never fires a cue.
+  const mountedRef = useRef(false);
+  // Guard: track the turn count we last fired "reply landed" for.
+  const lastReplyCountRef = useRef(0);
 
   // Auto-scroll to the newest turn / the typing indicator.
   useEffect(() => {
@@ -35,10 +40,34 @@ export function TutorWidget() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [open, turns.length, sending]);
 
+  // Fire popup-open / popup-close when the panel toggles. Skip the initial render.
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    if (open) {
+      play("popup-open");
+    } else {
+      play("popup-close");
+    }
+  }, [open]);
+
   // Focus the composer when the panel opens.
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  // "Reply landed" cue: fires once per tutor turn, when sending flips true→false
+  // and the last turn is from the tutor. Fires even when the panel is minimized.
+  useEffect(() => {
+    if (sending) return;
+    const lastTurn = turns[turns.length - 1];
+    if (!lastTurn || lastTurn.role !== "tutor") return;
+    if (turns.length <= lastReplyCountRef.current) return;
+    lastReplyCountRef.current = turns.length;
+    play("popup-open");
+  }, [sending, turns]);
 
   const onSend = () => {
     const text = draft.trim();
@@ -68,7 +97,7 @@ export function TutorWidget() {
             <button
               type="button"
               className={s.headClose}
-              onClick={() => toggle(false)}
+              onClick={() => { play("tick"); toggle(false); }}
               aria-label="Close tutor"
               data-testid="tutor-close"
             >
@@ -134,7 +163,7 @@ export function TutorWidget() {
             <button
               type="button"
               className={s.sendBtn}
-              onClick={onSend}
+              onClick={() => { play("tick"); onSend(); }}
               disabled={sending || draft.trim() === ""}
               aria-label="Send message"
               data-testid="tutor-send"
@@ -149,7 +178,7 @@ export function TutorWidget() {
       <button
         type="button"
         className={`${s.launcher} ${open ? s.launcherOpen : ""}`}
-        onClick={() => toggle()}
+        onClick={() => { play("tick"); toggle(); }}
         aria-label={open ? "Minimize tutor" : "Open tutor"}
         aria-expanded={open}
         data-testid="tutor-launcher"

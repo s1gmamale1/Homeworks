@@ -1,5 +1,6 @@
-import type { ReactNode, ButtonHTMLAttributes } from "react";
+import type { ReactNode, ButtonHTMLAttributes, MouseEvent } from "react";
 import s from "./primitives.module.css";
+import { play } from "../../runtime/sfx";
 
 type Div = { children?: ReactNode; className?: string };
 
@@ -72,11 +73,12 @@ export function LessonPanel({
     correct: s.lessonPanelCorrect,
     wrong: s.lessonPanelWrong,
   }[state];
+  const handleClick = () => { play("tick"); onClick?.(); };
   return (
     <button
       type="button"
       className={cx(s.lessonPanel, stateClass)}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       aria-pressed={state === "active"}
     >
@@ -94,10 +96,11 @@ export function LessonPanel({
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "blue" | "outline" | "white";
 };
-export function Button({ variant = "blue", className, children, ...rest }: BtnProps) {
+export function Button({ variant = "blue", className, children, onClick, ...rest }: BtnProps) {
   const v = { blue: s.btnBlue, outline: s.btnOutline, white: s.btnWhite }[variant];
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => { play("tick"); onClick?.(e); };
   return (
-    <button className={cx(s.btn, v, className)} {...rest}>
+    <button className={cx(s.btn, v, className)} onClick={handleClick} {...rest}>
       {children}
     </button>
   );

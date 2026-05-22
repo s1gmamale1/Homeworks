@@ -5,6 +5,7 @@ import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import IntegrityNudge from "../IntegrityNudge";
+import { play } from "../sfx";
 import s from "./SentenceFill.module.css";
 import type { ClipboardEventHandler } from "react";
 
@@ -198,6 +199,12 @@ function SentenceFillInner({
       });
       setNudge(res.integrity_nudge ?? null);
 
+      if (res.correct) {
+        play("correct");
+      } else {
+        play("wrong");
+      }
+
       const flash: "correct" | "wrong" = res.correct ? "correct" : "wrong";
 
       setBlanks((prev) => {
@@ -377,7 +384,7 @@ function SentenceFillInner({
                     .filter(Boolean)
                     .join(" ")}
                   disabled={isUsed || focusedBlank === null || blanks[focusedBlank]?.locked}
-                  onClick={() => onChipTap(word)}
+                  onClick={() => { play("tick"); onChipTap(word); }}
                   data-testid={`sf-chip-${word}`}
                 >
                   {word}

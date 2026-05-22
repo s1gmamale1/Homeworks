@@ -5,6 +5,7 @@ import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
 import IntegrityNudge from "../IntegrityNudge";
+import { play } from "../sfx";
 import s from "./RealLifeChallenge.module.css";
 import type { ClipboardEventHandler } from "react";
 
@@ -124,7 +125,7 @@ function DecisionStep({
             ]
               .filter(Boolean)
               .join(" ")}
-            onClick={() => onPick(opt.id)}
+            onClick={() => { play("tick"); onPick(opt.id); }}
             disabled={submitting || result !== null}
             aria-pressed={isPicked}
             data-testid={`rlc-option-${opt.id}`}
@@ -171,7 +172,7 @@ function ConceptSelectStep({
             ]
               .filter(Boolean)
               .join(" ")}
-            onClick={() => onPick(chip.id)}
+            onClick={() => { play("tick"); onPick(chip.id); }}
             disabled={submitting || result !== null}
             aria-pressed={isPicked}
             data-testid={`rlc-chip-${chip.id}`}
@@ -439,7 +440,14 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
       setStepResult(res);
       setNudge(res.integrity_nudge ?? null);
       if (res.complete) {
+        play("complete");
         setFinalResult(res);
+      } else if ("correct" in res) {
+        if (res.correct) {
+          play("correct");
+        } else {
+          play("wrong");
+        }
       }
     } catch (err) {
       setError((err as Error).message || "Couldn't submit — please try again.");

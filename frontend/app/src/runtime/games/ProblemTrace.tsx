@@ -9,6 +9,7 @@ import {
   PressButton,
   ResultTier,
 } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./ProblemTrace.module.css";
 
 // ---------------------------------------------------------------------------
@@ -168,7 +169,12 @@ function ProblemTraceInner({
         }
       );
       setVerdict(res);
-      if (res.correct) setScore((sc) => sc + 1);
+      if (res.correct) {
+        play("correct");
+        setScore((sc) => sc + 1);
+      } else {
+        play("wrong");
+      }
       // The reveal ALWAYS happens — a worked solution shows its next line
       // whether or not the prediction was right. (advance is informational
       // here; we never trap the student on a wrong prediction.)

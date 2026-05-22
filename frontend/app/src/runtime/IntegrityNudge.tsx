@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { FeatureCard, Pill, Button, Lead } from "../shared/ui/primitives";
 import type { IntegrityNudge as IntegrityNudgeData } from "../shared/types";
+import { play } from "./sfx";
 import s from "./IntegrityNudge.module.css";
 
 // ---------------------------------------------------------------------------
@@ -46,8 +47,12 @@ export default function IntegrityNudge({
 
   // Move focus to the card when a nudge appears so screen-reader + keyboard
   // users land on it (it's role="status" / aria-live polite, non-modal).
+  // Fire the appearance cue once per nudge (null→value transition only).
   useEffect(() => {
-    if (nudge) cardRef.current?.focus();
+    if (nudge) {
+      cardRef.current?.focus();
+      play("popup-open");
+    }
   }, [nudge]);
 
   // Safe to always mount — render nothing when there's no flag.

@@ -13,6 +13,7 @@ import {
   StateMeters,
 } from "./_practiceShared";
 import type { Checkpoint, CheckpointVerdict, DPEResult } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./TttGrid.module.css";
 
 // ---------------------------------------------------------------------------
@@ -420,8 +421,10 @@ function BoardStep({
       setVerdict(res);
       applyMeters(res);
       if (res.correct === true && res.advance !== false) {
+        play("correct");
         window.setTimeout(onResolved, 820);
       } else if (res.correct !== true) {
+        play("wrong");
         // wrong cell → let them reconsider (meters reflect the server's read)
         setPicked(null);
       }

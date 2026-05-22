@@ -1,6 +1,7 @@
 import { useState } from "react";
-import type { ReactNode, ButtonHTMLAttributes } from "react";
+import type { ReactNode, ButtonHTMLAttributes, MouseEvent } from "react";
 import s from "./_practiceShared.module.css";
+import { play } from "../sfx";
 
 // ---------------------------------------------------------------------------
 // _practiceShared — the reusable building-block kit for the 8 Division-3
@@ -70,12 +71,15 @@ export function PressButton({
   variant = "solid",
   className,
   children,
+  onClick,
   ...rest
 }: PressBtnProps) {
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => { play("tick"); onClick?.(e); };
   return (
     <button
       type="button"
       className={cx(s.pressBtn, variant === "ghost" && s.pressBtnGhost, className)}
+      onClick={handleClick}
       {...rest}
     >
       {children}
@@ -93,6 +97,7 @@ export function PressChoice({
   state = "idle",
   className,
   children,
+  onClick,
   ...rest
 }: PressChoiceProps) {
   const stateClass = {
@@ -101,8 +106,9 @@ export function PressChoice({
     correct: s.choiceCorrect,
     wrong: s.choiceWrong,
   }[state];
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => { play("tick"); onClick?.(e); };
   return (
-    <button type="button" className={cx(s.choice, stateClass, className)} {...rest}>
+    <button type="button" className={cx(s.choice, stateClass, className)} onClick={handleClick} {...rest}>
       {children}
     </button>
   );
@@ -176,17 +182,21 @@ export function CheckpointFlow({
       // advance=false to mean "more checkpoints remain", which is the opposite
       // of "stay and retry". Retry is driven purely by `!correct`.
       if (v.correct) {
+        play("correct");
         // brief pause so the student sees the correct flash, then advance
         window.setTimeout(() => {
           if (index + 1 < total) {
+            play("advance");
             setIndex((i) => i + 1);
             setSelected(null);
             setVerdict(null);
           } else {
+            play("complete");
             onDone();
           }
         }, 720);
       } else {
+        play("wrong");
         // wrong → let them retry this checkpoint
         setSelected(null);
       }
@@ -277,6 +287,7 @@ export function DPEBox({
     setBusy(true);
     try {
       const r = await onSubmit(text.trim());
+      play("submit");
       setResult(r ?? { pending_ai: true });
     } catch {
       // Even on a transient error keep the arc walkable with the calm note.

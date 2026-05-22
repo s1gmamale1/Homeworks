@@ -7,6 +7,7 @@ import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { acknowledgeNudge } from "../shared/api";
 import s from "./BossArena.module.css";
+import { play } from "./sfx";
 
 // ---------------------------------------------------------------------------
 // Boss Arena — the F4 mastery peak, DYNAMIC (Plan 5). The SERVER owns
@@ -324,7 +325,7 @@ export default function BossArena({ onComplete }: GameProps) {
               <button
                 type="button"
                 className={s.hintBtn}
-                onClick={requestHint}
+                onClick={() => { play("tick"); requestHint(); }}
                 data-testid="boss-hint"
               >
                 Ask for a hint

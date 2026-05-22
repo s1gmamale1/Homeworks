@@ -9,6 +9,7 @@ import {
   PressButton,
   ResultTier,
 } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./DependencyChain.module.css";
 
 // ---------------------------------------------------------------------------
@@ -179,6 +180,7 @@ function DependencyChainInner({
       }
       setVerdict(res);
       if (res.correct) {
+        play("correct");
         // First-try correct (never stumbled on this step) scores a point.
         if (!stumbled) setScore((sc) => sc + 1);
         // The server surfaces the carried result ONLY on a correct answer.
@@ -197,6 +199,7 @@ function DependencyChainInner({
           }
         }, 820);
       } else {
+        play("wrong");
         // Wrong link: the chain holds here. Mark stumbled (so a later correct
         // answer no longer scores first-try) and let the student retry.
         setStumbled(true);

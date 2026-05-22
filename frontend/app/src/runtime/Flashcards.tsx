@@ -4,6 +4,7 @@ import { useRuntimeStore } from "./store";
 import { Eyebrow, Title, Lead, Button } from "../shared/ui/primitives";
 import type { Flashcard } from "../shared/types";
 import LivingBackdrop from "./LivingBackdrop";
+import { play } from "./sfx";
 import s from "./Flashcards.module.css";
 
 // Tile B, study half: a flippable deck (front ↔ back) with "Bildim/Bilmadim"
@@ -50,7 +51,7 @@ export function Flashcards() {
           Memory Check.
         </Lead>
         <div className={s.actions}>
-          <Button variant="blue" onClick={startMemoryCheck} data-testid="fc-start-mc">
+          <Button variant="blue" onClick={() => { play("tick"); startMemoryCheck(); }} data-testid="fc-start-mc">
             Start Memory Check →
           </Button>
         </div>
@@ -62,6 +63,7 @@ export function Flashcards() {
   const isRetry = weakItems.length > 0;
 
   const onFlip = () => {
+    play("tick");
     setFlipped((f) => !f);
     markViewed(cardIndex);
   };
@@ -122,6 +124,7 @@ export function Flashcards() {
           type="button"
           className={`${s.recallBtn} ${s.recallKnew}`}
           onClick={() => {
+            play("correct");
             markViewed(cardIndex);
             go(1);
           }}
@@ -134,6 +137,7 @@ export function Flashcards() {
           type="button"
           className={`${s.recallBtn} ${s.recallDidnt}`}
           onClick={() => {
+            play("wrong");
             markViewed(cardIndex);
             setFlipped(true);
           }}
@@ -147,7 +151,7 @@ export function Flashcards() {
         <button
           type="button"
           className={s.navBtn}
-          onClick={() => go(-1)}
+          onClick={() => { play("tick"); go(-1); }}
           disabled={cardIndex === 0}
         >
           ← Prev
@@ -155,7 +159,7 @@ export function Flashcards() {
         <button
           type="button"
           className={s.navBtn}
-          onClick={() => go(1)}
+          onClick={() => { play("tick"); go(1); }}
           disabled={cardIndex + 1 >= total}
         >
           Next →
@@ -165,7 +169,7 @@ export function Flashcards() {
       <div className={s.actions}>
         <Button
           variant="blue"
-          onClick={startMemoryCheck}
+          onClick={() => { play("tick"); startMemoryCheck(); }}
           disabled={!allViewed}
           aria-disabled={!allViewed}
           data-testid="fc-start-mc"
@@ -195,7 +199,7 @@ function Shell({ children, testid }: { children: ReactNode; testid: string }) {
 
 function BackToHub({ onClick }: { onClick: () => void }) {
   return (
-    <button className={s.back} onClick={onClick} type="button">
+    <button className={s.back} onClick={() => { play("tick"); onClick(); }} type="button">
       ← Back to Hub
     </button>
   );

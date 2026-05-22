@@ -11,6 +11,7 @@ import {
   playFireworkCrackle,
 } from "./hubSound";
 import HubChains, { type HubChainsPhase } from "./HubChains";
+import { play } from "./sfx";
 import s from "./LearningHub.module.css";
 
 // ---- Reveal choreography timeline (ms) -------------------------------------
@@ -518,7 +519,7 @@ function LearningNode({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => { play("tick"); onClick(); }}
       data-testid={testid}
       data-status={status}
       className={[
@@ -646,7 +647,7 @@ function PracticesNode({
           <button
             type="button"
             className={`${s.enterCta} ${s.ctaBtn}`}
-            onClick={onEnter}
+            onClick={() => { play("tick"); onEnter(); }}
             data-testid="hub-enter-practice"
           >
             Enter Practice Arc →

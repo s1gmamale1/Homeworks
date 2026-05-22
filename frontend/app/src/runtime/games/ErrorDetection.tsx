@@ -11,6 +11,7 @@ import {
   ResultTier,
 } from "./_practiceShared";
 import type { ResultTierName, DPEResult } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./ErrorDetection.module.css";
 
 // ---------------------------------------------------------------------------
@@ -183,12 +184,14 @@ export default function ErrorDetection({ onComplete }: GameProps) {
         { item_id: item.id ?? String(idx), stage: "spot", block_id: blockId }
       );
       if (res.correct) {
+        play("correct");
         setPickedBlock(blockId);
         setSpotCorrectFlag(true);
         setWrongCountAtCorrect(wrongCount);
         setSpotFeedback(res.feedback ?? "Correct block found — now write the fix.");
         setStage("correction");
       } else {
+        play("wrong");
         // Wrong tap: mark block, increment penalty, allow retry
         setWrongBlocks((prev) => {
           const next = new Set(prev);
@@ -234,6 +237,7 @@ export default function ErrorDetection({ onComplete }: GameProps) {
       );
       setCorrectionFeedback(res.feedback ?? null);
       if (res.correct) {
+        play("correct");
         setCorrectionCorrect(true);
         // Resolve tier from server score or client derivation
         const tier: ResultTierName = res.result_tier
@@ -247,6 +251,8 @@ export default function ErrorDetection({ onComplete }: GameProps) {
         } else {
           setStage("done");
         }
+      } else {
+        play("wrong");
       }
       // If wrong: leave in correction stage with feedback, student retries
     } catch {

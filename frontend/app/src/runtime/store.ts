@@ -31,6 +31,7 @@ import {
 } from "../shared/api";
 import { resolveGameOrder } from "./gameOrder";
 import type { AnswerTelemetry } from "./hooks/useAnswerTelemetry";
+import { play } from "./sfx";
 
 export type Screen = "hub" | "cbp" | "fc" | "practice" | "reflection";
 
@@ -524,6 +525,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     set((st) => ({ cbp: { ...st.cbp, submitting: true, submitError: null } }));
     try {
       const res = await submitCheckpoint(hwId, sessionId, index, answer, tele);
+      play(res.correct ? "correct" : "wrong");
       set((st) => {
         const results = [...st.cbp.results];
         results[index] = res.correct;
@@ -642,6 +644,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     }));
     try {
       const res = await submitReasoning(hwId, sessionId, text, tele);
+      play(res.passed ? "correct" : "wrong");
       set((st) => ({
         cbp: {
           ...st.cbp,
@@ -735,6 +738,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
     set((st) => ({ fc: { ...st.fc, submitting: true, submitError: null } }));
     try {
       const res = await submitMemoryCheckItem(hwId, sessionId, index, answer, tele);
+      play(res.correct ? "correct" : "wrong");
       set((st) => {
         const results = [...st.fc.results];
         results[index] = res.correct;
@@ -1039,6 +1043,13 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
           status: nextStatus,
         },
       }));
+      if (nextStatus === "won") {
+        play("boss-win");
+      } else if (nextStatus === "lost") {
+        play("boss-lose");
+      } else {
+        play(res.is_correct ? "correct" : "wrong");
+      }
       // Still active → chain to the next question automatically.
       if (nextStatus === "fighting") {
         await get().loadNextQuestion();

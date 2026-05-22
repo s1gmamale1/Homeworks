@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useRuntimeStore } from "./store";
 import {
@@ -16,6 +16,7 @@ import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { acknowledgeNudge } from "../shared/api";
 import LivingBackdrop from "./LivingBackdrop";
 import s from "./MemoryCheck.module.css";
+import { play } from "./sfx";
 
 const KIND_LABEL: Record<MemoryCheckItemType, string> = {
   mcq: "Multiple choice",
@@ -229,6 +230,15 @@ function ResultStage() {
   const passed = mc?.passed ?? false;
   // Prefer the server's score; fall back to the locally tracked running score.
   const scorePct = mc?.score_pct ?? fcScore;
+
+  // Fire "complete" once on mount when the Memory Check is passed.
+  const firedRef = useRef(false);
+  useEffect(() => {
+    if (passed && !firedRef.current) {
+      firedRef.current = true;
+      play("complete");
+    }
+  }, [passed]);
   const threshold = mc?.threshold_pct ?? payload?.content_json.memory_check?.pass_threshold_pct ?? 60;
   const unlocked = gate?.practice_arc_unlocked ?? false;
 
@@ -307,7 +317,11 @@ function Shell({ children, testid }: { children: ReactNode; testid: string }) {
 
 function BackToHub({ onClick }: { onClick: () => void }) {
   return (
-    <button className={s.back} onClick={onClick} type="button">
+    <button
+      className={s.back}
+      onClick={() => { play("tick"); onClick(); }}
+      type="button"
+    >
       ← Back to Hub
     </button>
   );

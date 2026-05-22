@@ -4,6 +4,7 @@ import { submitTileMatch } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import type { TileMatchPayload } from "../../shared/types";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
+import { play } from "../sfx";
 import s from "./TileMatch.module.css";
 
 // ---------------------------------------------------------------------------
@@ -86,6 +87,7 @@ export default function TileMatch({ onComplete }: GameProps) {
       // index equality. We send the two tapped tokens; the verdict comes back.
       const res = await submitTileMatch(hwId, sessionId, selectedLid, rid);
       if (res.correct) {
+        play("correct");
         const nextL = new Set(matchedLefts);
         nextL.add(selectedLid);
         const nextR = new Set(matchedRights);
@@ -96,9 +98,11 @@ export default function TileMatch({ onComplete }: GameProps) {
         setHint(null);
         // Server is authoritative on completion (matched_count vs total_pairs).
         if (res.complete || nextL.size >= totalPairs) {
+          play("complete");
           setComplete(true);
         }
       } else {
+        play("wrong");
         setWrongFlash(rid);
         setHint(res.hint ?? null);
         setSelectedLid(null);
@@ -145,7 +149,7 @@ export default function TileMatch({ onComplete }: GameProps) {
                       .filter(Boolean)
                       .join(" ")}
                     disabled={isMatched || submitting || complete}
-                    onClick={() => onPickLeft(t.lid)}
+                    onClick={() => { play("tick"); onPickLeft(t.lid); }}
                     aria-pressed={isSel}
                     data-testid={`tm-left-${t.lid}`}
                   >
@@ -172,7 +176,7 @@ export default function TileMatch({ onComplete }: GameProps) {
                       .filter(Boolean)
                       .join(" ")}
                     disabled={isMatched || submitting || complete || selectedLid === null}
-                    onClick={() => onPickRight(t.rid)}
+                    onClick={() => { play("tick"); onPickRight(t.rid); }}
                     data-testid={`tm-right-${t.rid}`}
                   >
                     {t.text}

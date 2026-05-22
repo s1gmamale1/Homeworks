@@ -3,6 +3,7 @@ import { useRuntimeStore } from "../store";
 import { submitGameAnswer } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
+import { play } from "../sfx";
 import s from "./Ttt.module.css";
 
 // ---------------------------------------------------------------------------
@@ -216,6 +217,11 @@ export default function Ttt({ onComplete }: GameProps) {
     if (!verdict || openCell === null) return;
 
     const marker: "X" | "O" = verdict.is_correct || verdict.mercy ? "X" : "O";
+    if (verdict.is_correct || verdict.mercy) {
+      play("correct");
+    } else {
+      play("wrong");
+    }
     dispatch({ type: "CLAIM", cell: openCell, marker });
 
     // peek at what the board will look like after this claim for outcome detection
@@ -236,6 +242,7 @@ export default function Ttt({ onComplete }: GameProps) {
     setSubmitError(null);
 
     if (roundOutcome !== null) {
+      if (roundOutcome === "win") play("complete");
       // round just ended — record and advance
       const nextOutcomes = [...outcomesRef.current, roundOutcome];
       setOutcomes(nextOutcomes);
@@ -365,7 +372,7 @@ export default function Ttt({ onComplete }: GameProps) {
               ]
                 .filter(Boolean)
                 .join(" ")}
-              onClick={() => onCellClick(idx)}
+              onClick={() => { play("tick"); onCellClick(idx); }}
               disabled={!isEmpty || roundOver || submitting || openCell !== null}
               aria-label={
                 isEmpty
@@ -475,7 +482,7 @@ function QuestionModal({
             <button
               type="button"
               className={s.closeBtn}
-              onClick={onClose}
+              onClick={() => { play("tick"); onClose(); }}
               aria-label="Cancel"
               data-testid="ttt-modal-close"
             >
@@ -498,7 +505,7 @@ function QuestionModal({
                   className={[s.option, pickedOption === opt && s.optionSelected]
                     .filter(Boolean)
                     .join(" ")}
-                  onClick={() => onPick(opt)}
+                  onClick={() => { play("tick"); onPick(opt); }}
                   disabled={submitting}
                   aria-pressed={pickedOption === opt}
                   data-testid={`ttt-option-${i}`}

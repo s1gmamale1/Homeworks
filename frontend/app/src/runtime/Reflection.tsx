@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { useRuntimeStore } from "./store";
 import type { ReflectionDivision } from "../shared/types";
 import { Pill, Eyebrow, Title, Lead, Button } from "../shared/ui/primitives";
 import ReflectionBackdrop from "./ReflectionBackdrop";
+import { play } from "./sfx";
 import s from "./Reflection.module.css";
 
 // ---------------------------------------------------------------------------
@@ -120,6 +122,14 @@ function DebriefStage() {
   // The verdict is the server's once the debrief lands; fall back to the
   // provisional `passed` only for the brief moment a debrief is null.
   const verdictPassed = debrief ? debrief.verdict === "passed" : passed;
+
+  // Fire the verdict cue once when the debrief first lands.
+  const verdictFiredRef = useRef(false);
+  useEffect(() => {
+    if (!debrief || verdictFiredRef.current) return;
+    verdictFiredRef.current = true;
+    play(verdictPassed ? "complete" : "boss-lose");
+  }, [debrief, verdictPassed]);
   const overallPct =
     typeof debrief?.overall_pct === "number" ? Math.round(debrief.overall_pct) : null;
   const bandName = debrief?.band?.name?.trim() || "";
@@ -311,21 +321,21 @@ function DebriefStage() {
 
         <div className={s.actions}>
           {verdictPassed ? (
-            <Button variant="blue" onClick={() => goto("hub")} data-testid="reflection-done">
+            <Button variant="blue" onClick={() => { play("tick"); goto("hub"); }} data-testid="reflection-done">
               Back to Hub →
             </Button>
           ) : (
             <>
               <Button
                 variant="outline"
-                onClick={() => goto("hub")}
+                onClick={() => { play("tick"); goto("hub"); }}
                 data-testid="reflection-done"
               >
                 Back to Hub
               </Button>
               <Button
                 variant="blue"
-                onClick={() => void retake()}
+                onClick={() => { play("tick"); void retake(); }}
                 disabled={retaking}
                 data-testid="reflection-retake"
               >

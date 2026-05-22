@@ -13,6 +13,7 @@ import {
   type Checkpoint,
   type CheckpointVerdict,
 } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./CounterexampleHunt.module.css";
 
 // ---------------------------------------------------------------------------
@@ -208,9 +209,11 @@ export default function CounterexampleHunt({ onComplete }: GameProps) {
       }
       setPickVerdict(verdict);
       if (verdict.correct) {
+        play("correct");
         // Brief pause so the student sees the correct flash.
         window.setTimeout(afterCorrectPick, 820);
       } else {
+        play("wrong");
         // Wrong pick: clear selection so student can try again.
         window.setTimeout(() => {
           setSelectedCaseId(null);

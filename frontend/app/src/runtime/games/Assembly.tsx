@@ -8,6 +8,7 @@ import {
   ResultTier,
   EmptyGuard,
 } from "./_practiceShared";
+import { play } from "../sfx";
 import s from "./Assembly.module.css";
 
 // ---------------------------------------------------------------------------
@@ -145,7 +146,14 @@ export default function Assembly({ onComplete }: GameProps) {
         { item_id: item!.id, order },
       );
       setVerdict(res);
-      setSubmitted(res.correct === true || res.complete === true);
+      const succeeded = res.correct === true || res.complete === true;
+      setSubmitted(succeeded);
+      if (succeeded) {
+        play("correct");
+        if (res.complete) play("complete");
+      } else {
+        play("wrong");
+      }
     } catch {
       // Surface a generic error message without blocking the arc
       setVerdict({
