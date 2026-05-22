@@ -86,19 +86,39 @@ export default function TileMatch({ onComplete }: GameProps) {
       // The server inverts the opaque tokens to pair indices and grades by
       // index equality. We send the two tapped tokens; the verdict comes back.
       const res = await submitTileMatch(hwId, sessionId, selectedLid, rid);
+
+      // Sync the local matched-set from the server's authoritative
+      // `matched_tokens` on EVERY response (correct / wrong / already-matched
+      // replay). The server's _TM_ATTEMPTS dict survives across navigation
+      // while the React component remounts with empty matched-set —
+      // without this sync, a returning student sees "0/N matched" and every
+      // click on a previously-matched pair flashes wrong with no recovery.
+      // Echoing the full token set on every response re-bases the UI to
+      // ground truth in one round-trip.
+      if (Array.isArray(res.matched_tokens)) {
+        setMatchedLefts(new Set(res.matched_tokens.map((t) => t.lid)));
+        setMatchedRights(new Set(res.matched_tokens.map((t) => t.rid)));
+      }
+
       if (res.correct) {
         play("correct");
-        const nextL = new Set(matchedLefts);
-        nextL.add(selectedLid);
-        const nextR = new Set(matchedRights);
-        nextR.add(rid);
-        setMatchedLefts(nextL);
-        setMatchedRights(nextR);
         setSelectedLid(null);
         setHint(null);
         // Server is authoritative on completion (matched_count vs total_pairs).
-        if (res.complete || nextL.size >= totalPairs) {
+        // The matched_tokens sync above (lines 98-101) already re-based the
+        // local matched-set from `res.matched_tokens`, so no manual add needed.
+        if (res.complete) {
           play("complete");
+          setComplete(true);
+        }
+      } else if (res.already_matched || res.complete) {
+        // Replay against a pair the server already considers matched (typical
+        // after navigating away from a completed Tile Match and coming back).
+        // Treat as no-op — the matched_tokens sync above already re-based the
+        // UI to ground truth. Don't flash wrong, don't show a misleading hint.
+        setSelectedLid(null);
+        setHint(null);
+        if (res.complete) {
           setComplete(true);
         }
       } else {

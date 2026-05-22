@@ -287,12 +287,27 @@ export interface TileMatchPayload {
   explanation?: never;
 }
 
-/** Per-pair Tile Match grade result (server-authoritative). */
+/** Per-pair Tile Match grade result (server-authoritative).
+ *
+ * `matched_tokens` + `already_matched` are load-bearing for the navigation
+ * rehydrate path. The server's `_TM_ATTEMPTS` dict survives the uvicorn
+ * process lifetime keyed on `(homework_id, session_id)`, but the React
+ * component remounts with empty matched-set whenever the student leaves
+ * the panel and comes back. Without these fields, every subsequent click
+ * on a previously-matched pair returns `correct: false` and the UI shows
+ * wrong-flash with no recovery. The component MUST sync from
+ * `matched_tokens` on every response and respect `already_matched` as
+ * a no-op (not a miss). See TileMatch.tsx::onPickRight.
+ */
 export interface TileMatchResult {
   correct: boolean;
+  /** True when the pair was already in the server's matched set — no-op replay, NOT a miss. */
+  already_matched?: boolean;
   hint: string | null;
   explanation: string | null;
   matched_count: number;
+  /** Per-side HMAC tokens of every currently-matched pair (server-authoritative). */
+  matched_tokens?: { lid: string; rid: string }[];
   total_pairs: number;
   complete: boolean;
   outcome: string | null;
