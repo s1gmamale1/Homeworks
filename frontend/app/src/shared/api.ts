@@ -469,4 +469,42 @@ export function tutorChat(opts: {
   });
 }
 
+// ---- Anti-cheat: advisory nudge acknowledgement ----
+
+/**
+ * Fire-and-forget advisory signal: student responded to an integrity nudge.
+ *
+ * CONTRACT (read before calling):
+ *   • NEVER await this in a way that gates, delays, or conditions UI flow.
+ *   • The backend receives `nudge_response` and early-returns {advisory:true}
+ *     WITHOUT grading. The client MUST ignore the response entirely.
+ *   • Errors are swallowed — a dropped signal is fine; the UX must not break.
+ *   • No student_answer is sent — this is purely a behavioural advisory ping.
+ */
+export function acknowledgeNudge(
+  hwId: string,
+  sessionId: string,
+  phase: string,
+  choice: string
+): void {
+  // Intentionally NOT awaited. We swallow both network errors and the response
+  // body — the server returns {advisory:true} which the client must never read
+  // for correctness, gate, or flow decisions.
+  void fetch("/api/ai/check-answer", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      phase,
+      homework_id: hwId,
+      session_id: sessionId,
+      nudge_response: choice,
+    }),
+  }).catch(() => {
+    /* advisory — dropped signals are acceptable */
+  });
+}
+
 export { ApiError };

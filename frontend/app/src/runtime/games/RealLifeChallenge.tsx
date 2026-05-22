@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRuntimeStore } from "../store";
-import { submitGameAnswer } from "../../shared/api";
+import { submitGameAnswer, acknowledgeNudge } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button, FeatureCard } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
@@ -549,7 +549,13 @@ export default function RealLifeChallenge({ onComplete }: GameProps) {
 
       {/* Advisory anti-cheat nudge — beside feedback, never gates the Next/See
           results button above. */}
-      <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
+      <IntegrityNudge
+        nudge={nudge}
+        onDismiss={() => setNudge(null)}
+        onRespond={(choice) =>
+          acknowledgeNudge(hwId, sessionId, "real-life-challenge", choice)
+        }
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import CbpBackdrop from "./CbpBackdrop";
 import CbpJourney from "./CbpJourney";
 import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
+import { acknowledgeNudge } from "../shared/api";
 import s from "./CaseBasedPreview.module.css";
 
 const KIND_LABEL: Record<CheckpointKind, string> = {
@@ -209,6 +210,8 @@ function LearningBlockStage() {
   const payload = useRuntimeStore((st) => st.payload);
   const nudge = useRuntimeStore((st) => st.cbp.lastNudge);
   const dismissNudge = useRuntimeStore((st) => st.dismissCbpNudge);
+  const hwId = useRuntimeStore((st) => st.hwId);
+  const sessionId = useRuntimeStore((st) => st.sessionId);
 
   const correct = results[index];
   const total = payload?.content_json.case_based_preview?.checkpoints?.length ?? 3;
@@ -235,7 +238,13 @@ function LearningBlockStage() {
       </FeatureCard>
 
       {/* Advisory anti-cheat nudge — beside feedback, never gates Continue. */}
-      <IntegrityNudge nudge={nudge} onDismiss={dismissNudge} />
+      <IntegrityNudge
+        nudge={nudge}
+        onDismiss={dismissNudge}
+        onRespond={(choice) =>
+          acknowledgeNudge(hwId, sessionId, "case_based_preview", choice)
+        }
+      />
 
       <div className={s.actions}>
         {!correct && (
@@ -265,6 +274,8 @@ function ReasoningStage() {
   const enterSim = useRuntimeStore((st) => st.enterSimulation);
   const nudge = useRuntimeStore((st) => st.cbp.lastNudge);
   const dismissNudge = useRuntimeStore((st) => st.dismissCbpNudge);
+  const hwId = useRuntimeStore((st) => st.hwId);
+  const sessionId = useRuntimeStore((st) => st.sessionId);
   const dpe = useRuntimeStore(
     (st) =>
       st.payload?.content_json.case_based_preview?.decision_process_explanation
@@ -339,7 +350,13 @@ function ReasoningStage() {
       )}
 
       {/* Advisory anti-cheat nudge — beside the verdict, never gates submit. */}
-      <IntegrityNudge nudge={nudge} onDismiss={dismissNudge} />
+      <IntegrityNudge
+        nudge={nudge}
+        onDismiss={dismissNudge}
+        onRespond={(choice) =>
+          acknowledgeNudge(hwId, sessionId, "case_based_preview_reasoning", choice)
+        }
+      />
 
       <div className={s.actions}>
         <Button

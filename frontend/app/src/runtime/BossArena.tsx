@@ -5,6 +5,7 @@ import type { GameProps } from "./GameHost";
 import { DarkSection, Eyebrow, Title, Lead, Button, Pill } from "../shared/ui/primitives";
 import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
+import { acknowledgeNudge } from "../shared/api";
 import s from "./BossArena.module.css";
 
 // ---------------------------------------------------------------------------
@@ -39,6 +40,8 @@ export default function BossArena({ onComplete }: GameProps) {
   const loadNextQuestion = useRuntimeStore((st) => st.loadNextQuestion);
   const requestHint = useRuntimeStore((st) => st.requestHint);
   const retryBoss = useRuntimeStore((st) => st.retryBoss);
+  const hwId = useRuntimeStore((st) => st.hwId);
+  const sessionId = useRuntimeStore((st) => st.sessionId);
 
   const meta = payload?.content_json.boss_meta;
   const bossName = meta?.name ?? "The Boss";
@@ -379,7 +382,13 @@ export default function BossArena({ onComplete }: GameProps) {
 
             {/* Advisory anti-cheat nudge — beside the turn result, never gates
                 the Attack button below. */}
-            <IntegrityNudge nudge={nudge} onDismiss={() => setNudgeDismissed(true)} />
+            <IntegrityNudge
+              nudge={nudge}
+              onDismiss={() => setNudgeDismissed(true)}
+              onRespond={(choice) =>
+                acknowledgeNudge(hwId, sessionId, "boss", choice)
+              }
+            />
 
             {boss.submitError && (
               <p className={s.error} role="alert">

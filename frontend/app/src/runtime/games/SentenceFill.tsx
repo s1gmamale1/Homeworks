@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useRuntimeStore } from "../store";
-import { submitGameAnswer } from "../../shared/api";
+import { submitGameAnswer, acknowledgeNudge } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
 import { useAnswerTelemetry } from "../hooks/useAnswerTelemetry";
@@ -404,7 +404,13 @@ function SentenceFillInner({
 
       {/* Advisory anti-cheat nudge — beside the passage/feedback, never gates
           blank progress or advance. */}
-      <IntegrityNudge nudge={nudge} onDismiss={() => setNudge(null)} />
+      <IntegrityNudge
+        nudge={nudge}
+        onDismiss={() => setNudge(null)}
+        onRespond={(choice) =>
+          acknowledgeNudge(hwId, sessionId, "sentence-fill", choice)
+        }
+      />
 
       {error && (
         <p className={s.error} role="alert">

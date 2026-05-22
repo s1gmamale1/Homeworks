@@ -13,6 +13,7 @@ import {
 import type { MemoryCheckItem, MemoryCheckItemType } from "../shared/types";
 import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
+import { acknowledgeNudge } from "../shared/api";
 import s from "./MemoryCheck.module.css";
 
 const KIND_LABEL: Record<MemoryCheckItemType, string> = {
@@ -47,6 +48,8 @@ function ItemStage() {
   const goto = useRuntimeStore((st) => st.goto);
   const nudge = useRuntimeStore((st) => st.fc.lastNudge);
   const dismissNudge = useRuntimeStore((st) => st.dismissMcNudge);
+  const hwId = useRuntimeStore((st) => st.hwId);
+  const sessionId = useRuntimeStore((st) => st.sessionId);
   // Advisory anti-cheat — re-baseline timing/paste per item.
   const tele = useAnswerTelemetry(itemIndex);
 
@@ -183,7 +186,13 @@ function ItemStage() {
       )}
 
       {/* Advisory anti-cheat nudge — beside feedback, never gates Continue. */}
-      <IntegrityNudge nudge={nudge} onDismiss={dismissNudge} />
+      <IntegrityNudge
+        nudge={nudge}
+        onDismiss={dismissNudge}
+        onRespond={(choice) =>
+          acknowledgeNudge(hwId, sessionId, "memory_check", choice)
+        }
+      />
 
       <div className={s.actions}>
         {!answered ? (

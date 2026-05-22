@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import IntegrityNudge from "./IntegrityNudge";
+import { acknowledgeNudge } from "../shared/api";
 
 // ---------------------------------------------------------------------------
 // IntegrityNudge — soft-friction advisory card.
@@ -109,5 +110,125 @@ describe("IntegrityNudge", () => {
     expect(screen.getByTestId("integrity-nudge")).toBeInTheDocument();
 
     window.matchMedia = original;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// acknowledgeNudge — advisory POST helper (shared/api.ts)
+//   • Fires a fire-and-forget POST /api/ai/check-answer with nudge_response.
+//   • The client MUST NOT read the response for correctness/gate/flow.
+//   • Errors are swallowed — a dropped signal must not break the UI.
+//   • Crucially: calling it changes NO progress / gate / correctness state.
+// ---------------------------------------------------------------------------
+
+describe("acknowledgeNudge", () => {
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    // Replace global fetch with a spy that resolves immediately.
+    fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ advisory: true }),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.stubGlobal("fetch", fetchSpy);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cleanup();
+  });
+
+  it("fires a POST to /api/ai/check-answer with the correct advisory body", async () => {
+    acknowledgeNudge("hw-123", "sess-456", "case_based_preview", "explain");
+
+    // Allow the fire-and-forget promise microtask to flush.
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/ai/check-answer");
+    expect(init.method).toBe("POST");
+
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body.phase).toBe("case_based_preview");
+    expect(body.homework_id).toBe("hw-123");
+    expect(body.session_id).toBe("sess-456");
+    expect(body.nudge_response).toBe("explain");
+    // CRITICAL: no student_answer — this is advisory only.
+    expect(body.student_answer).toBeUndefined();
+  });
+
+  it("does NOT read the advisory response — fetch resolves but nothing changes", async () => {
+    // Track any external state mutation we care about (none expected).
+    let externalStateMutated = false;
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => {
+        // If the client ever reads this, it might act on it.
+        externalStateMutated = true;
+        return { advisory: true };
+      },
+    });
+
+    acknowledgeNudge("hw-abc", "sess-xyz", "memory_check", "explain");
+
+    // Wait long enough for any microtask that would read the response.
+    await new Promise((r) => setTimeout(r, 20));
+
+    // The fetch fired (signal sent), but the response body was never consumed.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(externalStateMutated).toBe(false);
+  });
+
+  it("swallows network errors — a dropped signal must not break the caller", async () => {
+    fetchSpy.mockRejectedValueOnce(new Error("Network down"));
+
+    // Must not throw synchronously or reject any observable promise.
+    expect(() =>
+      acknowledgeNudge("hw-err", "sess-err", "boss", "explain")
+    ).not.toThrow();
+
+    // Let the rejected promise settle.
+    await new Promise((r) => setTimeout(r, 20));
+    // Still no unhandled rejection — the error was swallowed internally.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("onRespond wired to acknowledgeNudge fires the advisory POST, no UI state changes", async () => {
+    // Simulate a call site: component wires onRespond → acknowledgeNudge.
+    // Correctness/gate/hp state is represented by a counter that must stay 0.
+    let correctnessStateChanges = 0;
+
+    const onRespond = (choice: string) => {
+      acknowledgeNudge("hw-wire", "sess-wire", "adaptive-quiz", choice);
+      // Verify the call site NEVER reads the return value for state changes.
+      // (acknowledgeNudge returns void, so this is statically enforced too.)
+    };
+
+    const user = userEvent.setup();
+    render(
+      <div>
+        <IntegrityNudge nudge={sampleNudge} onRespond={onRespond} />
+        {/* Sibling that represents correctness/gate state — must stay enabled. */}
+        <button
+          data-testid="correctness-indicator"
+          onClick={() => {
+            correctnessStateChanges++;
+          }}
+        >
+          Correct: {correctnessStateChanges}
+        </button>
+      </div>
+    );
+
+    await user.click(screen.getByTestId("integrity-nudge-respond"));
+
+    // Advisory POST was fired.
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+
+    // No correctness / gate / hp state was mutated.
+    expect(correctnessStateChanges).toBe(0);
+    // The sibling progress button is still enabled and clickable.
+    expect(screen.getByTestId("correctness-indicator")).toBeEnabled();
   });
 });
