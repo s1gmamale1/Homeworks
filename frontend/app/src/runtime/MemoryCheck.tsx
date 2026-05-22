@@ -14,6 +14,7 @@ import type { MemoryCheckItem, MemoryCheckItemType } from "../shared/types";
 import IntegrityNudge from "./IntegrityNudge";
 import { useAnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { acknowledgeNudge } from "../shared/api";
+import LivingBackdrop from "./LivingBackdrop";
 import s from "./MemoryCheck.module.css";
 
 const KIND_LABEL: Record<MemoryCheckItemType, string> = {
@@ -296,6 +297,7 @@ function ResultStage() {
 function Shell({ children, testid }: { children: ReactNode; testid: string }) {
   return (
     <main className="v2-shell" data-testid={testid}>
+      <LivingBackdrop variant="teal" />
       <div className={s.stage} key={testid}>
         {children}
       </div>

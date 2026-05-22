@@ -10,6 +10,7 @@
 /* ---- Pinned ink tokens (contrast guarantee — mirrors LearningHub) ---- */
 .inner {
   position: relative;
+  z-index: 1;
   animation: stageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
 
   --arc-ink:       #1d1d1f;

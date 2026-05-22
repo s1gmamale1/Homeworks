@@ -1,6 +1,7 @@
 import { useRuntimeStore } from "./store";
 import { Eyebrow, Title, Lead, Button, FeatureCard } from "../shared/ui/primitives";
 import { GameHost, gameLabel } from "./GameHost";
+import LivingBackdrop from "./LivingBackdrop";
 import s from "./PracticeArc.module.css";
 
 // ---------------------------------------------------------------------------
@@ -26,6 +27,7 @@ export function PracticeArc() {
   if (gameOrder.length === 0) {
     return (
       <main className="v2-shell" data-testid="screen-practice">
+        <LivingBackdrop variant="purple" />
         <div className={s.inner}>
           <Eyebrow>Practice Arc</Eyebrow>
           <Title size="hero">Nothing to practice yet.</Title>
@@ -43,6 +45,7 @@ export function PracticeArc() {
   if (finished) {
     return (
       <main className="v2-shell" data-testid="screen-practice">
+        <LivingBackdrop variant="purple" />
         <div className={s.inner}>
           <Eyebrow cyan>Practice Arc</Eyebrow>
           <Title size="hero">Arc cleared.</Title>
@@ -65,6 +68,7 @@ export function PracticeArc() {
 
   return (
     <main className="v2-shell" data-testid="screen-practice">
+      <LivingBackdrop variant="purple" />
       <div className={s.inner}>
         <button className={s.back} type="button" onClick={() => goto("hub")}>
           ← Back to Hub

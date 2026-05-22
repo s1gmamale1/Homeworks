@@ -17,6 +17,7 @@
   --mc-radius:      20px;
 
   position: relative;
+  z-index: 1;
   animation: mcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
 }
 

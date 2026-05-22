@@ -17,6 +17,7 @@
   --fc-radius:      20px;
 
   position: relative;
+  z-index: 1;
   animation: fcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
 }
 

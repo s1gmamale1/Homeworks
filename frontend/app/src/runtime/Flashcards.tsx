@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useRuntimeStore } from "./store";
 import { Eyebrow, Title, Lead, Button } from "../shared/ui/primitives";
 import type { Flashcard } from "../shared/types";
+import LivingBackdrop from "./LivingBackdrop";
 import s from "./Flashcards.module.css";
 
 // Tile B, study half: a flippable deck (front ↔ back) with "Bildim/Bilmadim"
@@ -184,6 +185,7 @@ export function Flashcards() {
 function Shell({ children, testid }: { children: ReactNode; testid: string }) {
   return (
     <main className="v2-shell" data-testid={testid}>
+      <LivingBackdrop variant="gold" />
       <div className={s.stage} key={testid}>
         {children}
       </div>

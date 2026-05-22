@@ -1,0 +1,216 @@
+/* =====================================================================
+   LivingBackdrop — the reusable Hub-DNA living backdrop, extracted so any
+   runtime surface can gain the same DNA the Hub / CBP / Reflection already
+   carry:
+     • a breathing aurora wash + 5 blurred candy blobs (idle-float + --bx/--by
+       parallax)
+     • a persisted-canvas pointer/touch color-trail (via useColorTrail)
+
+   Every numeric MIRRORS the Hub/CBP backdrop VERBATIM (aurora blur 8px /
+   22s breathe, blob blur 34px, the five float timings, --depth parallax). Only
+   the HUE FAMILY changes per `variant` — each variant just re-points the
+   --lb-* custom properties; the structure + motion above are shared. Both
+   layers are pointer-events:none + z-index 0 (under content at z1), GPU-only
+   (transform/opacity), and fully killed under prefers-reduced-motion. It can
+   NEVER intercept a control.
+   ===================================================================== */
+.backdrop {
+  /* FIXED full-viewport (not absolute): the runtime surfaces that mount this
+     (Flashcards / Memory Check / Practice Arc) render inside the global
+     `.v2-shell` — a 760px CENTERED column, not a full-bleed positioned shell
+     like CBP's. A fixed layer fills the whole screen behind that column (so the
+     aurora/blobs/trail read full-bleed like the Hub, visible in the side
+     margins + glowing through the column's glass) without restructuring each
+     surface. pointer-events:none + z-index 0 keeps it under content (z1). */
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;        /* clip blob bleed to the viewport */
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  contain: layout paint;
+  --bx: 0;
+  --by: 0;
+}
+
+/* Living aurora — a mesh wash (4 radial stops) that breathes forever. */
+.aurora {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(38% 44% at 22% 26%, var(--lb-a1) 0%, transparent 64%),
+    radial-gradient(40% 46% at 80% 30%, var(--lb-a2) 0%, transparent 64%),
+    radial-gradient(46% 50% at 64% 82%, var(--lb-a3) 0%, transparent 66%),
+    radial-gradient(40% 44% at 18% 78%, var(--lb-a4) 0%, transparent 64%);
+  filter: blur(8px);
+  opacity: 0.9;
+  transform: translate3d(calc(var(--bx) * 10px), calc(var(--by) * 10px), 0);
+  animation: lbAurora 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+@keyframes lbAurora {
+  0%   { transform: translate3d(calc(var(--bx) * 10px), calc(var(--by) * 10px), 0) scale(1); opacity: 0.86; }
+  50%  { opacity: 0.95; }
+  100% { transform: translate3d(calc(var(--bx) * 10px - 30px), calc(var(--by) * 10px + 24px), 0) scale(1.11); opacity: 0.9; }
+}
+
+/* Soft candy blobs — blurred, low-opacity orbs in the variant's hue family. */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.5;
+  transform: translate3d(
+    calc(var(--bx) * var(--depth, 16px)),
+    calc(var(--by) * var(--depth, 16px)),
+    0
+  );
+}
+.blob1 {
+  width: 220px; height: 220px;
+  top: -42px; left: -36px;
+  --depth: 22px;
+  background: radial-gradient(circle at 38% 34%, var(--lb-b1) 0%, transparent 70%);
+  animation: lbFloat1 16s ease-in-out infinite alternate;
+}
+.blob2 {
+  width: 260px; height: 260px;
+  top: 8%; right: -64px;
+  --depth: 30px;
+  background: radial-gradient(circle at 38% 34%, var(--lb-b2) 0%, transparent 70%);
+  animation: lbFloat2 20s ease-in-out infinite alternate;
+}
+.blob3 {
+  width: 200px; height: 200px;
+  top: 46%; left: -52px;
+  --depth: 14px;
+  background: radial-gradient(circle at 38% 34%, var(--lb-b3) 0%, transparent 70%);
+  opacity: 0.42;
+  animation: lbFloat3 23s ease-in-out infinite alternate;
+}
+.blob4 {
+  width: 180px; height: 180px;
+  bottom: 6%; right: -28px;
+  --depth: 24px;
+  background: radial-gradient(circle at 38% 34%, var(--lb-b4) 0%, transparent 70%);
+  opacity: 0.4;
+  animation: lbFloat4 18s ease-in-out infinite alternate;
+}
+.blob5 {
+  width: 150px; height: 150px;
+  bottom: -34px; left: 32%;
+  --depth: 18px;
+  background: radial-gradient(circle at 38% 34%, var(--lb-b5) 0%, transparent 72%);
+  opacity: 0.34;
+  animation: lbFloat5 21s ease-in-out infinite alternate;
+}
+@keyframes lbFloat1 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 40px), calc(var(--by) * var(--depth) + 52px),  0) scale(1.05); }
+}
+@keyframes lbFloat2 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 50px), calc(var(--by) * var(--depth) + 38px),  0) scale(1.06); }
+}
+@keyframes lbFloat3 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 46px), calc(var(--by) * var(--depth) - 40px),  0) scale(1.04); }
+}
+@keyframes lbFloat4 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 38px), calc(var(--by) * var(--depth) - 46px),  0) scale(1.05); }
+}
+@keyframes lbFloat5 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 32px), calc(var(--by) * var(--depth) - 34px),  0) scale(1.06); }
+}
+
+/* Pointer/touch color trail — a single <canvas> the useColorTrail hook paints
+   into. Inside .backdrop (z0 region, pointer-events:none) so it can NEVER block
+   a control. Last child → paints above the aurora + blobs. */
+.trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  mix-blend-mode: normal;
+}
+
+/* ---- Variant hue families ---------------------------------------------------
+   Each just re-points the --lb-* custom properties consumed above. The trail
+   palette (the comet hue ring) is supplied in TS by LivingBackdrop.tsx, kept in
+   the same family as these so the trace reads as a cousin of the surface accent.
+   --------------------------------------------------------------------------- */
+
+/* Hub / CBP cool sky-interaction blue (the default Hub family). */
+.blue {
+  --lb-a1: rgba(94, 158, 214, 0.16);
+  --lb-a2: rgba(70, 119, 184, 0.13);
+  --lb-a3: rgba(122, 165, 232, 0.13);
+  --lb-a4: rgba(109, 184, 239, 0.12);
+  --lb-b1: #5e9ed6;
+  --lb-b2: #9fb6f0;
+  --lb-b3: #4677b8;
+  --lb-b4: #6db8ef;
+  --lb-b5: #7aa5e8;
+}
+
+/* Division-3 Practice games — the --grad-game purple (#b388eb → #8a5fc8). */
+.purple {
+  --lb-a1: rgba(179, 136, 235, 0.16);
+  --lb-a2: rgba(138, 95, 200, 0.13);
+  --lb-a3: rgba(160, 111, 214, 0.13);
+  --lb-a4: rgba(195, 155, 240, 0.12);
+  --lb-b1: #b388eb;
+  --lb-b2: #c39bf0;
+  --lb-b3: #8a5fc8;
+  --lb-b4: #a06fd6;
+  --lb-b5: #9d7ae0;
+}
+
+/* Division-2 Flashcards (content) — the --grad-content warm gold
+   (#ffd166 → #f4a261). Alphas trimmed a touch (warm hues read heavier). */
+.gold {
+  --lb-a1: rgba(255, 209, 102, 0.15);
+  --lb-a2: rgba(244, 162, 97, 0.12);
+  --lb-a3: rgba(246, 185, 77, 0.12);
+  --lb-a4: rgba(255, 207, 133, 0.11);
+  --lb-b1: #ffd166;
+  --lb-b2: #ffcf85;
+  --lb-b3: #f4a261;
+  --lb-b4: #f6b94d;
+  --lb-b5: #f5b873;
+}
+
+/* Division-2 Memory Check (language) — the --grad-language teal-green
+   (#74aa9c → #4a8576). */
+.teal {
+  --lb-a1: rgba(116, 170, 156, 0.16);
+  --lb-a2: rgba(74, 133, 118, 0.13);
+  --lb-a3: rgba(95, 176, 160, 0.13);
+  --lb-a4: rgba(143, 199, 186, 0.12);
+  --lb-b1: #74aa9c;
+  --lb-b2: #8fc7ba;
+  --lb-b3: #4a8576;
+  --lb-b4: #5fb0a0;
+  --lb-b5: #6fb8a6;
+}
+
+/* Reduced motion: kill the breathe/float + the trail entirely (the hook also
+   bails out — this hides the static canvas + freezes the aurora/blobs). */
+@media (prefers-reduced-motion: reduce) {
+  .aurora,
+  .blob,
+  .blob1,
+  .blob2,
+  .blob3,
+  .blob4,
+  .blob5 {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+  .trail {
+    display: none;
+  }
+}
