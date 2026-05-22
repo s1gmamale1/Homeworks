@@ -71,8 +71,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     let detail = res.statusText;
     try {
-      const body = (await res.json()) as { detail?: string };
-      if (body?.detail) detail = body.detail;
+      const body = (await res.json()) as {
+        detail?: string | { error?: string; code?: string; message?: string };
+      };
+      // FastAPI HTTPException.detail can be a string (legacy routes) or an
+      // object (newer routes use {error, code, ...} for structured errors).
+      // Naive string interpolation of the object yields "[object Object]" in
+      // the UI — extract a readable field instead.
+      const d = body?.detail;
+      if (typeof d === "string") {
+        detail = d;
+      } else if (d && typeof d === "object") {
+        detail = d.error || d.message || d.code || JSON.stringify(d);
+      }
     } catch {
       /* non-JSON error body — keep statusText */
     }

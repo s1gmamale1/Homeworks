@@ -16,7 +16,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from ..db.session_repo import get_session
+from ..db.session_repo import ensure_session
 from ..services import reflection_engine
 
 router = APIRouter(tags=["reflection"])
@@ -43,13 +43,14 @@ async def finalize_reflection(req: FinalizeRequest):
 
     Idempotent-ish: re-finalizing recomputes from the current attempts and
     overwrites the persisted report + session mark.
+
+    The v2 runtime generates session_ids client-side but no production code
+    writes to the `sessions` table, so a fresh student's row doesn't exist on
+    first finalize. `ensure_session` get-or-creates so `_write_session_mark`
+    (inside the engine) can persist the verdict + ended_at instead of
+    silently no-op'ing on a missing row.
     """
-    session = await get_session(req.session_id)
-    if session is None:
-        raise HTTPException(
-            status_code=404,
-            detail={"error": "Session not found", "code": "SESSION_NOT_FOUND"},
-        )
+    await ensure_session(req.session_id, req.hw_id)
     return await reflection_engine.finalize(
         req.session_id,
         req.hw_id,
@@ -77,11 +78,9 @@ async def redo_reflection(req: RedoRequest):
     """Re-route a needs_retry session back into the Practice Arc.
 
     Flips status → active, clears Division-3 progress, signals a reshuffle.
+
+    Same ensure_session rationale as finalize — the redo path also writes back
+    to the sessions row, so it must exist.
     """
-    session = await get_session(req.session_id)
-    if session is None:
-        raise HTTPException(
-            status_code=404,
-            detail={"error": "Session not found", "code": "SESSION_NOT_FOUND"},
-        )
+    await ensure_session(req.session_id, req.hw_id)
     return await reflection_engine.redo(req.session_id, req.hw_id)
