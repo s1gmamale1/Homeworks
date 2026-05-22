@@ -32,6 +32,9 @@ AUDITS=(
   katex_builder.cjs
   preview_quality.cjs
   amr_results.cjs
+  # boss_div3_walk.cjs is guarded: only run when the walk-demo HW is seeded
+  # and the server is on port 8767 (see _seed_walk_demo.py). Opt-in:
+  #   BOSS_E2E_HW_ID=<id> bash scripts/run_e2e.sh boss_div3_walk
 )
 
 passed=0

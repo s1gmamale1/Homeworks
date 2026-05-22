@@ -568,3 +568,51 @@ The React builder is reskinned to match the legacy builder's left-sidebar shell 
 
 - `GET /api/homeworks` list now returns a `flow_version` field per row (`"v2"` or null for v1 legacy). `content_json` is still omitted from the list payload.
 - `POST /api/homeworks` accepts an optional `content_json` on create (used internally by the dashboard to stamp the v2 scaffold).
+
+---
+
+## Dynamic Why→How→What AI Boss (Division 3) — COMPLETE (DaddysBranch, 2026-05-22)
+
+Shipped in PRs #252 (backend) and #253 (frontend).
+
+### Confirmed working
+
+- **Per-turn AI generation** — `/ai/boss/generate-question` calls Kimi
+  (`moonshot-v1-128k`) once per student turn, producing a fresh structured
+  question with `scenario` + `why`/`how`/`what` reasoning prompts. The
+  generator validates output server-side (Pydantic + business rules) before
+  storing and returning it.
+- **Grade-band HP** — `/ai/boss/start` derives the starting HP server-side
+  from `content_json.boss_meta.grade_band` (G1-4 → 50, G5-8 → 100, G9-11 →
+  150) or a `starting_hp_override`. The client's `max_hp` field is advisory
+  only and is never trusted.
+- **Coverage-based grading** — the boss answer-checker returns per-axis
+  `coverage: {why, how, what}` scores. Damage uses `coverage_mean` through the
+  spec §6 accuracy tiers (>= 0.85 → 1.0, >= 0.55 → 0.7, >= 0.30 → 0.5,
+  else → 0.0).
+- **Combo bonus** — +20% damage after 3+ consecutive full-accuracy correct
+  answers with zero hint use; resets on any wrong answer or hint.
+- **Weak-skill targeting** — the boss context builder feeds the generator the
+  student's weak topics derived from prior phase attempts; the difficulty
+  adapts after each answer (correct streak → harder, wrong streak → easier).
+- **Server-authoritative HP and outcome** — HP, trials, difficulty, and the
+  final `outcome`/`stars`/`outcome_xp` are all computed and persisted by the
+  server. The runtime renders what the server returns.
+- **Answer-leak redaction** — `/generate-question` and `/state` return only
+  prompt text (`scenario`/`why`/`how`/`what`/`question_text`). `expected_answer`
+  and `rubric` are stored server-side and never sent to the client. Student
+  text is wrapped in `<UNTRUSTED_STUDENT_MESSAGE>` before any LLM call.
+- **Full grading hardening** — `is_correct=true` floors `score` to 0.60 and
+  `damage_multiplier` to 1.0 so a correct answer always deals > 0 damage.
+  Coverage mean is similarly floored. Model-supplied `damage_multiplier` is
+  clamped to [0.0, 1.5].
+- **`boss_sessions` new columns** — `hints_used`, `correct_count`,
+  `total_attempts`, `question_kind` added via idempotent migration.
+
+### Known transient
+
+- **Kimi ReadTimeout on generation** — `moonshot-v1-128k` boss generation
+  can ReadTimeout under load, causing `/generate-question` to return 502
+  `BOSS_GEN_REJECTED`. The React `BossArena` shows a graceful "Try again"
+  error state; a single retry succeeds in practice. This is a provider-side
+  latency issue, not a contract bug.
