@@ -15,8 +15,48 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from server.services import grading
+from server.db import boss_session_repo
 
 router = APIRouter(prefix="/grading", tags=["grading"])
+
+# A final-boss arc that ran out of trials while the boss still held more than
+# this fraction of its max HP counts as a failed homework — the student never
+# beat the boss. Below the threshold the boss was nearly dead, so the arc reads
+# as a near-win and the per-axis tier (compute_boss_outcome) carries the grade
+# instead of a blanket fail. Kept here so the policy lives next to its caller.
+_BOSS_FAIL_HP_FRACTION = 0.40
+
+
+async def _boss_session_failed(session_id: str, homework_id: str) -> bool:
+    """Server-authoritative check: did the boss arc end in a real failure?
+
+    Returns True only when the latest boss session for this (session, hw) is in
+    the terminal ``failed`` state (trials ran out) AND the boss still held more
+    than ``_BOSS_FAIL_HP_FRACTION`` of its max HP. The client also sends
+    ``homework_failed`` for legacy reasons, but the server must not trust the
+    client for a grade-affecting flag — this re-derives it from persisted state.
+
+    Defensive: any lookup error returns False (never block a scorecard on a
+    boss-state read failure).
+    """
+    if not session_id or not homework_id:
+        return False
+    try:
+        sess = await boss_session_repo.get_latest_boss_session_for(
+            session_id, homework_id
+        )
+    except Exception:
+        return False
+    if not sess or sess.get("status") != "failed":
+        return False
+    try:
+        hp = int(sess.get("hp") or 0)
+        max_hp = int(sess.get("max_hp") or 0)
+    except (TypeError, ValueError):
+        return False
+    if max_hp <= 0:
+        return False
+    return (hp / max_hp) > _BOSS_FAIL_HP_FRACTION
 
 
 class AggregateRequest(BaseModel):
@@ -45,13 +85,21 @@ class AggregateRequest(BaseModel):
 async def aggregate(req: AggregateRequest) -> dict[str, Any]:
     """Take a session log; return the scorecard payload.
 
-    Pure compute — no DB. The runtime template uses this as a drop-in
-    replacement for the old client-side `_amrAggregate` JS function.
+    The runtime template uses this as a drop-in replacement for the old
+    client-side `_amrAggregate` JS function. The aggregation itself is pure
+    compute, but the route now re-derives ``homework_failed`` from the persisted
+    boss-session terminal state so a tampered/forgetful client can't avoid the
+    failed-homework penalty — the server is authoritative for this flag.
     """
+    # Server-authoritative boss-fail: OR the persisted terminal state into the
+    # client-supplied flag. Either source can trip the fail; the server can
+    # never UN-fail a client that already reported failure.
+    server_boss_failed = await _boss_session_failed(req.session_id, req.homework_id)
+    homework_failed = bool(req.homework_failed) or server_boss_failed
     return grading.aggregate(
         req.items,
         warning_deductions=req.warning_deductions,
-        homework_failed=req.homework_failed,
+        homework_failed=homework_failed,
         subject=req.subject,
         expected_open_count=req.expected_open_count,
     )

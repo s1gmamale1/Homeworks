@@ -442,3 +442,97 @@ def test_tm_check_answer_no_answer_leak_in_response(client):
     # The matched pair's own RIGHT text is also not in the response (it was
     # already in the DOM as a tile, but the endpoint shouldn't re-echo it).
     assert "Newton's 2nd" not in body
+
+
+# ---------------------------------------------------------------------------
+# 16. matched_tokens + already_matched (PR #251 rehydrate-on-response fix)
+# ---------------------------------------------------------------------------
+
+
+def test_tm_response_echoes_matched_tokens_after_each_correct_match(client):
+    """The grader echoes the per-side tokens of every currently-matched pair on
+    every response, so the React component can re-sync its display state in one
+    round-trip after a page reload (where the in-memory _TM_ATTEMPTS dict
+    survives but React's local matched-set remounts empty)."""
+    hw_id = _seed_homework(client)
+
+    # Match tm_001 first.
+    code, data = _post_check(client, hw_id, left_id="tm_001", right_id="tm_001")
+    assert code == 200, data
+    assert data["correct"] is True
+    assert data["already_matched"] is False
+    tokens = data["matched_tokens"]
+    assert isinstance(tokens, list) and len(tokens) == 1
+    assert tokens[0] == {
+        "lid": left_token(hw_id, 0),
+        "rid": right_token(hw_id, 0),
+    }
+
+    # Match tm_002 next — response now lists BOTH matched pairs.
+    code, data = _post_check(client, hw_id, left_id="tm_002", right_id="tm_002")
+    assert code == 200, data
+    assert data["correct"] is True
+    tokens = sorted(data["matched_tokens"], key=lambda t: t["lid"])
+    assert len(tokens) == 2
+    assert {t["lid"] for t in tokens} == {
+        left_token(hw_id, 0),
+        left_token(hw_id, 1),
+    }
+    assert {t["rid"] for t in tokens} == {
+        right_token(hw_id, 0),
+        right_token(hw_id, 1),
+    }
+
+
+def test_tm_replay_against_already_matched_pair_flags_already_matched(client):
+    """A second submit against a pair already in matched_pair_ids must return
+    `already_matched: true` (distinguishes from a true wrong-pair miss so the
+    React UI doesn't flash the wrong-state for what is effectively a no-op).
+    The matched_tokens list stays stable across the replay."""
+    hw_id = _seed_homework(client)
+
+    # First submit on tm_001: correct.
+    code, data = _post_check(client, hw_id, left_id="tm_001", right_id="tm_001")
+    assert code == 200, data
+    assert data["correct"] is True
+    assert data["already_matched"] is False
+    first_tokens = data["matched_tokens"]
+
+    # Second submit on the SAME pair (simulates a reload-after-match where
+    # React's local state was empty but the server still holds the match).
+    code, data = _post_check(client, hw_id, left_id="tm_001", right_id="tm_001")
+    assert code == 200, data
+    # The pair was already matched server-side → not a "new" correct match.
+    assert data["correct"] is False
+    assert data["already_matched"] is True
+    # Token echo is stable — the React component can re-sync from this list.
+    assert data["matched_tokens"] == first_tokens
+
+
+def test_tm_matched_tokens_emits_only_opaque_tokens_no_answer_leak(client):
+    """The new matched_tokens field must NOT smuggle right-side text or pair
+    indices into the response. Only the per-side HMAC tokens (`L<mac>`/`R<mac>`)
+    are allowed — those carry no information beyond what was already in the
+    hydration payload."""
+    pairs = [
+        {"id": "tm_001", "left": "F = ma", "right": "Newton's 2nd"},
+        {"id": "tm_002", "left": "F1 = -F2", "right": "ZebraJellyZap"},
+        {"id": "tm_003", "left": "v = d/t", "right": "QuokkaPineNebula"},
+        {"id": "tm_004", "left": "E = mc^2", "right": "VelvetIceTroika"},
+    ]
+    hw_id = _seed_homework(client, pairs=pairs)
+    # Match two distinct pairs so matched_tokens has 2 entries to inspect.
+    _post_check(client, hw_id, left_id="tm_001", right_id="tm_001")
+    code, data = _post_check(client, hw_id, left_id="tm_002", right_id="tm_002")
+    assert code == 200, data
+    tokens = data["matched_tokens"]
+    assert len(tokens) == 2
+    for t in tokens:
+        # Shape is exactly the two opaque-token fields, nothing else.
+        assert set(t.keys()) == {"lid", "rid"}
+        assert t["lid"].startswith("L") and len(t["lid"]) == 13  # L + 12-char hmac
+        assert t["rid"].startswith("R") and len(t["rid"]) == 13
+    # Distinctive right-side text from OTHER pairs must not appear anywhere.
+    body_str = str(data)
+    for leak_token in ("ZebraJellyZap", "QuokkaPineNebula", "VelvetIceTroika"):
+        assert leak_token not in body_str

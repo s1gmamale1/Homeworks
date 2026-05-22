@@ -126,6 +126,29 @@ async def get_active_boss_session_for(session_id: str, homework_id: str) -> Opti
         await db.close()
 
 
+async def get_latest_boss_session_for(session_id: str, homework_id: str) -> Optional[dict]:
+    """Return the most recent boss session for this (session, hw), ANY status.
+
+    Unlike ``get_active_boss_session_for`` this does not filter on
+    ``status='active'`` — it is used at session finalization to inspect the
+    terminal outcome (e.g. ``failed``) of the boss arc after it has ended.
+    """
+    db = await connect()
+    try:
+        async with db.execute(
+            """
+            SELECT * FROM boss_sessions
+            WHERE session_id = ? AND homework_id = ?
+            ORDER BY created_at DESC LIMIT 1
+            """,
+            (session_id, homework_id),
+        ) as cursor:
+            row = await cursor.fetchone()
+            return _row_to_boss_session(row) if row else None
+    finally:
+        await db.close()
+
+
 async def update_boss_session(
     boss_session_id: str,
     *,

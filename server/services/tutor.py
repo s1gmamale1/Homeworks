@@ -1527,24 +1527,55 @@ async def process_runtime_answer(target: dict, student_answer: str, attempt_numb
         # while preserving the tiered confidence policy in this runtime layer.
         grading_method = "ai_judge"
         try:
-            # Decide which prompt to use based on target info
+            # Decide which prompt to use based on target info.
+            #
+            # Selection ladder (first match wins):
+            #   1. final-boss          → boss-answer-checker (canonical Plan-7 boss
+            #      grader; converged 2026-05-22 from the legacy answer-checker-boss).
+            #   2. real-life / reading → real-life-challenge-grader (open-ended
+            #      expert role-play reasoning; previously fell through to the
+            #      generic language checker, which has the wrong rubric).
+            #   3. math                → answer-checker-math.
+            #   4. default             → answer-checker-language.
             answer_type = target.get("answer_type", "text")
-            
+            phase_val = target.get("phase") or ""
+
             prompt_name = "answer-checker-language"
             if "math" in answer_type or "math" in target.get("subject", "").lower():
                 prompt_name = "answer-checker-math"
-            if target.get("phase") == "final-boss":
-                prompt_name = "answer-checker-boss"
-                
+            # Real-Life Challenge + reading-checkpoint reasoning: route to the
+            # dedicated grader so the rubric matches the open-ended task. The
+            # generic language checker would mis-grade these.
+            if phase_val in ("real-life-challenge", "real_life_challenge", "reading-checkpoint"):
+                prompt_name = "real-life-challenge-grader"
+            if phase_val == "final-boss":
+                # Canonical boss grader (boss-answer-checker.md) — emits
+                # is_correct/score/confidence which AnswerCheckResult consumes.
+                prompt_name = "boss-answer-checker"
+
             prompt = _load_runtime_prompt(prompt_name)
-            
+
             payload = {
                 "question": target.get("question_text", ""),
                 "student_answer": student_answer,
                 "expected_answers": expected_answers,
                 "answer_spec": answer_spec,
             }
-            
+            # The real-life-challenge grader anchors on the case context + the
+            # server-only acceptable_keywords/rubric. These ride into the PROMPT
+            # input only (grading anchors); the grader is instructed never to
+            # echo them, and they never appear in the response body returned to
+            # the client.
+            if prompt_name == "real-life-challenge-grader":
+                payload.update({
+                    "expert_role": target.get("expert_role") or target.get("subject") or "general",
+                    "case_intro": target.get("case_intro") or target.get("question_text", ""),
+                    "step_prompt": target.get("question_text", ""),
+                    "student_text": student_answer,
+                    # Server-only anchor — never echoed back to the client.
+                    "acceptable_keywords": target.get("acceptable_keywords") or [],
+                })
+
             input_section = ai_orchestrator.build_input_section(payload)
             ai_response = await ai_gateway.generate_structured(
                 task=ai_gateway.AITask.ANSWER_CHECK,
@@ -1555,20 +1586,43 @@ async def process_runtime_answer(target: dict, student_answer: str, attempt_numb
                 prompt_version=f"{prompt_name}:runtime",
             )
             ai_res = ai_response.model_dump()
-            
+
             raw_score = float(ai_res.get("score", 0.0))
             raw_confidence = float(ai_res.get("confidence", 1.0))
             raw_feedback = ai_res.get("feedback", "")
             misconception_tags = ai_res.get("misconception_tags", [])
             next_hint = ai_res.get("next_hint", "")
             feedback = raw_feedback
-            
+
+            # Cache + review-queue parity with tutor.check_answer (item 3).
+            # The legacy check_answer path caches every high-confidence verdict
+            # and enrolls every low-confidence verdict in the review queue;
+            # process_runtime_answer must do the same so the canonical runtime
+            # grader has identical durability + teacher-review guarantees.
+            #
+            # Cache key fingerprints the spec/expected so the same question_id
+            # reused across homeworks can't collide on a different correct answer.
+            _spec_fingerprint = json.dumps(
+                {"spec": answer_spec, "expected": expected_answers},
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+            _cache_key_raw = (
+                f"{question_id}|{_normalize(student_answer)}|{_spec_fingerprint}"
+            )
+            _cache_key = hashlib.sha256(_cache_key_raw.encode("utf-8")).hexdigest()
+
             # Tiered Confidence Policy
             if raw_confidence >= 0.90:
                 is_correct = raw_score >= 0.70
                 score = raw_score
                 confidence = raw_confidence
                 requires_review = False
+                # High-confidence verdict — cache it (parity with check_answer).
+                try:
+                    await db.set_answer_cache(_cache_key, ai_res)
+                except Exception as _cache_exc:
+                    _log.warning("set_answer_cache failed (non-fatal): %s", _cache_exc)
             elif raw_confidence >= 0.75:
                 is_correct = raw_score >= 0.70
                 score = raw_score
@@ -1585,6 +1639,16 @@ async def process_runtime_answer(target: dict, student_answer: str, attempt_numb
                 score = 0.0
                 confidence = raw_confidence
                 requires_review = True
+                # Low-confidence verdict — enroll in the teacher review queue
+                # (parity with check_answer's <0.90 review path).
+                try:
+                    await db.add_to_review_queue(
+                        question_id, student_answer, answer_spec, ai_res
+                    )
+                except Exception as _rq_exc:
+                    _log.warning(
+                        "add_to_review_queue failed (non-fatal): %s", _rq_exc
+                    )
         except Exception as e:
             _log.error("AI Judge failed: %s", e)
             is_correct = False
@@ -1593,6 +1657,21 @@ async def process_runtime_answer(target: dict, student_answer: str, attempt_numb
             requires_review = True
             grading_method = "error"
             feedback = "Tizim xatosi, iltimos qayta urinib ko'ring."
+            # An AI-grader exception leaves the attempt ungraded — enroll it for
+            # human review so a transient provider error doesn't silently drop
+            # the student's answer (parity with the low-confidence path).
+            try:
+                await db.add_to_review_queue(
+                    question_id,
+                    student_answer,
+                    answer_spec,
+                    {"error": str(e), "source": "ai_judge_exception"},
+                )
+            except Exception as _rq_exc:
+                _log.warning(
+                    "add_to_review_queue (exception path) failed (non-fatal): %s",
+                    _rq_exc,
+                )
 
     normalized_res = {
         "ok": True,

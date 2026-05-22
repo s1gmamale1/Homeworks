@@ -156,6 +156,40 @@ async def test_generate_text_routes_boss_tasks_to_openai_preference():
     assert call_kwargs["tier"] == "pro"
 
 
+@pytest.mark.asyncio
+async def test_boss_persona_response_is_plaintext_generate_text_task():
+    """BOSS_PERSONA_RESPONSE contract guard (hardening item 6).
+
+    The task is intentionally a PLAIN-TEXT task: it is reserved for the (still
+    deferred) boss hint / persona-reply surface and must be invoked through
+    ``generate_text`` — never ``generate_structured``. Pins three properties so
+    a future refactor can't silently break the reservation:
+
+      1. It is a registered, fast-tier task (cheap, latency-sensitive replies).
+      2. It is intentionally ABSENT from ``_TASK_SCHEMA`` — adding it there would
+         imply structured output, which is the wrong shape for a persona reply.
+      3. ``generate_text`` can route it to the orchestrator (fast tier, global
+         preference) without error.
+    """
+    # 1. Registered + fast tier.
+    assert ai_gateway.TASK_MODEL_POLICY[ai_gateway.AITask.BOSS_PERSONA_RESPONSE] == "fast"
+    # 2. Plain-text → must NOT have a structured schema registered.
+    assert ai_gateway._task_schema(ai_gateway.AITask.BOSS_PERSONA_RESPONSE) is None
+    assert ai_gateway.AITask.BOSS_PERSONA_RESPONSE not in ai_gateway._TASK_SCHEMA
+    # 3. Routable via generate_text (the plain-text entrypoint).
+    with patch("server.services.ai_gateway.ai_orchestrator.generate") as mock_gen:
+        mock_gen.return_value = "Sen mendan o'tolmaysan!"
+        out = await ai_gateway.generate_text(
+            task=ai_gateway.AITask.BOSS_PERSONA_RESPONSE,
+            prompt="taunt the student",
+        )
+    assert out == "Sen mendan o'tolmaysan!"
+    call_kwargs = mock_gen.call_args.kwargs
+    assert call_kwargs["tier"] == "fast"
+    # Not in the per-task override map → inherits the global preference.
+    assert call_kwargs["preference_override"] == ["kimi"]
+
+
 def test_task_provider_preference_includes_both_boss_tasks():
     """The two dynamic-boss tasks must be the only entries in the override
     map. If a future task wants OpenAI routing, it goes here; this test

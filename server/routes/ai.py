@@ -14,7 +14,12 @@ from ..services import tutor, ai_orchestrator, injector, ai_debug, ai_context, a
 from ..services.slur_filter import classify, detect_slurs
 from ..services import warnings as warnings_svc
 from ..services.gate_state import is_practice_unlocked
-from ..services.tile_match_tokens import resolve_tm_pairs, build_token_maps
+from ..services.tile_match_tokens import (
+    resolve_tm_pairs,
+    build_token_maps,
+    left_token,
+    right_token,
+)
 from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
@@ -904,8 +909,29 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
     )
     complete = outcome is not None
 
+    # Echo the full set of currently-matched pairs back to the client as per-side
+    # tokens (PR #251 backend half). Production sessions never replay tile-match,
+    # but after a page reload mid-game the React component remounts with an empty
+    # matched-set while the server-side _TM_ATTEMPTS dict still holds the prior
+    # session's progress. Without this echo, every click on an already-matched
+    # pair returns `correct: false, already_matched=true` and the UI stays stuck
+    # at "0/N matched" — the user sees nothing happen. Sending the full token
+    # list lets the client re-sync its display state from any response.
+    #
+    # No-leak: emit ONLY the opaque per-side HMAC tokens (lid/rid), never the
+    # pair INDEX or any left/right text. The tokens carry no information beyond
+    # what the hydration payload already shipped.
+    matched_tokens = [
+        {
+            "lid": left_token(req.homework_id, idx),
+            "rid": right_token(req.homework_id, idx),
+        }
+        for idx in sorted(state["matched_pair_ids"])
+    ]
+
     return {
         "correct": is_correct,
+        "already_matched": already_matched,
         "hint": hint,
         "explanation": explanation,
         "xp": {
@@ -921,6 +947,7 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
             "delta_seconds": delta,
         },
         "matched_count": matched_count,
+        "matched_tokens": matched_tokens,
         "total_pairs": total_pairs,
         "complete": complete,
         "outcome": outcome,
