@@ -214,6 +214,26 @@ export function submitGameAnswer<T = unknown>(
 }
 
 /**
+ * Read-only snapshot of the per-session Tile Match progress. Used on the
+ * TileMatch component mount so the runtime can auto-skip past a Tile Match
+ * the server already considers complete (rather than briefly rendering an
+ * empty board that flashes wrong on the first click). Returns
+ * `total_pairs=0` when no Tile Match is authored on this homework.
+ */
+export function getTileMatchState(
+  hwId: string,
+  sessionId: string
+): Promise<{
+  matched_count: number;
+  matched_tokens: { lid: string; rid: string }[];
+  total_pairs: number;
+  complete: boolean;
+}> {
+  const qs = new URLSearchParams({ homework_id: hwId, session_id: sessionId });
+  return request(`/api/ai/tile-match-state?${qs}`);
+}
+
+/**
  * Submit a single Tile Match pairing. The client sends the two tapped OPAQUE
  * per-side tokens (`lid` + `rid`) — there is no shared id, so the client never
  * holds the answer key. The server inverts each token to its pair index and

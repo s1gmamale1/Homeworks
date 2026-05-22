@@ -14,7 +14,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent, act, waitFor } from "@testing-library/react";
 
-// Mock the submitTileMatch fetch wrapper — each test sets the resolved value.
+// Mock the API surface TileMatch touches. Each test stages the values it needs.
 vi.mock("../../shared/api", async () => {
   const actual = await vi.importActual<typeof import("../../shared/api")>(
     "../../shared/api"
@@ -22,15 +22,28 @@ vi.mock("../../shared/api", async () => {
   return {
     ...actual,
     submitTileMatch: vi.fn(),
+    getTileMatchState: vi.fn(),
   };
 });
 
-import { submitTileMatch } from "../../shared/api";
+import { getTileMatchState, submitTileMatch } from "../../shared/api";
 import { useRuntimeStore } from "../store";
 import TileMatch from "./TileMatch";
 import type { HydratePayload } from "../../shared/types";
 
 const mockSubmit = submitTileMatch as ReturnType<typeof vi.fn>;
+const mockState = getTileMatchState as ReturnType<typeof vi.fn>;
+
+// Default fresh-board state probe response — tests that need otherwise
+// override mockState.mockResolvedValueOnce / mockResolvedValue before render.
+function freshStateResponse() {
+  return {
+    matched_count: 0,
+    matched_tokens: [],
+    total_pairs: 4,
+    complete: false,
+  };
+}
 
 // Four-pair board mirroring HW-20260521-001's tile_match shape.
 const LEFTS = [
@@ -70,6 +83,9 @@ function seedStore() {
 
 beforeEach(() => {
   mockSubmit.mockReset();
+  mockState.mockReset();
+  // Default: assume a fresh board for any test that doesn't override.
+  mockState.mockResolvedValue(freshStateResponse());
   seedStore();
 });
 
@@ -77,19 +93,17 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("matched_tokens rehydrate (return-after-completion)", () => {
-  it("syncs all matched tiles + shows completion when the first click after remount hits a previously-matched pair", async () => {
-    // Bug repro: student finished Tile Match in a prior session, navigated
-    // back to the Hub, returned. React remounted with empty matched-set, but
-    // server still has all 4 pairs matched. Their first click — on a pair
-    // that's "correct" by their reasoning but already-matched server-side —
-    // must NOT show as wrong. Instead, the matched_tokens echo re-bases the
-    // UI to ground truth (all 4 matched) and the completion screen renders.
-    mockSubmit.mockResolvedValue({
-      correct: false,
-      already_matched: true,
-      hint: null,
-      explanation: null,
+describe("mount-time state probe (navigation rehydrate)", () => {
+  it("auto-advances past a completed Tile Match — onComplete fires, board NEVER renders", async () => {
+    // Reported repro: student finished Tile Match, returned to the Hub,
+    // re-entered the Practice Arc. Old behavior was "0/N matched, every
+    // click flashes wrong." Correct behavior is "skip the slot entirely —
+    // the server already knows you finished, the runtime should advance."
+    //
+    // Mount-time probe returns complete=true → onComplete is called → the
+    // board markup (board / counter / completion screen / bootstrapping
+    // placeholder are all transient) is NEVER user-visible.
+    mockState.mockResolvedValue({
       matched_count: 4,
       matched_tokens: [
         { lid: "L01", rid: "R01" },
@@ -99,31 +113,79 @@ describe("matched_tokens rehydrate (return-after-completion)", () => {
       ],
       total_pairs: 4,
       complete: true,
-      outcome: "flawless",
+    });
+
+    const onComplete = vi.fn();
+    render(<TileMatch onComplete={onComplete} />);
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+    // The interactive board MUST NOT have been rendered. Counter / column /
+    // completion screen are all part of the post-bootstrap board — none of
+    // them should appear when the runtime auto-skips.
+    expect(screen.queryByTestId("tile-match-progress")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tile-match-complete")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tm-left-L01")).not.toBeInTheDocument();
+  });
+
+  it("seeds matchedLefts/matchedRights from a partial probe — student resumes from prior progress", async () => {
+    // Mid-game rehydrate via the mount probe: student matched 2 pairs in a
+    // prior session, came back. The board renders with those 2 tiles
+    // already locked, counter at 2/4, ready for the remaining 2.
+    mockState.mockResolvedValue({
+      matched_count: 2,
+      matched_tokens: [
+        { lid: "L01", rid: "R01" },
+        { lid: "L02", rid: "R02" },
+      ],
+      total_pairs: 4,
+      complete: false,
     });
 
     render(<TileMatch onComplete={() => {}} />);
 
-    // Pre-click sanity: counter shows 0/4.
-    expect(screen.getByTestId("tile-match-progress")).toHaveTextContent("0/4 matched");
-
-    // Click the pair the student "knows" is correct (1/2 → 0.5).
-    await act(async () => {
-      fireEvent.click(screen.getByTestId("tm-left-L01"));
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByTestId("tm-right-R01"));
-    });
-
-    // After the response: completion screen renders, NO wrong-flash, NO hint.
     await waitFor(() => {
-      expect(screen.getByTestId("tile-match-complete")).toBeInTheDocument();
+      expect(screen.getByTestId("tile-match-progress")).toHaveTextContent("2/4 matched");
     });
-    expect(screen.queryByText(/Not a match/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Every pair locked in/i)).toBeInTheDocument();
+    expect(screen.getByTestId("tm-left-L01")).toBeDisabled();
+    expect(screen.getByTestId("tm-left-L02")).toBeDisabled();
+    expect(screen.getByTestId("tm-left-L03")).not.toBeDisabled();
+    expect(screen.getByTestId("tm-left-L04")).not.toBeDisabled();
+    expect(screen.queryByTestId("tile-match-complete")).not.toBeInTheDocument();
   });
 
-  it("syncs partial matched state — student matched 2 in prior session, completes the next pair, sees 3/4", async () => {
+  it("renders a fresh board when the probe says no prior state", async () => {
+    // The default fresh-state mock is set in beforeEach.
+    render(<TileMatch onComplete={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByTestId("tile-match-progress")).toHaveTextContent("0/4 matched");
+    });
+    expect(screen.getByTestId("tm-left-L01")).not.toBeDisabled();
+    expect(screen.queryByTestId("tile-match-complete")).not.toBeInTheDocument();
+  });
+
+  it("falls through to a fresh board when the probe errors (non-fatal)", async () => {
+    // A flaky probe must NOT block the student from playing. The submission-
+    // time matched_tokens sync still re-bases the UI from the first response.
+    mockState.mockRejectedValue(new Error("network blip"));
+    render(<TileMatch onComplete={() => {}} />);
+    await waitFor(() => {
+      expect(screen.getByTestId("tile-match-progress")).toHaveTextContent("0/4 matched");
+    });
+  });
+});
+
+describe("submission-time matched_tokens sync", () => {
+  // The mount-time probe resolves async, so submission-time tests must wait
+  // for the board to mount (counter visible) before firing clicks. Helper:
+  async function waitForBoard() {
+    await waitFor(() => {
+      expect(screen.getByTestId("tile-match-progress")).toBeInTheDocument();
+    });
+  }
+
+  it("syncs partial matched state on a correct response — 3/4 after one click on a session that already had 2 matched", async () => {
     // Mid-game rehydrate. Server returns the THREE pairs now matched (2 prior
     // + the just-completed). UI must reflect all three as locked.
     mockSubmit.mockResolvedValue({
@@ -142,6 +204,7 @@ describe("matched_tokens rehydrate (return-after-completion)", () => {
     });
 
     render(<TileMatch onComplete={() => {}} />);
+    await waitForBoard();
     await act(async () => {
       fireEvent.click(screen.getByTestId("tm-left-L03"));
     });
@@ -178,6 +241,7 @@ describe("matched_tokens rehydrate (return-after-completion)", () => {
     });
 
     render(<TileMatch onComplete={() => {}} />);
+    await waitForBoard();
     await act(async () => {
       fireEvent.click(screen.getByTestId("tm-left-L01")); // 1/2
     });

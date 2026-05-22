@@ -747,6 +747,45 @@ Per-pair grading for the Tile Match mechanic. Same URL as the regular `/check-an
 
 ---
 
+### GET /api/ai/tile-match-state
+
+Read-only snapshot of a session's Tile Match progress. The React component fetches this on mount so the runtime can auto-skip a Tile Match the server already considers complete (`_TM_ATTEMPTS` dict survives across page navigation while the React component remounts with an empty matched-set; without this probe the student would have to click a tile to discover the slot was already finished).
+
+**Request:** query string only — no body.
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `homework_id` | string | yes | resolves the authored `gb_tile_match` pair list |
+| `session_id` | string | yes | per-student key into the in-memory `_TM_ATTEMPTS` dict |
+
+**Response 200:**
+```json
+{
+  "matched_count": 2,
+  "matched_tokens": [
+    {"lid": "L9a3f8e2b1c04", "rid": "Rf21d8c34a07b"},
+    {"lid": "L77c83362624a", "rid": "R2bcdc34582a0"}
+  ],
+  "total_pairs": 4,
+  "complete": false
+}
+```
+
+- `matched_count` — pairs in the matched set so far (0 for a fresh session).
+- `matched_tokens` — per-side HMAC tokens of every currently-matched pair, in pair-index order. Same shape echoed by `POST /api/ai/check-answer phase=tile-match`; the React component can sync from either source interchangeably.
+- `total_pairs` — authored pair count. `0` when the homework has no `gb_tile_match` (caller should skip the slot).
+- `complete` — `true` iff `matched_count >= total_pairs > 0`. Drives the auto-advance branch in `TileMatch.tsx`.
+
+**Errors:**
+
+| Code | Body | Meaning |
+|---|---|---|
+| 404 | `HW_NOT_FOUND` | `homework_id` does not resolve |
+
+A homework with no Tile Match content is **not** a 404 — it returns 200 with `total_pairs=0` so the client can render the no-op skip cleanly.
+
+---
+
 ### POST /api/ai/check-answer  *(phase = `"real-life-challenge"`, PR #143)*
 
 Per-step grading for the 5-step Real-Life Challenge mechanic. Same URL as the regular `/check-answer`; dispatch is gated on `phase="real-life-challenge"` AND `homework_id` present (legacy callers without `homework_id` fall through to the regular handler).

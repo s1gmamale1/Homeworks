@@ -1162,6 +1162,68 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
     }
 
 
+@router.get("/ai/tile-match-state")
+async def tile_match_state(homework_id: str, session_id: str) -> dict:
+    """Read-only snapshot of the per-session Tile Match progress.
+
+    Returns the same shape fields a check-answer response would, minus the
+    per-turn outputs (xp/timer/hint/outcome). This lets the React component
+    learn the current state on mount — without it the student has to click
+    a tile to discover that Tile Match was already completed in a prior
+    visit, which fires a confusing wrong-flash before the matched_tokens
+    sync re-bases the UI. With this endpoint the runtime can auto-advance
+    past a completed Tile Match before rendering the board at all.
+
+    Returns matched_count=0 / complete=false / matched_tokens=[] when no
+    state exists for this (hw_id, session_id) tuple (fresh student, no
+    clicks yet). The total_pairs field is derived from the authored
+    content_json so the caller can size its own progress display before
+    any submission.
+    """
+    hw = await db.get_homework(homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+    content = hw.get("content_json") or {}
+    pairs = resolve_tm_pairs(content)
+    total_pairs = len(pairs)
+    if total_pairs == 0:
+        # No Tile Match on this homework — caller should skip the slot.
+        return {
+            "matched_count": 0,
+            "matched_tokens": [],
+            "total_pairs": 0,
+            "complete": False,
+        }
+
+    state = _TM_ATTEMPTS.get((homework_id, session_id))
+    if state is None:
+        # No clicks yet on this session — fresh board.
+        return {
+            "matched_count": 0,
+            "matched_tokens": [],
+            "total_pairs": total_pairs,
+            "complete": False,
+        }
+
+    matched_count = len(state["matched_pair_ids"])
+    matched_tokens = [
+        {
+            "lid": left_token(homework_id, idx),
+            "rid": right_token(homework_id, idx),
+        }
+        for idx in sorted(state["matched_pair_ids"])
+    ]
+    return {
+        "matched_count": matched_count,
+        "matched_tokens": matched_tokens,
+        "total_pairs": total_pairs,
+        "complete": matched_count >= total_pairs,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Real-Life Challenge — phase=real-life-challenge check-answer branch (Chunk B).
 #

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRuntimeStore } from "../store";
-import { submitTileMatch } from "../../shared/api";
+import { getTileMatchState, submitTileMatch } from "../../shared/api";
 import type { GameProps } from "../GameHost";
 import type { TileMatchPayload } from "../../shared/types";
 import { Eyebrow, Title, Lead, Pill, Button } from "../../shared/ui/primitives";
@@ -49,6 +49,63 @@ export default function TileMatch({ onComplete }: GameProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [complete, setComplete] = useState(false);
+  // True until the mount-time state probe resolves. The board stays hidden
+  // (no flash of an empty-then-completed UI) while we ask the server whether
+  // Tile Match was already finished in a prior visit to the Hub.
+  const [bootstrapping, setBootstrapping] = useState(true);
+
+  // Mount-time state probe — the load-bearing piece of the navigation
+  // rehydrate fix. The server's `_TM_ATTEMPTS` dict survives across the
+  // student leaving the Practice Arc and coming back, but the React
+  // component remounts with empty matched-set. Without this probe, the
+  // student has to click a pair (which fires wrong-flash on a previously-
+  // matched response) before the matched_tokens sync kicks in. With it,
+  // a completed Tile Match auto-advances to the next arc node before
+  // rendering the board at all; a partial Tile Match resumes from where
+  // the prior visit left off; a fresh board renders normally.
+  //
+  // Guarded by `didProbeRef` so React's StrictMode double-invoke doesn't
+  // fire two requests on mount.
+  const didProbeRef = useRef(false);
+  useEffect(() => {
+    if (didProbeRef.current) return;
+    didProbeRef.current = true;
+    if (!hwId || !sessionId || totalPairs === 0) {
+      setBootstrapping(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      // Track whether to release the bootstrap placeholder. When we
+      // auto-advance (complete=true → onComplete) we KEEP the bootstrap UI
+      // so the board never renders before the parent unmounts us — without
+      // this guard the `finally` flips bootstrapping false and the empty
+      // board paints for one frame.
+      let shouldUnbootstrap = true;
+      try {
+        const snap = await getTileMatchState(hwId, sessionId);
+        if (cancelled) return;
+        if (snap.complete && snap.total_pairs > 0) {
+          shouldUnbootstrap = false;
+          onComplete();
+          return;
+        }
+        if (Array.isArray(snap.matched_tokens) && snap.matched_tokens.length > 0) {
+          setMatchedLefts(new Set(snap.matched_tokens.map((t) => t.lid)));
+          setMatchedRights(new Set(snap.matched_tokens.map((t) => t.rid)));
+        }
+      } catch {
+        // Probe failure is non-fatal — fall through to a fresh board. The
+        // matched_tokens sync on the first submit response will still
+        // re-base the UI if the server has prior state.
+      } finally {
+        if (!cancelled && shouldUnbootstrap) setBootstrapping(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hwId, sessionId, totalPairs, onComplete]);
 
   // Clear the wrong-flash highlight after a beat.
   useEffect(() => {
@@ -56,6 +113,13 @@ export default function TileMatch({ onComplete }: GameProps) {
     const t = setTimeout(() => setWrongFlash(null), 520);
     return () => clearTimeout(t);
   }, [wrongFlash]);
+
+  // Suppress all UI while the mount-time state probe is in flight — avoids
+  // the "board flashes empty, then jumps to completion screen" stutter when
+  // the student returns to a completed Tile Match.
+  if (bootstrapping) {
+    return <div className={s.wrap} data-testid="tile-match-bootstrapping" />;
+  }
 
   if (totalPairs === 0) {
     return (

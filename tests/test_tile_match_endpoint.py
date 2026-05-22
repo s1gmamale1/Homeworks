@@ -536,3 +536,135 @@ def test_tm_matched_tokens_emits_only_opaque_tokens_no_answer_leak(client):
     body_str = str(data)
     for leak_token in ("ZebraJellyZap", "QuokkaPineNebula", "VelvetIceTroika"):
         assert leak_token not in body_str
+
+
+# ---------------------------------------------------------------------------
+# 17. GET /api/ai/tile-match-state — mount-time state probe
+# ---------------------------------------------------------------------------
+
+
+def test_tm_state_endpoint_returns_zero_for_fresh_session(client):
+    """No clicks yet → returns matched_count=0, complete=false, total_pairs
+    sized to the authored content. Caller renders a fresh board."""
+    hw_id = _seed_homework(client)
+    resp = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-fresh"},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["matched_count"] == 0
+    assert data["matched_tokens"] == []
+    assert data["total_pairs"] == 4
+    assert data["complete"] is False
+
+
+def test_tm_state_endpoint_returns_complete_after_all_pairs_matched(client):
+    """Match all 4 pairs, then probe state — must reflect the full matched
+    set with complete=true. This is the load-bearing path: the React mount
+    probe uses it to decide whether to auto-skip the slot vs. render the
+    board. Token shape must mirror what the check-answer response echoes
+    so the React component can sync from either source interchangeably."""
+    hw_id = _seed_homework(client)
+    for pid in ("tm_001", "tm_002", "tm_003", "tm_004"):
+        code, _ = _post_check(client, hw_id, left_id=pid, right_id=pid, session_id="sess-done")
+        assert code == 200
+
+    resp = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-done"},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["matched_count"] == 4
+    assert data["total_pairs"] == 4
+    assert data["complete"] is True
+    tokens = data["matched_tokens"]
+    assert len(tokens) == 4
+    expected_lids = {left_token(hw_id, i) for i in range(4)}
+    expected_rids = {right_token(hw_id, i) for i in range(4)}
+    assert {t["lid"] for t in tokens} == expected_lids
+    assert {t["rid"] for t in tokens} == expected_rids
+
+
+def test_tm_state_endpoint_returns_partial_progress(client):
+    """Match 2 of 4 pairs, probe state — returns matched_count=2 with the
+    2 corresponding tokens. The React mount probe seeds matchedLefts /
+    matchedRights from this so the student resumes from where they were."""
+    hw_id = _seed_homework(client)
+    _post_check(client, hw_id, left_id="tm_001", right_id="tm_001", session_id="sess-partial")
+    _post_check(client, hw_id, left_id="tm_002", right_id="tm_002", session_id="sess-partial")
+
+    resp = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-partial"},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["matched_count"] == 2
+    assert data["complete"] is False
+    assert {t["lid"] for t in data["matched_tokens"]} == {
+        left_token(hw_id, 0), left_token(hw_id, 1),
+    }
+
+
+def test_tm_state_endpoint_isolates_by_session_id(client):
+    """One student's progress must not bleed into another student's probe.
+    Same hw_id, two different session_ids → independent state."""
+    hw_id = _seed_homework(client)
+    _post_check(client, hw_id, left_id="tm_001", right_id="tm_001", session_id="sess-A")
+
+    resp_a = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-A"},
+    )
+    resp_b = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-B"},
+    )
+    assert resp_a.json()["matched_count"] == 1
+    assert resp_b.json()["matched_count"] == 0
+
+
+def test_tm_state_endpoint_returns_zero_total_when_no_tile_match_authored(client):
+    """Homework without gb_tile_match → total_pairs=0, complete=false. The
+    React component reads this and onComplete-skips the slot immediately
+    (per the empty-state branch in the existing UI)."""
+    payload = {
+        "title": "No tile-match HW",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {
+            "meta": {"title": "No tile-match HW"},
+            "panels": [],
+            "flashcards": [],
+            "boss_questions": [],
+            "memory_sprint": [],
+            # No gb_tile_match key at all.
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    hw_id = resp.json()["id"]
+
+    resp = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": hw_id, "session_id": "sess-empty"},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    assert data["matched_count"] == 0
+    assert data["total_pairs"] == 0
+    assert data["complete"] is False
+
+
+def test_tm_state_endpoint_404_on_missing_homework(client):
+    """Unknown homework_id → 404 with HW_NOT_FOUND code so the client can
+    differentiate a missing-homework error from a clean fresh-board response."""
+    resp = client.get(
+        "/api/ai/tile-match-state",
+        params={"homework_id": "HW-DOES-NOT-EXIST", "session_id": "s"},
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["code"] == "HW_NOT_FOUND"
