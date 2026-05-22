@@ -1,0 +1,49 @@
+/* Shared design tokens — single source of truth (also imported by legacy pages) */
+@import "../../../css/_tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-onest);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--v2-text);
+  background: var(--v2-page-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition: background 300ms var(--landing-spring), color 300ms var(--landing-spring);
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: transparent; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+
+:focus-visible {
+  outline: 2px solid var(--landing-blue-500);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+#root { min-height: 100vh; }
+
+.v2-shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 56px) 20px 120px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

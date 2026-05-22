@@ -1,0 +1,39 @@
+/* Practice Arc sub-tab strip — chips for each ordered, editable game key.
+   Matches the v2 builder section-tab language (pill chips, accent active). */
+.gameTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--v2-ring);
+}
+
+.gameTab {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: 999px;
+  padding: 6px 13px;
+  transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.gameTab:hover {
+  color: var(--v2-text);
+}
+
+.gameTabActive {
+  color: #fff;
+  background: var(--v2-accent);
+  border-color: var(--v2-accent);
+}
+
+.noEditor {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--v2-text-subtle);
+  line-height: 1.5;
+}

@@ -22,6 +22,19 @@ import server.routes.ai as _ai_routes
 # ---------------------------------------------------------------------------
 
 
+async def _always_unlocked(*a, **k):
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _unlock_practice_arc(monkeypatch):
+    """Sentence-Fill is now a server-gated practice-arc game (BLOCKER #3).
+    These are grading unit tests, not gating tests — patch the unlock check
+    always-True so they exercise the grader, not the 403 PRACTICE_LOCKED guard.
+    The gate itself is pinned by tests/test_practice_gate_server_enforced.py."""
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
+
 @pytest.fixture(autouse=True)
 def _wipe_sf_attempts():
     """Reset the in-memory sentence-fill attempt tracker between tests."""

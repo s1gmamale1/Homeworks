@@ -17,6 +17,7 @@ from server.schemas.content import (
     AdaptiveQuizItem,
     AnswerSpec,
     BossQuestion,
+    CaseBasedPreview,
     ContentJSON,
     FlashcardItem,
     MemorySprintItem,
@@ -417,3 +418,58 @@ def test_patch_with_valid_partial_content_returns_200(client):
     assert body["content_json"]["reflection"]["summary"] == "S"
     # Existing flashcards must still be there (partial merge).
     assert body["content_json"]["flashcards"] == [{"term": "T", "def": "D"}]
+
+
+# --------------------------------------------------------------------------- #
+# CBP "Decision Process Explanation" — additive open-ended reasoning step.
+# --------------------------------------------------------------------------- #
+
+
+def test_cbp_decision_process_explanation_validates_additive():
+    """The new decision_process_explanation block validates on CaseBasedPreview
+    WITHOUT breaking the existing CBP shape (additive-only contract).
+
+    Guards: a CBP authored with checkpoints + the new reasoning block parses;
+    a legacy CBP authored WITHOUT the block still parses (field is Optional,
+    defaults to None); unknown extra keys still pass (_Permissive)."""
+    # With the new block + all answer-bearing buckets present.
+    cbp = CaseBasedPreview.model_validate(
+        {
+            "title": "Case",
+            "checkpoints": [
+                {"question": "Q1", "options": ["a", "b"], "answer_spec": {"type": "option_index", "expected": 1}},
+            ],
+            "decision_process_explanation": {
+                "prompt": "Explain which concept applies and why.",
+                "min_chars": 90,
+                "concept_keywords": ["force", "newton"],
+                "method_keywords": ["free body diagram"],
+                "mistake_keywords": ["ignoring friction"],
+                "acceptable_keywords": ["equilibrium"],
+                "rubric": {"concept": 40, "method": 40, "mistake": 20},
+                "pass_score": 65,
+            },
+        }
+    )
+    dpe = cbp.decision_process_explanation
+    assert dpe is not None
+    assert dpe.prompt == "Explain which concept applies and why."
+    assert dpe.min_chars == 90
+    assert dpe.pass_score == 65
+    assert dpe.concept_keywords == ["force", "newton"]
+
+    # Legacy CBP with NO reasoning block — still valid, field defaults to None.
+    legacy = CaseBasedPreview.model_validate(
+        {"checkpoints": [{"question": "Q", "answer_spec": {"type": "option_index", "expected": 0}}]}
+    )
+    assert legacy.decision_process_explanation is None
+
+    # Full ContentJSON round-trip with the block embedded — must not raise.
+    ContentJSON.model_validate(
+        {
+            "case_based_preview": {
+                "checkpoints": [{"question": "Q", "answer_spec": {"type": "option_index", "expected": 0}}],
+                "decision_process_explanation": {"prompt": "Why?", "min_chars": 80, "concept_keywords": ["x"]},
+            }
+        }
+    )

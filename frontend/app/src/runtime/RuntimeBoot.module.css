@@ -1,0 +1,70 @@
+.skel {
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    var(--v2-card-tinted) 25%,
+    var(--v2-ring) 37%,
+    var(--v2-card-tinted) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skelPill {
+  width: 180px;
+  height: 28px;
+  border-radius: var(--v2-radius-pill);
+  background: var(--v2-card-tinted);
+  margin-bottom: 28px;
+}
+
+.skelTitle {
+  width: min(80%, 480px);
+  height: 48px;
+  margin-bottom: 24px;
+}
+.skelLead {
+  width: 100%;
+  height: 18px;
+  margin-bottom: 12px;
+}
+.skelLeadShort {
+  width: 60%;
+  height: 18px;
+}
+
+.skelGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 40px;
+}
+.skelTile {
+  height: 220px;
+  border-radius: var(--v2-radius-card);
+}
+
+@media (max-width: 640px) {
+  .skelGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.errTitle {
+  margin-top: 14px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}

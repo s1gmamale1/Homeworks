@@ -18,6 +18,9 @@ from server.routes.grading import router as grading_router
 from server.routes.notebook import router as notebook_router
 from server.routes.taskboard import router as taskboard_router
 from server.routes.equations import router as equations_router
+from server.routes.runtime import router as runtime_router
+from server.routes.reflection import router as reflection_router
+from server.routes.integrity import router as integrity_router
 from server import db
 from server.config import BASE_DIR
 
@@ -69,9 +72,9 @@ SECURITY_HEADERS: dict[str, str] = {
     "Content-Security-Policy": (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
         "img-src 'self' data: blob: http: https:; "
-        "font-src 'self' data: https://cdn.jsdelivr.net; "
+        "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; "
         "connect-src 'self'; "
         "object-src 'none'; "
         "base-uri 'self'; "
@@ -120,6 +123,9 @@ app.include_router(grading_router, prefix="/api")
 app.include_router(notebook_router, prefix="/api")
 app.include_router(taskboard_router, prefix="/api")
 app.include_router(equations_router, prefix="/api")
+app.include_router(runtime_router, prefix="/api")
+app.include_router(reflection_router, prefix="/api")
+app.include_router(integrity_router, prefix="/api")
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
@@ -161,6 +167,26 @@ app.mount(
     StaticFiles(directory=str(BASE_DIR / "server" / "template")),
     name="runtime",
 )
+
+# React SPA (v2 runtime + builder) — built bundle served as static assets.
+# Vite content-hashes its own filenames, so this is intentionally OUTSIDE the
+# __VERSION__ cache-bust system. Mounted before the "/" catch-all.
+_SPA_DIST = os.path.join(_FRONTEND_DIR, "app", "dist")
+_SPA_INDEX = os.path.join(_SPA_DIST, "index.html")
+
+# SPA client-route fallback: StaticFiles only serves index.html at the mount
+# root, so client-side routes (e.g. /app/builder) 404. Serve the shell for the
+# known client routes BEFORE the static mount so the React router takes over.
+# (/h/{id} is server-routed in homework_page; this covers the builder route.)
+if os.path.isfile(_SPA_INDEX):
+    async def _spa_shell():
+        with open(_SPA_INDEX, "r", encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    for _spa_route in ("/app/builder", "/app/builder/"):
+        app.get(_spa_route)(_spa_shell)
+
+if os.path.isdir(_SPA_DIST):
+    app.mount("/app", StaticFiles(directory=_SPA_DIST, html=True), name="spa")
 
 # Ensure frontend directory exists before mounting
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")

@@ -651,3 +651,613 @@ Our read-side `list_recent_attempts` helper is removed. See PR #34 for lane deci
 strips `expected`, `ans`, `accepted_answers`, and `correct` from any question
 payload at top level AND inside `answer_spec` before the prompt enters the LLM.
 See `server/services/tutor.py::_redact_question_for_tutor`.
+
+---
+
+## v2 flow (`flow_version: "v2"`)
+
+**ADDITIVE — the frozen contract is unchanged.** Every field below is a NEW
+optional key on `content_json`; no existing key is renamed or retyped. Legacy
+rows omit these and render through the unchanged HTML injector. A row is served
+by the React SPA runtime (`frontend/app/`) only when `content_json.flow_version
+== "v2"`; the fork lives in `server/routes/homework_page.py`. Pydantic models
+are in `server/schemas/content.py` (all `extra="allow"`).
+
+### Hand-authored by the React v2 builder (DaddysBranch, 2026-05-21)
+
+All v2 fields documented in this section are now **hand-authored by the React v2
+builder** (`frontend/app/src/builder/`). Previously, v2 content could only be
+seeded by the AI generation pipeline or test fixtures. This makes the
+**frozen-schema rule even more critical**: the builder writes these keys directly
+to `content_json` on every `PUT /api/homeworks/{id}` save; renaming or
+restructuring a key silently breaks every existing v2 row in the DB (not just
+runtime rendering, but the builder's own load → edit → save cycle). New optional
+fields must use `extra="allow"` Pydantic models and never replace an existing
+key. The `GET /api/homeworks` list also now surfaces `flow_version` per row so
+the dashboard can route authoring without fetching the full record.
+
+### New top-level fields
+
+| Key | Type | Purpose |
+|---|---|---|
+| `flow_version` | string | Runtime dispatcher: absent/`"v1"` → legacy HTML injector; `"v2"` → React SPA. |
+| `case_based_preview` | object (`CaseBasedPreview`) | Learning Hub Tile A — guided 3-checkpoint real-life case. One of the two ungated unlock paths. |
+| `memory_check` | object (`MemoryCheck`) | Learning Hub Tile B gate — Quizlet-style test after flashcards. The second unlock path. |
+
+`practice_arc` is also read by the runtime (`practice_arc.games[]` — an optional
+ordered list of game-key strings); when absent the arc derives its order from
+whichever `gb_*` arrays exist, with Boss always last. The 8 built game keys map
+to `gb_tile_match`, `gb_sentence_fill`, `real_life_challenge`, `gb_ttt`,
+`gb_memory_palace`, `gb_mystery_box`, `gb_puzzle_lock`, `gb_adaptive_quiz`; a 9th
+key `gb_story_mode` → `story_mode` is reserved but unbuilt (renders a "coming
+soon" skip card).
+
+### `case_based_preview` (CaseBasedPreview)
+
+```json
+{
+  "title": "string",
+  "metadata": {},
+  "source_extraction": {},
+  "visual_plan": [],
+  "case_setup": { "story": "...", "role": "...", "task": "..." },
+  "checkpoints": [
+    {
+      "kind": "identify | decide | justify",
+      "question": "string",
+      "options": ["..."],
+      "answer_spec": { /* AnswerSpec — STRIPPED before hydration */ },
+      "learning_block": "post-submit teaching text — STRIPPED from hydration; returned by /check-answer response only",
+      "feedback": "string"
+    }
+  ],
+  "final_simulation": { "correct_path": "STRIPPED", "wrong_path": "..." },
+  "feedback_summary": {},
+  "completion_rules": {}
+}
+```
+
+#### `case_based_preview.decision_process_explanation` (additive, commit 92824a3)
+
+An **optional** sub-object on `case_based_preview`. When absent, the CBP flow goes
+directly from the 3 checkpoints to the simulation (legacy behaviour preserved).
+When present, a "Decision Process Explanation" step is inserted between the
+checkpoints and the simulation.
+
+```json
+"decision_process_explanation": {
+  "prompt": "string — student-visible instruction text",
+  "min_chars": 80,
+  "concept_keywords":    ["..."],
+  "method_keywords":     ["..."],
+  "mistake_keywords":    ["..."],
+  "acceptable_keywords": ["..."],
+  "rubric": "string — AI grading rubric",
+  "pass_score": 60
+}
+```
+
+**Answer-bearing fields (stripped at hydration; never reach the client):**
+`concept_keywords`, `method_keywords`, `mistake_keywords`, `acceptable_keywords`,
+`rubric`, `pass_score`.
+
+**Client-visible fields only:** `prompt`, `min_chars`.
+
+Grading is via `POST /api/ai/check-answer` with `phase="case_based_preview_reasoning"`
+(see `docs/API.md`). The step is **non-blocking**: `gate_state.compute_gate_state`
+includes `reasoning_required` and `reasoning_passed` flags and factors
+`reasoning_passed` into `cbp.passed`, but the MCQ checkpoints remain the
+Practice-Arc unlock gate.
+
+### `memory_check` (MemoryCheck)
+
+```json
+{
+  "items": [
+    {
+      "type": "mcq | fill_blank | choose_explanation | true_false | tile_match | term_definition",
+      "prompt": "string",
+      "options": ["..."],
+      "answer_spec": { /* AnswerSpec — STRIPPED before hydration */ },
+      "flashcard_ref": "optional id"
+    }
+  ],
+  "pass_threshold_pct": 60,
+  "modes_enabled": ["..."],
+  "retake_pool_size": 0
+}
+```
+
+### gb_* practice-arc game arrays (additive, structured)
+
+These coexist with the legacy `gb_*` shapes documented in §1. New structured
+models add validation; existing rows are untouched.
+
+| Key | Model | Notes |
+|---|---|---|
+| `gb_adaptive_quiz` | `AdaptiveQuizItem[]` | `{q\|prompt, tier, ans[]/answer_spec}` (same answer_spec contract as boss). |
+| `gb_mystery_box` | `MysteryBoxItem[]` | `{category, q, a}`. |
+| `gb_puzzle_lock` | `PuzzleLockItem[]` | `{content, q, a}` (legacy `{text, question, answer}` aliases accepted). |
+| `gb_ttt` | `TttItem[]` | `{id?, q, correct, distractors[]}` — `correct`/`distractors` are server-only. `gb_ttt_config` carries XP/session overrides. |
+| `gb_sentence_fill` | `SentenceFillItem[]` | cloze `passage` with 1–6 `___` blanks + per-blank `answers[]` + optional `word_bank`. |
+| `gb_tile_match` | `TileMatchPair[]` | structured `{id, left, right, tier, …}`; 0–8 pairs, unique ids/lefts/rights, ≤1 `is_palace_tile`. |
+| `gb_memory_palace` | `MemoryPalaceGame` | `{palaces[], concepts[]}` Method-of-Loci routes (3–7 locations each). |
+| `real_life_challenge` | `RealLifeChallengeCase` | 5-step expert role-play (decision → info_request → final_decision → concept_select → reasoning). |
+| `boss_questions` | `BossQuestion[]` | unchanged final-boss phase. |
+
+### Runtime API + check-answer contracts (v2)
+
+Two NEW read endpoints (`server/routes/runtime.py`):
+
+| Method | Path | Returns |
+|---|---|---|
+| GET | `/api/runtime/homeworks/{id}` | Redacted hydration payload `{id, title, subject, grade, lang, flow_version, content_json}` — answers stripped server-side. |
+| GET | `/api/runtime/homeworks/{id}/gate-state?session_id=` | Server-authoritative `{cbp:{passed,checkpoints_correct,checkpoints_total,threshold}, mc:{passed,score_pct,correct,total,threshold_pct}, practice_arc_unlocked}`. |
+
+**Hydration-redaction boundary** (`server/services/runtime_redactor.py`, deny-list
+in `server/services/redaction_constants.py::ANSWER_BEARING_KEYS`):
+
+- Fail-closed DENY-list: every key in `ANSWER_BEARING_KEYS` (incl. the whole
+  `answer_spec` subtree, `expected`, `accepted_answers`, `correct`,
+  `option_index`, `is_correct`, `acceptable_keywords`, `consequence`,
+  `correct_path`, `learning_block`, `distractors`, …) is deleted at every
+  nesting depth. The input DB row is never mutated.
+- **Tile-match** ships opaque per-side tokens — `{lefts:[{lid,text}], rights:[{rid,text}]}` —
+  with the two columns shuffled independently (seeded on `hw_id`). No field links
+  a left to its right; the grader recovers the pair index from each HMAC token
+  server-side. `gb_memory_match` is dropped from hydration entirely.
+- **TTT** ships `{id, q, options[]}` with the correct answer riding as one
+  unmarked, shuffled MCQ option; `correct`/`distractors` keys stay stripped.
+- **`learning_block` / `feedback`** are post-submit teaching text — they come
+  from the `/check-answer` *response*, never from hydration.
+
+**Per-phase `POST /api/ai/check-answer` submit + response** (all carry
+`homework_id` + `session_id`; response is `{correct, feedback}` unless noted):
+
+| `phase` | Submit fields | Response |
+|---|---|---|
+| `case_based_preview` | `{item_index, student_answer}` | `{correct, feedback, learning_block?}` |
+| `memory_check` | `{item_index, student_answer}` | `{correct, feedback}` |
+| `tile-match` | `{left_id, right_id}` (opaque tokens) | `{correct, …xp/hint}` |
+| `ttt` | `{item_id, picked}` | `{is_correct, mercy, xp_delta, correct_value}` |
+| `ttt-session` | `{results:[{outcome}]}` | `{session_xp, strong_session_bonus, mastery_tier, wins, draws, losses, …}` |
+| `sentence-fill` | `{item_id, blank_idx, student_value}` | `{correct, …}` |
+| `real-life-challenge` | `{step_id, selected_option_id \| selected_chip_id \| reasoning_text}` | `{correct, …}` (step-dependent) |
+| `memory-palace` | `{palace_key, placements[], recall_results[]}` | `{outcome, accuracy_pct, correct_count, total_count, …}` |
+| `final-boss` | `{question_id: "bq_{i}", student_answer}` | boss-turn shape (delegates to `tutor.boss_turn`) |
+| `adaptive-quiz` | `{item_index, student_answer}` | `{correct, feedback}` |
+| `mystery-box` | `{item_index, student_answer}` | `{correct, feedback}` |
+| `puzzle-lock` | `{item_index, student_answer}` | `{correct, feedback}` |
+
+**Gate computation** (`server/services/gate_state.py`): aggregates on the
+SERVER-DERIVED `subphase` key (`checkpoint_{idx}` / `item_{idx}`), never on the
+client `question_id` (no-inflation invariant). `practice_arc_unlocked` is true
+only when CBP ≥ max(2, 60% of checkpoints) AND Memory Check ≥ `pass_threshold_pct`
+(default 60%).
+
+**Practice-arc gating (403 enforcement).** All 8 practice-arc phases
+(`tile-match`, `sentence-fill`, `real-life-challenge`, `ttt`, `ttt-session`,
+`memory-palace`, `adaptive-quiz`, `mystery-box`, `puzzle-lock`, `final-boss`)
+call `_enforce_practice_unlocked(req)` before grading and return `403
+{code: "PRACTICE_LOCKED"}` until the arc is unlocked. `case_based_preview` and
+`memory_check` are deliberately UNGATED — they ARE the unlock path.
+
+---
+
+## Dynamic Boss Arena (Plan-5 + WHW)
+
+Shipped in PRs #252 (backend) and #253 (frontend). Five net-new endpoints under
+`/ai/boss/*` in `server/routes/ai_plan5.py`. The legacy `/ai/boss-turn` and the
+static `content_json.boss_questions` flow remain as fallbacks; the dynamic path
+opts in only when the runtime calls these new endpoints with a `boss_session_id`.
+
+**Hard rules:**
+- Backend is authoritative for HP, trials, difficulty, and outcome. The client
+  never sets or trusts these values.
+- Generator output is validated server-side (Pydantic + business rules) before
+  storage; rejected questions are not persisted.
+- The frontend never receives `expected_answer`, `rubric`, or any answer-bearing
+  field for a generated boss question — only prompt text (`question_text`,
+  `scenario`, `why`, `how`, `what`) plus `difficulty` and `target_skill`.
+
+---
+
+### Endpoint shapes
+
+#### POST /ai/boss/start
+
+Request:
+```json
+{
+  "session_id": "string",
+  "homework_id": "string",
+  "max_hp": 100,
+  "trials_left": 7,
+  "initial_difficulty": "medium",
+  "force_fresh": false
+}
+```
+
+`max_hp` is advisory only — the server derives the real HP from `boss_meta.grade_band` +
+`boss_meta.starting_hp_override`. `force_fresh: true` archives any existing active
+session for this `(session_id, homework_id)` pair and starts a clean one (use when
+the student explicitly clicks "Restart boss").
+
+Response:
+```json
+{
+  "boss_session_id": "bs_<hex16>",
+  "hp": 100,
+  "max_hp": 100,
+  "trials_left": 5,
+  "current_difficulty": "medium",
+  "weak_topics": ["string"],
+  "strong_topics": ["string"],
+  "missing_context_flags": ["string"]
+}
+```
+
+Idempotent on page refresh: if an active session exists and was updated within the
+last 30 minutes, it is returned unchanged instead of creating a new row.
+
+---
+
+#### POST /ai/boss/generate-question
+
+Request:
+```json
+{
+  "boss_session_id": "bs_<hex16>",
+  "recent_boss_phrases": ["string"]
+}
+```
+
+Response (no answer-bearing fields):
+```json
+{
+  "question_id": "gbq_<hex16>",
+  "question_text": "string",
+  "scenario": "string",
+  "why": "string",
+  "how": "string",
+  "what": "string",
+  "target_skill": "string",
+  "difficulty": "easy|medium|hard",
+  "why_this_question": "string",
+  "boss_session_id": "bs_<hex16>"
+}
+```
+
+`scenario`, `why`, `how`, `what` are PROMPT text only — they contain no answer or
+rubric content and are safe to send to the client. On a 502 with
+`code: "BOSS_GEN_REJECTED"` the runtime shows a "Try again" state; one retry
+usually succeeds (Kimi ReadTimeout is the most common transient cause).
+
+---
+
+#### POST /ai/boss/submit-answer
+
+Request:
+```json
+{
+  "boss_session_id": "bs_<hex16>",
+  "question_id": "gbq_<hex16>",
+  "student_answer": "string"
+}
+```
+
+`student_answer` is the only answer field the client ever sends to a boss endpoint.
+
+Response:
+```json
+{
+  "is_correct": true,
+  "score": 0.9,
+  "confidence": 0.85,
+  "feedback": "string",
+  "damage": 18,
+  "hp": 82,
+  "trials_left": 4,
+  "current_difficulty": "medium",
+  "boss_status": "active|won|failed",
+  "should_retry_same_skill": false,
+  "misconception_tags": ["string"],
+  "outcome": "expert|strong|passing|hali_emas",
+  "stars": 3,
+  "outcome_xp": 200,
+  "coverage": {"why": 0.9, "how": 0.8, "what": 0.95}
+}
+```
+
+`outcome`, `stars`, `outcome_xp` are populated only when `boss_status` is `won` or
+`failed`. `coverage` is populated only when the answer-checker returns a per-axis
+breakdown; it is absent (null) for legacy/flat verdicts.
+
+`boss_status` is a state-machine label, not a student-facing performance judgment
+(`won` means boss HP reached 0; `failed` means trials ran out). The
+student-facing tier is `outcome`.
+
+---
+
+#### POST /ai/boss/state
+
+Request:
+```json
+{
+  "boss_session_id": "bs_<hex16>"
+}
+```
+
+Response (mirrors `/start` shape plus the current question summary):
+```json
+{
+  "boss_session_id": "bs_<hex16>",
+  "session_id": "string",
+  "homework_id": "string",
+  "status": "active|won|failed|abandoned",
+  "hp": 82,
+  "max_hp": 100,
+  "trials_left": 4,
+  "current_difficulty": "medium",
+  "current_question_id": "gbq_<hex16>|null",
+  "asked_question_ids": ["gbq_<hex16>"],
+  "weak_topics": ["string"],
+  "strong_topics": ["string"],
+  "current_question": {
+    "question_id": "gbq_<hex16>",
+    "question_text": "string",
+    "scenario": "string",
+    "why": "string",
+    "how": "string",
+    "what": "string",
+    "difficulty": "medium",
+    "target_skill": "string"
+  }
+}
+```
+
+`current_question` is null when no question is active. No answer or rubric fields
+are included — this endpoint is safe to poll for resume-on-refresh.
+
+---
+
+#### POST /ai/boss/give-up
+
+Request:
+```json
+{
+  "boss_session_id": "bs_<hex16>"
+}
+```
+
+Response: same shape as `/ai/boss/state`. Sets `status = "abandoned"`. If the
+session is already in a terminal state, the existing state is returned unchanged.
+
+---
+
+### Authored `content_json.boss_questions[]` — WHW fields
+
+The existing legacy fields (`q`, `ans`, `dmg`, `hint`, `tags`) remain valid. The
+following WHW fields are ALL OPTIONAL and additive; legacy rows without them
+continue to render and grade through the unchanged fallback path.
+
+```json
+{
+  "q": "string (legacy headline — still valid)",
+  "ans": ["accepted_answer"],
+  "dmg": 20,
+  "hint": "string",
+  "tags": "[Bloom: L2 | PISA: L2 | Damage: -20 HP]",
+
+  "scenario": "string — real-life framing shown to the student",
+  "why": "string — Why axis prompt shown to the student",
+  "how": "string — How axis prompt shown to the student",
+  "what": "string — What axis prompt shown to the student",
+
+  "expected_concepts": ["string"],
+  "concept_tag": "string",
+  "bloom": "L1|L2|L3|L4|L5|L6",
+  "pisa": "L1|L2|L3|L4",
+
+  "hints": ["string — ordered hint list, max 3"],
+  "correct_feedback": "string — shown on full-credit answer",
+  "partial_feedback": "string — shown on partial-credit answer",
+  "wrong_feedback": "string — shown on wrong answer"
+}
+```
+
+All WHW fields (`scenario`, `why`, `how`, `what`, `expected_concepts`,
+`concept_tag`, `bloom`, `pisa`, `hints`, `correct_feedback`, `partial_feedback`,
+`wrong_feedback`) are stripped from hydration before the payload reaches the
+client, just like `answer_spec.expected`. They are only used server-side for
+grading and dynamic generation anchoring.
+
+---
+
+### `boss_meta` fields
+
+`content_json.boss_meta` is read server-side at `/ai/boss/start` time to
+configure the session. It is NOT injected into the runtime as a JS constant.
+
+```json
+{
+  "boss_type": "string",
+  "grade_band": "g1_4|g5|g6_8|g9_11|G1-4|G5-8|G9-11|1..11",
+  "attempts_max": 7,
+  "starting_hp_override": null,
+  "anti_cheat": {
+    "paste_detect": false,
+    "response_time_floor_ms": 0
+  }
+}
+```
+
+`grade_band` drives the server-authoritative starting HP (see grade-band HP table
+below). `starting_hp_override` (integer, minimum 10) overrides the band lookup
+entirely when set. `anti_cheat` is read but not enforced in the current lane —
+see the Anti-cheat extension points section below.
+
+---
+
+### Grade-band HP table
+
+| Band | `grade_band` values accepted | Starting HP |
+|---|---|---|
+| G1-4 | `g1_4`, `G1-4`, grades 1–4 | 50 |
+| G5-8 | `g5`, `g6_8`, `G5-8`, grades 5–8 | 100 |
+| G9-11 | `g9_11`, `G9-11`, grades 9–11 | 150 |
+| (default) | absent / unrecognized | 100 |
+
+`starting_hp_override` (integer, minimum 10) takes precedence over all band
+lookups when present in `boss_meta`.
+
+---
+
+### Coverage-based damage formula
+
+Each answer submission computes `damage = BASE × accuracy × hint_penalty × multiplier × combo`.
+
+**BASE damage by difficulty:**
+
+| difficulty | BASE |
+|---|---|
+| easy | 10 |
+| medium | 20 |
+| hard | 30 |
+
+**Accuracy tier** (derived from `coverage_mean` when a per-axis `coverage` dict
+is returned by the checker, else from the flat `score`):
+
+| coverage/score | accuracy multiplier |
+|---|---|
+| >= 0.85 | 1.0 |
+| >= 0.55 | 0.7 |
+| >= 0.30 | 0.5 |
+| < 0.30 | 0.0 (wrong — no damage) |
+
+**Hint penalty** (from `boss_sessions.hints_used`):
+
+| hints used | multiplier |
+|---|---|
+| 0 | 1.0 |
+| 1 | 0.8 |
+| 2 | 0.6 |
+| 3+ | 0.3 |
+
+**Combo bonus:** if the student enters a roll on a tail streak of 3 or more
+consecutive full-accuracy correct answers (score >= 0.85) with zero hints used,
+damage is multiplied by 1.2. The streak resets on any wrong answer or hint use.
+
+**Invariant:** an `is_correct` answer always deals > 0 damage. The server
+floors `score` and coverage mean to 0.60 on a correct verdict so the answer
+never lands in the zero-accuracy tier.
+
+**`multiplier`** is recommended by the AI checker (range 0.0–1.5, clamped by the
+server). On a correct answer the server floors it to 1.0.
+
+---
+
+### `boss_sessions` table schema
+
+```sql
+CREATE TABLE IF NOT EXISTS boss_sessions (
+  id                     TEXT PRIMARY KEY,
+  session_id             TEXT NOT NULL,
+  homework_id            TEXT NOT NULL,
+  status                 TEXT NOT NULL DEFAULT 'active',
+  hp                     INTEGER NOT NULL DEFAULT 100,
+  max_hp                 INTEGER NOT NULL DEFAULT 100,
+  trials_left            INTEGER NOT NULL DEFAULT 7,
+  current_difficulty     TEXT NOT NULL DEFAULT 'medium',
+  current_question_id    TEXT,
+  asked_question_ids_json TEXT NOT NULL DEFAULT '[]',
+  weak_topics_json       TEXT NOT NULL DEFAULT '[]',
+  strong_topics_json     TEXT NOT NULL DEFAULT '[]',
+  hints_used             INTEGER NOT NULL DEFAULT 0,    -- NEW (Plan-5 + WHW)
+  correct_count          INTEGER NOT NULL DEFAULT 0,    -- NEW (Plan-5 + WHW)
+  total_attempts         INTEGER NOT NULL DEFAULT 0,    -- NEW (Plan-5 + WHW)
+  question_kind          TEXT,                          -- NEW (Plan-5 + WHW)
+  created_at             TEXT NOT NULL,
+  updated_at             TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_boss_sessions_session
+ON boss_sessions(session_id, homework_id, status);
+```
+
+The four new columns are added by the migration in `server/db/migrations.py`
+(idempotent `ALTER TABLE … ADD COLUMN` guards). Legacy rows without them default
+to `0 / NULL`.
+
+| Column | Purpose |
+|---|---|
+| `hints_used` | Running count of hints consumed in this session; drives the hint_penalty multiplier. |
+| `correct_count` | Running count of correct submissions; used by `compute_boss_outcome`. |
+| `total_attempts` | Running count of all submissions (correct + wrong); used by `compute_boss_outcome`. |
+| `question_kind` | Optional shape tag for the question type (e.g. `"whw"`); reserved for analytics. |
+
+---
+
+### Answer-leak guarantee for the boss
+
+The dynamic boss path enforces a strict boundary:
+
+1. `/ai/boss/generate-question` returns `question_text`, `scenario`, `why`, `how`,
+   `what`, `target_skill`, `difficulty`, and `why_this_question` ONLY. The
+   `expected_answer`, `rubric`, and all coverage-rubric fields are stored
+   server-side and never returned to the client.
+
+2. `/ai/boss/state` rehydrates the current question from storage but strips the
+   same fields — only the four prompt parts (`scenario`/`why`/`how`/`what`) and
+   `question_text` are returned.
+
+3. `student_answer` is the only answer payload the client ever sends. The server
+   fetches the stored expected answer and rubric for grading; the client never
+   sees them.
+
+4. The generator prompt never receives answer keys from prior asked questions
+   (the internal anti-repetition queue carries only `question_text` and
+   `target_skill`).
+
+5. Student text (`student_answer`) is wrapped in
+   `<UNTRUSTED_STUDENT_MESSAGE>…</UNTRUSTED_STUDENT_MESSAGE>` before it enters
+   any LLM prompt (Plan 7 §2).
+
+---
+
+### Anti-cheat extension points (RESERVED — not enforced here)
+
+The following seams are documented for the separate anti-cheat lane. They are
+NOT implemented in the current backend code. Documenting them here prevents
+accidental collision when the anti-cheat lane is built.
+
+**(S1) `boss_meta.anti_cheat` config block** — `{paste_detect: bool, response_time_floor_ms: int}`.
+The server reads this field from `content_json.boss_meta` inside
+`/ai/boss/submit-answer` but does NOT act on it yet. The anti-cheat lane should
+read these flags to enable enforcement without modifying the schema.
+
+**(S2) `client_time_ms` on `BossSubmitAnswerRequest`** — An optional integer field
+may be added additively to the submit-answer request body and persisted to the
+existing `attempt.time_ms` column. The column already exists in `phase_attempts`;
+no schema change is needed. The anti-cheat lane should add this field without
+altering other request fields.
+
+**(S3) `boss:paste_detected` client telemetry event** — A `nets:boss-telemetry`
+CustomEvent (or similar) in `BossArena.tsx` is the intended hook for
+paste-detection signals. The frontend currently dispatches no such event; the
+anti-cheat lane should add it addend-only without touching the existing
+`nets:submit` event contract.
+
+**(S4) `session_metrics.avg_time_ms < response_time_floor_ms` flag condition** —
+`session_metrics` already stores per-session `avg_time_ms`. The anti-cheat lane
+can query this against `boss_meta.anti_cheat.response_time_floor_ms` to flag
+suspiciously fast sessions without a new table.
+
+**(S5) `ai_call_logs` source tag** — `ai_call_logs.task_type` distinguishes boss
+generation (`boss_question_generate`) from answer checking (`boss_answer_check`).
+The anti-cheat lane may add a `source_tag` or similar column to correlate an
+answer submission latency against the AI generation latency for the same question,
+without altering existing rows.
+
+All five seams are additive — no existing field or table is modified to
+accommodate them.

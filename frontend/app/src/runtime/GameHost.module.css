@@ -1,0 +1,105 @@
+/* ============================================================
+   GameHost frame — canonical Apple design language.
+   Matches LearningHub recipe: white card (#ffffff), 20px radius,
+   soft diffusion shadow, #1d1d1f ink, spring easing.
+   Reduced-motion honored.
+   ============================================================ */
+
+/* ---- Skip card (unregistered game placeholder) ---- */
+.skip {
+  padding: 36px 30px;
+  text-align: center;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  color: #86868b;
+  /* Gentle rise-in matching Hub hubNodeIn */
+  animation: ghNodeIn 480ms var(--landing-spring) both;
+}
+.skipCta {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---- Loading skeleton card ---- */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 56px 20px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: ghNodeIn 480ms var(--landing-spring) both;
+}
+
+/* Skeleton shimmer bars — matches hub .subItem background, no circular spinner */
+.shimmerBar {
+  width: 100%;
+  max-width: 240px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e8e8e8 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: ghShimmer 1400ms linear infinite;
+}
+.shimmerBarShort {
+  max-width: 160px;
+}
+
+/* Thin progress ring — GPU transform only */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(138, 95, 200, 0.14); /* purple tint to match arc accent */
+  border-top-color: var(--c-purple, #8a5fc8);
+  animation: ghSpin 720ms linear infinite;
+}
+
+@keyframes ghSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ghShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.loadingLabel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #86868b;
+}
+
+/* Hub hubNodeIn — rise + fade */
+@keyframes ghNodeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .skip,
+  .loading {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .spinner {
+    animation-duration: 1800ms; /* slow but preserved for accessibility context */
+  }
+  .shimmerBar {
+    animation: none;
+    background: #f0f0f0;
+  }
+}

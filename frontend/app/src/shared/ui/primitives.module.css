@@ -1,0 +1,144 @@
+/* React embodiment of the landing Apple-glass vocabulary.
+   Consumes shared tokens from _tokens.css. */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--v2-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--v2-ring);
+  background: var(--v2-card-bg);
+  color: var(--v2-text-muted);
+  white-space: nowrap;
+}
+.pillDark { background: var(--landing-zinc-950); color: #fff; border-color: transparent; }
+.pillAccent { background: var(--landing-blue-600); color: #fff; border-color: transparent; }
+.pillGood { background: var(--landing-emerald-50); color: var(--landing-emerald-700); border-color: transparent; }
+.pillWarn { background: #fef3c7; color: #92400e; border-color: transparent; }
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--landing-blue-600);
+  margin: 0 0 10px;
+}
+.eyebrowCyan { color: var(--landing-cyan-300); }
+
+.featureCard {
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: var(--v2-radius-card);
+  padding: 24px;
+  box-shadow: var(--landing-shadow-card);
+  transition: transform 220ms var(--landing-spring), box-shadow 220ms var(--landing-spring);
+}
+.featureCardHover:hover {
+  transform: translateY(-7px) scale(1.02);
+  box-shadow: var(--landing-shadow-card-hover);
+}
+
+.darkSection {
+  position: relative;
+  background: var(--landing-zinc-950);
+  color: #fff;
+  border-radius: var(--v2-radius-card);
+  padding: 32px;
+  overflow: hidden;
+  box-shadow: var(--landing-shadow-deep);
+}
+.darkGlow {
+  position: absolute;
+  inset: -40% 20% auto -10%;
+  height: 320px;
+  background: radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(217,70,239,0.18) 40%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+.darkSection > * { position: relative; z-index: 1; }
+
+.lessonPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--v2-ring);
+  background: var(--v2-card-bg);
+  box-shadow: var(--landing-shadow-soft);
+  transition: transform 200ms var(--landing-spring), border-color 200ms var(--landing-spring), box-shadow 200ms var(--landing-spring);
+}
+.lessonPanel:hover { transform: translateX(5px); box-shadow: var(--landing-shadow-card); }
+.lessonPanel:active { transform: translateX(5px) scale(0.985); }
+.lessonPanelActive { border-color: var(--landing-blue-500); box-shadow: 0 0 0 3px var(--accent-light); }
+.lessonPanelCorrect { border-color: var(--landing-emerald-700); }
+.lessonPanelWrong { border-color: var(--landing-fuchsia-500); }
+.lessonPanelEyebrow { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--v2-text-subtle); margin: 0 0 4px; }
+.lessonPanelActive .lessonPanelEyebrow { color: var(--landing-blue-600); }
+.lessonPanelTitle { display: block; font-size: 16px; font-weight: 600; margin: 0; color: var(--v2-text); }
+.lessonPanelChev { color: var(--v2-text-subtle); transition: transform 200ms var(--landing-spring); flex-shrink: 0; }
+.lessonPanel:hover .lessonPanelChev { transform: translateX(4px); }
+
+.launchShell {
+  position: relative;
+  text-align: center;
+  background: var(--landing-zinc-950);
+  color: #fff;
+  border-radius: 28px;
+  padding: 56px 32px;
+  overflow: hidden;
+  box-shadow: var(--landing-shadow-deep);
+}
+.launchGlow {
+  position: absolute;
+  left: 50%; top: -30%;
+  width: 700px; height: 420px; max-width: 130vw;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(96,165,250,0.4) 0%, rgba(99,102,241,0.2) 40%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+.launchShell > * { position: relative; z-index: 1; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: var(--v2-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 220ms var(--landing-spring);
+  white-space: nowrap;
+}
+.btnBlue { background: var(--landing-blue-600); color: #fff; box-shadow: 0 10px 30px rgba(37,99,235,0.22); }
+.btnBlue:hover { background: var(--landing-blue-500); transform: scale(1.045); }
+.btnBlue:active { transform: scale(0.98); }
+.btnBlue:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btnOutline { background: transparent; color: var(--v2-text); border: 1px solid var(--v2-ring); }
+.btnOutline:hover { background: var(--v2-card-tinted); transform: scale(1.045); }
+.btnWhite { background: #fff; color: var(--landing-zinc-950); }
+.btnWhite:hover { background: var(--landing-zinc-200); transform: scale(1.045); }
+
+.title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+  margin: 0;
+  color: var(--v2-text);
+}
+.titleHero { font-size: clamp(30px, 5vw, 52px); }
+.titleSection { font-size: clamp(22px, 3vw, 34px); }
+.titleInverse { color: #fff; }
+.lead { font-size: clamp(15px, 1.5vw, 17px); line-height: 1.6; color: var(--v2-text-muted); margin: 16px 0 0; }
+.leadInverse { color: rgba(255,255,255,0.72); }

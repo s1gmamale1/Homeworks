@@ -82,3 +82,21 @@ SENTENCE_FILL_BACKEND_PLAN.md
 
 # Architectural rework planning docs (kept local; not part of the codebase)
 /homeworks_ai_architecture_plan_pr169_adjusted/
+
+# Ruflo / claude-flow runtime artifacts (regenerated; never commit)
+/ruvector.db
+/.claude-flow/
+/.mcp.json
+/.swarm/
+/agentdb.rvf
+/agentdb.rvf.lock
+/claude-flow.config.json
+
+# React SPA build deps (dist/ IS committed for launchd deploy — see architecture doc)
+frontend/app/node_modules/
+
+# TS build cache
+frontend/app/*.tsbuildinfo
+
+# Playwright CLI snapshots (local)
+.playwright-cli/

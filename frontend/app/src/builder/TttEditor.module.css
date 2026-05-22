@@ -1,0 +1,83 @@
+/* Tic-Tac-Toe editor extras. Shared layout (.editor/.subItem/.help/.empty/
+   .note) comes from editors.module.css; this module only adds the TTT-specific
+   bits. All colors stay on the contrast-safe --v2-* tokens. */
+
+/* Stable-id chip next to each "Question N" label. */
+.idTag {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--v2-text-subtle);
+  background: color-mix(in srgb, var(--v2-accent) 10%, transparent);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* The fixed 3-distractor block — visually grouped + clearly labeled "exactly 3". */
+.distractorGroup {
+  margin: 4px 0 6px;
+  padding: 12px 12px 2px;
+  border: 1px dashed var(--v2-ring);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--v2-card-bg) 60%, transparent);
+}
+
+.distractorHeading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text);
+}
+
+.distractorHint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--v2-text-subtle);
+}
+
+/* Per-item completeness nudge (missing correct / blank distractors). */
+.itemWarn {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #b45309; /* amber-700 — readable on the light builder surface */
+}
+
+/* Config overrides laid out two-up on wide panels, single-column when narrow. */
+.configGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+@media (max-width: 520px) {
+  .configGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Local number input (the shared NumberInput coerces blank→0; config needs
+   blank to mean "use the default", so it owns its control). Mirrors the
+   fields.module.css .input styling. */
+.numInput {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--v2-text);
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  padding: 9px 12px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.numInput:focus {
+  outline: none;
+  border-color: var(--v2-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 18%, transparent);
+}

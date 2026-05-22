@@ -1,0 +1,692 @@
+/* RealLifeChallenge.module.css
+   Apple-card design system — INTERACTION-BLUE accent.
+   Mirrors the canonical LearningHub node treatment:
+     • white #ffffff cards, 18-20px radius, soft diffusion shadow (no heavy borders)
+     • --grad-interaction top accent bar + corner glow
+     • --ink / --text-secondary / --c-blue tokens throughout
+     • scale(1.03) hover on var(--landing-spring)
+     • prefers-reduced-motion honored
+   CSS-only restyle — zero logic/contract changes.
+*/
+
+/* ---- page-level ambient glow (fixed, pointer-events none) ---- */
+.wrap {
+  position: relative;
+  isolation: isolate;
+  /* Pin light-mode ink tokens so dark-OS inheritance never washes text */
+  --rlc-ink: var(--ink, #1d1d1f);
+  --rlc-secondary: var(--text-secondary, #86868b);
+  --rlc-subtle: #a1a1a6;
+  --rlc-blue: var(--c-blue, #5e9ed6);
+  --rlc-accent-solid: #4677b8;
+  --rlc-bg: #f5f5f7;
+  animation: rlcFadeIn 400ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+
+/* Subtle single interaction-blue hero glow — low opacity, matches LearningHub */
+.wrap::before {
+  content: "";
+  position: absolute;
+  inset: -60px -80px auto -80px;
+  height: 380px;
+  border-radius: 999px;
+  background: radial-gradient(60% 80% at 30% 0%, rgba(94, 158, 214, 0.12) 0%, transparent 65%),
+              radial-gradient(45% 60% at 80% 10%, rgba(70, 119, 184, 0.08) 0%, transparent 60%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Lower ambient for long step lists */
+.wrap::after {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 440px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(94, 158, 214, 0.09) 0%, transparent 70%);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes rlcFadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* All direct children sit above the ambient layer */
+.head,
+.introBox,
+.stepCard,
+.error,
+.actions,
+.feedback,
+.done {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- header row ---- */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.progress {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rlc-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* ---- Apple-card shared chrome ---- */
+/* Every card surface: solid white, soft diffusion shadow, 20px radius.
+   Accent bar + corner glow wired to --grad-interaction. */
+
+.introBox,
+.stepCard,
+.feedback,
+.done {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+/* ---- intro box ---- */
+
+.introBox {
+  position: relative;
+  padding: 20px 24px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  animation: rlcNodeIn 560ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) 60ms both;
+  transition:
+    transform 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* Interaction-blue accent bar */
+.introBox::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow */
+.introBox::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(94, 158, 214, 0.22);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.introText {
+  position: relative;
+  z-index: 1;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--rlc-secondary);
+  margin: 0;
+}
+
+/* ---- step card (canonical Apple card slab) ---- */
+
+.stepCard {
+  position: relative;
+  padding: 28px 26px !important;
+  margin-bottom: 16px;
+  border-radius: 20px !important;
+  animation: rlcNodeIn 640ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) 120ms both;
+  transition:
+    transform 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* Accent bar — interaction blue */
+.stepCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow */
+.stepCard::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(94, 158, 214, 0.24);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stepTitle {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--rlc-blue);
+  margin: 0 0 10px;
+}
+
+.stepPrompt {
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--rlc-ink);
+  margin: 0 0 22px;
+}
+
+/* ---- decision / info_request / final_decision options ---- */
+
+.optionList {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 16px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--rlc-ink);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    border-color 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+.option:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: rgba(94, 158, 214, 0.4);
+  background: #eef3f8;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.07),
+    0 2px 6px rgba(94, 158, 214, 0.1);
+}
+
+.option:not(:disabled):active {
+  transform: translateY(-1px) scale(1.015);
+}
+
+.optionBullet {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: #ffffff;
+  transition:
+    border-color 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+.optionLabel {
+  flex: 1;
+}
+
+.optionPicked .optionBullet {
+  border-color: var(--rlc-accent-solid);
+  background: var(--rlc-accent-solid);
+}
+
+.optionPicked {
+  border-color: rgba(70, 119, 184, 0.5);
+  background: rgba(94, 158, 214, 0.07);
+  box-shadow:
+    0 0 0 3px rgba(94, 158, 214, 0.14),
+    0 4px 16px rgba(70, 119, 184, 0.08);
+}
+
+.optionCorrect {
+  border-color: rgba(4, 120, 87, 0.38);
+  background: linear-gradient(160deg, #ecfdf5 0%, #f5f5f7 60%);
+  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.16);
+}
+
+.optionWrong {
+  border-color: rgba(201, 58, 58, 0.35);
+  background: linear-gradient(160deg, #fff1f1 0%, #f5f5f7 60%);
+  animation: rlcShake 420ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+
+@keyframes rlcShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-3px); }
+  80%       { transform: translateX(3px); }
+}
+
+/* ---- concept_select chips ---- */
+
+.chipGrid {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  padding: 10px 20px;
+  border-radius: 100px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rlc-ink);
+  cursor: pointer;
+  transition:
+    transform 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    border-color 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 160ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+.chip:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: rgba(94, 158, 214, 0.4);
+  background: #eef3f8;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.07),
+    0 1px 4px rgba(94, 158, 214, 0.1);
+}
+
+.chip:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.chipPicked {
+  border-color: rgba(70, 119, 184, 0.5);
+  background: rgba(94, 158, 214, 0.09);
+  box-shadow: 0 0 0 3px rgba(94, 158, 214, 0.14);
+  color: var(--rlc-accent-solid);
+}
+
+.chipCorrect {
+  border-color: rgba(4, 120, 87, 0.38);
+  background: linear-gradient(160deg, #ecfdf5 0%, #f5f5f7 60%);
+  color: #047857;
+}
+
+.chipWrong {
+  border-color: rgba(201, 58, 58, 0.35);
+  background: linear-gradient(160deg, #fff1f1 0%, #f5f5f7 60%);
+  animation: rlcShake 420ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+
+/* ---- reasoning textarea ---- */
+
+.reasoningWrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+}
+
+.reasoningBox {
+  width: 100%;
+  min-height: 128px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--rlc-ink);
+  resize: vertical;
+  transition:
+    border-color 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+  box-sizing: border-box;
+}
+
+.reasoningBox::placeholder {
+  color: var(--rlc-subtle);
+}
+
+.reasoningBox:focus {
+  outline: none;
+  border-color: rgba(70, 119, 184, 0.5);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(94, 158, 214, 0.14),
+    0 4px 16px rgba(70, 119, 184, 0.06);
+}
+
+.reasoningBox:disabled {
+  opacity: 0.52;
+  cursor: default;
+  resize: none;
+}
+
+.charHint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rlc-secondary);
+  text-align: right;
+  margin: 0;
+}
+
+.charHintWarn {
+  color: #d97706;
+}
+
+/* ---- feedback panel (Apple card + interaction-blue accent) ---- */
+
+.feedback {
+  position: relative;
+  padding: 20px 24px;
+  border-radius: 20px;
+  display: grid;
+  gap: 12px;
+  animation: rlcNodeIn 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+
+/* Accent bar */
+.feedback::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow */
+.feedback::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(94, 158, 214, 0.18);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.feedbackRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scoreLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rlc-secondary);
+}
+
+/* Consequence panel: warm-tinted inner surface */
+.consequenceText {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rlc-secondary);
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(249, 115, 22, 0.05);
+  border: 1px solid rgba(249, 115, 22, 0.18);
+  border-left: 3px solid #f97316;
+}
+
+.hintText {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  color: var(--rlc-secondary);
+  margin: 0;
+}
+
+.hintText strong {
+  color: var(--rlc-ink);
+}
+
+/* Reasoning feedback: indigo-tinted inner surface */
+.reasoningFeedbackText {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rlc-secondary);
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.14);
+  border-left: 3px solid #6366f1;
+}
+
+.feedbackActions {
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
+}
+
+/* ---- completion screen ---- */
+
+.done {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding: 32px 28px;
+  border-radius: 20px;
+  animation: rlcNodeIn 480ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+  transition:
+    transform 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* Accent bar on done panel */
+.done::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft corner glow — gently bobs */
+.done::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 240px;
+  height: 240px;
+  border-radius: 999px;
+  background: rgba(94, 158, 214, 0.22);
+  filter: blur(64px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  animation: rlcBobble 6.5s ease-in-out infinite;
+}
+
+@keyframes rlcBobble {
+  0%, 100% { transform: translateY(0) rotateZ(0deg); }
+  50%       { transform: translateY(-14px) rotateZ(3deg); }
+}
+
+/* Rubric card inside completion — inner Apple-card layer */
+.rubricCard {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px !important;
+  border-radius: 16px !important;
+  background: #f5f5f7 !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+}
+
+.rubricRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--rlc-secondary);
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.rubricRow:last-child {
+  border-bottom: none;
+}
+
+.rubricRow strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rlc-ink);
+}
+
+/* ---- shared ---- */
+
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.error {
+  margin-top: 12px;
+  padding: 13px 18px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.9);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- keyframes ---- */
+
+@keyframes rlcNodeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 560px) {
+  .stepCard {
+    padding: 20px 18px !important;
+  }
+  .option {
+    font-size: 14px;
+    padding: 13px 15px;
+  }
+  .chip {
+    font-size: 13px;
+    padding: 9px 16px;
+  }
+  .reasoningBox {
+    font-size: 14px;
+  }
+  .done {
+    padding: 24px 20px;
+  }
+}
+
+/* ---- reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .introBox,
+  .stepCard,
+  .feedback,
+  .done {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .done::after {
+    animation: none;
+  }
+  .option:not(:disabled):hover,
+  .chip:not(:disabled):hover {
+    transform: none;
+  }
+  .optionWrong,
+  .chipWrong {
+    animation: none;
+  }
+  .reasoningBox {
+    transition: none;
+  }
+}

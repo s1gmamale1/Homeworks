@@ -152,11 +152,29 @@ def test_find_question_empty_inputs():
 # ---------------------------------------------------------------------------
 
 
-def test_redact_preview_passes_through():
+def test_redact_preview_strips_answer_bearing_fields():
+    """BLOCKER #4: phase="preview" must NOT pass answer-bearing fields through.
+
+    Pre-fix, preview returned the raw question (incl. answer_spec/solution) so a
+    tampered client could tag a gated question as preview and leak the answer.
+    Redaction is now driven by question CONTENT, not the claimed phase: any
+    answer-bearing field is scrubbed even under preview.
+    """
     q = {"prompt": "Solve for x", "answer_spec": {"expected": "5"}, "solution": "x=5"}
     result = ai_context._redact_question_for_tutor(q, "preview")
     assert result["prompt"] == "Solve for x"
-    assert result["answer_spec"]["expected"] == "5"
+    assert "answer_spec" not in result
+    assert "solution" not in result
+
+
+def test_redact_preview_passes_pure_teaching_content_through():
+    """Control: a preview question with NO answer-bearing field is unaffected —
+    legit teaching panels still flow through unchanged."""
+    q = {"prompt": "Why is the sky blue?", "text": "Rayleigh scattering.", "tier": "EASY"}
+    result = ai_context._redact_question_for_tutor(q, "preview")
+    assert result["prompt"] == "Why is the sky blue?"
+    assert result["text"] == "Rayleigh scattering."
+    assert result["tier"] == "EASY"
 
 
 def test_redact_practice_strips_answers():

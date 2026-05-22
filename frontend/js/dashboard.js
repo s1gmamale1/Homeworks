@@ -149,8 +149,6 @@
       titleInput: $("homework-title"),
       subjectSelect: $("homework-subject"),
       gradeSelect: $("homework-grade"),
-      modeSelect: $("homework-mode"),
-      modeNote: $("mode-note"),
       submitCreate: $("submit-create"),
       versionsModal: $("versions-modal"),
       versionsList: $("versions-list"),
@@ -444,27 +442,6 @@
     }
   }
 
-  function applyModeRules(subjectId) {
-    const subject = getSubject(subjectId);
-
-    if (!subject) {
-      els.modeSelect.disabled = false;
-      els.modeSelect.value = "easy";
-      els.modeNote.textContent = t("dashboard.mode_note_default");
-      return;
-    }
-
-    if (subject.always_hard) {
-      els.modeSelect.value = "hard";
-      els.modeSelect.disabled = true;
-      els.modeNote.textContent = `${getSubjectLabel(subject.id)} → ${t("common.hard")}`;
-      return;
-    }
-
-    els.modeSelect.disabled = false;
-    els.modeNote.textContent = `${getSubjectLabel(subject.id)}: ${t("common.easy")} / ${t("common.hard")}`;
-  }
-
   function getActiveList() {
     return state.view === "trash" ? state.trash : state.homeworks;
   }
@@ -489,7 +466,15 @@
   }
 
   function openBuilder(id) {
-    window.location.href = `/builder.html?id=${encodeURIComponent(id)}`;
+    // Route v2 homeworks to the React builder; legacy v1 stay on builder.html.
+    const hw = state.homeworks.find((item) => item.id === id)
+      || state.trash.find((item) => item.id === id);
+    const isV2 = hw && hw.flow_version === "v2";
+    if (isV2) {
+      window.location.href = `/app/builder?id=${encodeURIComponent(id)}`;
+    } else {
+      window.location.href = `/builder.html?id=${encodeURIComponent(id)}`;
+    }
   }
 
   function renderHomeworkCard(homework) {
@@ -798,7 +783,6 @@
     els.form.reset();
     els.gradeSelect.innerHTML = `<option value="" disabled selected>${escapeHtml(t("dashboard.select_grade"))}</option>`;
     els.gradeSelect.disabled = true;
-    applyModeRules("");
 
     if (typeof els.modal.showModal === "function") {
       els.modal.showModal();
@@ -823,9 +807,8 @@
     const title = els.titleInput.value.trim();
     const subject = els.subjectSelect.value;
     const grade = Number(els.gradeSelect.value);
-    const mode = els.modeSelect.value;
 
-    if (!title || !subject || !grade || !mode) {
+    if (!title || !subject || !grade) {
       showToast(t("dashboard.toast_missing_fields"), t("dashboard.toast_missing_fields_msg"), "warning");
       return;
     }
@@ -834,10 +817,17 @@
     els.submitCreate.textContent = t("dashboard.creating");
 
     try {
-      const homework = await API.createHomework({ title, subject, grade, mode });
+      // New homeworks are always v2; mode is hardcoded to "hard" (v2 is the full experience).
+      const homework = await API.createHomework({
+        title,
+        subject,
+        grade,
+        mode: "hard",
+        content_json: { flow_version: "v2" },
+      });
       showToast(t("dashboard.toast_homework_created"), t("dashboard.toast_opening_builder"), "success");
       closeCreateModal();
-      openBuilder(homework.id);
+      window.location.href = `/app/builder?id=${encodeURIComponent(homework.id)}`;
     } catch (error) {
       showToast(t("dashboard.toast_could_not_create"), error.message, "error");
     } finally {
@@ -1045,7 +1035,6 @@
 
     els.subjectSelect.addEventListener("change", () => {
       renderGradeOptions(els.subjectSelect.value);
-      applyModeRules(els.subjectSelect.value);
     });
 
     els.searchInput.addEventListener("input", () => {

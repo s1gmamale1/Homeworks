@@ -115,7 +115,12 @@ def test_resolve_model_fast():
 
 
 @pytest.mark.asyncio
-async def test_generate_text_delegates_with_correct_model():
+async def test_generate_text_delegates_with_tier_and_preference():
+    """Post per-task-routing refactor: generate_text passes `tier` +
+    `preference_override` to the orchestrator instead of a pre-resolved
+    model string. The orchestrator resolves model per-provider so a
+    cross-provider fallback chain swaps model names as it walks.
+    """
     with patch("server.services.ai_gateway.ai_orchestrator.generate") as mock_gen:
         mock_gen.return_value = "Salom!"
         result = await ai_gateway.generate_text(
@@ -127,8 +132,142 @@ async def test_generate_text_delegates_with_correct_model():
     assert result == "Salom!"
     assert mock_gen.called
     call_kwargs = mock_gen.call_args.kwargs
-    from server.services.ai_orchestrator import PRO_MODEL
-    assert call_kwargs["model"] == PRO_MODEL
+    # TUTOR_CHAT is pro-tier; no per-task override so preference falls to
+    # the global default (kimi).
+    assert call_kwargs["tier"] == "pro"
+    assert call_kwargs["preference_override"] == ["kimi"]
+    # Regression guard — the legacy `model=` kwarg must NOT be passed in
+    # tier mode; that's what broke the cross-provider fallback walk.
+    assert "model" not in call_kwargs
+
+
+@pytest.mark.asyncio
+async def test_generate_text_routes_boss_tasks_to_openai_preference():
+    """Boss tasks must hand the orchestrator the per-task openai → kimi chain
+    so OpenAI runs primary with Kimi as automatic fallback."""
+    with patch("server.services.ai_gateway.ai_orchestrator.generate") as mock_gen:
+        mock_gen.return_value = "{}"
+        await ai_gateway.generate_text(
+            task=ai_gateway.AITask.BOSS_QUESTION_GENERATE,
+            prompt="test",
+        )
+    call_kwargs = mock_gen.call_args.kwargs
+    assert call_kwargs["preference_override"] == ["openai", "kimi"]
+    assert call_kwargs["tier"] == "pro"
+
+
+@pytest.mark.asyncio
+async def test_boss_persona_response_is_plaintext_generate_text_task():
+    """BOSS_PERSONA_RESPONSE contract guard (hardening item 6).
+
+    The task is intentionally a PLAIN-TEXT task: it is reserved for the (still
+    deferred) boss hint / persona-reply surface and must be invoked through
+    ``generate_text`` — never ``generate_structured``. Pins three properties so
+    a future refactor can't silently break the reservation:
+
+      1. It is a registered, fast-tier task (cheap, latency-sensitive replies).
+      2. It is intentionally ABSENT from ``_TASK_SCHEMA`` — adding it there would
+         imply structured output, which is the wrong shape for a persona reply.
+      3. ``generate_text`` can route it to the orchestrator (fast tier, global
+         preference) without error.
+    """
+    # 1. Registered + fast tier.
+    assert ai_gateway.TASK_MODEL_POLICY[ai_gateway.AITask.BOSS_PERSONA_RESPONSE] == "fast"
+    # 2. Plain-text → must NOT have a structured schema registered.
+    assert ai_gateway._task_schema(ai_gateway.AITask.BOSS_PERSONA_RESPONSE) is None
+    assert ai_gateway.AITask.BOSS_PERSONA_RESPONSE not in ai_gateway._TASK_SCHEMA
+    # 3. Routable via generate_text (the plain-text entrypoint).
+    with patch("server.services.ai_gateway.ai_orchestrator.generate") as mock_gen:
+        mock_gen.return_value = "Sen mendan o'tolmaysan!"
+        out = await ai_gateway.generate_text(
+            task=ai_gateway.AITask.BOSS_PERSONA_RESPONSE,
+            prompt="taunt the student",
+        )
+    assert out == "Sen mendan o'tolmaysan!"
+    call_kwargs = mock_gen.call_args.kwargs
+    assert call_kwargs["tier"] == "fast"
+    # Not in the per-task override map → inherits the global preference.
+    assert call_kwargs["preference_override"] == ["kimi"]
+
+
+def test_task_provider_preference_includes_both_boss_tasks():
+    """The two dynamic-boss tasks must be the only entries in the override
+    map. If a future task wants OpenAI routing, it goes here; this test
+    catches accidental drops."""
+    assert set(ai_gateway.TASK_PROVIDER_PREFERENCE.keys()) == {
+        ai_gateway.AITask.BOSS_QUESTION_GENERATE,
+        ai_gateway.AITask.BOSS_ANSWER_CHECK,
+    }
+    for task, pref in ai_gateway.TASK_PROVIDER_PREFERENCE.items():
+        assert pref == ["openai", "kimi"], (
+            f"{task.value} should chain openai -> kimi but is {pref}"
+        )
+
+
+def test_resolve_task_provider_and_model_routes_boss_to_openai_when_key_set(monkeypatch):
+    """With OPENAI_API_KEY set, boss tasks resolve to openai/gpt-4o-mini.
+    This is the core routing contract the user requested."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+    monkeypatch.setenv("KIMI_API_KEY", "kimi-test-fake")
+
+    provider, model, tier = ai_gateway._resolve_task_provider_and_model(
+        ai_gateway.AITask.BOSS_QUESTION_GENERATE
+    )
+    assert provider == "openai"
+    assert model == "gpt-4o-mini"
+    assert tier == "pro"
+
+
+def test_resolve_task_provider_and_model_falls_back_to_kimi_when_openai_unavailable(monkeypatch):
+    """OPENAI_API_KEY unset → select_provider walks past openai to kimi.
+    Boss still works on Kimi when OpenAI isn't configured."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("KIMI_API_KEY", "kimi-test-fake")
+
+    provider, model, tier = ai_gateway._resolve_task_provider_and_model(
+        ai_gateway.AITask.BOSS_QUESTION_GENERATE
+    )
+    assert provider == "kimi"
+    assert model.startswith("moonshot-")  # Kimi's pro model
+    assert tier == "pro"
+
+
+def test_resolve_task_provider_and_model_keeps_tutor_on_kimi(monkeypatch):
+    """Non-boss tasks must NEVER route through OpenAI — the user explicitly
+    asked for OpenAI on boss only, Kimi for everything else."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")  # available!
+    monkeypatch.setenv("KIMI_API_KEY", "kimi-test-fake")
+
+    for task in (
+        ai_gateway.AITask.TUTOR_CHAT,
+        ai_gateway.AITask.ANSWER_CHECK,
+        ai_gateway.AITask.FINAL_REPORT,
+        ai_gateway.AITask.SAFETY_GUARDRAIL,
+        ai_gateway.AITask.BOSS_PERSONA_RESPONSE,
+    ):
+        provider, _, _ = ai_gateway._resolve_task_provider_and_model(task)
+        assert provider == "kimi", (
+            f"{task.value} must stay on kimi, got {provider!r}"
+        )
+
+
+def test_get_status_reports_per_task_provider_override(monkeypatch):
+    """Status endpoint surfaces the openai → kimi chain for boss tasks so
+    operators can verify routing live without grepping code."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+    monkeypatch.setenv("KIMI_API_KEY", "kimi-test-fake")
+
+    status = ai_gateway.get_status()
+    assert "task_overrides" in status
+    assert "boss_question_generate" in status["task_overrides"]
+    assert status["task_overrides"]["boss_question_generate"] == ["openai", "kimi"]
+
+    boss_entry = status["tasks"]["boss_question_generate"]
+    assert boss_entry["provider"] == "openai"
+    assert boss_entry["model"] == "gpt-4o-mini"
+
+    tutor_entry = status["tasks"]["tutor_chat"]
+    assert tutor_entry["provider"] == "kimi"
 
 
 @pytest.mark.asyncio

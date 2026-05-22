@@ -271,9 +271,25 @@ async def list_homeworks(
     # canonical content sections are filled. Strip content_json from the
     # response — the list endpoint only needs the metadata, and shipping
     # the full blob per row would balloon the dashboard payload.
+    #
+    # flow_version: surface the single scalar the React dashboard needs to
+    # route each row to the right editor (v2 → React builder, absent → legacy
+    # builder.html). Returned as null when the field is missing/null in
+    # content_json; the dashboard treats null as v1 / legacy.
     items = result.get("items", [])
     for item in items:
         item["progress"] = compute_progress(item)
+        raw_cj = item.get("content_json")
+        if isinstance(raw_cj, str):
+            try:
+                cj = json.loads(raw_cj)
+            except (json.JSONDecodeError, TypeError):
+                cj = {}
+        elif isinstance(raw_cj, dict):
+            cj = raw_cj
+        else:
+            cj = {}
+        item["flow_version"] = cj.get("flow_version") or None
         item.pop("content_json", None)
     return result
 

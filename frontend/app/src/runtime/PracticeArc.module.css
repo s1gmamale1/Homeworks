@@ -1,0 +1,331 @@
+/* ============================================================
+   Practice Arc shell — canonical Apple design language.
+   Matches the LearningHub recipe exactly:
+   white card (#ffffff), ~20px radius, soft diffusion shadow,
+   --grad-game (purple) top-accent + corner glow,
+   #1d1d1f ink, spring var(--landing-spring), scale(1.03) hover.
+   Reduced-motion honored throughout.
+   ============================================================ */
+
+/* ---- Pinned ink tokens (contrast guarantee — mirrors LearningHub) ---- */
+.inner {
+  position: relative;
+  animation: stageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+
+  --arc-ink:       #1d1d1f;
+  --arc-secondary: #86868b;
+  --arc-subtle:    #a1a1a6;
+  --arc-line:      rgba(0, 0, 0, 0.08);
+  /* Game-purple accent tokens — maps to --grad-game / --c-purple */
+  --arc-accent:    var(--c-purple, #8a5fc8);
+  --arc-accent-lt: rgba(138, 95, 200, 0.10);
+  --arc-accent-ring: rgba(138, 95, 200, 0.22);
+}
+
+/* Subtle purple radial hero glow — depth without competing with ink. */
+.inner::before {
+  content: "";
+  position: absolute;
+  inset: -80px -40px auto -40px;
+  height: 340px;
+  background:
+    radial-gradient(420px 280px at 18%  0%, rgba(138, 95, 200, 0.10), transparent 70%),
+    radial-gradient(360px 260px at 82%  8%, rgba(179, 136, 235, 0.07), transparent 72%),
+    radial_gradient(300px 220px at 55% 24%, rgba(138,  95, 200, 0.05), transparent 74%);
+  filter: blur(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+.inner > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Back button — frosted glass pill (LearningHub subItem style) ---- */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 8px 16px 8px 13px;
+  border-radius: var(--v2-radius-pill, 999px);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--arc-secondary);
+  transition:
+    color       180ms var(--landing-spring),
+    transform   180ms var(--landing-spring),
+    box-shadow  180ms var(--landing-spring);
+}
+.back:hover {
+  color: var(--arc-ink);
+  transform: translateX(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+.back:active { transform: translateX(-3px) scale(0.98); }
+
+.intro {
+  margin-top: 10px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ============================================================
+   PROGRESS RAIL — Apple white card, purple top-accent + corner glow.
+   Mirrors .node + .cardAccent + .cardGlow from LearningHub.
+   ============================================================ */
+.rail {
+  list-style: none;
+  position: relative;                /* anchor the cardAccent + cardGlow inside */
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 22px 22px 18px;
+  margin: 28px 0 8px;
+  /* Hub .node recipe: white card, 20px radius, diffusion shadow, no heavy border */
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;                  /* clip accent bar + corner glow */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.rail::-webkit-scrollbar { display: none; }
+
+/* Purple top-accent bar — 4px, full-width, matches LearningHub .cardAccent */
+.rail::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Purple corner glow — matches LearningHub .cardGlow */
+.rail::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.26);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.railItem {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1 0 auto;
+  min-width: 76px;
+  text-align: center;
+}
+
+/* Connector line between stepper nodes */
+.railItem::before {
+  content: "";
+  position: absolute;
+  top: 19px;
+  left: -50%;
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--arc-line);
+  z-index: 0;
+}
+.railItem:first-child::before { display: none; }
+
+/* Completed connector tints to purple */
+.railItem.itemDone::before {
+  background: rgba(138, 95, 200, 0.40);
+}
+
+/* ---- Stepper node circles ---- */
+.node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid rgba(0, 0, 0, 0.10);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--arc-subtle);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  transition:
+    transform      280ms var(--landing-spring),
+    background     280ms var(--landing-spring),
+    border-color   280ms var(--landing-spring),
+    color          280ms var(--landing-spring),
+    box-shadow     280ms var(--landing-spring);
+}
+
+/* Completed — green fill (matches Hub emerald convention) */
+.nodeDone {
+  background: linear-gradient(135deg, #059669, #047857);
+  border-color: #047857;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(4, 120, 87, 0.28);
+}
+
+/* Active — purple ring pulse (--arc-accent, mirrors Hub .practicesOpen ring) */
+.nodeCurrent {
+  background: #ffffff;
+  border-color: var(--arc-accent);
+  color: var(--arc-accent);
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 5px var(--arc-accent-ring),
+    0 8px 20px rgba(138, 95, 200, 0.20);
+  animation: arcPulse 1900ms var(--landing-spring) infinite;
+}
+
+/* Boss node — red tint */
+.nodeBoss {
+  background: linear-gradient(135deg, rgba(201, 58, 58, 0.08), #ffffff);
+  border-color: var(--c-red, #c93a3a);
+  color: var(--c-red, #c93a3a);
+}
+.nodeBoss.nodeCurrent {
+  border-color: var(--c-red, #c93a3a);
+  color: var(--c-red, #c93a3a);
+  box-shadow:
+    0 0 0 5px rgba(201, 58, 58, 0.14),
+    0 8px 22px rgba(201, 58, 58, 0.20);
+}
+.nodeBoss.nodeDone {
+  background: linear-gradient(135deg, var(--c-red, #c93a3a), #b02a2a);
+  border-color: var(--c-red, #c93a3a);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(201, 58, 58, 0.28);
+}
+
+@keyframes arcPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 5px var(--arc-accent-ring), 0 8px 20px rgba(138, 95, 200, 0.20);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(138, 95, 200, 0.06), 0 8px 20px rgba(138, 95, 200, 0.10);
+  }
+}
+
+.nodeLabel {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--arc-subtle);
+  max-width: 84px;
+  transition: color 220ms var(--landing-spring);
+}
+.nodeLabelOn {
+  color: var(--arc-ink);
+}
+
+/* ============================================================
+   STAGE LABEL — eyebrow + title above the active game slot.
+   ============================================================ */
+.stageLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 28px 0 16px;
+}
+.stageCount {
+  display: inline-flex;
+  align-items: baseline;
+  padding: 3px 10px;
+  border-radius: var(--v2-radius-pill, 999px);
+  background: var(--arc-accent-lt);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--arc-accent);
+  font-variant-numeric: tabular-nums;
+}
+.stageName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--arc-ink);
+}
+
+/* ============================================================
+   GAME SLOT — white card frame around the active game.
+   Hub .node recipe: 20px radius, diffusion shadow.
+   ============================================================ */
+.gameSlot {
+  padding: clamp(18px, 3vw, 28px);
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: slotIn 380ms var(--landing-spring) both;
+  transition:
+    transform   320ms var(--landing-spring),
+    box-shadow  320ms var(--landing-spring);
+}
+.gameSlot:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+}
+@keyframes slotIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.outroCard {
+  margin-top: 24px;
+  padding: 24px 20px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .railItem  { min-width: 62px; }
+  .nodeLabel { font-size: 10px; }
+  .gameSlot  { padding: 16px; }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .inner,
+  .gameSlot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .nodeCurrent {
+    animation: none;
+    transform: scale(1.12); /* keep visual active state, no pulsing */
+  }
+  .back:hover,
+  .gameSlot:hover {
+    transform: none;
+  }
+}

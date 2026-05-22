@@ -52,8 +52,16 @@ from .review_queue_repo import (
     get_answer_cache,
     set_answer_cache,
     add_to_review_queue,
+    add_integrity_flag,
     get_review_queue,
+    get_review_item_kind,
     resolve_review_item,
+)
+
+# authorship affirmations (academic-integrity §9.6)
+from .affirmations_repo import (
+    create_affirmation,
+    list_affirmations,
 )
 
 # tutor conversations + warnings
@@ -128,8 +136,13 @@ __all__ = [
     "get_answer_cache",
     "set_answer_cache",
     "add_to_review_queue",
+    "add_integrity_flag",
     "get_review_queue",
+    "get_review_item_kind",
     "resolve_review_item",
+    # authorship affirmations
+    "create_affirmation",
+    "list_affirmations",
     # tutor
     "add_tutor_turn",
     "list_tutor_turns",

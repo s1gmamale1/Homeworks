@@ -7,6 +7,7 @@ Covers:
   3. ?subject= filter
   4. ?grade= filter
   5. ?limit= / ?offset= pagination consistency
+  6. flow_version surfaced per list row (v2 explicit / v1 absent → null)
 """
 import pytest
 
@@ -114,3 +115,49 @@ def test_pagination_offset(client):
     ids0 = {hw["id"] for hw in body0["items"]}
     ids2 = {hw["id"] for hw in body2["items"]}
     assert ids0.isdisjoint(ids2), "Pages must not overlap"
+
+
+def test_list_rows_include_flow_version(client):
+    """Each list row exposes flow_version from content_json.
+
+    Regression guard: the React dashboard routes v2 homeworks to the React
+    builder and v1/legacy homeworks to builder.html based on this field.
+    A v2 homework (content_json.flow_version == "v2") must surface "v2";
+    a legacy homework (no flow_version in content_json) must surface null.
+    """
+    # Create a v2 homework by including flow_version in content_json
+    resp_v2 = client.post("/api/homeworks", json={
+        "title": "FlowVersion V2 UniqueFV1",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "content_json": {"flow_version": "v2"},
+    })
+    assert resp_v2.status_code == 200, f"POST v2 failed: {resp_v2.text}"
+    v2_id = resp_v2.json()["id"]
+
+    # Create a legacy homework (no flow_version key in content_json)
+    resp_v1 = client.post("/api/homeworks", json={
+        "title": "FlowVersion Legacy UniqueFF2",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+    })
+    assert resp_v1.status_code == 200, f"POST legacy failed: {resp_v1.text}"
+    v1_id = resp_v1.json()["id"]
+
+    # Fetch the list and find both rows
+    list_resp = client.get("/api/homeworks?q=UniqueF")
+    assert list_resp.status_code == 200
+    items = list_resp.json()["items"]
+
+    by_id = {hw["id"]: hw for hw in items}
+    assert v2_id in by_id, "v2 homework missing from list"
+    assert v1_id in by_id, "legacy homework missing from list"
+
+    assert by_id[v2_id]["flow_version"] == "v2", (
+        f"Expected flow_version='v2', got {by_id[v2_id].get('flow_version')!r}"
+    )
+    assert by_id[v1_id]["flow_version"] is None, (
+        f"Expected flow_version=null for legacy, got {by_id[v1_id].get('flow_version')!r}"
+    )

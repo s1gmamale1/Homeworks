@@ -1,0 +1,410 @@
+/* ============================================================
+   Flashcards — Apple card system (CONTENT-YELLOW accent).
+   Canonical recipe: LearningHub.module.css.
+   White ~20px-radius cards, soft diffusion shadow, CONTENT
+   gradient top-accent + corner glow, crisp #1d1d1f ink,
+   gentle scale(1.03) hover, spring var(--landing-spring).
+   Onest + ink tokens are global — reused here, not redeclared.
+   prefers-reduced-motion honored.
+   ============================================================ */
+
+/* ---- Accent tokens (CONTENT = yellow) ---- */
+.stage {
+  --fc-accent-bar:  var(--grad-content, linear-gradient(135deg, #ffd166, #f4a261));
+  --fc-accent-glow: rgba(244, 162, 97, 0.22);
+  --fc-accent-ink:  var(--c-yellow, #f4a261);
+  --fc-card-bg:     #ffffff;
+  --fc-radius:      20px;
+
+  position: relative;
+  animation: fcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+}
+
+@keyframes fcStageIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Warm yellow ambient glow behind the deck — matches Hub hero glow pattern. */
+.stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -40px;
+  width: min(640px, 120%);
+  height: 340px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 209, 102, 0.18) 0%,
+    rgba(244, 162, 97, 0.12) 42%,
+    transparent 72%
+  );
+  filter: blur(54px);
+  pointer-events: none;
+  z-index: 0;
+}
+.stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Back link ---- */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  transition: color 180ms var(--landing-spring),
+              transform 180ms var(--landing-spring);
+}
+.back:hover {
+  color: var(--ink, #1d1d1f);
+  transform: translateX(-3px);
+}
+
+/* ---- Header row ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 22px;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+}
+
+/* ---- Progress pills — Hub-style dots ---- */
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.dot {
+  width: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--v2-ring);
+  transition: background 300ms var(--landing-spring),
+              width 300ms var(--landing-spring);
+}
+.dotActive {
+  width: 38px;
+  background: var(--fc-accent-ink);
+}
+.dotDone {
+  background: var(--landing-emerald-700);
+}
+.dotWeak {
+  background: var(--landing-fuchsia-500);
+}
+
+/* ---- Flip card scene ---- */
+.cardScene {
+  perspective: 1600px;
+  margin: 8px 0 28px;
+}
+.card {
+  position: relative;
+  width: 100%;
+  min-height: 268px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 620ms var(--landing-spring);
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  will-change: transform;
+}
+.cardFlipped {
+  transform: rotateY(180deg);
+}
+.card:focus-visible {
+  outline: none;
+}
+.card:focus-visible .face {
+  outline: 2px solid var(--fc-accent-ink);
+  outline-offset: 3px;
+}
+
+/* Both faces: Apple card chrome (Hub .node recipe). */
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 32px 28px;
+  border-radius: var(--fc-radius);
+  background: var(--fc-card-bg);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  transition: box-shadow 300ms var(--landing-spring),
+              transform 300ms var(--landing-spring);
+}
+
+/* Category top-accent bar — CONTENT gradient (yellow). */
+.face::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--fc-accent-bar);
+  border-radius: var(--fc-radius) var(--fc-radius) 0 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Corner glow — faint yellow bloom at top-right (Hub .cardGlow recipe). */
+.face::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: var(--fc-accent-glow);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Front face */
+.faceFront {
+  color: var(--ink, #1d1d1f);
+}
+
+/* Hover lift on the visible face — only applies while card is not mid-flip. */
+.card:not(.cardFlipped) .faceFront:hover,
+.cardFlipped .faceBack:hover {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) scale(1.01);
+}
+
+/* Back face — warm content tint bloom. */
+.faceBack {
+  color: var(--ink, #1d1d1f);
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 209, 102, 0.18), transparent 60%),
+    radial-gradient(110% 90% at 0% 100%, rgba(244, 162, 97, 0.12), transparent 60%),
+    #ffffff;
+}
+
+/* Content inside faces — layered above glow pseudo-elements. */
+.faceLabel,
+.faceText,
+.faceDetail,
+.faceHint,
+.flipHint {
+  position: relative;
+  z-index: 1;
+}
+
+.faceLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fc-accent-ink);
+}
+.faceText {
+  margin: 0;
+  font-size: clamp(18px, 2.6vw, 26px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.022em;
+  color: var(--ink, #1d1d1f);
+}
+.faceDetail {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary, #86868b);
+}
+.faceHint {
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+}
+.flipHint {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+}
+
+/* ---- Recall buttons (Bildim / Bilmadim) ---- */
+.recall {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.recallBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: var(--v2-radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--ink, #1d1d1f);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: transform 220ms var(--landing-spring),
+              border-color 220ms var(--landing-spring),
+              background 220ms var(--landing-spring),
+              box-shadow 220ms var(--landing-spring);
+}
+.recallBtn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.09);
+}
+.recallBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.recallBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.recallKnew {
+  border-color: rgba(4, 120, 87, 0.4);
+  color: var(--landing-emerald-700);
+}
+.recallKnew:hover:not(:disabled) {
+  background: var(--landing-emerald-50);
+  border-color: rgba(4, 120, 87, 0.6);
+}
+.recallDidnt {
+  border-color: rgba(244, 162, 97, 0.45);
+  color: var(--fc-accent-ink);
+}
+.recallDidnt:hover:not(:disabled) {
+  background: rgba(244, 162, 97, 0.07);
+  border-color: rgba(244, 162, 97, 0.65);
+}
+
+/* ---- Nav row (Prev / Next) ---- */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--v2-radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 200ms var(--landing-spring),
+              color 200ms var(--landing-spring),
+              background 200ms var(--landing-spring);
+}
+.navBtn:hover:not(:disabled) {
+  color: var(--ink, #1d1d1f);
+  background: #f5f5f7;
+  transform: translateY(-1px);
+}
+.navBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Action row ---- */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ---- Weak-items banner ---- */
+.weakBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 22px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(255, 251, 235, 0.9);
+  border: 1px solid rgba(244, 162, 97, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- Hint + empty ---- */
+.viewHint {
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+  margin-top: 14px;
+}
+.empty {
+  margin-top: 18px;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  .recall {
+    flex-direction: column;
+  }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .stage::before {
+    display: none;
+  }
+  .card,
+  .face,
+  .recallBtn,
+  .navBtn,
+  .back {
+    transition: none;
+  }
+  .back:hover { transform: none; }
+  .cardFlipped { transform: rotateY(180deg); }
+  .recallBtn:hover:not(:disabled),
+  .navBtn:hover:not(:disabled),
+  .card:not(.cardFlipped) .faceFront:hover,
+  .cardFlipped .faceBack:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .dot { transition: none; }
+}

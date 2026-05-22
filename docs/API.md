@@ -13,7 +13,7 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 | Render | GET /h/{id} (HTML), GET /api/homeworks/{id}/preview (HTML) |
 | Library | GET /api/library, GET /api/library/facets |
 | Quotes | GET /api/quotes |
-| AI tutor | POST /api/ai/check-answer, /api/ai/boss-turn, /api/ai/reflection, /api/ai/tutor |
+| AI tutor | POST /api/ai/check-answer (incl. phase=case_based_preview_reasoning), /api/ai/boss-turn, /api/ai/reflection, /api/ai/tutor |
 | AI live tutor (Wave F1) | POST /api/ai/tutor/chat, /api/ai/tutor/boss-plan, GET /api/ai/tutor/history |
 | AI meta | GET /api/ai/status, POST /api/ai/session/final-report |
 | Review queue | GET /api/ai/review-queue, POST /api/ai/review-queue/{id}/decide |
@@ -36,7 +36,8 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 ```
 - `subject`: must appear in `/api/subjects`; `grade` must be valid for that subject
 - `mode`: `"easy"` | `"hard"` — subjects in `ALWAYS_HARD` force `"hard"` regardless
-- `family` and `content_json` are **not accepted** — derived/scaffolded server-side
+- `family` is derived server-side and not accepted as input
+- `content_json` is **optional**: when provided, it is stored as-is rather than using the empty scaffold. The dashboard uses this to stamp `flow_version: "v2"` and the v2 content scaffold in one call. When omitted, an empty scaffold is generated server-side as before.
 
 **200** full Homework Record (see shape below). **400** `INVALID_SUBJECT` / `INVALID_GRADE` / `INVALID_MODE`.
 
@@ -60,6 +61,7 @@ All responses JSON unless marked **HTML**. Errors: `{ "detail": { "error": "..."
 **List-payload enrichments (PR #118):**
 - Each item has a computed `progress` field (`int 0..100`) derived from `compute_progress()` over the canonical content sections (see `server/services/progress.py`). Status overrides: `ready → 100`, `error → 0`, `generating` capped at 90.
 - `content_json` is **dropped** from the list payload to keep the dashboard response small. The single-item endpoint `GET /api/homeworks/{hw_id}` still returns it in full.
+- Each item now includes a **`flow_version`** field: `"v2"` for React-runtime homeworks, or `null` / absent for legacy v1 rows. The dashboard uses this to route card-open to the correct builder (`/app/builder?id=` for v2, `/builder.html?id=` for v1).
 
 ---
 
@@ -542,9 +544,20 @@ Evaluates a student's answer using a phase-aware grading pipeline and persists t
   "answer_type": "string",
   "student_answer": "any",
   "student_work_text": "string",
-  "attempt_number": 1
+  "attempt_number": 1,
+  "client_time_ms": 0,
+  "paste_detected": false
 }
 ```
+
+`client_time_ms` (optional) and `paste_detected` (optional) are ADVISORY
+anti-cheat signals. They are recorded (into `phase_attempts.time_ms` and a
+`integrity:paste` session event) and fed to a best-effort integrity flag engine
+AFTER grading — they NEVER change the grade. `client_time_ms` is clamped
+server-side (accepted only as an `int` in `(0, 86_400_000)`, else discarded). A
+follow-up submit carrying `client_context.nudge_response` (or
+`subphase="integrity-nudge"`) records an advisory `integrity_nudge_response`
+event and is never scored.
 
 **Response Body:**
 ```json
@@ -558,9 +571,15 @@ Evaluates a student's answer using a phase-aware grading pipeline and persists t
   "misconception_tags": ["string"],
   "next_hint": "string",
   "requires_review": false,
-  "attempt_number": 1
+  "attempt_number": 1,
+  "integrity_nudge": null
 }
 ```
+
+`integrity_nudge` is `null` unless a strong (sudden-mastery) integrity flag
+fired, in which case it is `{ "type": "explain_reasoning", "message": "..." }` —
+a soft-friction pedagogical prompt that NEVER gates progress. The reason code
+and thresholds are teacher-only and are not sent to the client.
 
 **400** `MISSING_QUESTION_ID` when `question_id` is absent. **404** `HW_NOT_FOUND` or `QUESTION_NOT_RESOLVED`. **422** `ANSWER_TARGET_NOT_GRADABLE` when the resolved backend item lacks trusted question text or answer material. AI judging routes through `ai_gateway` task `ANSWER_CHECK`; deterministic grading can still answer without an AI call.
 
@@ -1150,9 +1169,16 @@ Backend owns HP, trials, and difficulty. The model never receives `answer_spec.e
 {
   "boss_session_id": "string",
   "question_id": "string",
-  "student_answer": "string"
+  "student_answer": "string",
+  "client_time_ms": 0,
+  "paste_detected": false
 }
 ```
+
+`client_time_ms` / `paste_detected` are optional ADVISORY anti-cheat signals
+(same semantics as `/runtime/submit-answer`). They are fed to a best-effort
+integrity flag engine AFTER grading and NEVER change `is_correct` / `score` /
+`hp` / `boss_status`.
 
 **200**
 ```json
@@ -1167,9 +1193,14 @@ Backend owns HP, trials, and difficulty. The model never receives `answer_spec.e
   "current_difficulty": "medium",
   "boss_status": "active|won|failed",
   "should_retry_same_skill": false,
-  "misconception_tags": ["string"]
+  "misconception_tags": ["string"],
+  "integrity_nudge": null
 }
 ```
+
+`integrity_nudge` is `null` unless a strong (sudden-mastery) integrity flag
+fired; when present it is `{ "type": "explain_reasoning", "message": "..." }` and
+NEVER gates progress (all grade/HP/status fields above are already final).
 
 ### POST /api/ai/boss/state
 
@@ -1334,15 +1365,25 @@ Reports which AI backend is active plus the resolved effective model for every g
 
 Returns all `status = "pending"` items.
 
-**200** array of `{ "id": int, "question_id": "string", "student_answer": "string", "answer_spec": {...}, "ai_response": {...}, "status": "pending", "created_at": "..." }`.
+**Query params:** `kind` (optional) — when set to `"grading"` or `"integrity"`,
+filters the listing to that lane. Omit it to return both lanes (legacy
+behavior). Integrity rows are ADVISORY academic-integrity flags (teacher
+intelligence) — they never participated in grading.
+
+**200** array of `{ "id": int, "question_id": "string", "student_answer": "string", "answer_spec": {...}, "ai_response": {...}, "status": "pending", "created_at": "...", "kind": "grading" | "integrity", "integrity_reason": "string|null", "integrity_severity": "low|medium|strong|null", "session_id": "string|null" }`.
 
 ---
 
 ### POST /api/ai/review-queue/{id}/decide
 
 ```json
-{ "correct": true, "score": 1.0, "feedback": "string" }
+{ "correct": true, "score": 1.0, "feedback": "string",
+  "integrity_reason": "string (optional)",
+  "integrity_outcome": "string (optional, e.g. cleared|confirmed|dismissed)" }
 ```
+
+`integrity_reason` / `integrity_outcome` are optional and used when resolving an
+integrity-lane row; the full request is persisted verbatim into `decision_json`.
 
 **200** `{ "status": "ok" }`. **404** — item not found or already resolved.
 
@@ -1999,3 +2040,302 @@ false
 ```
 
 **Tests**: see `tests/test_equations_validate_endpoint.py` (46 cases).
+
+---
+
+## Runtime (v2 React SPA)
+
+The v2 React runtime (`flow_version: "v2"` homeworks) hydrates from a redacted
+read API. Answers are stripped server-side (`server/services/runtime_redactor.py`)
+before they reach the browser — see `docs/HOMEWORK_FLOW_V2_REACT_ARCHITECTURE.md`.
+Per-interaction grading reuses `POST /api/ai/check-answer` (phases
+`case_based_preview`, `memory_check`, `tile-match`, `final-boss`, …).
+
+### GET /api/runtime/homeworks/{hw_id}
+
+Student-safe hydration payload for the React runtime. Returns the homework's
+`content_json` with every answer-bearing field removed (no `answer_spec`,
+`expected`, `accepted_answers`, `correct_path`, per-game server-only fields).
+
+**Response 200**
+```json
+{
+  "id": "HW-20260521-006",
+  "title": "Kasrlarni teng bo'lish",
+  "subject": "math-algebra",
+  "grade": 6,
+  "lang": "uz",
+  "flow_version": "v2",
+  "content_json": { "...redacted display content..." }
+}
+```
+404 if the homework does not exist; 409 if trashed.
+
+### GET /api/runtime/homeworks/{hw_id}/gate-state
+
+Server-authoritative Learning-Section gate state. The client renders this; it
+never decides it (it has no answers). `practice_arc_unlocked` is true only when
+both learning sections pass. `session_id` query param scopes the attempt log.
+
+**Response 200**
+```json
+{
+  "cbp": {
+    "passed": true,
+    "checkpoints_correct": 3,
+    "checkpoints_total": 3,
+    "threshold": 2,
+    "reasoning_required": true,
+    "reasoning_passed": true
+  },
+  "mc":  {"passed": true, "score_pct": 60, "correct": 3, "total": 5, "threshold_pct": 60},
+  "practice_arc_unlocked": true
+}
+```
+
+`reasoning_required` / `reasoning_passed` are present only when the homework
+authors a `decision_process_explanation`. They do NOT gate `practice_arc_unlocked`
+— the MCQ checkpoint count is the sole unlock signal.
+
+**Tests**: `tests/test_runtime_hydration_redaction.py` (redaction fence),
+`tests/test_v2_gate_flow.py` (unlock sequence).
+
+---
+
+### POST /api/runtime/reflection/finalize
+
+Run the server-authoritative finalization pipeline after all three divisions
+complete: EXTRACT the per-attempt rows → ANALYZE (proven session metrics + the
+grading scorecard + mistake-repair count) → AI ANALYSIS (warm Uzbek debrief
+narrative — prose only, never decides the verdict) → MARK (the DETERMINISTIC
+verdict, persisted to `final_reports` with a top-level `verdict` key + the
+session-level mark). Idempotent-ish: re-finalizing recomputes from the current
+attempts and overwrites the report.
+
+**Request**
+```json
+{
+  "session_id": "string",
+  "hw_id": "string",
+  "reflection_answers": ["string — the student's free-text reflection answers"]
+}
+```
+
+**Response 200**
+```json
+{
+  "verdict": "passed",
+  "verdict_label": "Tabriklaymiz, vazifa topshirildi",
+  "overall_pct": 78,
+  "band": {"key": "proficient", "name": "Proficient"},
+  "divisions": [
+    {"key": "cbp",      "label": "Vaziyatli kirish", "pct": 100.0, "correct": 3, "total": 3, "status": "passed"},
+    {"key": "mc",       "label": "Xotira sinovi",    "pct": 80.0,  "correct": 4, "total": 5, "status": "passed"},
+    {"key": "practice", "label": "Amaliyot maydoni", "pct": 75.0,  "correct": 6, "total": 8, "status": "passed"},
+    {"key": "boss",     "label": "Yakuniy jang",     "pct": 100.0, "correct": 1, "total": 1, "status": "passed"}
+  ],
+  "weak_points": ["string"],
+  "strong_points": ["string"],
+  "next_steps": ["string"],
+  "narrative": "string — 2-4 sentence Uzbek summary",
+  "encouragement": "string",
+  "redo_recommendation": "none",
+  "mistake_repairs": 2,
+  "ai_unavailable": false
+}
+```
+
+- `verdict` is DETERMINISTIC: `"passed"` iff `overall_pct >= 60` AND the boss
+  passed (a win, or pool-exhausted-with-solid-damage) AND the CBP + Memory Check
+  gates passed; otherwise `"needs_retry"`. The AI never decides this.
+- `verdict_label` is the formal-Uzbek display string (never "Not Completed").
+- `mistake_repairs`: count of concepts the student got wrong early
+  (CBP / Memory Check / practice) then right in the Boss — the strongest
+  learning signal.
+- `redo_recommendation`: a phase string to revisit first, or `"none"`. A
+  suggestion only; it never changes the verdict.
+- `ai_unavailable: true` when the AI backend was down — the response is still a
+  complete, deterministic debrief with neutral prose.
+- The response NEVER contains answer-bearing data (expected answers, accepted
+  lists, rubric text, or the weak/strong keyword anchors).
+
+**Tests**: `tests/test_reflection_engine.py`.
+
+---
+
+### GET /api/runtime/reflection/{hw_id}
+
+Return the persisted mark/debrief for a finalized session. `session_id` query
+param is required. Returns the same shape as the finalize response (plus
+`created_at` / `updated_at` from the `final_reports` row). 404 if the homework
+was never finalized for this session.
+
+**Response 200**: same shape as `POST /api/runtime/reflection/finalize`.
+
+**Response 404**
+```json
+{"detail": {"error": "No reflection report for this session", "code": "NOT_FINALIZED"}}
+```
+
+**Tests**: `tests/test_reflection_engine.py`.
+
+---
+
+### POST /api/runtime/reflection/redo
+
+Re-route a `needs_retry` session back into the Practice Arc. Flips
+`sessions.status` → `active` and CLEARS the Division-3 (Practice Arc games +
+Final Boss) `phase_attempts` rows for this session so the runtime re-presents
+the arc with a reshuffle. CBP + Memory Check attempts are preserved, so the
+Practice-Arc gate stays unlocked across the redo. Does NOT regenerate questions.
+
+**Request**
+```json
+{"session_id": "string", "hw_id": "string"}
+```
+
+**Response 200**
+```json
+{"ok": true, "reshuffled": true, "cleared": 8}
+```
+
+- `cleared`: number of Division-3 attempt rows removed.
+
+**Tests**: `tests/test_reflection_engine.py`.
+
+---
+
+### POST /api/ai/check-answer  *(phase = `"case_based_preview_reasoning"`, commit 92824a3)*
+
+Server-grades the student's free-text reasoning after the 3 CBP checkpoints.
+Dispatched from `CaseBasedPreview` only when the homework authors a
+`decision_process_explanation` field. Non-blocking: result does not gate the
+Practice Arc.
+
+**Request**
+```json
+{
+  "phase": "case_based_preview_reasoning",
+  "homework_id": "string",
+  "session_id": "string",
+  "reasoning_text": "string"
+}
+```
+
+- `reasoning_text` is the student's typed explanation.
+- `homework_id` is used to load the server-side keyword lists and rubric
+  (`concept_keywords`, `method_keywords`, `mistake_keywords`,
+  `acceptable_keywords`, `pass_score`) — these fields are answer-bearing and are
+  never sent to the client.
+
+**Response 200**
+```json
+{
+  "passed": true,
+  "score": 78,
+  "feedback": "string — coaching feedback shown to student"
+}
+```
+
+- `score`: 0–100.
+- `passed`: `score >= pass_score` (authored field, default 60).
+
+**Grading order**
+1. Deterministic keyword-coverage check (concept + method keywords).
+2. AI judgment via `server/prompts/runtime/cbp-reasoning-checker.md` (cloned
+   RLC grader); higher confidence wins over the deterministic score.
+3. Deterministic fallback if AI is unavailable.
+
+**Errors**
+
+| Status | code | When |
+|---|---|---|
+| 400 | `CBP_REASONING_TOO_SHORT` | `reasoning_text` shorter than `min_chars` (client-visible field) before any AI call |
+| 400 | `CBP_NO_REASONING` | `reasoning_text` absent or blank |
+| 404 | `HW_NOT_FOUND` | `homework_id` does not resolve |
+| 403 | `CBP_REASONING_NOT_AUTHORED` | homework has no `decision_process_explanation` field |
+
+## Academic integrity (teacher intelligence)
+
+Per `docs/NETS_Academic_Integrity_AntiCheat_Research.md` §9.6. Integrity here is
+**teacher intelligence**, never an automated grade-penalty or hard block. An
+*authorship affirmation* is a teacher's human-in-the-loop record that they
+reviewed a session and affirm (or decline to affirm) the student's authorship.
+These endpoints compute no grade and no verdict — affirmations are advisory
+metadata only.
+
+### POST /api/integrity/affirm
+
+Record a teacher's authorship affirmation for a session. Optionally resolves the
+integrity review-queue items the teacher addressed when affirming, so the audit
+trail links the affirmation to the signals it covers.
+
+**Request**
+```json
+{
+  "session_id": "string",
+  "homework_id": "string",
+  "teacher_id": "string | null",
+  "affirmed": false,
+  "note": "string | null",
+  "checkpoints": [],
+  "resolve_queue_ids": [123, 124]
+}
+```
+
+- `affirmed`: the teacher's verdict (default `false`).
+- `checkpoints`: optional free-form list of the review points the teacher
+  inspected (stored verbatim).
+- `resolve_queue_ids`: review-queue item ids to mark resolved with a
+  `{"resolved_by": "teacher_affirmation", ...}` decision. Only ids that are still
+  `pending` resolve; the returned `resolved_queue_ids` reflects what actually
+  resolved.
+
+**Response 200**
+```json
+{
+  "ok": true,
+  "affirmation": {
+    "id": 1,
+    "session_id": "string",
+    "homework_id": "string",
+    "teacher_id": "string | null",
+    "affirmed": false,
+    "note": "string | null",
+    "checkpoints": [],
+    "integrity_queue_ids": [123],
+    "created_at": "ISO-8601 string"
+  },
+  "resolved_queue_ids": [123]
+}
+```
+
+### GET /api/integrity/affirmations
+
+List affirmations, optionally filtered. Newest first.
+
+**Query params**
+
+| Param | Type | When |
+|---|---|---|
+| `session_id` | string? | filter to one session |
+| `homework_id` | string? | filter to one homework |
+
+With neither filter, returns all rows (admin/audit view).
+
+**Response 200** — a JSON array of affirmation records (same shape as
+`affirmation` above). An empty result is `[]`.
+
+### GET /api/integrity/affirmations/view
+
+Read-only `<pre>` JSON dump of a session's affirmations (no framework — a plain
+HTML inspection surface for a teacher).
+
+**Query params**
+
+| Param | Type | When |
+|---|---|---|
+| `session_id` | string? | filter to one session |
+
+**Response 200** — `text/html`: a single `<pre>` element containing the
+pretty-printed (HTML-escaped) affirmation JSON.

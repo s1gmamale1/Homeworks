@@ -10,6 +10,10 @@ for live editing — keeps the no-cache headers and JSON-style errors so the
 builder behavior is unchanged).
 """
 
+import html as _html
+import json as _json
+import os as _os
+
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 
@@ -18,6 +22,57 @@ from ..services.content_json_compat import normalize_content_json_for_runtime
 from ..services.injector import inject
 
 router = APIRouter(tags=["homework_page"])
+
+# React SPA built bundle (Vite). The dist/index.html already references the
+# content-hashed assets under /app/; we inject NETS_CTX + OG tags into its head.
+_SPA_DIST_INDEX = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.dirname(__file__))),
+    "frontend", "app", "dist", "index.html",
+)
+
+
+def _render_spa_shell(hw: dict) -> str:
+    """v2 runtime: serve the React SPA shell with boot context + OG tags.
+
+    Reads the Vite-built dist/index.html (hashed asset refs intact) and injects:
+      - window.NETS_CTX (hw_id, flow_version, title) for client boot
+      - Open Graph / Twitter meta so Telegram/social share cards render
+        (the SPA is client-rendered, so crawlers need server-emitted OG).
+    """
+    content = hw.get("content_json") or {}
+    meta = content.get("meta") or {}
+    title = meta.get("title") or hw.get("title") or "NETS Homework"
+    subject = meta.get("subject_display") or (hw.get("subject") or "").capitalize()
+    grade = hw.get("grade")
+    desc_bits = [b for b in [subject, f"{grade}-sinf" if grade else None] if b]
+    description = " · ".join(desc_bits) or "Interactive homework on NETS."
+
+    with open(_SPA_DIST_INDEX, "r", encoding="utf-8") as f:
+        shell = f.read()
+
+    ctx = {
+        "hw_id": hw.get("id"),
+        "flow_version": content.get("flow_version"),
+        "title": title,
+    }
+    t = _html.escape(title)
+    d = _html.escape(description)
+    head_inject = (
+        f'<title>{t} · NETS</title>'
+        f'<meta name="description" content="{d}">'
+        f'<meta property="og:title" content="{t}">'
+        f'<meta property="og:description" content="{d}">'
+        f'<meta property="og:type" content="website">'
+        f'<meta name="twitter:card" content="summary">'
+        f'<script>window.NETS_CTX = {_json.dumps(ctx)};</script>'
+    )
+    # Inject right after <head ...> opening tag (before Vite's own tags).
+    lower = shell.lower()
+    idx = lower.find("<head>")
+    if idx != -1:
+        cut = idx + len("<head>")
+        return shell[:cut] + head_inject + shell[cut:]
+    return shell.replace("</head>", head_inject + "</head>", 1)
 
 # Wave I3 — friendly 404/409 pages are now lang-aware. Tuple format:
 # (h1, body, link). Title is derived from the lang too. 'uz' is the default
@@ -163,6 +218,14 @@ async def homework_page(hw_id: str, lang: str | None = Query(default=None)):
         return HTMLResponse(
             content=_friendly_page(409, hw.get("language") or "uz"),
             status_code=409,
+        )
+    # v2 fork: flow_version == "v2" → React SPA shell (if the bundle is built).
+    # Everything else → the legacy injector path, byte-for-byte unchanged.
+    content = hw.get("content_json") or {}
+    if content.get("flow_version") == "v2" and _os.path.isfile(_SPA_DIST_INDEX):
+        return HTMLResponse(
+            content=_render_spa_shell(hw),
+            headers={"Cache-Control": "public, max-age=60"},
         )
     html = render_homework(hw)
     return HTMLResponse(

@@ -45,9 +45,9 @@ def test_content_security_policy_keeps_required_runtime_sources():
 
     assert "default-src 'self'" in csp
     assert "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net" in csp
-    assert "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net" in csp
+    assert "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com" in csp
     assert "img-src 'self' data: blob: http: https:" in csp
-    assert "font-src 'self' data: https://cdn.jsdelivr.net" in csp
+    assert "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com" in csp
     assert "object-src 'none'" in csp
     assert "frame-ancestors 'self'" in csp
     assert SECURITY_HEADERS["X-Frame-Options"] == "SAMEORIGIN"
@@ -65,6 +65,37 @@ def test_csp_frame_ancestors_allows_same_origin():
     )
     assert "frame-ancestors 'none'" not in csp, (
         f"frame-ancestors must not be 'none' (regression of PR #73)"
+    )
+
+
+def test_csp_allows_google_fonts():
+    """CSP must allow Google Fonts so Onest/Fredoka/Nunito load on /h/{id} and /app/.
+
+    Regression guard: browser blocked fonts.googleapis.com (style-src) and
+    fonts.gstatic.com (font-src) because neither domain was listed in the CSP,
+    causing the Learning Hub to fall back to system fonts.
+    """
+    csp = SECURITY_HEADERS["Content-Security-Policy"]
+
+    assert "https://fonts.googleapis.com" in csp, (
+        "style-src must include fonts.googleapis.com so Google Fonts CSS can load"
+    )
+    assert "https://fonts.gstatic.com" in csp, (
+        "font-src must include fonts.gstatic.com so woff2 font files can load"
+    )
+
+    # Verify placement: googleapis goes in style-src, gstatic goes in font-src
+    style_src_segment = next(
+        (part.strip() for part in csp.split(";") if "style-src" in part), ""
+    )
+    font_src_segment = next(
+        (part.strip() for part in csp.split(";") if "font-src" in part), ""
+    )
+    assert "fonts.googleapis.com" in style_src_segment, (
+        f"fonts.googleapis.com must be in style-src, not elsewhere (got: {style_src_segment!r})"
+    )
+    assert "fonts.gstatic.com" in font_src_segment, (
+        f"fonts.gstatic.com must be in font-src, not elsewhere (got: {font_src_segment!r})"
     )
 
 

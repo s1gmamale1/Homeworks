@@ -308,6 +308,12 @@ def test_check_answer_resolves_for_canonical_and_legacy_formats(client, monkeypa
     from server.services import tutor as tutor_svc
     monkeypatch.setattr(tutor_svc, "boss_turn", fake_boss_turn)
 
+    # Final Boss now server-enforces the Practice Arc unlock (BLOCKER #3); this
+    # is an id-resolution test, not a gating test, so let the unlock pass.
+    async def _always_unlocked(*a, **k):
+        return True
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
     r = client.post("/api/ai/check-answer", json={
         "phase": "final-boss",
         "homework_id": hw_id,

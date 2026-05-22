@@ -1,0 +1,430 @@
+/* ============================================================
+   AdaptiveQuiz.module.css — Apple design system, CONTENT-YELLOW accent.
+   Matches LearningHub.module.css card language exactly:
+   · White (#ffffff) solid card, ~18-20px radius
+   · Soft diffusion shadow: 0 4px 24px rgba(0,0,0,.04)
+   · Content accent bar: var(--grad-content, linear-gradient(135deg,#ffd166,#f4a261))
+   · Corner glow: rgba(244,162,97,.24) · ink #1d1d1f · secondary #86868b
+   · Hover: translateY(-4px) scale(1.03) / spring var(--landing-spring)
+   · Correct → emerald · Wrong → amber/red (Apple system, not fuchsia)
+   · prefers-reduced-motion honored throughout
+   ============================================================ */
+
+/* ---- wrap: page surface + ambient warm glow ---- */
+.wrap {
+  position: relative;
+  animation: fadeIn 400ms var(--landing-spring) both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Ambient warm glow tinted to content-yellow — purely decorative */
+.ambient {
+  position: fixed;
+  inset: -10% 0 auto 0;
+  z-index: 0;
+  height: 60vh;
+  max-height: 620px;
+  background:
+    radial-gradient(60% 80% at 28% 10%, rgba(255, 209, 102, 0.16) 0%, transparent 62%),
+    radial-gradient(55% 70% at 80% 8%,  rgba(244, 162, 97,  0.12) 0%, transparent 60%),
+    radial-gradient(50% 65% at 55% 30%, rgba(255, 209, 102, 0.08) 0%, transparent 64%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* All content sits above the ambient layer */
+.stage {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- header ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  position: relative;
+  z-index: 1;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hub-secondary, #86868b);
+}
+
+/* ---- progress dots — content-yellow active, emerald done ---- */
+.progressDots {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+.dot {
+  height: 5px;
+  width: 24px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.10);
+  transition:
+    background 300ms var(--landing-spring),
+    width     300ms var(--landing-spring);
+}
+/* Active dot: content-yellow */
+.dotActive {
+  width: 40px;
+  background: var(--c-yellow, #ffd166);
+  box-shadow: 0 2px 8px rgba(255, 209, 102, 0.45);
+}
+/* Done dot: soft emerald */
+.dotDone {
+  background: rgba(4, 120, 87, 0.55);
+}
+
+/* ---- question card — Apple white card with content-yellow accent ---- */
+.questionCard {
+  position: relative;
+  overflow: hidden;
+  margin-top: 18px;
+  padding: 28px 28px 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  z-index: 1;
+  animation: cardIn 500ms var(--landing-spring) 60ms both;
+  transition:
+    transform   320ms var(--landing-spring),
+    box-shadow  320ms var(--landing-spring);
+}
+.questionCard:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Content-yellow accent bar — top of the question card */
+.questionCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-content, linear-gradient(135deg, #ffd166, #f4a261));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow inside the card */
+.questionGlow {
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(244, 162, 97, 0.24);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.questionBody {
+  position: relative;
+  z-index: 1;
+}
+.questionText {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.58;
+  color: var(--ink, #1d1d1f);
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .questionCard { padding: 20px 18px; }
+  .questionText { font-size: 15px; }
+}
+
+/* ---- options list ---- */
+.optionsList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Option button: white card, soft diffusion shadow, spring hover */
+.optionBtn {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  color: var(--ink, #1d1d1f);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color  200ms var(--landing-spring),
+    background    200ms var(--landing-spring),
+    box-shadow    200ms var(--landing-spring),
+    transform     200ms var(--landing-spring);
+  will-change: transform;
+}
+.optionBtn:not(:disabled):hover {
+  border-color: rgba(255, 209, 102, 0.60);
+  background: #ffffff;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+}
+.optionBtn:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* Lettered badge */
+.optionIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary, #86868b);
+  flex-shrink: 0;
+  transition:
+    background     200ms var(--landing-spring),
+    color          200ms var(--landing-spring),
+    border-color   200ms var(--landing-spring);
+}
+.optionText { flex: 1; }
+
+/* ---- option states ---- */
+/* Selected (pre-result): content-yellow ring */
+.optionSelected {
+  border-color: rgba(255, 209, 102, 0.70);
+  background: rgba(255, 209, 102, 0.07);
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.20), 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.optionSelected .optionIndex {
+  background: var(--c-yellow, #ffd166);
+  color: var(--ink, #1d1d1f);
+  border-color: var(--c-yellow, #ffd166);
+}
+
+/* Correct: emerald */
+.optionCorrect {
+  border-color: rgba(4, 120, 87, 0.40);
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.90), #ffffff 60%);
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.14), 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: flashCorrect 560ms var(--landing-spring) both;
+}
+.optionCorrect .optionIndex {
+  background: rgba(4, 120, 87, 0.85);
+  color: #fff;
+  border-color: rgba(4, 120, 87, 0.85);
+}
+
+/* Wrong: warm amber-red (Apple system, content-friendly) */
+.optionWrong {
+  border-color: rgba(201, 58, 58, 0.38);
+  background: linear-gradient(160deg, rgba(255, 243, 241, 0.90), #ffffff 60%);
+  box-shadow: 0 0 0 3px rgba(201, 58, 58, 0.10), 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: flashWrong 560ms var(--landing-spring) both;
+}
+.optionWrong .optionIndex {
+  background: rgba(201, 58, 58, 0.10);
+  color: #c93a3a;
+  border-color: rgba(201, 58, 58, 0.28);
+}
+
+.optionDimmed {
+  opacity: 0.40;
+  cursor: default;
+}
+.optionSubmitting {
+  opacity: 0.60;
+  cursor: wait;
+}
+
+/* ---- flash keyframes ---- */
+@keyframes flashCorrect {
+  0%   { box-shadow: 0 0 0 0 rgba(4, 120, 87, 0); }
+  30%  { box-shadow: 0 0 0 8px rgba(4, 120, 87, 0.22); }
+  100% { box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.14), 0 4px 24px rgba(0, 0, 0, 0.04); }
+}
+@keyframes flashWrong {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-5px); }
+  40%  { transform: translateX(5px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+/* ---- text input area ---- */
+.textInputWrap {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 18px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.textInput {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  color: var(--ink, #1d1d1f);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color  180ms var(--landing-spring),
+    box-shadow    180ms var(--landing-spring);
+}
+.textInput::placeholder { color: var(--text-secondary, #86868b); }
+/* Focus: content-yellow ring */
+.textInput:focus {
+  border-color: rgba(255, 209, 102, 0.80);
+  box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.20), 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+.textInputCorrect {
+  border-color: rgba(4, 120, 87, 0.40);
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.85), #ffffff 60%);
+}
+.textInputWrong {
+  border-color: rgba(201, 58, 58, 0.38);
+  background: linear-gradient(160deg, rgba(255, 243, 241, 0.85), #ffffff 60%);
+}
+.textInput:disabled {
+  opacity: 0.60;
+  cursor: default;
+}
+@media (max-width: 560px) {
+  .textInputWrap { flex-direction: column; }
+  .textInput { width: 100%; }
+}
+
+/* ---- feedback panel — white card, tinted border + shadow ---- */
+.feedback {
+  position: relative;
+  margin-top: 18px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  display: grid;
+  gap: 10px;
+  animation: slideUp 340ms var(--landing-spring) both;
+  z-index: 1;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Correct: emerald tint */
+.feedbackCorrect {
+  border-color: rgba(4, 120, 87, 0.28);
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.90), #ffffff 60%);
+  box-shadow: 0 8px 32px rgba(4, 120, 87, 0.08), 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+/* Wrong: warm amber-red tint (Apple system) */
+.feedbackWrong {
+  border-color: rgba(201, 58, 58, 0.24);
+  background: linear-gradient(160deg, rgba(255, 243, 241, 0.90), #ffffff 60%);
+  box-shadow: 0 8px 32px rgba(201, 58, 58, 0.07), 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+.feedbackText {
+  font-size: 14.5px;
+  color: var(--text-secondary, #86868b);
+  line-height: 1.58;
+  margin: 0;
+}
+
+/* ---- error ---- */
+.error {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+}
+
+/* ---- complete screen ---- */
+.done {
+  display: grid;
+  gap: 14px;
+  padding: 12px 0;
+  animation: fadeIn 360ms var(--landing-spring) both;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- actions row ---- */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .done,
+  .feedback,
+  .questionCard {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .optionCorrect,
+  .optionWrong {
+    animation: none;
+  }
+  .optionBtn:not(:disabled):hover,
+  .questionCard:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+  .questionGlow { display: none; }
+  .ambient { display: none; }
+  .dot,
+  .dotActive,
+  .dotDone {
+    transition: none;
+  }
+}

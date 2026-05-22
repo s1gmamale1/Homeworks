@@ -1,0 +1,161 @@
+/* MysteryBox editor — v2 builder token language.
+   Tokens: --v2-accent, --v2-accent-soft, --v2-ring, --v2-card-bg,
+   --v2-card-tinted, --v2-text, --v2-text-muted, --v2-text-subtle,
+   --v2-radius-card (all defined in _tokens.css / fields.module.css). */
+
+.editor {
+  display: block;
+}
+
+/* ---- Header card meta row ---- */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.countBadge {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.metaHint {
+  font-size: 12px;
+  color: var(--v2-text-subtle);
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+}
+
+/* ---- Empty state ---- */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border: 1.5px dashed var(--v2-ring);
+  border-radius: var(--v2-radius-card, 16px);
+  text-align: center;
+  background: color-mix(in srgb, var(--v2-card-tinted) 60%, transparent);
+}
+
+.emptyIcon {
+  color: var(--v2-text-subtle);
+  opacity: 0.7;
+}
+
+.emptyLabel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+}
+
+.emptyBody {
+  margin: 0;
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ---- Item list ---- */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- Single item card ---- */
+.item {
+  background: var(--v2-card-tinted);
+  border: 1px solid var(--v2-ring);
+  border-radius: var(--v2-radius-card, 16px);
+  overflow: hidden;
+  transition: box-shadow 160ms ease;
+}
+
+.item:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 16%, transparent);
+  border-color: var(--v2-accent-soft, var(--v2-accent));
+}
+
+/* ---- Item header ---- */
+.itemHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--v2-card-bg);
+  border-bottom: 1px solid var(--v2-ring);
+}
+
+.itemIndex {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  border-radius: 999px;
+  user-select: none;
+}
+
+.categoryChip {
+  flex: 1 1 auto;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 10%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  /* Cap so it doesn't overflow the row */
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryChipEmpty {
+  flex: 1 1 auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--v2-text-subtle);
+  font-style: italic;
+}
+
+/* ---- Item fields ---- */
+.itemFields {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* gap handled by Field's margin-bottom: 14px from fields.module.css */
+}
+
+/* ---- Footer ---- */
+.footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 4px;
+}

@@ -11,8 +11,16 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from ..services import tutor, ai_orchestrator, injector, ai_debug, ai_context, ai_gateway
+from ..services.tutor import _fence_untrusted, _strip_fence_tags
 from ..services.slur_filter import classify, detect_slurs
 from ..services import warnings as warnings_svc
+from ..services.gate_state import is_practice_unlocked
+from ..services.tile_match_tokens import (
+    resolve_tm_pairs,
+    build_token_maps,
+    left_token,
+    right_token,
+)
 from .. import db
 
 router = APIRouter(tags=["ai-tutor"])
@@ -36,6 +44,12 @@ class RuntimeAnswerSubmitRequest(BaseModel):
     student_work_text: Optional[str] = None
     client_context: dict[str, Any] = Field(default_factory=dict)
     attempt_number: Optional[int] = None
+    # Anti-cheat signal ingestion (ADVISORY — never alters grading). Both
+    # optional; an absent value is treated as "unknown / not measured" and
+    # produces zero integrity signal. `client_time_ms` is clamped server-side
+    # before use; `paste_detected` only matters on opt-in assessment phases.
+    client_time_ms: Optional[int] = None
+    paste_detected: Optional[bool] = None
 
 class CheckAnswerRequest(BaseModel):
     # Legacy free-form fields (made optional so sentence-fill phase callers
@@ -102,6 +116,31 @@ class CheckAnswerRequest(BaseModel):
     recall_results: Optional[list[dict[str, Any]]] = None
     mp_hints_used: Optional[int] = 0
 
+    # Case-Based Preview / Memory Check phase fields.
+    # `item_index` is the 0-based index of the checkpoint (case_based_preview)
+    # or item (memory_check) within the homework's content_json array.
+    # The server resolves the matching answer_spec from content_json — the
+    # client NEVER sends the expected answer value.
+    item_index: Optional[int] = None
+
+    # Anti-cheat signal ingestion (ADVISORY — never alters grading). Optional;
+    # absent = "unknown / not measured" → zero integrity signal. Mirrors the
+    # fields on RuntimeAnswerSubmitRequest so the legacy /check-answer surface
+    # can carry the same signals.
+    client_time_ms: Optional[int] = None
+    paste_detected: Optional[bool] = None
+
+    # Soft-friction follow-up (anti-cheat wiring). When the runtime surfaces an
+    # `integrity_nudge` (a strong-flag "explain in your own words" prompt), the
+    # student's free-text reply is posted back here. A submit that carries a
+    # `nudge_response` (or `subphase=="integrity-nudge"`) is recorded as an
+    # ADVISORY session event and EARLY-RETURNS `{"advisory": true}` — it is NEVER
+    # graded and never produces a score. Mirrors the same contract on the
+    # /ai/runtime/submit-answer surface. `subphase` is also threaded into the
+    # integrity engine on graded submits (G1).
+    subphase: Optional[str] = None
+    nudge_response: Optional[str] = None
+
 
 class FinalizeCheckAnswerRequest(BaseModel):
     phase: str
@@ -160,6 +199,13 @@ class ReviewDecideRequest(BaseModel):
     correct: bool
     score: float
     feedback: str
+    # Integrity-resolution fields (anti-cheat wiring, 2026-05-22). Optional so
+    # the legacy grading-review decide path is unchanged. The whole request is
+    # persisted verbatim into `decision_json`, so a teacher can record how an
+    # integrity flag was resolved (e.g. integrity_outcome="cleared" /
+    # "confirmed" / "dismissed") without a schema change.
+    integrity_reason: Optional[str] = None
+    integrity_outcome: Optional[str] = None
 
 
 # Wave F1 — live tutor chat + boss-plan + history.
@@ -244,6 +290,77 @@ def _result_action(result: dict[str, Any]) -> str:
     if result.get("correct") is False:
         return "rejected"
     return "completed"
+
+
+async def _attach_integrity(
+    req: CheckAnswerRequest,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    """Shared post-grading integrity hook for the /ai/check-answer surface (G1).
+
+    The v2 React runtime submits CBP checkpoints, CBP reasoning, Memory Check
+    and the practice-arc games to ``POST /api/ai/check-answer`` — which NEVER
+    routes through ``tutor.process_runtime_answer``. So the integrity engine +
+    signal ingestion + soft-friction nudge only ran for the tutor runtime + the
+    boss before this hook. This wires the SAME engine into the check-answer
+    branches by REUSING ``evaluate_runtime_submit`` (no forked flag logic).
+
+    ADVISORY + BEST-EFFORT, exactly like the runtime path:
+      - never changes ``correct`` / ``is_correct`` / ``score`` / ``feedback`` /
+        ``passed`` — it only *adds* an optional ``integrity_nudge`` key,
+      - any failure is swallowed and the graded ``result`` is returned unchanged,
+      - ``client_time_ms`` is clamped via ``clamp_client_time_ms`` (H1),
+      - it runs AFTER the branch persisted its ``phase_attempt`` row, so the
+        assessment correct-rate the engine derives includes THIS submit.
+
+    Covers ``case_based_preview`` / ``case_based_preview_reasoning`` /
+    ``memory_check`` (the assessment phases) plus the games (which the engine
+    no-ops as non-assessment under the AI-use policy). Returns ``result``.
+    """
+    if not isinstance(result, dict):
+        return result
+    try:
+        from ..services.integrity_wiring import (
+            evaluate_runtime_submit,
+            clamp_client_time_ms,
+        )
+
+        session_id = req.session_id or "default"
+        hw_id = req.homework_id
+        if not hw_id:
+            return result  # no homework context → nothing to attribute a flag to
+
+        # Resolve the per-homework anti-cheat policy + grade-level from
+        # content_json (mirrors the runtime path's boss_meta sourcing).
+        boss_meta = None
+        hw_grade = None
+        try:
+            homework = await db.get_homework(hw_id)
+            content_json = (homework or {}).get("content_json") or {}
+            boss_meta = content_json.get("boss_meta")
+            hw_grade = content_json.get("grade") or (homework or {}).get("grade")
+        except Exception:
+            boss_meta = None
+            hw_grade = None
+
+        nudge = await evaluate_runtime_submit(
+            session_id=session_id,
+            hw_id=hw_id,
+            phase=req.phase or "",
+            subphase=req.subphase or None,
+            question_id=req.question_id or None,
+            time_ms=clamp_client_time_ms(req.client_time_ms),
+            paste_detected=req.paste_detected,
+            grade=hw_grade,
+            boss_meta=boss_meta,
+        )
+        if nudge:
+            result["integrity_nudge"] = nudge
+    except Exception as _integrity_exc:  # never break grading
+        _log.warning(
+            "check-answer integrity hook failed (non-fatal): %s", _integrity_exc
+        )
+    return result
 
 
 def _attach_check_answer_debug(
@@ -359,14 +476,43 @@ async def ai_status() -> dict:
 # --- Review-queue endpoints (Fix #5: moved under /ai/ prefix for consistency) ---
 
 @router.get("/ai/review-queue")
-async def get_review_queue():
+async def get_review_queue(kind: Optional[str] = Query(default=None)):
+    """List pending review items.
+
+    Without ``?kind=`` this returns every pending row (grading + integrity),
+    preserving the legacy behavior. With ``?kind=integrity`` (or
+    ``?kind=grading``) the listing is filtered to that lane so a teacher can
+    triage ADVISORY integrity flags separately from grading-review items.
+    """
     from .. import db
-    return await db.get_review_queue()
+    return await db.get_review_queue(kind=kind)
 
 @router.post("/ai/review-queue/{id}/decide")
 async def decide_review_queue(req: ReviewDecideRequest, id: int = PathParam(...)):
     from .. import db
-    success = await db.resolve_review_item(id, req.model_dump())
+
+    # M2 — an ADVISORY kind='integrity' row is NOT gradeable. A teacher resolves
+    # it by recording an `integrity_outcome` (e.g. "cleared" / "confirmed" /
+    # "dismissed"), never a normal {correct, score, feedback} grading verdict.
+    # Refuse a grading decision against an integrity row so a flag can never be
+    # mistaken for / converted into a grade.
+    kind = await db.get_review_item_kind(id)
+    if kind == "integrity" and not req.integrity_outcome:
+        raise HTTPException(
+            400,
+            detail={
+                "error": (
+                    "integrity review rows are advisory — resolve them with an "
+                    "integrity_outcome, not a grading decision"
+                ),
+                "code": "RQ_INTEGRITY_NOT_GRADEABLE",
+            },
+        )
+
+    # exclude_none keeps the legacy {correct, score, feedback} decision payload
+    # byte-identical when the optional integrity-resolution fields are omitted;
+    # they only appear in `decision_json` when a teacher actually sets them.
+    success = await db.resolve_review_item(id, req.model_dump(exclude_none=True))
     if not success:
         raise HTTPException(404, detail="Review item not found or already resolved")
     return {"status": "ok"}
@@ -509,6 +655,10 @@ async def _check_answer_sentence_fill(req: CheckAnswerRequest) -> dict:
         })
     student_value = req.student_value if req.student_value is not None else ""
 
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    # Sentence-Fill is a practice-arc game; refuse to grade for a locked session.
+    await _enforce_practice_unlocked(req)
+
     hw = await db.get_homework(req.homework_id)
     if hw is None:
         raise HTTPException(404, detail={
@@ -569,6 +719,31 @@ async def _check_answer_sentence_fill(req: CheckAnswerRequest) -> dict:
     xp_base = 100 if is_correct else 0
     xp_first = 25 if (is_correct and attempt_number == 1) else 0
 
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # Mirrors the CBP/MC/Phase-2B persisting calls. Only when session_id is
+    # present (some preview/anon calls omit it); homework_id is already required
+    # above. The Reflection engine reads these rows to extract real performance.
+    if req.session_id and req.homework_id:
+        import json as _json
+        try:
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="sentence-fill",
+                subphase=f"blank_{req.blank_idx}",
+                question_id=req.question_id or f"{req.item_id}_{req.blank_idx}",
+                item_id=req.item_id,
+                attempt_number=attempt_number,
+                student_answer=str(student_value),
+                answer_spec_json=_json.dumps({"type": "text_fuzzy"}),
+                checker_source="phase_adapter:sentence-fill",
+                correct=1 if is_correct else 0,
+                score=1.0 if is_correct else 0.0,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("SF: failed to persist attempt: %s", _e)
+
     return {
         "correct": is_correct,
         "lock": locked,
@@ -580,6 +755,26 @@ async def _check_answer_sentence_fill(req: CheckAnswerRequest) -> dict:
             "total": xp_base + xp_first,
         },
     }
+
+
+async def _enforce_practice_unlocked(req: "CheckAnswerRequest") -> None:
+    """Server-side Practice Arc gate (BLOCKER #3 — defense in depth).
+
+    The practice-arc games (tile-match / final-boss / future games) must not
+    grade an answer unless the student actually unlocked the arc by completing
+    both learning sections. The frontend gate is presentation-only; a tampered
+    client can call these endpoints directly after hydrating display content.
+    This is the authoritative enforcement.
+
+    Raises HTTPException(403, code="PRACTICE_LOCKED") when the arc is still
+    locked for this session+homework. Do NOT call this from the CBP/MC learning
+    phases — those ARE the unlock path.
+    """
+    if not await is_practice_unlocked(req.session_id, req.homework_id):
+        raise HTTPException(403, detail={
+            "error": "Practice Arc is locked — complete both learning sections first",
+            "code": "PRACTICE_LOCKED",
+        })
 
 
 # ---------------------------------------------------------------------------
@@ -717,6 +912,10 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
             "code": "TM_MISSING_IDS",
         })
 
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading. Tile
+    # Match is a practice-arc game; refuse to grade for a locked session.
+    await _enforce_practice_unlocked(req)
+
     hw = await db.get_homework(req.homework_id)
     if hw is None:
         raise HTTPException(404, detail={
@@ -724,32 +923,44 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
             "code": "HW_NOT_FOUND",
         })
     content = hw.get("content_json") or {}
-    pairs = _resolve_tm_pairs(content)
+    # Opaque-token scheme: `resolve_tm_pairs` gives the canonical, display-only
+    # ({left, right}) order used to mint the per-side tokens; the token maps
+    # translate the client-supplied opaque left_id/right_id back to a pair
+    # INDEX. The pair index is never exposed to the client, so a tampered
+    # client can no longer match by submitting `left_id == right_id`.
+    #
+    # The XP-bonus logic (tier / palace / concept_family / explanation) needs
+    # the full authored pair, which the token resolver strips. `_resolve_tm_pairs`
+    # preserves those fields in the SAME canonical order (contract: identical
+    # ordering), so we index the authored list by the same ordinal.
+    pairs = resolve_tm_pairs(content)
+    authored_pairs = _resolve_tm_pairs(content)
     if not pairs:
         raise HTTPException(404, detail={
             "error": "tile-match content not found on this homework",
             "code": "TM_NO_CONTENT",
         })
+    lid_map, rid_map = build_token_maps(req.homework_id, len(pairs))
 
-    # Build id-keyed lookups. The student picked left_id + right_id; we need
-    # to (a) verify left_id maps to right_id (correct match) and (b) on wrong,
-    # return the LEFT text of right_id's TRUE partner.
-    by_left_id = {p.get("id"): p for p in pairs if p.get("id")}
-    by_right_id_true_left_text = {
-        p.get("id"): p.get("left", "") for p in pairs if p.get("id")
-    }
-
-    pair = by_left_id.get(req.left_id)
-    if pair is None:
+    i_left = lid_map.get(req.left_id)
+    if i_left is None:
         raise HTTPException(400, detail={
             "error": f"left_id {req.left_id} not found in this tile-match board",
             "code": "TM_BAD_LEFT_ID",
         })
-    if req.right_id not in by_right_id_true_left_text:
+    i_right = rid_map.get(req.right_id)
+    if i_right is None:
         raise HTTPException(400, detail={
             "error": f"right_id {req.right_id} not found in this tile-match board",
             "code": "TM_BAD_RIGHT_ID",
         })
+
+    # The matched-pair-id state machine keys off the canonical pair INDEX (the
+    # left tile's pair). Indexing is stable across requests and independent of
+    # whether the resolver carries an authored `id`. The bonus metadata comes
+    # from the authored pair at the same ordinal.
+    pair = authored_pairs[i_left] if i_left < len(authored_pairs) else pairs[i_left]
+    matched_key = i_left
 
     # Get-or-create per-session state.
     session_id = req.session_id or "default"
@@ -775,9 +986,11 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
         _TM_ATTEMPTS[state_key] = state
 
     # If this pair has already been matched, treat it as a no-op (defensive).
-    already_matched = req.left_id in state["matched_pair_ids"]
+    already_matched = matched_key in state["matched_pair_ids"]
 
-    is_correct = (req.left_id == req.right_id) and not already_matched
+    # Correct when the left tile's pair index equals the right tile's pair
+    # index (both resolved from opaque tokens above).
+    is_correct = (i_left == i_right) and not already_matched
 
     # Initialize XP components.
     xp_base = 0
@@ -794,7 +1007,7 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
         # per plan §3c. Clamp at >=0 (timer can't go negative).
         delta = 3
         state["remaining_seconds"] = max(0, state["remaining_seconds"] + delta)
-        state["matched_pair_ids"].add(req.left_id)
+        state["matched_pair_ids"].add(matched_key)
         state["streak"] += 1
         state["wrong_count"] = state["wrong_count"]  # no change
         xp_base = 100
@@ -809,14 +1022,16 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
         if isinstance(pair, dict) and pair.get("is_palace_tile"):
             xp_palace = 50
 
-        # Branch-complete bonus: this match drains the concept_family.
+        # Branch-complete bonus: this match drains the concept_family. Compute
+        # the family's member set by canonical INDEX (matched_pair_ids stores
+        # indices) so the comparison is consistent with the new token scheme.
         family = pair.get("concept_family") if isinstance(pair, dict) else None
         if family and family not in state["completed_families"]:
-            family_pair_ids = {
-                p.get("id") for p in pairs
-                if isinstance(p, dict) and p.get("concept_family") == family and p.get("id")
+            family_pair_indices = {
+                idx for idx, p in enumerate(authored_pairs)
+                if isinstance(p, dict) and p.get("concept_family") == family
             }
-            if family_pair_ids and family_pair_ids.issubset(state["matched_pair_ids"]):
+            if family_pair_indices and family_pair_indices.issubset(state["matched_pair_ids"]):
                 xp_branch = 100
                 state["completed_families"].add(family)
 
@@ -835,8 +1050,10 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
         state["remaining_seconds"] = max(0, state["remaining_seconds"] + delta)
         state["streak"] = 0
         state["wrong_count"] += 1
-        # Hint = the LEFT-side concept text of the right-tile's true partner.
-        hint = by_right_id_true_left_text.get(req.right_id) or None
+        # Hint = the LEFT-side concept text of the wrongly-picked right tile's
+        # TRUE partner (already visible on screen — not a new leak surface).
+        right_pair = pairs[i_right]
+        hint = (right_pair.get("left", "") if isinstance(right_pair, dict) else "") or None
 
     xp_total = xp_base + xp_speed + xp_streak + xp_palace + xp_branch
 
@@ -849,8 +1066,55 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
     )
     complete = outcome is not None
 
+    # Echo the full set of currently-matched pairs back to the client as per-side
+    # tokens (PR #251 backend half). Production sessions never replay tile-match,
+    # but after a page reload mid-game the React component remounts with an empty
+    # matched-set while the server-side _TM_ATTEMPTS dict still holds the prior
+    # session's progress. Without this echo, every click on an already-matched
+    # pair returns `correct: false, already_matched=true` and the UI stays stuck
+    # at "0/N matched" — the user sees nothing happen. Sending the full token
+    # list lets the client re-sync its display state from any response.
+    #
+    # No-leak: emit ONLY the opaque per-side HMAC tokens (lid/rid), never the
+    # pair INDEX or any left/right text. The tokens carry no information beyond
+    # what the hydration payload already shipped.
+    matched_tokens = [
+        {
+            "lid": left_token(req.homework_id, idx),
+            "rid": right_token(req.homework_id, idx),
+        }
+        for idx in sorted(state["matched_pair_ids"])
+    ]
+
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # Mirrors the CBP/MC persisting calls. `subphase` keys off the SERVER-DERIVED
+    # canonical pair index (matched_key) — never the opaque client tokens. Only
+    # when session_id is present (homework_id is already required above). The
+    # `already_matched` no-op is still persisted as a 0/correct=False attempt so
+    # the Reflection engine sees the full interaction stream.
+    if req.session_id and req.homework_id:
+        import json as _json
+        try:
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="tile-match",
+                subphase=f"pair_{matched_key}",
+                question_id=req.question_id or f"tile-match_{matched_key}",
+                item_id=req.item_id,
+                attempt_number=req.attempt_number or 1,
+                answer_spec_json=_json.dumps({"type": "tile_match"}),
+                checker_source="phase_adapter:tile-match",
+                correct=1 if is_correct else 0,
+                score=1.0 if is_correct else 0.0,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("TM: failed to persist attempt: %s", _e)
+
     return {
         "correct": is_correct,
+        "already_matched": already_matched,
         "hint": hint,
         "explanation": explanation,
         "xp": {
@@ -866,6 +1130,7 @@ async def _check_answer_tile_match(req: CheckAnswerRequest) -> dict:
             "delta_seconds": delta,
         },
         "matched_count": matched_count,
+        "matched_tokens": matched_tokens,
         "total_pairs": total_pairs,
         "complete": complete,
         "outcome": outcome,
@@ -966,7 +1231,10 @@ async def _grade_rlc_reasoning(
         "expert_role": expert_role or "general",
         "case_intro": case_intro or "",
         "step_prompt": step.get("prompt", "") if isinstance(step, dict) else "",
-        "student_text": text or "",
+        # Fence the student's free text — the server-only acceptable_keywords ride
+        # in the same prompt, so the student value must be treated strictly as
+        # data to grade, never as instructions.
+        "student_text": _fence_untrusted(text or ""),
         # Server-only anchor — never echoed back to client; prompt instructs
         # the LLM to use these as a check, not to quote them.
         "acceptable_keywords": (
@@ -999,7 +1267,113 @@ async def _grade_rlc_reasoning(
     except (TypeError, ValueError):
         score = 0
     score = max(0, min(100, score))
-    feedback = str(ai_response.get("feedback") or "")
+    # Defensive: strip any fence tags the model echoed back so a fenced copy of
+    # the student's text can't surface in the returned feedback.
+    feedback = _strip_fence_tags(str(ai_response.get("feedback") or ""))
+    return (score, feedback)
+
+
+def _score_reasoning_coverage(text: str, dpe: dict) -> int:
+    """Deterministic keyword-coverage count for the CBP reasoning step.
+
+    Counts how many of the three answer buckets — concept / method / mistake —
+    the student's free text touches (case-insensitive substring presence of ANY
+    keyword in the bucket). Returns ``det_count`` in ``0..3``.
+
+    No expected text is ever returned — only the integer count. The keyword
+    buckets stay server-only (they live on the DB row, stripped before
+    hydration). An empty bucket cannot be "covered" — it contributes 0, so a
+    homework that authored no keywords yields det_count==0 (the AI score then
+    decides via the combine rule).
+    """
+    if not isinstance(dpe, dict):
+        return 0
+    haystack = (text or "").lower()
+    if not haystack.strip():
+        return 0
+    count = 0
+    for bucket in ("concept_keywords", "method_keywords", "mistake_keywords"):
+        kws = dpe.get(bucket) or []
+        if not isinstance(kws, list):
+            continue
+        for kw in kws:
+            if isinstance(kw, str) and kw.strip() and kw.strip().lower() in haystack:
+                count += 1
+                break  # one hit per bucket is enough
+    return count
+
+
+async def _grade_cbp_reasoning(
+    text: str,
+    dpe: dict,
+    case_setup: Any,
+) -> tuple[int, str]:
+    """Grade the CBP Decision-Process Explanation via the LLM. Returns (score 0-100, feedback).
+
+    Cloned from ``_grade_rlc_reasoning`` — loads the `cbp-reasoning-checker`
+    runtime prompt and calls the SAME ``ai_orchestrator.generate_json`` adapter
+    used by ``tutor.check_answer``. Anchors the LLM on the dpe keyword buckets
+    (server-only) + the case setup context. The min-char gate is enforced BEFORE
+    this is called (cheap reject).
+
+    The keyword buckets ride into the PROMPT INPUT only as grading anchors — the
+    prompt instructs the LLM never to echo them — and never appear in the
+    response body. Tests mock this function directly (RLC-style), so they never
+    hit the live provider. On any AI unavailability we return a neutral score so
+    the deterministic fallback in the caller can still decide pass/fail.
+    """
+    from ..services.tutor import _load_runtime_prompt
+
+    prompt = _load_runtime_prompt("cbp-reasoning-checker")
+    # Normalize case_setup to a compact string for the prompt context.
+    if isinstance(case_setup, dict):
+        case_setup_str = " ".join(
+            str(case_setup.get(k) or "")
+            for k in ("story", "role", "task")
+        ).strip() or str(case_setup)
+    else:
+        case_setup_str = str(case_setup or "")
+
+    payload = {
+        "case_setup": case_setup_str,
+        "prompt": dpe.get("prompt", "") if isinstance(dpe, dict) else "",
+        # Fence the student's free text — the server-only keyword anchors ride in
+        # the same prompt, so the student value must be treated strictly as data
+        # to grade, never as instructions. (cbp-reasoning-checker.md already
+        # carries the matching "treat as untrusted" rule.)
+        "student_text": _fence_untrusted(text or ""),
+        # Server-only anchors — never echoed back to client; prompt instructs
+        # the LLM to use these as a check, not to quote them.
+        "concept_keywords": (dpe.get("concept_keywords") or []) if isinstance(dpe, dict) else [],
+        "method_keywords": (dpe.get("method_keywords") or []) if isinstance(dpe, dict) else [],
+        "mistake_keywords": (dpe.get("mistake_keywords") or []) if isinstance(dpe, dict) else [],
+        "acceptable_keywords": (dpe.get("acceptable_keywords") or []) if isinstance(dpe, dict) else [],
+    }
+    schema = {
+        "score": "integer 0..100",
+        "feedback": "1-2 sentence string in the case's language",
+    }
+    try:
+        input_section = ai_orchestrator.build_input_section(payload)
+        ai_response = await ai_orchestrator.generate_json(
+            f"{prompt}\n\n{input_section}",
+            schema_hint=schema,
+            model=ai_orchestrator.FAST_MODEL,
+        )
+    except (ai_orchestrator.PromptTooLargeError, RuntimeError):
+        # AI grading unavailable — neutral "needs human review" score; the caller
+        # falls back to the deterministic keyword-coverage verdict.
+        return (50, "AI baholash hozir mavjud emas — javobingiz keyinroq tekshiriladi.")
+
+    raw_score = ai_response.get("score", 0)
+    try:
+        score = int(round(float(raw_score)))
+    except (TypeError, ValueError):
+        score = 0
+    score = max(0, min(100, score))
+    # Defensive: strip any fence tags the model echoed back so a fenced copy of
+    # the student's text can't surface in the returned feedback.
+    feedback = _strip_fence_tags(str(ai_response.get("feedback") or ""))
     return (score, feedback)
 
 
@@ -1055,6 +1429,10 @@ async def _check_answer_real_life_challenge(req: CheckAnswerRequest) -> dict:
             "error": "step_id required for phase=real-life-challenge",
             "code": "RLC_MISSING_STEP_ID",
         })
+
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    # Real-Life Challenge is a practice-arc game; refuse to grade for a locked session.
+    await _enforce_practice_unlocked(req)
 
     hw = await db.get_homework(req.homework_id)
     if hw is None:
@@ -1284,6 +1662,44 @@ async def _check_answer_real_life_challenge(req: CheckAnswerRequest) -> dict:
             "total": int(total_xp_field),
         }
 
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # RLC is AMR-graded: for reasoning steps `reasoning_score` is 0-100 (AI), so
+    # we normalize to a 0-1 `score`; for decision/concept steps score mirrors
+    # `is_correct`. `subphase` is the step_id (server-validated above). No
+    # misconception tags are computed by the RLC grader, so the field stays None.
+    # Only when session_id is present (homework_id is already required above).
+    if req.session_id and req.homework_id:
+        import json as _json
+        if reasoning_score is not None:
+            _persist_score = max(0.0, min(1.0, float(reasoning_score) / 100.0))
+        else:
+            _persist_score = 1.0 if is_correct else 0.0
+        _student_answer = (
+            req.reasoning_text
+            if kind == "reasoning"
+            else (req.selected_option_id or req.selected_chip_id)
+        )
+        try:
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="real-life-challenge",
+                subphase=req.step_id,
+                question_id=req.question_id or req.step_id,
+                item_id=req.item_id,
+                step_id=req.step_id,
+                attempt_number=req.attempt_number or 1,
+                student_answer=str(_student_answer) if _student_answer is not None else None,
+                answer_spec_json=_json.dumps({"type": "rlc", "kind": kind}),
+                checker_source="phase_adapter:real-life-challenge",
+                correct=1 if is_correct else 0,
+                score=_persist_score,
+                feedback=reasoning_feedback,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("RLC: failed to persist attempt: %s", _e)
+
     response: dict[str, Any] = {
         "step_id": req.step_id,
         "kind": kind,
@@ -1365,6 +1781,39 @@ def _fb_grade_band_from_grade(grade: Optional[int]) -> str:
     if g <= 8:
         return "g6_8"
     return "g9_11"
+
+
+# One-time deprecation flag for the legacy boss HP/outcome path. The v2 boss
+# (POST /ai/boss/*) is server-authoritative on HP; the legacy turn path only
+# mirrors a client-reported HP cursor, which a tampered client could inflate.
+# We keep the endpoint working (the v1 template still calls it) but no longer
+# let client HP push stars/XP beyond what the boss's own max_hp allows.
+_LEGACY_BOSS_HP_WARNED = False
+
+
+def _legacy_boss_hp_warn_once() -> None:
+    """Log the legacy-path deprecation warning at most once per process."""
+    global _LEGACY_BOSS_HP_WARNED
+    if not _LEGACY_BOSS_HP_WARNED:
+        _LEGACY_BOSS_HP_WARNED = True
+        _log.warning("legacy boss-turn path is deprecated; v2 uses /ai/boss/*")
+
+
+def _safe_outcome_hp(client_hp: Optional[int], max_hp: int) -> int:
+    """Clamp a client-reported HP cursor into ``[0, max_hp]`` for outcome math.
+
+    Conservative anti-inflation guard (Gap C): the legacy path can only TRUST a
+    client HP value up to the boss's own maximum. A forged ``hp_remaining`` above
+    ``max_hp`` (or below 0) can no longer inflate the star/XP outcome. This does
+    NOT make HP server-authoritative — that's the v2 boss's job — it just stops
+    the legacy path's outcome from being driven past its server-known ceiling.
+    """
+    try:
+        hp = int(client_hp or 0)
+    except (TypeError, ValueError):
+        hp = 0
+    ceiling = max(1, int(max_hp or 1))
+    return max(0, min(hp, ceiling))
 
 
 # XP table per spec §11 — by boss_type and stars (1-3).
@@ -1519,6 +1968,10 @@ async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
             "code": "FB_MISSING_HW",
         })
 
+    # BLOCKER #3 — Final Boss is a practice-arc game; refuse to grade for a
+    # session that has not unlocked the arc (server-side enforcement).
+    await _enforce_practice_unlocked(req)
+
     hw = await db.get_homework(req.homework_id)
     if hw is None:
         raise HTTPException(404, detail={
@@ -1657,8 +2110,10 @@ async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
     # client-reported HP (defeat = hp_remaining > 0 AND attempt_number is final).
     done = bool(boss_response.get("done"))
     if done:
+        # Gap C: legacy path — do not trust client HP beyond the boss ceiling.
+        _legacy_boss_hp_warn_once()
         outcome, stars, outcome_xp = _boss_outcome_for(
-            hp_remaining=int(req.hp_remaining or 0),
+            hp_remaining=_safe_outcome_hp(req.hp_remaining, int(max_hp)),
             max_hp=int(max_hp),
             hints_used=int(req.attempts_used or state.get("hints_used", 0) or 0),
             attempt_number=attempt_number,
@@ -1672,6 +2127,41 @@ async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
         response["outcome"] = outcome
         response["stars"] = stars
         response["outcome_xp"] = int(outcome_xp)
+
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # THIS is the path the v2 React `bossTurn()` hits (POST /api/ai/check-answer
+    # phase="final-boss"). `score` comes from tutor.boss_turn's 0-1 AMR score;
+    # `correct` mirrors the grader verdict. `tutor.boss_turn` does NOT emit
+    # misconception tags, so that field stays None. `time_ms` is unavailable —
+    # CheckAnswerRequest carries no timing field. `subphase` is the boss
+    # question id (server-validated above) or the attempt cursor when the caller
+    # submits via the legacy free-form `question` slot. Only when session_id is
+    # present (homework_id is already required above).
+    if req.session_id and req.homework_id:
+        import json as _json
+        try:
+            _fb_score = boss_response.get("score")
+            _fb_score = float(_fb_score) if isinstance(_fb_score, (int, float)) else (
+                1.0 if is_correct else 0.0
+            )
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="final-boss",
+                subphase=req.question_id or f"attempt_{attempt_number}",
+                question_id=req.question_id,
+                item_id=req.item_id,
+                attempt_number=attempt_number,
+                student_answer=str(req.student_answer or ""),
+                answer_spec_json=_json.dumps({"type": "boss_amr"}),
+                checker_source="phase_adapter:final-boss",
+                correct=1 if is_correct else 0,
+                score=_fb_score,
+                misconception_tags_json=None,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("FB: failed to persist attempt: %s", _e)
 
     return response
 
@@ -1764,6 +2254,10 @@ async def _check_answer_ttt(req: CheckAnswerRequest) -> dict:
             "code": "TTT_MISSING_HW",
         })
 
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    # Tic Tac Toe is a practice-arc game; refuse to grade for a locked session.
+    await _enforce_practice_unlocked(req)
+
     hw = await db.get_homework(req.homework_id)
     if hw is None:
         raise HTTPException(404, detail={
@@ -1784,6 +2278,15 @@ async def _check_answer_ttt(req: CheckAnswerRequest) -> dict:
         })
 
     answer_key = injector.get_ttt_answer_key(req.homework_id) or {}
+    if not answer_key:
+        # React-served (v2) homeworks never pass through the legacy injector
+        # render that populates _TTT_ANSWER_KEY, so resolve the key directly
+        # from content_json with the same serializer (identical id logic).
+        content = hw.get("content_json") or {}
+        if content.get("gb_ttt"):
+            _wire, answer_key = injector._serialize_ttt(
+                content.get("gb_ttt"), content.get("gb_ttt_config") or {}
+            )
     correct = answer_key.get(item_id)
     if not correct:
         raise HTTPException(404, detail="ttt_item_not_found")
@@ -1802,6 +2305,31 @@ async def _check_answer_ttt(req: CheckAnswerRequest) -> dict:
         # response narrates "lucky bounce" only after resolution.
         mercy = random.random() < float(cfg["mercy_chance"])
         xp_delta = int(cfg["xp_mercy"]) if mercy else 0
+
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # `subphase` keys off the item_id (server-resolved against the answer key
+    # above). `score` mirrors `is_correct`. Only when session_id is present
+    # (homework_id is already required above).
+    if req.session_id and req.homework_id:
+        import json as _json
+        try:
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="ttt",
+                subphase=f"pick_{item_id}",
+                question_id=req.question_id or item_id,
+                item_id=item_id,
+                attempt_number=req.attempt_number or 1,
+                student_answer=str(picked_norm),
+                answer_spec_json=_json.dumps({"type": "ttt"}),
+                checker_source="phase_adapter:ttt",
+                correct=1 if is_correct else 0,
+                score=1.0 if is_correct else 0.0,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("TTT: failed to persist attempt: %s", _e)
 
     return {
         "is_correct": is_correct,
@@ -1827,6 +2355,10 @@ async def _check_answer_ttt_session(req: CheckAnswerRequest) -> dict:
             "error": "homework_id required for phase=ttt-session",
             "code": "TTT_MISSING_HW",
         })
+
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    # Tic Tac Toe (session tally) is a practice-arc game; refuse for a locked session.
+    await _enforce_practice_unlocked(req)
 
     hw = await db.get_homework(req.homework_id)
     if hw is None:
@@ -1867,6 +2399,34 @@ async def _check_answer_ttt_session(req: CheckAnswerRequest) -> dict:
     total_games = len(cleaned)
     mastery_tier = _ttt_mastery_tier(wins + draws, total_games)
     duolingo_remediation = (wins == 0 and draws == 0)
+
+    # Persist attempt (best-effort side-effect — never breaks answer-checking).
+    # This is the end-of-session TALLY (one row per completed session). `score`
+    # is the draw+win mastery ratio (0-1); `correct` is 1 unless the student
+    # earned zero non-loss outcomes (duolingo_remediation). `subphase` is the
+    # fixed "tally" marker. Only when session_id is present (homework_id is
+    # already required above).
+    if req.session_id and req.homework_id:
+        import json as _json
+        _ratio = ((wins + draws) / total_games) if total_games else 0.0
+        try:
+            from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+            await _add_phase_attempt(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                phase="ttt-session",
+                subphase="tally",
+                question_id=req.question_id,
+                item_id=req.item_id,
+                attempt_number=req.attempt_number or 1,
+                answer_spec_json=_json.dumps({"type": "ttt_session"}),
+                checker_source="phase_adapter:ttt-session",
+                correct=0 if duolingo_remediation else 1,
+                score=_ratio,
+                feedback=mastery_tier,
+            )
+        except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+            _log.warning("TTT-session: failed to persist attempt: %s", _e)
 
     return {
         "session_xp": int(session_xp),
@@ -2010,6 +2570,10 @@ async def _check_answer_memory_palace(req: CheckAnswerRequest) -> dict:
             "code": "MP_MISSING_RECALL",
         })
 
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    # Memory Palace is a practice-arc game; refuse to grade for a locked session.
+    await _enforce_practice_unlocked(req)
+
     hw = await db.get_homework(req.homework_id)
     if hw is None:
         raise HTTPException(404, detail={
@@ -2064,6 +2628,33 @@ async def _check_answer_memory_palace(req: CheckAnswerRequest) -> dict:
     ])
     retry_offered = (outcome != "perfect")
 
+    # Persist attempt rows (best-effort side-effect — never breaks grading).
+    # Memory Palace grades the whole recall set in one POST; persist one row per
+    # recall location so the Reflection engine sees per-item memory-palace
+    # performance like every other Practice-Arc game (it was previously the only
+    # graded game writing NOTHING, so Reflection was blind to it). Only when
+    # session_id is present (homework_id is already required above).
+    if req.session_id and req.homework_id:
+        import json as _json
+        for rr in recomputed:
+            try:
+                from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+                await _add_phase_attempt(
+                    session_id=req.session_id,
+                    hw_id=req.homework_id,
+                    phase="memory-palace",
+                    subphase=f"loc_{rr['location_idx']}",
+                    question_id=f"memory-palace_{req.palace_key}_{rr['location_idx']}",
+                    attempt_number=req.attempt_number or 1,
+                    answer_spec_json=_json.dumps({"type": "memory_palace"}),
+                    checker_source="phase_adapter:memory-palace",
+                    correct=1 if rr["is_correct"] else 0,
+                    score=1.0 if rr["is_correct"] else 0.0,
+                    time_ms=int(rr.get("elapsed_ms") or 0),
+                )
+            except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+                _log.warning("MP: failed to persist attempt: %s", _e)
+
     return {
         "outcome": outcome,
         "outcome_title": outcome_title,
@@ -2079,19 +2670,591 @@ async def _check_answer_memory_palace(req: CheckAnswerRequest) -> dict:
     }
 
 
+async def _check_answer_case_based_preview(req: CheckAnswerRequest) -> dict:
+    """Per-checkpoint grading branch for Case-Based Preview (v2 React runtime).
+
+    No-leak invariants:
+      - `answer_spec.expected` / `accepted_answers` from content_json are NEVER
+        included in the response, even on a wrong answer.
+      - `learning_block` (the teaching text) IS returned after submit — this is
+        the "feedback from response" pattern, not hydration.
+      - On wrong answer, a generic hint is returned, never the expected value.
+    """
+    if not req.homework_id:
+        raise HTTPException(400, detail={
+            "error": "homework_id required for phase=case_based_preview",
+            "code": "CBP_MISSING_HW",
+        })
+    if req.item_index is None:
+        raise HTTPException(400, detail={
+            "error": "item_index required for phase=case_based_preview",
+            "code": "CBP_MISSING_ITEM_INDEX",
+        })
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+
+    content = hw.get("content_json") or {}
+    cbp = content.get("case_based_preview")
+    if not isinstance(cbp, dict):
+        raise HTTPException(404, detail={
+            "error": "case_based_preview content not found on this homework",
+            "code": "CBP_NO_CONTENT",
+        })
+
+    checkpoints = cbp.get("checkpoints") or []
+    idx = req.item_index
+    if not isinstance(idx, int) or idx < 0 or idx >= len(checkpoints):
+        raise HTTPException(400, detail={
+            "error": (
+                f"item_index {idx} out of range — "
+                f"case_based_preview has {len(checkpoints)} checkpoint(s)"
+            ),
+            "code": "CBP_BAD_INDEX",
+        })
+
+    checkpoint = checkpoints[idx]
+    if not isinstance(checkpoint, dict):
+        raise HTTPException(400, detail={
+            "error": f"checkpoint at index {idx} is malformed",
+            "code": "CBP_BAD_CHECKPOINT",
+        })
+
+    answer_spec = checkpoint.get("answer_spec") or {}
+    learning_block: Optional[str] = checkpoint.get("learning_block")
+    question_id = req.question_id or f"cbp_{idx}"
+
+    # Grade deterministically using the shared checker.
+    from ..services import answer_checker as _answer_checker
+    det = _answer_checker.check(answer_spec, req.student_answer or "")
+    verdict = det.get("verdict", "incorrect")
+    is_correct = verdict == "correct"
+
+    # Build feedback — never include the expected value on wrong answer.
+    if is_correct:
+        feedback = det.get("format_tip") or "To'g'ri!"
+    else:
+        # Provide a pedagogical hint without leaking the expected answer.
+        feedback = "Qayta urinib ko'ring." if verdict == "unsure" else "Noto'g'ri javob."
+
+    # Persist attempt.
+    import json as _json
+    session_id = req.session_id or "default"
+    try:
+        from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+        await _add_phase_attempt(
+            session_id=session_id,
+            hw_id=req.homework_id,
+            phase="case_based_preview",
+            subphase=f"checkpoint_{idx}",
+            question_id=question_id,
+            item_id=req.item_id,
+            attempt_number=req.attempt_number or 1,
+            student_answer=str(req.student_answer or ""),
+            answer_spec_json=_json.dumps(answer_spec),
+            checker_source="phase_adapter:case_based_preview",
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=feedback,
+        )
+    except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+        _log.warning("CBP: failed to persist attempt: %s", _e)
+
+    result: dict[str, Any] = {
+        "correct": is_correct,
+        "feedback": feedback,
+    }
+    if learning_block is not None:
+        result["learning_block"] = learning_block
+    return result
+
+
+async def _check_answer_cbp_reasoning(req: CheckAnswerRequest) -> dict:
+    """Open-ended, AI-graded "Decision Process Explanation" branch for CBP.
+
+    Contract (must match the frontend exactly):
+      request  POST /api/ai/check-answer
+               { homework_id, session_id, phase: "case_based_preview_reasoning",
+                 reasoning_text }
+      response { passed: bool, score: number(0..100), feedback: str }
+
+    Grading combines a deterministic keyword-coverage count (concept / method /
+    mistake buckets → det_count 0..3) with the AI judgment:
+
+        score  = round(0.6 * ai_score + 0.4 * 100 * det_count / 3)
+        passed = score >= pass_score(default 60) AND det_count >= 2
+
+    On AI error the AI grader returns a neutral 50, but to avoid a soft
+    AI-down pass we fall back to a purely deterministic verdict:
+        passed = det_count >= 2.
+
+    No-leak invariants: the response NEVER includes the keyword buckets, the
+    rubric, the pass_score, or any expected text — only {passed, score, feedback}.
+    """
+    if not req.homework_id:
+        raise HTTPException(400, detail={
+            "error": "homework_id required for phase=case_based_preview_reasoning",
+            "code": "CBP_MISSING_HW",
+        })
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+
+    content = hw.get("content_json") or {}
+    cbp = content.get("case_based_preview")
+    if not isinstance(cbp, dict):
+        raise HTTPException(404, detail={
+            "error": "case_based_preview content not found on this homework",
+            "code": "CBP_NO_CONTENT",
+        })
+
+    dpe = cbp.get("decision_process_explanation")
+    if not isinstance(dpe, dict):
+        raise HTTPException(404, detail={
+            "error": "no decision_process_explanation authored on this case_based_preview",
+            "code": "CBP_NO_REASONING",
+        })
+
+    text = (req.reasoning_text or "").strip()
+    min_chars = int(dpe.get("min_chars") or 80)
+    if len(text) < min_chars:
+        raise HTTPException(400, detail={
+            "error": (
+                f"reasoning_text below min_chars={min_chars} "
+                f"(got {len(text)} chars)"
+            ),
+            "code": "CBP_REASONING_TOO_SHORT",
+            "min_chars": min_chars,
+        })
+
+    # Deterministic keyword coverage (no expected text returned).
+    det_count = _score_reasoning_coverage(text, dpe)
+
+    pass_score = int(dpe.get("pass_score") or 60)
+    case_setup = cbp.get("case_setup")
+
+    # AI judgment — clone of the RLC reasoning grader path.
+    ai_unavailable = False
+    try:
+        ai_score, feedback = await _grade_cbp_reasoning(text, dpe, case_setup)
+    except Exception as _e:  # noqa: BLE001 — never 500 on grader failure
+        _log.warning("CBP reasoning: AI grader raised, falling back: %s", _e)
+        ai_unavailable = True
+        ai_score, feedback = 50, "AI baholash hozir mavjud emas — javobingiz keyinroq tekshiriladi."
+
+    score = int(round(0.6 * ai_score + 0.4 * 100 * det_count / 3))
+    score = max(0, min(100, score))
+
+    if ai_unavailable:
+        # Pure deterministic fallback — don't let a neutral AI score gate.
+        passed = det_count >= 2
+    else:
+        passed = score >= pass_score and det_count >= 2
+
+    # Persist the attempt under the CBP phase, subphase="reasoning".
+    session_id = req.session_id or "default"
+    try:
+        from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+        await _add_phase_attempt(
+            session_id=session_id,
+            hw_id=req.homework_id,
+            phase="case_based_preview",
+            subphase="reasoning",
+            question_id=req.question_id or "cbp_reasoning",
+            item_id=req.item_id,
+            attempt_number=req.attempt_number or 1,
+            student_answer=text,
+            checker_source="phase_adapter:case_based_preview_reasoning",
+            correct=1 if passed else 0,
+            score=score / 100,
+            feedback=feedback,
+        )
+    except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+        _log.warning("CBP reasoning: failed to persist attempt: %s", _e)
+
+    # Response carries ONLY the contract fields — no keywords / rubric / expected.
+    return {
+        "passed": bool(passed),
+        "score": int(score),
+        "feedback": str(feedback),
+    }
+
+
+async def _check_answer_memory_check(req: CheckAnswerRequest) -> dict:
+    """Per-item grading branch for Memory Check (v2 React runtime).
+
+    No-leak invariants:
+      - `answer_spec.expected` / `accepted_answers` from content_json are NEVER
+        included in the response body.
+      - On wrong answer, generic feedback is returned without revealing the
+        expected value.
+    """
+    if not req.homework_id:
+        raise HTTPException(400, detail={
+            "error": "homework_id required for phase=memory_check",
+            "code": "MC_MISSING_HW",
+        })
+    if req.item_index is None:
+        raise HTTPException(400, detail={
+            "error": "item_index required for phase=memory_check",
+            "code": "MC_MISSING_ITEM_INDEX",
+        })
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+
+    content = hw.get("content_json") or {}
+    mc = content.get("memory_check")
+    if not isinstance(mc, dict):
+        raise HTTPException(404, detail={
+            "error": "memory_check content not found on this homework",
+            "code": "MC_NO_CONTENT",
+        })
+
+    items = mc.get("items") or []
+    idx = req.item_index
+    if not isinstance(idx, int) or idx < 0 or idx >= len(items):
+        raise HTTPException(400, detail={
+            "error": (
+                f"item_index {idx} out of range — "
+                f"memory_check has {len(items)} item(s)"
+            ),
+            "code": "MC_BAD_INDEX",
+        })
+
+    item = items[idx]
+    if not isinstance(item, dict):
+        raise HTTPException(400, detail={
+            "error": f"item at index {idx} is malformed",
+            "code": "MC_BAD_ITEM",
+        })
+
+    answer_spec = item.get("answer_spec") or {}
+    question_id = req.question_id or f"mc_{idx}"
+
+    # Grade deterministically using the shared checker.
+    from ..services import answer_checker as _answer_checker
+    det = _answer_checker.check(answer_spec, req.student_answer or "")
+    verdict = det.get("verdict", "incorrect")
+    is_correct = verdict == "correct"
+
+    # Build feedback — never include the expected value.
+    if is_correct:
+        feedback = det.get("format_tip") or "To'g'ri!"
+    else:
+        feedback = "Qayta urinib ko'ring." if verdict == "unsure" else "Noto'g'ri javob."
+
+    # Persist attempt.
+    import json as _json
+    session_id = req.session_id or "default"
+    try:
+        from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+        await _add_phase_attempt(
+            session_id=session_id,
+            hw_id=req.homework_id,
+            phase="memory_check",
+            subphase=f"item_{idx}",
+            question_id=question_id,
+            item_id=req.item_id,
+            attempt_number=req.attempt_number or 1,
+            student_answer=str(req.student_answer or ""),
+            answer_spec_json=_json.dumps(answer_spec),
+            checker_source="phase_adapter:memory_check",
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=feedback,
+        )
+    except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+        _log.warning("MC: failed to persist attempt: %s", _e)
+
+    return {
+        "correct": is_correct,
+        "feedback": feedback,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Phase 2B games — Adaptive Quiz / Mystery Box / Puzzle Lock check-answer
+# branches (v2 React runtime). All three follow the Case-Based Preview
+# template: resolve the item by `item_index` from a content_json array, grade
+# via the shared deterministic checker, strip the expected value from the
+# response, persist a server-derived `subphase`, and return the minimal
+# {correct, feedback} contract.
+# ---------------------------------------------------------------------------
+
+# Wrong-answer feedback never echoes the expected value (no-leak invariant).
+_2B_WRONG_FEEDBACK = "Noto'g'ri javob."
+_2B_RETRY_FEEDBACK = "Qayta urinib ko'ring."
+
+
+def _grade_with_accepted_list(accepted: list[str], student_answer: str) -> tuple[bool, str]:
+    """Grade a student answer against an accepted-answer LIST via text_fuzzy.
+
+    The shared answer_checker has no native accepted-list type, so we run one
+    `text_fuzzy` check per accepted string and treat the answer as correct if
+    ANY matches. Returns ``(is_correct, verdict_of_best)``. The expected values
+    are NEVER returned to the caller — only the boolean + verdict label.
+    """
+    from ..services import answer_checker as _answer_checker
+
+    best_verdict = "incorrect"
+    for candidate in accepted:
+        det = _answer_checker.check(
+            {"type": "text_fuzzy", "expected": str(candidate)}, student_answer
+        )
+        verdict = det.get("verdict", "incorrect")
+        if verdict == "correct":
+            return True, "correct"
+        if verdict == "unsure":
+            best_verdict = "unsure"
+    return False, best_verdict
+
+
+async def _check_answer_phase2b_item(
+    req: CheckAnswerRequest,
+    *,
+    phase: str,
+    array_key: str,
+    no_content_code: str,
+    bad_index_code: str,
+    answer_str_fields: tuple[str, ...],
+) -> dict:
+    """Shared resolver body for the three Phase-2B games.
+
+    Mirrors `_check_answer_case_based_preview` exactly:
+      - 400 if no homework_id / item_index None.
+      - 404 if homework / array missing.
+      - 400 if item_index out of range.
+      - `_enforce_practice_unlocked(req)` BEFORE grading (these ARE practice-arc
+        games, unlike CBP/MC which are the unlock path).
+      - Resolve the item, build / read an answer_spec, grade via the shared
+        deterministic checker, and NEVER return the expected value.
+    """
+    if not req.homework_id:
+        raise HTTPException(400, detail={
+            "error": f"homework_id required for phase={phase}",
+            "code": "HW_REQUIRED",
+        })
+    if req.item_index is None:
+        raise HTTPException(400, detail={
+            "error": f"item_index required for phase={phase}",
+            "code": "MISSING_ITEM_INDEX",
+        })
+
+    # BLOCKER #3 — Practice Arc must be server-enforced before grading.
+    await _enforce_practice_unlocked(req)
+
+    hw = await db.get_homework(req.homework_id)
+    if hw is None:
+        raise HTTPException(404, detail={
+            "error": f"homework {req.homework_id} not found",
+            "code": "HW_NOT_FOUND",
+        })
+
+    content = hw.get("content_json") or {}
+    array = content.get(array_key)
+    if not isinstance(array, list) or not array:
+        raise HTTPException(404, detail={
+            "error": f"{array_key} content not found on this homework",
+            "code": no_content_code,
+        })
+
+    idx = req.item_index
+    if not isinstance(idx, int) or isinstance(idx, bool) or idx < 0 or idx >= len(array):
+        raise HTTPException(400, detail={
+            "error": (
+                f"item_index {idx} out of range — "
+                f"{array_key} has {len(array)} item(s)"
+            ),
+            "code": bad_index_code,
+        })
+
+    item = array[idx]
+    if not isinstance(item, dict):
+        raise HTTPException(400, detail={
+            "error": f"item at index {idx} is malformed",
+            "code": bad_index_code,
+        })
+
+    # Resolve the grading rule. Priority: an authored `answer_spec`, else build
+    # a text_fuzzy spec on the fly from the game's answer field(s). For
+    # adaptive-quiz, an `accepted_answers`/`ans` LIST is supported via the
+    # any-match accepted-list helper.
+    from ..services import answer_checker as _answer_checker
+
+    answer_spec = item.get("answer_spec")
+    student_answer = req.student_answer or ""
+
+    if isinstance(answer_spec, dict) and answer_spec:
+        det = _answer_checker.check(answer_spec, student_answer)
+        verdict = det.get("verdict", "incorrect")
+        is_correct = verdict == "correct"
+        format_tip = det.get("format_tip")
+        spec_for_persist = answer_spec
+    else:
+        # Build an accepted list from the game-specific answer fields. The first
+        # populated string field (or accepted_answers/ans list) wins.
+        accepted: list[str] = []
+        raw_accepted = item.get("accepted_answers") or item.get("ans")
+        if isinstance(raw_accepted, list):
+            accepted = [str(x) for x in raw_accepted if x is not None and str(x) != ""]
+        elif isinstance(raw_accepted, str) and raw_accepted:
+            accepted = [raw_accepted]
+        if not accepted:
+            for field in answer_str_fields:
+                val = item.get(field)
+                if isinstance(val, str) and val:
+                    accepted = [val]
+                    break
+        is_correct, verdict = _grade_with_accepted_list(accepted, student_answer)
+        format_tip = None
+        # Persist a sanitized spec marker (no expected value) — the real value
+        # never leaves the server. We store an opaque type tag for audit only.
+        spec_for_persist = {"type": "text_fuzzy"}
+
+    # Feedback — never include the expected value, even on a wrong answer.
+    if is_correct:
+        feedback = format_tip or "To'g'ri!"
+    else:
+        feedback = _2B_RETRY_FEEDBACK if verdict == "unsure" else _2B_WRONG_FEEDBACK
+
+    # Persist attempt with a SERVER-DERIVED subphase (range-validated index).
+    import json as _json
+    session_id = req.session_id or "default"
+    question_id = req.question_id or f"{phase}_{idx}"
+    try:
+        from ..db.attempts_repo import add_phase_attempt as _add_phase_attempt
+        await _add_phase_attempt(
+            session_id=session_id,
+            hw_id=req.homework_id,
+            phase=phase,
+            subphase=f"item_{idx}",
+            question_id=question_id,
+            item_id=req.item_id,
+            attempt_number=req.attempt_number or 1,
+            student_answer=str(student_answer),
+            answer_spec_json=_json.dumps(spec_for_persist),
+            checker_source=f"phase_adapter:{phase}",
+            correct=1 if is_correct else 0,
+            score=1.0 if is_correct else 0.0,
+            feedback=feedback,
+        )
+    except Exception as _e:  # noqa: BLE001 — attempt persistence is best-effort
+        _log.warning("%s: failed to persist attempt: %s", phase, _e)
+
+    return {
+        "correct": is_correct,
+        "feedback": feedback,
+    }
+
+
+async def _check_answer_adaptive_quiz(req: CheckAnswerRequest) -> dict:
+    """Per-item grading for Adaptive Quiz (phase=adaptive-quiz, v2 runtime).
+
+    Array: ``gb_adaptive_quiz``. Each item carries either an authored
+    ``answer_spec`` (used directly) or an ``accepted_answers``/``ans`` list
+    graded any-match via text_fuzzy. The expected value is NEVER returned.
+    """
+    return await _check_answer_phase2b_item(
+        req,
+        phase="adaptive-quiz",
+        array_key="gb_adaptive_quiz",
+        no_content_code="AQ_NO_CONTENT",
+        bad_index_code="AQ_BAD_INDEX",
+        answer_str_fields=("a", "answer"),
+    )
+
+
+async def _check_answer_mystery_box(req: CheckAnswerRequest) -> dict:
+    """Per-item grading for Mystery Box (phase=mystery-box, v2 runtime).
+
+    Array: ``gb_mystery_box``. The accepted answer rides on ``a`` (string).
+    An on-the-fly ``{type: text_fuzzy}`` spec is built when no authored
+    ``answer_spec`` is present. The expected value is NEVER returned.
+    """
+    return await _check_answer_phase2b_item(
+        req,
+        phase="mystery-box",
+        array_key="gb_mystery_box",
+        no_content_code="MB_NO_CONTENT",
+        bad_index_code="MB_BAD_INDEX",
+        answer_str_fields=("a", "answer"),
+    )
+
+
+async def _check_answer_puzzle_lock(req: CheckAnswerRequest) -> dict:
+    """Per-item grading for Puzzle Lock (phase=puzzle-lock, v2 runtime).
+
+    Array: ``gb_puzzle_lock``. The accepted answer rides on ``a`` or
+    ``answer`` (string). An on-the-fly ``{type: text_fuzzy}`` spec is built
+    when no authored ``answer_spec`` is present. The expected value is
+    NEVER returned.
+    """
+    return await _check_answer_phase2b_item(
+        req,
+        phase="puzzle-lock",
+        array_key="gb_puzzle_lock",
+        no_content_code="PL_NO_CONTENT",
+        bad_index_code="PL_BAD_INDEX",
+        answer_str_fields=("a", "answer"),
+    )
+
+
 @router.post("/ai/runtime/submit-answer")
 async def submit_runtime_answer(req: RuntimeAnswerSubmitRequest):
     from ..services.runtime_answer_resolver import resolve_runtime_answer
-    
+
     if req.session_id:
         tutor._validate_session_id(req.session_id)
-        
+
+    # Soft-friction follow-up (anti-cheat wiring). A submit that carries a
+    # `nudge_response` (in client_context, or via subphase=="integrity-nudge")
+    # records an ADVISORY session event and is NEVER scored. Best-effort.
+    nudge_response = None
+    if isinstance(req.client_context, dict):
+        nudge_response = req.client_context.get("nudge_response")
+    if nudge_response is not None or req.subphase == "integrity-nudge":
+        try:
+            from ..db import session_events_repo
+
+            await session_events_repo.add_session_event(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                event_type="integrity_nudge_response",
+                payload={
+                    "question_id": req.question_id,
+                    "nudge_response": nudge_response,
+                },
+                phase=req.phase or None,
+                subphase=req.subphase or None,
+                question_id=req.question_id or None,
+            )
+        except Exception as _nudge_exc:
+            _log.warning(
+                "integrity_nudge_response session_event failed (non-fatal): %s",
+                _nudge_exc,
+            )
+
     try:
         target = await resolve_runtime_answer(req)
         result = await tutor.process_runtime_answer(
             target=target.model_dump(),
             student_answer=req.student_answer,
-            attempt_number=req.attempt_number or 1
+            attempt_number=req.attempt_number or 1,
+            client_time_ms=req.client_time_ms,
+            paste_detected=req.paste_detected,
         )
         return result
     except HTTPException:
@@ -2105,6 +3268,36 @@ async def submit_runtime_answer(req: RuntimeAnswerSubmitRequest):
 
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
+    # C2 — Soft-friction follow-up. A submit carrying a `nudge_response` (or
+    # marked subphase=="integrity-nudge") is the student's reply to a
+    # strong-flag "explain in your own words" nudge. It is ADVISORY, never a
+    # gradeable answer: record a session_events `integrity_nudge_response` event
+    # and EARLY-RETURN `{"advisory": true}` BEFORE any grading dispatch below.
+    # This must precede every phase branch so a nudge reply never falls through
+    # to a real grader (and never produces a score).
+    if req.nudge_response is not None or req.subphase == "integrity-nudge":
+        try:
+            from ..db import session_events_repo
+
+            await session_events_repo.add_session_event(
+                session_id=req.session_id or "default",
+                hw_id=req.homework_id or "",
+                event_type="integrity_nudge_response",
+                payload={
+                    "question_id": req.question_id or None,
+                    "nudge_response": req.nudge_response,
+                },
+                phase=req.phase or None,
+                subphase=req.subphase or None,
+                question_id=req.question_id or None,
+            )
+        except Exception as _nudge_exc:  # never break on the advisory write
+            _log.warning(
+                "integrity_nudge_response session_event failed (non-fatal): %s",
+                _nudge_exc,
+            )
+        return {"advisory": True}
+
     # Phase dispatch — the new sentence-fill grading branch is keyed on
     # phase=="sentence-fill" AND presence of `homework_id`. The phase string
     # alone is insufficient because pre-existing tests/clients submit
@@ -2197,6 +3390,95 @@ async def check_answer(req: CheckAnswerRequest):
             result = await _check_answer_memory_palace(req)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:memory-palace"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Case-Based Preview open-ended reasoning branch (v2 React runtime). The
+    # "Decision Process Explanation" step after the 3 MCQ checkpoints — graded
+    # by deterministic keyword coverage + AI judgment. Distinct phase string so
+    # it never collides with the MCQ checkpoint branch below. Same back-compat
+    # gate (require homework_id).
+    if req.phase == "case_based_preview_reasoning" and req.homework_id:
+        try:
+            result = await _check_answer_cbp_reasoning(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:case_based_preview_reasoning"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Case-Based Preview per-checkpoint grading branch (v2 React runtime).
+    # Resolves the checkpoint's answer_spec from content_json server-side;
+    # the client NEVER sends the expected answer value.
+    if req.phase == "case_based_preview" and req.homework_id:
+        try:
+            result = await _check_answer_case_based_preview(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:case_based_preview"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Memory Check per-item grading branch (v2 React runtime).
+    # Resolves the item's answer_spec from content_json server-side;
+    # the client NEVER sends the expected answer value.
+    if req.phase == "memory_check" and req.homework_id:
+        try:
+            result = await _check_answer_memory_check(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:memory_check"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Adaptive Quiz per-item grading branch (v2 React runtime, phase 2B).
+    # Practice-arc game — server-gated; resolves answer_spec from content_json.
+    if req.phase == "adaptive-quiz" and req.homework_id:
+        try:
+            result = await _check_answer_adaptive_quiz(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:adaptive-quiz"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Mystery Box per-item grading branch (v2 React runtime, phase 2B).
+    # Practice-arc game — server-gated; resolves answer_spec from content_json.
+    if req.phase == "mystery-box" and req.homework_id:
+        try:
+            result = await _check_answer_mystery_box(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:mystery-box"
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            _handle_exc(e)
+
+    # Puzzle Lock per-item grading branch (v2 React runtime, phase 2B).
+    # Practice-arc game — server-gated; resolves answer_spec from content_json.
+    if req.phase == "puzzle-lock" and req.homework_id:
+        try:
+            result = await _check_answer_puzzle_lock(req)
+            result = await _attach_integrity(req, result)
+            return _attach_check_answer_debug(
+                req, result, checker_path="phase_adapter:puzzle-lock"
             )
         except HTTPException:
             raise
@@ -2306,8 +3588,10 @@ async def boss_turn(req: BossTurnRequest):
             boss_type = req.boss_type if req.boss_type in _FB_XP_TABLE else "sub"
             grade_band = req.grade_band or _fb_grade_band_from_grade(req.grade)
             max_hp = int(req.max_hp) if req.max_hp else _fb_default_hp_for_grade_band(grade_band)
+            # Gap C: legacy path — do not trust client HP beyond the boss ceiling.
+            _legacy_boss_hp_warn_once()
             outcome, stars, outcome_xp = _boss_outcome_for(
-                hp_remaining=int(req.hp_remaining or 0),
+                hp_remaining=_safe_outcome_hp(req.hp_remaining, int(max_hp)),
                 max_hp=max_hp,
                 hints_used=int(req.hints_used or 0),
                 attempt_number=int(req.attempt_number or 1),

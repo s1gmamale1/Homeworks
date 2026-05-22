@@ -1499,138 +1499,6 @@
         }
         .bounce { animation: breathing 450ms ease-out; }
 
-        /* ── FLOW V2 MEMORY CHECK ─────────────────────────────── */
-        #screen-mc {
-            text-align: left;
-        }
-        .mc-shell {
-            width: min(92vw, 860px);
-            min-height: min(72vh, 560px);
-            max-height: 82vh;
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            overflow: auto;
-        }
-        .mc-topline {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .mc-title {
-            margin: 0;
-            font-size: clamp(24px, 3vw, 36px);
-            line-height: 1.12;
-            letter-spacing: 0;
-        }
-        .feature-grid.mc-feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-        .feature-card.mc-card {
-            border: 1px solid var(--surface-border);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.64);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .pill,
-        .pill--dark {
-            display: inline-flex;
-            align-items: center;
-            width: fit-content;
-            min-height: 24px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            line-height: 1.2;
-            letter-spacing: 0;
-        }
-        .pill {
-            color: #075985;
-            background: rgba(14,165,233,0.14);
-            border: 1px solid rgba(14,165,233,0.22);
-        }
-        .pill--dark {
-            color: #fff;
-            background: #111827;
-            border: 1px solid rgba(17,24,39,0.18);
-        }
-        .mc-option,
-        .btn-blue,
-        .btn-white-outline {
-            border-radius: 8px;
-            min-height: 44px;
-            padding: 10px 12px;
-            font: inherit;
-            cursor: pointer;
-        }
-        .mc-option {
-            border: 1px solid rgba(15,23,42,0.12);
-            background: rgba(255,255,255,0.86);
-            text-align: left;
-        }
-        .mc-option.is-selected {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-        .mc-input {
-            width: 100%;
-            min-height: 44px;
-            box-sizing: border-box;
-            border-radius: 8px;
-            border: 1px solid rgba(15,23,42,0.16);
-            padding: 10px 12px;
-            font: inherit;
-            background: rgba(255,255,255,0.9);
-        }
-        .btn-blue {
-            color: white;
-            background: var(--accent);
-            border: 1px solid var(--accent);
-            font-weight: 700;
-        }
-        .btn-white-outline {
-            color: var(--text);
-            background: rgba(255,255,255,0.72);
-            border: 1px solid var(--surface-border);
-            font-weight: 700;
-        }
-        .mc-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .mc-feedback {
-            min-height: 22px;
-            font-weight: 650;
-            color: var(--muted);
-        }
-        .mc-feedback.is-pass { color: #117a3d; }
-        .mc-feedback.is-fail { color: #b03a44; }
-        .fc-weak-chip {
-            margin-left: auto;
-        }
-        .fc-inner.is-weak-review .fc-face {
-            box-shadow: 0 0 0 2px rgba(17,24,39,0.2), var(--shadow-card);
-        }
-        [data-theme="dark"] .feature-card.mc-card,
-        [data-theme="dark"] .mc-option,
-        [data-theme="dark"] .mc-input,
-        [data-theme="dark"] .btn-white-outline {
-            background: rgba(15,23,42,0.72);
-            color: var(--text);
-            border-color: rgba(255,255,255,0.16);
-        }
-
         /* ── STAGE 4 MEMORY SPRINT ─────────────────────────────── */
         #screen-ms {
             text-align: center;
@@ -8713,25 +8581,6 @@
             </div>
         </div>
 
-        <!-- Flow v2 — Memory Check -->
-        <div id="screen-mc" class="screen">
-            <div class="card mc-shell">
-                <div class="mc-topline">
-                    <div>
-                        <div class="caption">Flashcards · Memory Check</div>
-                        <h2 class="mc-title">Memory Check</h2>
-                    </div>
-                    <span class="pill" id="mc-score-pill">0%</span>
-                </div>
-                <div class="feature-grid mc-feature-grid" id="mc-item-list"></div>
-                <div class="mc-feedback" id="mc-feedback" aria-live="polite"></div>
-                <div class="mc-actions">
-                    <button type="button" class="btn-blue" id="mc-submit">Tekshirish</button>
-                    <button type="button" class="btn-white-outline" id="mc-review" style="display:none;">Flashcardsga qaytish</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Stage 4 — Final -->
         <div id="screen-final" class="screen">
             <div class="card final-card">
@@ -11020,8 +10869,6 @@
             }
         ];
 
-        const MC = {};
-
         let state = {
             stage: 0,
             panelIndex: 0,
@@ -11029,7 +10876,6 @@
             cardIndex: 0,
             cardFlipped: false,
             hintShown: false,
-            mc: { passed: false, scorePct: 0, weakRefs: [], retake: 0 },
             isAnimating: false,
             // Bug #6: in-flight flashcard horizontal-switch guard. switchCard
             // sets this to true on entry and clears it after the transition
@@ -11052,10 +10898,6 @@
             document.querySelectorAll('.ms-option-btn').forEach((b, i) => {
                 b.addEventListener('click', () => msHandleAnswer(i));
             });
-            const mcSubmit = document.getElementById('mc-submit');
-            if (mcSubmit) mcSubmit.addEventListener('click', mcSubmitAnswers);
-            const mcReview = document.getElementById('mc-review');
-            if (mcReview) mcReview.addEventListener('click', mcReturnToFlashcards);
 
             // UNIFIED POINTER SWIPE — touch + mouse, skip on long edge drag
             const SKIP_SHOW = 100;
@@ -11217,7 +11059,6 @@
             }
             else if (state.stage === 2.5 && btn.classList.contains('state-pill')) startStage3();
             else if (state.stage === 3) endStage3();
-            else if (state.stage === 3.8) mcSubmitAnswers();
             else if (state.stage === 3.5 && btn.classList.contains('state-pill')) {
                 const breakScreen = document.getElementById('screen-break');
                 if (breakScreen) breakScreen.classList.remove('active');
@@ -11276,8 +11117,7 @@
             //   7.7+    (reflection / done)     → preview (open Q&A)
             try {
                 let phaseName = 'preview';
-                if (n === 3.8) phaseName = 'memory_check';
-                else if (n >= 7 && n < 7.7) phaseName = 'boss';
+                if (n >= 7 && n < 7.7) phaseName = 'boss';
                 else if (n > 2 && n < 7) phaseName = 'practice';
                 else phaseName = 'preview';
                 document.dispatchEvent(new CustomEvent('nets:phase-change', {
@@ -11321,7 +11161,7 @@
         const _phaseIdByStage = {
             0: null, 1: 'preview', 2: 'preview',
             2.5: 'flashcards', 3: 'flashcards',
-            3.5: 'sprint', 3.8: 'sprint', 4: 'sprint', 4.5: 'sprint',
+            3.5: 'sprint', 4: 'sprint', 4.5: 'sprint',
             4.7: 'gameBreaks', 5: 'gameBreaks',
             6: 'realLife',
             6.5: 'boss', 7: 'boss',
@@ -11483,7 +11323,6 @@
             if (s === 2)   { showBreakScreen(); return; }
             if (s === 2.5) { startStage3(); return; }
             if (s === 3)   { endStage3(); return; }
-            if (s === 3.8) { mcSubmitAnswers(); return; }
             if (s === 4)   { msState.isAnimating = false; msFinishSprint(); return; }
             if (s === 4.5) {
                 const screenMs = document.getElementById('screen-ms');
@@ -11971,21 +11810,6 @@
             // Apply cluster dot color to the inner wrapper (cascades to both faces).
             const fcInner = document.getElementById('fc-inner');
             fcApplyClusterDot(card.cluster, fcInner);
-            const isWeakReview = mcIsWeakCard(card, state.cardIndex);
-            fcInner.classList.toggle('is-weak-review', isWeakReview);
-            ['fc-front', 'fc-back'].forEach(faceId => {
-                const face = document.getElementById(faceId);
-                if (!face) return;
-                const existing = face.querySelector('.fc-weak-chip');
-                if (existing) existing.remove();
-                const top = face.querySelector('.fc-top');
-                if (isWeakReview && top) {
-                    const chip = document.createElement('span');
-                    chip.className = 'pill--dark fc-weak-chip';
-                    chip.textContent = 'Weak — review';
-                    top.appendChild(chip);
-                }
-            });
 
             // Photo zone — shows ONLY structured card.front.media. Inline images
             // embedded in term_html stay inside the strip-term (sized small).
@@ -12316,17 +12140,6 @@
 
         function endStage3() {
             if (state.isAnimating) return;
-            if (mcHasItems()) {
-                const fcTotal = Array.isArray(FLASHCARDS) ? FLASHCARDS.length : 0;
-                const seenTotal = state.flashcardsSeen && state.flashcardsSeen.size ? state.flashcardsSeen.size : 0;
-                if (fcTotal > 0 && seenTotal < fcTotal) {
-                    state.isAnimating = false;
-                    setBtnText('Hamma kartalarni ko\'ring');
-                    return;
-                }
-                startMemoryCheckPhase();
-                return;
-            }
             state.isAnimating = true;
             // Flashcards phase done — student finished or chose Yakunlash.
             completePhase('flashcards');
@@ -12353,220 +12166,6 @@
                     state.isAnimating = false;
                 }, 1500);
             }, 450);
-        }
-
-        function mcHasItems() {
-            return !!(typeof MC !== 'undefined' && MC && Array.isArray(MC.items) && MC.items.length);
-        }
-
-        function mcNormalize(value) {
-            return String(value == null ? '' : value)
-                .trim()
-                .toLocaleLowerCase()
-                .replace(/\s+/g, ' ');
-        }
-
-        function mcExpectedAnswers(item) {
-            const spec = (item && item.answer_spec) || {};
-            const out = [];
-            const add = (v) => {
-                if (Array.isArray(v)) v.forEach(add);
-                else if (v !== undefined && v !== null && String(v).trim()) out.push(String(v));
-            };
-            add(spec.expected);
-            add(spec.accepted_answers);
-            add(item && item.accepted_answers);
-            if (typeof spec.option_index === 'number' && Array.isArray(item.options)) {
-                add(item.options[spec.option_index]);
-            }
-            return Array.from(new Set(out.map(mcNormalize))).filter(Boolean);
-        }
-
-        function mcFlashcardKey(card, index) {
-            const front = (card && card.front) || {};
-            return [
-                card && card.id,
-                card && card.flashcard_id,
-                front.id,
-                front.term,
-                front.term_html,
-                String(index),
-                String(index + 1)
-            ].map(v => mcNormalize(v)).filter(Boolean);
-        }
-
-        function mcIsWeakCard(card, index) {
-            const weak = (state.mc && Array.isArray(state.mc.weakRefs)) ? state.mc.weakRefs.map(mcNormalize) : [];
-            if (!weak.length) return false;
-            return mcFlashcardKey(card, index).some(k => weak.includes(k));
-        }
-
-        function mcShuffledItems() {
-            const items = (MC.items || []).map((item, index) => ({ item, index }));
-            for (let i = items.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const tmp = items[i];
-                items[i] = items[j];
-                items[j] = tmp;
-            }
-            return items;
-        }
-
-        function mcTypeLabel(type) {
-            if (type === 'fill_blank') return 'Fill';
-            if (type === 'choose_explanation') return 'Choose';
-            return 'MCQ';
-        }
-
-        function startMemoryCheckPhase() {
-            state.isAnimating = false;
-            state.mc = state.mc || { passed: false, scorePct: 0, weakRefs: [], retake: 0 };
-            state.mc.answers = {};
-            state.mc.items = mcShuffledItems();
-            document.getElementById('screen-3').classList.remove('active');
-            document.getElementById('screen-break').classList.remove('active');
-            document.getElementById('screen-mc').classList.add('active');
-            setStage(3.8);
-            mcRenderItems();
-            btn.classList.remove('pulse', 'state-pill');
-            btn.classList.add('state-line');
-            if (btnText) btnText.style.opacity = '0';
-        }
-
-        function mcRenderItems() {
-            const list = document.getElementById('mc-item-list');
-            const feedback = document.getElementById('mc-feedback');
-            const review = document.getElementById('mc-review');
-            const score = document.getElementById('mc-score-pill');
-            if (!list) return;
-            list.innerHTML = '';
-            if (feedback) {
-                feedback.textContent = '';
-                feedback.classList.remove('is-pass', 'is-fail');
-            }
-            if (review) review.style.display = 'none';
-            if (score) score.textContent = (state.mc.scorePct || 0) + '%';
-            (state.mc.items || []).forEach(({ item, index }, order) => {
-                const card = document.createElement('article');
-                card.className = 'feature-card mc-card';
-                card.dataset.mcIndex = String(index);
-                const tag = document.createElement('span');
-                tag.className = 'pill';
-                tag.textContent = mcTypeLabel(item.type);
-                const prompt = document.createElement('div');
-                prompt.className = 'mc-prompt';
-                prompt.textContent = item.prompt || '';
-                card.appendChild(tag);
-                card.appendChild(prompt);
-                if (item.type === 'fill_blank') {
-                    const input = document.createElement('input');
-                    input.className = 'mc-input';
-                    input.type = 'text';
-                    input.autocomplete = 'off';
-                    input.placeholder = 'Javobni yozing';
-                    input.addEventListener('input', () => {
-                        state.mc.answers[index] = input.value;
-                    });
-                    card.appendChild(input);
-                } else {
-                    const opts = Array.isArray(item.options) ? item.options : [];
-                    opts.forEach((opt, optIndex) => {
-                        const b = document.createElement('button');
-                        b.type = 'button';
-                        b.className = 'mc-option';
-                        b.textContent = opt;
-                        b.addEventListener('click', () => {
-                            card.querySelectorAll('.mc-option').forEach(o => o.classList.remove('is-selected'));
-                            b.classList.add('is-selected');
-                            state.mc.answers[index] = opt;
-                            state.mc.answerIndexes = state.mc.answerIndexes || {};
-                            state.mc.answerIndexes[index] = optIndex;
-                        });
-                        card.appendChild(b);
-                    });
-                }
-                list.appendChild(card);
-            });
-        }
-
-        function mcItemCorrect(item, index) {
-            const spec = (item && item.answer_spec) || {};
-            const answer = state.mc.answers ? state.mc.answers[index] : '';
-            if (typeof spec.option_index === 'number' && state.mc.answerIndexes && index in state.mc.answerIndexes) {
-                return state.mc.answerIndexes[index] === spec.option_index;
-            }
-            const expected = mcExpectedAnswers(item);
-            return expected.includes(mcNormalize(answer));
-        }
-
-        function mcSubmitAnswers() {
-            if (!mcHasItems() || state.stage !== 3.8) return;
-            const total = (state.mc.items || []).length;
-            if (!total) return;
-            let correct = 0;
-            const weakRefs = [];
-            (state.mc.items || []).forEach(({ item, index }) => {
-                const ok = mcItemCorrect(item, index);
-                const cardEl = document.querySelector(`[data-mc-index="${index}"]`);
-                if (cardEl) {
-                    cardEl.classList.toggle('is-correct', ok);
-                    cardEl.classList.toggle('is-wrong', !ok);
-                }
-                if (ok) correct += 1;
-                else weakRefs.push(item.flashcard_ref || String(index));
-            });
-            const pct = Math.round((correct / total) * 100);
-            const threshold = parseInt(MC.pass_threshold_pct, 10) || 60;
-            state.mc.scorePct = pct;
-            state.mc.passed = pct >= threshold;
-            state.mc.weakRefs = weakRefs;
-            const score = document.getElementById('mc-score-pill');
-            if (score) score.textContent = pct + '%';
-            const feedback = document.getElementById('mc-feedback');
-            if (feedback) {
-                feedback.classList.toggle('is-pass', state.mc.passed);
-                feedback.classList.toggle('is-fail', !state.mc.passed);
-                feedback.textContent = state.mc.passed
-                    ? `O'tdingiz: ${pct}%. Practice Arc ochilishi mumkin.`
-                    : `Hali emas: ${pct}%. Weak kartalarni ko'rib, yangi variant bilan qayta urinib ko'ring.`;
-            }
-            if (state.mc.passed) {
-                completePhase('flashcards');
-                document.getElementById('screen-mc').classList.remove('active');
-                renderBreakQuote(2);
-                document.getElementById('screen-break').classList.add('active');
-                setStage(3.5);
-                btn.classList.remove('state-line');
-                btn.classList.add('state-pill');
-                setBtnText(RT('btn.next'));
-                btn.classList.add('pulse');
-            } else {
-                const review = document.getElementById('mc-review');
-                if (review) review.style.display = '';
-            }
-        }
-
-        function mcReturnToFlashcards() {
-            state.mc = state.mc || {};
-            state.mc.retake = (state.mc.retake || 0) + 1;
-            document.getElementById('screen-mc').classList.remove('active');
-            state.cardIndex = mcFirstWeakCardIndex();
-            state.cardFlipped = false;
-            state.hintShown = false;
-            setStage(3);
-            renderFlashcard(state.cardIndex >= FLASHCARDS.length - 1);
-            document.getElementById('screen-3').classList.add('active');
-            setBtnText('Memory Check');
-            btn.classList.remove('state-line');
-            btn.classList.add('state-pill');
-            btn.classList.add('pulse');
-        }
-
-        function mcFirstWeakCardIndex() {
-            for (let i = 0; i < FLASHCARDS.length; i++) {
-                if (mcIsWeakCard(FLASHCARDS[i], i)) return i;
-            }
-            return 0;
         }
 
         const MS_QUESTIONS = [

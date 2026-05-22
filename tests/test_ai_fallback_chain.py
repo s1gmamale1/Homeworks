@@ -31,15 +31,39 @@ from server.services.ai_providers import _REGISTRY, register
 class _FakeProvider:
     """Minimal AIProvider stub. `is_available()` is True; `generate_json`
     behaviour is set per-test by assigning to `.generate_json` directly.
+
+    Optional ``pro_model_name`` / ``fast_model_name`` ctor args expose the
+    tier-mode interface; tier tests rely on each fake provider returning a
+    DIFFERENT model name so a cross-provider walk verifies the model swap.
     """
 
-    def __init__(self, name: str):
+    def __init__(
+        self,
+        name: str,
+        *,
+        pro_model_name: str = "fake-pro",
+        fast_model_name: str = "fake-fast",
+    ):
         self._name = name
+        self._pro_model = pro_model_name
+        self._fast_model = fast_model_name
         self.calls: list[str] = []
+        # Each provider also records the MODEL string it was called with, so
+        # tier-mode tests can assert each provider got its OWN model name
+        # rather than the previous provider's leftover string.
+        self.models_received: list[str] = []
 
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def pro_model(self) -> str:
+        return self._pro_model
+
+    @property
+    def fast_model(self) -> str:
+        return self._fast_model
 
     def is_available(self) -> bool:
         return True
@@ -48,6 +72,7 @@ class _FakeProvider:
         # Default: track call + return a stub envelope. Tests can replace
         # this method per-instance to simulate failure.
         self.calls.append(prompt[:32])
+        self.models_received.append(model)
         return {
             "text": f"reply from {self._name}",
             "raw": {},
@@ -290,3 +315,118 @@ def test_tutor_chat_returns_scrubbed_500_when_whole_chain_fails(
     assert detail["code"] == "TUTOR_BACKEND_ERROR"
     # The scrubbed message reaches the browser; the raw error stays in logs.
     assert "everything is on fire" not in detail["error"]
+
+
+# ---------------------------------------------------------------------------
+# 9. Tier-mode resolves model PER PROVIDER during the walk
+#
+# Regression for the cross-provider model bug surfaced by the GPT-integration
+# stress test (2026-05-13). Pre-fix: orchestrator captured ONE model string
+# up front and reused it across every provider it tried, so an
+# `openai → kimi` fallback chain would send `gpt-4o-mini` to Moonshot and
+# get a 400 "unknown model" instead of cleanly falling over.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def two_provider_chain(monkeypatch):
+    """openai + kimi fakes with DIFFERENT pro/fast model names so tests can
+    assert each provider was called with its own model string, not the
+    other's."""
+    snapshot = dict(_REGISTRY)
+    fakes = {
+        "openai": _FakeProvider(
+            "openai",
+            pro_model_name="gpt-4o-mini",
+            fast_model_name="gpt-4o-mini",
+        ),
+        "kimi": _FakeProvider(
+            "kimi",
+            pro_model_name="moonshot-v1-128k",
+            fast_model_name="moonshot-v1-32k",
+        ),
+    }
+    for name, provider in fakes.items():
+        _REGISTRY[name] = provider
+    monkeypatch.setenv("AI_BACKEND_PREFERENCE", "kimi")  # global default
+    yield fakes
+    _REGISTRY.clear()
+    _REGISTRY.update(snapshot)
+
+
+def test_tier_mode_picks_each_providers_own_pro_model(two_provider_chain):
+    """When tier="pro" is passed, the orchestrator must ask EACH provider
+    for its own pro_model — never reuse the previous provider's model."""
+
+    async def _run():
+        return await ai_orchestrator.generate(
+            "hello",
+            tier="pro",
+            preference_override=["openai", "kimi"],
+        )
+
+    text = asyncio.run(_run())
+    assert text == "reply from openai"
+    # openai got called with its own pro model
+    assert two_provider_chain["openai"].models_received == ["gpt-4o-mini"]
+    # kimi never touched (openai succeeded)
+    assert two_provider_chain["kimi"].calls == []
+
+
+def test_tier_mode_swaps_model_on_cross_provider_fallback(two_provider_chain):
+    """THE critical regression — openai fails, fallback walks to kimi, and
+    kimi must receive moonshot-v1-128k (its own model), NOT gpt-4o-mini
+    inherited from openai's request. Without per-provider resolution this
+    would 400 on Kimi."""
+
+    async def _openai_5xx(prompt, model, **kw):
+        raise RuntimeError("OpenAI 503 Service Unavailable")
+
+    two_provider_chain["openai"].generate_json = _openai_5xx
+
+    async def _run():
+        return await ai_orchestrator.generate(
+            "hello",
+            tier="pro",
+            preference_override=["openai", "kimi"],
+        )
+
+    text = asyncio.run(_run())
+    assert text == "reply from kimi"
+    # The actual proof: kimi got its OWN model name, not openai's.
+    assert two_provider_chain["kimi"].models_received == ["moonshot-v1-128k"], (
+        "Cross-provider fallback must pass each provider its own model. "
+        "Pre-fix bug: kimi received gpt-4o-mini and 400'd."
+    )
+
+
+def test_tier_mode_uses_fast_model_when_tier_fast(two_provider_chain):
+    """`tier='fast'` walks fast_model on each provider, not pro_model."""
+
+    async def _run():
+        return await ai_orchestrator.generate(
+            "hello",
+            tier="fast",
+            preference_override=["kimi"],
+        )
+
+    text = asyncio.run(_run())
+    assert text == "reply from kimi"
+    assert two_provider_chain["kimi"].models_received == ["moonshot-v1-32k"]
+
+
+def test_legacy_model_kwarg_still_works_without_tier(two_provider_chain):
+    """Backward-compat — callers that pass explicit `model=` keep working
+    (the orchestrator skips tier resolution entirely)."""
+
+    async def _run():
+        return await ai_orchestrator.generate(
+            "hello",
+            model="legacy-explicit-model",
+            preference_override=["kimi"],
+        )
+
+    text = asyncio.run(_run())
+    assert text == "reply from kimi"
+    # The model passed via kwarg was used verbatim (no tier resolution).
+    assert two_provider_chain["kimi"].models_received == ["legacy-explicit-model"]

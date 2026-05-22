@@ -51,6 +51,9 @@ _ROUTER_PREFIXES: dict[str, str] = {
     "meta.py":          "/api",
     "notebook.py":      "/api/notebook",
     "taskboard.py":     "/api/taskboard",
+    "runtime.py":       "/api",
+    "reflection.py":    "/api",
+    "integrity.py":     "/api",
 }
 
 _DECORATOR_RE = re.compile(

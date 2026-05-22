@@ -1,0 +1,630 @@
+/* =========================================================================
+   Tic-Tac-Toe Quiz — Ttt.module.css
+   Apple design system · GAME-PURPLE accent.
+
+   Canonical card recipe from LearningHub.module.css (.node / .accentGame):
+   · white solid surface (#ffffff), ~18-20px radius
+   · soft diffusion shadow: 0 4px 24px rgba(0,0,0,.04)
+   · 1px border rgba(0,0,0,.05) — no heavy outlines
+   · --grad-game top accent bar (4px) + corner glow (--c-purple tint)
+   · --ink titles · --text-secondary muted · --landing-spring everywhere
+   · hover: scale(1.03) + translateY(-4px)
+   · prefers-reduced-motion honored throughout
+   ========================================================================= */
+
+/* ---- ambient purple glow blobs (pointer-events none, GPU only) ---- */
+.wrap {
+  position: relative;
+  isolation: isolate;
+  animation: fadeIn 320ms var(--landing-spring) both;
+}
+
+/* Purple glow — top-left */
+.wrap::before {
+  content: "";
+  position: absolute;
+  left: -80px;
+  top: -60px;
+  width: 340px;
+  height: 340px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(138, 95, 200, 0.18) 0%, transparent 65%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  animation: auraLeft 14s ease-in-out infinite alternate;
+}
+
+/* Soft purple glow — top-right */
+.wrap::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  top: -40px;
+  width: 300px;
+  height: 300px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(179, 136, 235, 0.14) 0%, transparent 65%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  animation: auraRight 18s ease-in-out 1s infinite alternate-reverse;
+}
+
+@keyframes auraLeft {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(4%, 3%, 0) scale(1.1); }
+}
+@keyframes auraRight {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-3%, 4%, 0) scale(1.08); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- header ---- */
+.head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.progress {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.instruction {
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+/* ---- 3x3 board container — Apple white card with game-purple accent ---- */
+.boardWrap {
+  position: relative;
+  z-index: 1;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  /* draw-in */
+  animation: hubNodeIn 640ms var(--landing-spring) 80ms both;
+  transition: transform 320ms var(--landing-spring), box-shadow 320ms var(--landing-spring);
+}
+
+/* game-purple accent bar — top of the board card */
+.boardWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow (matching LearningHub .cardGlow) */
+.boardWrap::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.26);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.boardWrap:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.1);
+}
+
+.board {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* ---- cells — solid white Apple tiles ---- */
+.cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 220ms var(--landing-spring),
+    border-color 220ms var(--landing-spring),
+    background 220ms var(--landing-spring),
+    box-shadow 220ms var(--landing-spring);
+  will-change: transform;
+}
+
+.cellEmpty:not(:disabled):hover {
+  transform: translateY(-4px) scale(1.03);
+  border-color: var(--c-purple, #8a5fc8);
+  background: #faf8ff;
+  box-shadow:
+    0 8px 24px rgba(138, 95, 200, 0.14),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+/* Press feedback */
+.cellEmpty:not(:disabled):active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+/* X cell — subtle purple tint (player) */
+.cellX {
+  background: rgba(138, 95, 200, 0.07);
+  border-color: rgba(138, 95, 200, 0.28);
+  box-shadow: 0 2px 12px rgba(138, 95, 200, 0.10);
+  cursor: default;
+}
+
+/* O cell — neutral warm tint (opponent) */
+.cellO {
+  background: rgba(134, 134, 139, 0.07);
+  border-color: rgba(134, 134, 139, 0.22);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  cursor: default;
+}
+
+/* Win cells — purple celebration */
+.cellWin {
+  background: rgba(138, 95, 200, 0.13);
+  border-color: rgba(138, 95, 200, 0.42);
+  box-shadow:
+    0 2px 16px rgba(138, 95, 200, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: winPulse 540ms var(--landing-spring) both;
+}
+
+@keyframes winPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Markers */
+.markerX {
+  color: var(--c-purple, #8a5fc8);
+  line-height: 1;
+  text-shadow: 0 1px 6px rgba(138, 95, 200, 0.28);
+}
+
+.markerO {
+  color: var(--text-secondary, #86868b);
+  line-height: 1;
+}
+
+/* ---- round result banner — Apple white card ---- */
+.roundBanner {
+  position: relative;
+  z-index: 1;
+  margin-top: 20px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  animation: fadeIn 320ms var(--landing-spring) both;
+  overflow: hidden;
+}
+
+/* game-purple accent bar */
+.roundBanner::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ---- session done — Apple white card ---- */
+.doneCard {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+  padding: 28px 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: hubNodeIn 640ms var(--landing-spring) both;
+  overflow: hidden;
+}
+
+/* game-purple accent bar */
+.doneCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow */
+.doneCard::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.22);
+  filter: blur(50px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.doneCard > * { position: relative; z-index: 1; }
+
+.stats {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* stat rows — solid white sub-cards */
+.statRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 220ms var(--landing-spring), background 220ms var(--landing-spring);
+}
+
+.statRow:hover {
+  transform: translateX(4px);
+  background: #eef0f3;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  color: var(--c-purple, #8a5fc8);
+}
+
+.statVal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink, #1d1d1f);
+}
+
+/* ---- shared actions row ---- */
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ---- error ---- */
+.error {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.85);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+}
+
+/* =========================================================================
+   Question modal — Apple white card, game-purple accent
+   ========================================================================= */
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  /* Subtle luminous backdrop — light Apple palette */
+  background: rgba(245, 245, 247, 0.55);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  animation: backdropIn 220ms var(--landing-spring) both;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  /* Apple white card */
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 20px 70px rgba(15, 23, 42, 0.12);
+  padding: 28px 24px 24px;
+  display: grid;
+  gap: 16px;
+  animation: modalIn 320ms var(--landing-spring) both;
+  overflow: hidden;
+}
+
+/* game-purple accent bar */
+.modal::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow inside modal */
+.modal::after {
+  content: "";
+  position: absolute;
+  right: -56px;
+  top: -56px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.22);
+  filter: blur(48px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.modal > * { position: relative; z-index: 1; }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.93) translateY(14px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modalHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f5f5f7;
+  color: var(--text-secondary, #86868b);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 160ms var(--landing-spring),
+    border-color 160ms var(--landing-spring),
+    color 160ms var(--landing-spring),
+    transform 160ms var(--landing-spring);
+}
+.closeBtn:hover {
+  background: #eee8f8;
+  border-color: var(--c-purple, #8a5fc8);
+  color: var(--ink, #1d1d1f);
+  transform: scale(1.08);
+}
+.closeBtn:active {
+  transform: scale(0.94);
+}
+
+.question {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink, #1d1d1f);
+  margin: 0;
+}
+
+/* ---- answer options — solid white sub-cards ---- */
+.options {
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #f5f5f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink, #1d1d1f);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 180ms var(--landing-spring),
+    border-color 180ms var(--landing-spring),
+    background 180ms var(--landing-spring),
+    box-shadow 180ms var(--landing-spring);
+}
+
+.option:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.015);
+  border-color: var(--c-purple, #8a5fc8);
+  background: #faf8ff;
+  box-shadow:
+    0 8px 24px rgba(138, 95, 200, 0.10),
+    0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.option:not(:disabled):active {
+  transform: scale(0.98) translateY(-1px);
+  transition-duration: 80ms;
+}
+
+/* Selected option — purple accent */
+.optionSelected {
+  border-color: var(--c-purple, #8a5fc8);
+  background: rgba(138, 95, 200, 0.07);
+  box-shadow:
+    0 0 0 3px rgba(138, 95, 200, 0.12),
+    0 1px 4px rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+}
+
+/* ---- modal action row ---- */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ---- verdict section ---- */
+.verdictWrap {
+  display: grid;
+  gap: 12px;
+}
+
+.verdictText {
+  font-size: 15px;
+  color: var(--text-secondary, #86868b);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* =========================================================================
+   Keyframes shared
+   ========================================================================= */
+
+@keyframes hubNodeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+
+@media (max-width: 480px) {
+  .boardWrap {
+    padding: 16px;
+    border-radius: 18px;
+  }
+  .board {
+    gap: 8px;
+  }
+  .cell {
+    border-radius: 14px;
+    font-size: 22px;
+  }
+  .modal {
+    padding: 22px 18px 18px;
+    border-radius: 18px;
+  }
+  .question {
+    font-size: 15px;
+  }
+  .option {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  .doneCard {
+    padding: 22px 18px;
+  }
+}
+
+/* =========================================================================
+   prefers-reduced-motion
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap::before,
+  .wrap::after,
+  .modal::after,
+  .doneCard::after,
+  .boardWrap::after {
+    animation: none;
+  }
+  .wrap,
+  .roundBanner,
+  .doneCard,
+  .modalBackdrop,
+  .modal,
+  .boardWrap {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .cell,
+  .cellEmpty:not(:disabled):hover,
+  .option:not(:disabled):hover,
+  .optionSelected,
+  .statRow:hover,
+  .closeBtn:hover,
+  .boardWrap:hover {
+    transform: none;
+    transition: none;
+  }
+  .cellWin {
+    animation: none;
+  }
+}

@@ -32,6 +32,21 @@ import server.routes.ai as _ai_routes
 # ---------------------------------------------------------------------------
 
 
+async def _always_unlocked(*a, **k):
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _unlock_practice_arc(monkeypatch):
+    """Final Boss is a practice-arc game, so the grader now enforces the
+    server-side unlock check (BLOCKER #3) before grading. These are grading
+    unit tests, not gating tests, so make the unlock check always pass and let
+    the grader run. The gate itself is pinned by
+    tests/test_practice_gate_server_enforced.py. Patches the symbol as imported
+    into ai.py."""
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
+
 @pytest.fixture(autouse=True)
 def _wipe_fb_attempts():
     """Reset the in-memory FB attempt tracker between tests."""

@@ -74,7 +74,6 @@ _ARRAY_CONSTANTS = [
 # Mapping: content_json key -> JS constant name in template, for OBJECT (non-array) constants.
 # Wave 2: reading/consolidation/reflection are objects, like RL_SCENARIO.
 _OBJECT_CONSTANTS = [
-    ("memory_check",  "MC"),
     ("reading",       "READING"),
     ("consolidation", "CONSOLIDATION"),
     ("reflection",    "REFLECTION"),
@@ -96,23 +95,21 @@ def _safe_js_json(value) -> str:
     )
 
 
-# Fields the client should NEVER see for tile-match items.
-# `explanation` is premium server-only; it travels only in the check-answer
-# endpoint response (Chunk B), never in the injected JS global.
-_TM_SERVER_ONLY = {"explanation"}
+# Per-game server-only field sets now live in redaction_constants.py so the
+# injector (legacy HTML runtime) and runtime_redactor.py (React hydration API)
+# share ONE source of truth and cannot drift. Imported as sets for the existing
+# in-place `.discard()` / membership usage below.
+from .redaction_constants import (  # noqa: E402
+    TM_SERVER_ONLY as _TM_SERVER_ONLY_FZ,
+    SF_SERVER_ONLY as _SF_SERVER_ONLY_FZ,
+    RLC_SERVER_ONLY as _RLC_SERVER_ONLY_FZ,
+    BOSS_SERVER_ONLY as _BOSS_SERVER_ONLY_FZ,
+)
 
-# Fields the client should NEVER see for sentence-fill items.
-_SF_SERVER_ONLY = {"answers", "explanations"}
-
-# Fields the client should NEVER see for real-life-challenge items.
-# Stripped at every nesting level (options, concept_chips, steps).
-_RLC_SERVER_ONLY = {"is_correct", "consequence", "acceptable_keywords"}
-
-# Fields the client should NEVER see for boss questions.
-# Strips the full grading contract + legacy accepted-list aliases from every
-# question in BOSS_QUESTIONS so the client-side state machine cannot do
-# deterministic local matching (all grading flows through /api/ai/check-answer).
-_BOSS_SERVER_ONLY = {"accepted", "ans", "accepted_answers", "answer_spec"}
+_TM_SERVER_ONLY = set(_TM_SERVER_ONLY_FZ)
+_SF_SERVER_ONLY = set(_SF_SERVER_ONLY_FZ)
+_RLC_SERVER_ONLY = set(_RLC_SERVER_ONLY_FZ)
+_BOSS_SERVER_ONLY = set(_BOSS_SERVER_ONLY_FZ)
 
 # Transitional flag for legacy compatibility tests only.
 # Set to True ONLY for transitional legacy compatibility tests; default False closes

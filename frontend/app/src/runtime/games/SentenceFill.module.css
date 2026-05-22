@@ -1,0 +1,468 @@
+/* ============================================================
+   SentenceFill.module.css — Apple design system, language-green accent.
+   Card system mirrors LearningHub.module.css:
+   · #ffffff cards, ~18-20px radius, soft diffusion shadow, no heavy borders
+   · --grad-language (135deg #74aa9c→#4a8576) accent bar + corner glow
+   · --ink #1d1d1f for all body text, --text-secondary #86868b for labels
+   · --c-green #74aa9c for interactive green tints
+   · scale(1.03) hover, var(--landing-spring) everywhere
+   · prefers-reduced-motion honored
+   ============================================================ */
+
+/* ---- mount entrance ---- */
+.wrap {
+  position: relative;
+  isolation: isolate;
+  animation: sfIn 480ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+@keyframes sfIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ---- ambient glow — language-green tones, GPU-only, never on scroll containers ---- */
+.ambient {
+  position: absolute;
+  inset: -20% -10% auto -10%;
+  height: 55vh;
+  max-height: 480px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 80% at 18% 10%, rgba(116, 170, 156, 0.15) 0%, transparent 62%),
+    radial-gradient(50% 70% at 85% 8%,  rgba(74,  133, 118, 0.10) 0%, transparent 64%),
+    radial-gradient(45% 65% at 55% 28%, rgba(116, 170, 156, 0.07) 0%, transparent 66%);
+  filter: blur(56px);
+}
+
+/* All content layers above the ambient. */
+.head,
+.sub,
+.badges,
+.passage,
+.bankWrap,
+.explanations,
+.error,
+.done {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- header ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #86868b);
+}
+.sub {
+  margin-top: 6px;
+}
+
+/* ---- difficulty badges ---- */
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ================================================================
+   PASSAGE CARD — Apple white card, language-green accent system
+   ================================================================ */
+.passage {
+  position: relative;
+  margin-top: 24px;
+  padding: 28px 28px 26px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 1px 3px  rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 2.25;
+  color: var(--ink, #1d1d1f);
+  /* spring hover lift */
+  transition:
+    transform  320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* language-green 4px accent bar across the very top — mirrors LearningHub .cardAccent */
+.passage::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--grad-language, linear-gradient(135deg, #74aa9c, #4a8576));
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+
+/* language-green corner glow — mirrors LearningHub .cardGlow */
+.passage::before {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(116, 170, 156, 0.28);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.passage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- locked blank display ---- */
+.blankLocked {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 11px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 4px;
+  vertical-align: middle;
+  transition: background 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+.blankCorrect {
+  background: rgba(74, 133, 118, 0.10);
+  color: var(--c-green, #74aa9c);
+  border: 1px solid rgba(74, 133, 118, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.blankWrong {
+  background: rgba(201, 58, 58, 0.07);
+  color: var(--c-red, #c93a3a);
+  border: 1px solid rgba(201, 58, 58, 0.20);
+  text-decoration: line-through;
+  text-decoration-color: rgba(201, 58, 58, 0.40);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---- word-bank blank target (tap to focus) ---- */
+.blankTarget {
+  display: inline-flex;
+  align-items: center;
+  min-width: 72px;
+  padding: 3px 11px;
+  margin: 0 4px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.80);
+  border: 1.5px dashed rgba(116, 170, 156, 0.55);
+  color: var(--text-secondary, #86868b);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  vertical-align: middle;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    border-color 180ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background   180ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow   180ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    transform    180ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+.blankTarget:not(:disabled):hover {
+  border-color: var(--c-green, #74aa9c);
+  background: rgba(255, 255, 255, 0.96);
+  transform: translateY(-1px) scale(1.03);
+}
+.blankTargetFocused {
+  border-style: solid;
+  border-color: var(--c-green, #74aa9c);
+  background: rgba(116, 170, 156, 0.07);
+  box-shadow: 0 0 0 3.5px rgba(116, 170, 156, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.blankPlaceholder {
+  color: var(--text-secondary, #86868b);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* ---- free-recall input ---- */
+.inputWrap {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 4px;
+  vertical-align: middle;
+  position: relative;
+}
+.blankInput {
+  min-width: 88px;
+  max-width: 164px;
+  padding: 3px 11px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid rgba(116, 170, 156, 0.40);
+  color: var(--ink, #1d1d1f);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    border-color 180ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow   180ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+.blankInput:focus {
+  border-color: var(--c-green, #74aa9c);
+  background: #ffffff;
+  box-shadow: 0 0 0 3.5px rgba(116, 170, 156, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+.submitMini {
+  position: absolute;
+  right: -30px;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: var(--c-green, #74aa9c);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  opacity: 0.90;
+  box-shadow: 0 2px 8px rgba(74, 133, 118, 0.30);
+  transition: opacity 150ms ease, transform 150ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+.submitMini:hover {
+  opacity: 1;
+  transform: translateY(-1px) scale(1.06);
+}
+.submitMini:active {
+  transform: scale(0.97);
+}
+
+/* ---- flash states (correct / wrong) ---- */
+.blankFlashCorrect {
+  animation: flashCorrect 560ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+.blankFlashWrong {
+  animation: flashWrong 560ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+@keyframes flashCorrect {
+  0%   { box-shadow: 0 0 0 0   rgba(116, 170, 156, 0); }
+  28%  { box-shadow: 0 0 0 7px rgba(116, 170, 156, 0.32); background: rgba(116, 170, 156, 0.12); }
+  100% { box-shadow: 0 0 0 0   rgba(116, 170, 156, 0); }
+}
+@keyframes flashWrong {
+  0%   { transform: translateX(0);   }
+  18%  { transform: translateX(-6px);}
+  38%  { transform: translateX(5px); }
+  58%  { transform: translateX(-3px);}
+  78%  { transform: translateX(3px); }
+  100% { transform: translateX(0);   }
+}
+
+/* ---- submitting state ---- */
+.blankSubmitting {
+  opacity: 0.52;
+  cursor: wait;
+}
+
+/* ================================================================
+   WORD-BANK TRAY — Apple white card, language-green accent system
+   ================================================================ */
+.bankWrap {
+  position: relative;
+  margin-top: 20px;
+  padding: 20px 22px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 1px 3px  rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition:
+    transform  320ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(.16,1,.3,1));
+}
+
+/* language-green corner glow — bottom-left to contrast passage card */
+.bankWrap::before {
+  content: "";
+  position: absolute;
+  left: -48px;
+  bottom: -48px;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: rgba(116, 170, 156, 0.22);
+  filter: blur(40px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.bankLabel {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  /* language-green accent — mirrors LearningHub divisionLabel */
+  color: var(--c-green, #74aa9c);
+  margin-bottom: 12px;
+}
+.chips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---- word-bank chips ---- */
+.chip {
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1.5px solid rgba(0, 0, 0, 0.07);
+  color: var(--ink, #1d1d1f);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 4px rgba(0, 0, 0, 0.04);
+  transition:
+    transform    200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    border-color 200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    background   200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    box-shadow   200ms var(--landing-spring, cubic-bezier(.16,1,.3,1)),
+    opacity      180ms ease;
+}
+
+/* available chip — language-green accent on hover */
+.chipAvailable:not(:disabled) {
+  border-color: rgba(116, 170, 156, 0.45);
+}
+.chipAvailable:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: var(--c-green, #74aa9c);
+  background: #ffffff;
+  box-shadow:
+    0 8px 24px rgba(116, 170, 156, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+.chipAvailable:not(:disabled):active {
+  transform: translateY(-1px) scale(0.98);
+}
+.chipUsed {
+  opacity: 0.34;
+  cursor: default;
+  text-decoration: line-through;
+  text-decoration-color: rgba(134, 134, 139, 0.45);
+}
+.chip:disabled:not(.chipUsed) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---- explanation panel ---- */
+.explanations {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+  animation: sfIn 300ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+.explanationRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: rgba(116, 170, 156, 0.07);
+  border: 1px solid rgba(116, 170, 156, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.explanationText {
+  font-size: 14px;
+  color: var(--text-secondary, #86868b);
+  line-height: 1.55;
+}
+
+/* ---- error ---- */
+.error {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70);
+}
+
+/* ---- complete screen ---- */
+.done {
+  display: grid;
+  gap: 12px;
+  padding: 12px 0;
+  animation: sfIn 380ms var(--landing-spring, cubic-bezier(.16,1,.3,1)) both;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 560px) {
+  .passage {
+    font-size: 15px;
+    padding: 22px 16px 18px;
+    line-height: 2;
+    border-radius: 18px;
+  }
+  .bankWrap {
+    padding: 14px 14px;
+    border-radius: 16px;
+  }
+  .blankInput {
+    min-width: 64px;
+    font-size: 14px;
+  }
+  .blankTarget {
+    min-width: 56px;
+    font-size: 14px;
+  }
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .done,
+  .explanations {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .blankFlashCorrect,
+  .blankFlashWrong {
+    animation: none;
+  }
+  .chip:not(:disabled):hover,
+  .blankTarget:not(:disabled):hover,
+  .submitMini:hover {
+    transform: none;
+  }
+}

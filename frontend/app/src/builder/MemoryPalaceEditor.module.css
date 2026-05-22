@@ -1,0 +1,190 @@
+/* Memory Palace editor — extends the v2 builder token language (see
+   fields.module.css + editors.module.css). The .editor / .subItem / .help /
+   .empty primitives come from editors.module.css; this module adds the
+   palace-specific bits: the station route list, the field grid, the config
+   grid, the grade-band block, and the reverse-recall toggle. */
+
+/* Responsive field grid — Grid (not flex-math) so it collapses cleanly on
+   narrow builder panels. */
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0 14px;
+}
+
+/* "Played first" / primary marker pill next to the first palace. */
+.tagPrimary {
+  margin-left: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 13%, transparent);
+  border-radius: 999px;
+  padding: 2px 9px;
+  vertical-align: middle;
+}
+
+/* Stable-id tag on a concept (matches TttEditor's .idTag idiom). */
+.idTag {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--v2-text-subtle);
+  background: var(--v2-card-tinted);
+  border: 1px solid var(--v2-ring);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+
+/* ---- Stations (the method-of-loci route) ---- */
+.stationBlock {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--v2-ring);
+}
+
+.stationHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.stationHeading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--v2-text-muted);
+}
+
+.stationCount {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--v2-text-muted);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.stationCountBad {
+  color: #b45309;
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+}
+
+/* A single station row: ordered index → fields → remove. */
+.station {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  background: var(--v2-card-tinted);
+}
+
+.stationIndex {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin-top: 22px; /* align with the first input, below its label */
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  border-radius: 999px;
+}
+
+.stationFields {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0 12px;
+}
+
+/* ---- Config + grade overrides ---- */
+.configGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 14px;
+}
+
+.gradeBlock {
+  margin: 4px 0 16px;
+  padding: 12px;
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  background: var(--v2-card-bg);
+}
+
+.gradeBlock .stationHeading {
+  margin-bottom: 10px;
+}
+
+/* ---- Reverse-recall toggle ---- */
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  background: var(--v2-card-bg);
+  cursor: pointer;
+}
+
+.checkbox {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--v2-accent);
+  cursor: pointer;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.toggleLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text);
+}
+
+.toggleHint {
+  font-size: 12px;
+  color: var(--v2-text-subtle);
+  line-height: 1.45;
+}
+
+/* Soft inline warning (mirrors TttEditor's .itemWarn amber tone). */
+.warn {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

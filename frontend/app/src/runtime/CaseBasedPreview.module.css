@@ -1,0 +1,677 @@
+/* Case-Based Preview — Apple design system, INTERACTION-BLUE accent.
+   Matches the owner-approved LearningHub recipe:
+     white cards · ~20px radius · soft diffusion shadow (no heavy borders)
+     4px --grad-interaction top-accent bar · faint corner glow
+     #1d1d1f ink titles · scale(1.03) hover · spring var(--landing-spring)
+     Onest font via global inherit · honors prefers-reduced-motion.
+
+   Palette tokens (from _tokens.css):
+     --grad-interaction: linear-gradient(135deg, #5e9ed6, #4677b8)
+     --c-blue: #5e9ed6 · --ink / --text: #1d1d1f
+     --text-secondary / --text-muted: #86868b
+     --landing-spring: cubic-bezier(.16, 1, .3, 1)
+   Restyle only — zero data/store/testid changes.                    */
+
+/* =====================================================================
+   FULL-BLEED IMMERSIVE SHELL
+   The CBP now spans the viewport (no 760px cap) so the living CbpBackdrop
+   fills the screen behind a centered content stage. Re-pins the §4
+   contrast tokens so a dark-OS visitor never washes out the ink.
+   ===================================================================== */
+.shell {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  width: 100%;
+  margin: 0;
+  padding-top: max(28px, env(safe-area-inset-top));
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  overflow-x: clip;
+
+  /* Pin theme-flipping tokens to LIGHT (the §4 rejection fix). */
+  --v2-text: #1d1d1f;
+  --v2-text-muted: #6e6e73;
+  --v2-text-subtle: #86868b;
+
+  background:
+    radial-gradient(120% 56% at 50% -6%, #ffffff 0%, transparent 56%),
+    radial-gradient(90% 40% at 50% 4%, rgba(94, 158, 214, 0.06) 0%, transparent 60%),
+    linear-gradient(180deg, #f5f9ff 0%, #e9f1fe 100%);
+}
+
+/* The centered content column — caps content width while the backdrop stays
+   full-bleed. Spring entrance per sub-stage; sits above the backdrop (z1). */
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  animation: stageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+}
+
+/* =====================================================================
+   LIVING BACKDROP (mirrors LearningHub's HubBackdrop)
+   Aurora wash + 5 candy blobs (idle-float + --bx/--by parallax) + a
+   pointer/touch color-trail canvas. All pointer-events:none at z0, GPU-only.
+   CBP uses the INTERACTION-BLUE family (the §3 category accent) instead of
+   the Hub's sky-blue. Numerics mirror the Hub backdrop CSS verbatim.
+   ===================================================================== */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;        /* clip blob bleed to the shell */
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  contain: layout paint;
+  --bx: 0;
+  --by: 0;
+}
+
+/* Living aurora — interaction-blue mesh wash that breathes forever. */
+.aurora {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(38% 44% at 22% 26%, rgba(94, 158, 214, 0.16) 0%, transparent 64%),
+    radial-gradient(40% 46% at 80% 30%, rgba(70, 119, 184, 0.13) 0%, transparent 64%),
+    radial-gradient(46% 50% at 64% 82%, rgba(122, 165, 232, 0.13) 0%, transparent 66%),
+    radial-gradient(40% 44% at 18% 78%, rgba(109, 184, 239, 0.12) 0%, transparent 64%);
+  filter: blur(8px);
+  opacity: 0.9;
+  transform: translate3d(calc(var(--bx) * 10px), calc(var(--by) * 10px), 0);
+  animation: cbpAurora 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+@keyframes cbpAurora {
+  0%   { transform: translate3d(calc(var(--bx) * 10px), calc(var(--by) * 10px), 0) scale(1); opacity: 0.86; }
+  50%  { opacity: 0.95; }
+  100% { transform: translate3d(calc(var(--bx) * 10px - 30px), calc(var(--by) * 10px + 24px), 0) scale(1.11); opacity: 0.9; }
+}
+
+/* Soft candy blobs — blurred, low-opacity orbs in the interaction-blue family. */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.5;
+  transform: translate3d(
+    calc(var(--bx) * var(--depth, 16px)),
+    calc(var(--by) * var(--depth, 16px)),
+    0
+  );
+}
+.blob1 {
+  width: 220px; height: 220px;
+  top: -42px; left: -36px;
+  --depth: 22px;
+  background: radial-gradient(circle at 38% 34%, #5e9ed6 0%, transparent 70%);
+  animation: cbpFloat1 16s ease-in-out infinite alternate;
+}
+.blob2 {
+  width: 260px; height: 260px;
+  top: 8%; right: -64px;
+  --depth: 30px;
+  background: radial-gradient(circle at 38% 34%, #9fb6f0 0%, transparent 70%);
+  animation: cbpFloat2 20s ease-in-out infinite alternate;
+}
+.blob3 {
+  width: 200px; height: 200px;
+  top: 46%; left: -52px;
+  --depth: 14px;
+  background: radial-gradient(circle at 38% 34%, #4677b8 0%, transparent 70%);
+  opacity: 0.42;
+  animation: cbpFloat3 23s ease-in-out infinite alternate;
+}
+.blob4 {
+  width: 180px; height: 180px;
+  bottom: 6%; right: -28px;
+  --depth: 24px;
+  background: radial-gradient(circle at 38% 34%, #6db8ef 0%, transparent 70%);
+  opacity: 0.4;
+  animation: cbpFloat4 18s ease-in-out infinite alternate;
+}
+.blob5 {
+  width: 150px; height: 150px;
+  bottom: -34px; left: 32%;
+  --depth: 18px;
+  background: radial-gradient(circle at 38% 34%, #7aa5e8 0%, transparent 72%);
+  opacity: 0.34;
+  animation: cbpFloat5 21s ease-in-out infinite alternate;
+}
+@keyframes cbpFloat1 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 40px), calc(var(--by) * var(--depth) + 52px),  0) scale(1.05); }
+}
+@keyframes cbpFloat2 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 50px), calc(var(--by) * var(--depth) + 38px),  0) scale(1.06); }
+}
+@keyframes cbpFloat3 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 46px), calc(var(--by) * var(--depth) - 40px),  0) scale(1.04); }
+}
+@keyframes cbpFloat4 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 38px), calc(var(--by) * var(--depth) - 46px),  0) scale(1.05); }
+}
+@keyframes cbpFloat5 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 32px), calc(var(--by) * var(--depth) - 34px),  0) scale(1.06); }
+}
+
+/* Pointer/touch color trail — a single <canvas> the useColorTrail hook paints
+   into. Inside .backdrop (z0 region, pointer-events:none) so it can NEVER block
+   a control. Last child → paints above the aurora + blobs. mix-blend-mode:normal
+   (screen → invisible on the pale bg). */
+.trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  mix-blend-mode: normal;
+}
+
+@keyframes stageIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ---- Back button ---- */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #86868b);
+  transition: color 180ms var(--landing-spring), transform 180ms var(--landing-spring);
+}
+.back:hover {
+  color: var(--ink, #1d1d1f);
+  transform: translateX(-3px);
+}
+
+/* =====================================================================
+   SHARED APPLE CARD CHROME
+   Every card/panel uses this base: white, 20px radius, soft diffusion
+   shadow, minimal border. A 4px --grad-interaction bar sits on top,
+   a faint blue corner glow sits behind content.
+   ===================================================================== */
+.appleCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 320ms var(--landing-spring),
+    box-shadow 320ms var(--landing-spring);
+}
+/* Top-accent bar: the INTERACTION-BLUE gradient */
+.appleCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  z-index: 2;
+  pointer-events: none;
+}
+/* Faint corner glow behind content */
+.appleCard::after {
+  content: '';
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(94, 158, 214, 0.22);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Hover lift */
+.appleCard:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.1);
+}
+/* Ensure children sit above the glow pseudo-element */
+.appleCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* =====================================================================
+   SETUP HERO
+   Apple card + generous padding + role/task fact grid inside.
+   ===================================================================== */
+.hero {
+  composes: appleCard;
+  padding: 44px 40px;
+  animation: cardIn 640ms var(--landing-spring) 80ms both;
+}
+@media (min-width: 640px) {
+  .hero { padding: 52px 48px; }
+}
+
+/* Subtle floating glow inside the hero — soft, no color bleed on text */
+.heroGlow {
+  position: absolute;
+  inset: -30% 30% auto -12%;
+  height: 320px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(94, 158, 214, 0.18) 0%, rgba(70, 119, 184, 0.12) 42%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+  animation: heroBobble 7s ease-in-out infinite;
+}
+@keyframes heroBobble {
+  0%, 100% { transform: translateY(0)    rotateZ(0deg); }
+  50%       { transform: translateY(-14px) rotateZ(2deg); }
+}
+.heroBody { position: relative; z-index: 1; }
+
+.heroFacts {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+@media (min-width: 560px) {
+  .heroFacts { grid-template-columns: 1fr 1fr; }
+}
+
+/* Fact chip — white card within card, light inner shadow */
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+.factLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-blue, #5e9ed6);
+}
+.factValue {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink, #1d1d1f);
+}
+.heroCta { margin-top: 32px; }
+
+/* ---- Checkpoint progress dots ---- */
+.progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.dot {
+  width: 28px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--v2-ring, rgba(228, 228, 231, 0.7));
+  transition:
+    background 300ms var(--landing-spring),
+    width     300ms var(--landing-spring);
+}
+.dotActive {
+  width: 44px;
+  background: var(--c-blue, #5e9ed6);
+  box-shadow: 0 2px 10px rgba(94, 158, 214, 0.40);
+}
+.dotDone { background: var(--landing-emerald-700, #047857); }
+
+/* ---- Options list ---- */
+.options {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* Error message — amber, tasteful */
+.error {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+}
+
+/* =====================================================================
+   LEARNING BLOCK
+   ===================================================================== */
+.lbHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.lbCounter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-subtle, #a1a1a6);
+}
+
+/* Correct feedback card — green tint on the standard Apple card base */
+.lbCardGood {
+  composes: appleCard;
+  padding: 28px;
+  animation: cardIn 640ms var(--landing-spring) 100ms both;
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(4, 120, 87, 0.22);
+}
+/* Override the corner glow to emerald for correct */
+.lbCardGood::after {
+  background: rgba(4, 120, 87, 0.18);
+}
+
+/* Incorrect feedback card — warm tint */
+.lbCardWarn {
+  composes: appleCard;
+  padding: 28px;
+  animation: cardIn 640ms var(--landing-spring) 100ms both;
+  background: linear-gradient(160deg, rgba(255, 244, 230, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(217, 119, 6, 0.22);
+}
+.lbCardWarn::after {
+  background: rgba(217, 119, 6, 0.16);
+}
+
+.lbText { margin-top: 12px; }
+.lbBlock {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--v2-ring, rgba(228, 228, 231, 0.7));
+}
+.lbBlockLabel {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-blue, #5e9ed6);
+}
+.lbBlockBody {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted, #86868b);
+}
+
+/* =====================================================================
+   REASONING STEP (Decision Process Explanation)
+   A typed-reasoning card with a live char-count gate, then a server
+   feedback panel (good = emerald tint, warn = amber tint on the same base).
+   ===================================================================== */
+.reasoningCard {
+  composes: appleCard;
+  margin-top: 28px;
+  padding: 24px;
+  animation: cardIn 640ms var(--landing-spring) 80ms both;
+}
+.reasoningLabel {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-blue, #5e9ed6);
+}
+.reasoningInput {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 140px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink, #1d1d1f);
+  resize: vertical;
+  transition: border-color 200ms var(--landing-spring), box-shadow 200ms var(--landing-spring);
+}
+.reasoningInput::placeholder {
+  color: var(--text-subtle, #a1a1a6);
+}
+.reasoningInput:focus {
+  outline: none;
+  border-color: var(--c-blue, #5e9ed6);
+  box-shadow: 0 0 0 3px rgba(94, 158, 214, 0.18);
+}
+.reasoningInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.reasoningMeta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.reasoningCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-subtle, #a1a1a6);
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms var(--landing-spring);
+}
+.reasoningCountOk {
+  color: var(--landing-emerald-700, #047857);
+}
+
+/* Reasoning server-feedback panels — same Apple base, washed tint + glow. */
+.reasoningResultGood {
+  composes: appleCard;
+  margin-top: 16px;
+  padding: 24px;
+  animation: cardIn 560ms var(--landing-spring) both;
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(4, 120, 87, 0.22);
+}
+.reasoningResultGood::after {
+  background: rgba(4, 120, 87, 0.18);
+}
+.reasoningResultWarn {
+  composes: appleCard;
+  margin-top: 16px;
+  padding: 24px;
+  animation: cardIn 560ms var(--landing-spring) both;
+  background: linear-gradient(160deg, rgba(255, 244, 230, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(217, 119, 6, 0.22);
+}
+.reasoningResultWarn::after {
+  background: rgba(217, 119, 6, 0.16);
+}
+
+/* =====================================================================
+   SIMULATION — staged reveal
+   The wrong-path card animates in (amber) first; after a beat the takeaway
+   card snaps in (emerald) with a connecting arrow between them. Stacked
+   single-column so the wrong → takeaway flow reads top-to-bottom.
+   ===================================================================== */
+.simReveal {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+/* Wrong-path card — warm tint, animates in first (slides up + fades). */
+.simWrong {
+  composes: appleCard;
+  padding: 24px;
+  background: linear-gradient(160deg, rgba(255, 244, 230, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(217, 119, 6, 0.22);
+  animation: simCardIn 560ms var(--landing-spring) 120ms both;
+}
+.simWrong::after {
+  background: rgba(217, 119, 6, 0.16);
+}
+
+/* The connecting arrow — snaps in after the wrong card, before the takeaway. */
+.simArrow {
+  display: grid;
+  place-items: center;
+  color: var(--c-blue, #5e9ed6);
+  margin: 2px 0;
+  animation: simArrowIn 420ms var(--landing-spring) 720ms both;
+}
+
+/* Takeaway card — emerald, snaps in last (delayed past the arrow). */
+.simRight {
+  composes: appleCard;
+  padding: 24px;
+  background: linear-gradient(160deg, rgba(236, 253, 245, 0.9) 0%, #ffffff 55%);
+  border-color: rgba(4, 120, 87, 0.22);
+  animation: simCardSnap 520ms var(--landing-spring) 980ms both;
+}
+.simRight::after {
+  background: rgba(4, 120, 87, 0.18);
+}
+
+.simBody {
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-muted, #86868b);
+}
+
+@keyframes simCardIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+@keyframes simArrowIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.6); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+/* The takeaway "snaps" — a touch of overshoot via a quicker pop. */
+@keyframes simCardSnap {
+  0%   { opacity: 0; transform: translateY(26px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-4px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);     }
+}
+
+/* =====================================================================
+   FEEDBACK SUMMARY
+   ===================================================================== */
+.summaryCard {
+  composes: appleCard;
+  margin-top: 28px;
+  padding: 28px;
+  display: grid;
+  gap: 18px;
+  animation: cardIn 640ms var(--landing-spring) 160ms both;
+}
+.summaryRow {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--v2-ring, rgba(228, 228, 231, 0.7));
+}
+.summaryRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.summaryLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-blue, #5e9ed6);
+}
+.summaryValue {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink, #1d1d1f);
+}
+
+/* ---- Shared card draw-in ---- */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+  .hero { padding: 36px 24px; }
+}
+
+/* ---- Reduced motion: skip all transforms + animations ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stage,
+  .hero,
+  .lbCardGood,
+  .lbCardWarn,
+  .reasoningCard,
+  .reasoningResultGood,
+  .reasoningResultWarn,
+  .simWrong,
+  .simArrow,
+  .simRight,
+  .summaryCard {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .heroGlow    { animation: none; }
+  .back:hover  { transform: none; }
+  .appleCard:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Backdrop: kill the aurora breathing + blob float + parallax → static wash.
+     The JS attaches NO input listeners under reduced motion (--bx/--by stay 0);
+     we still pin transforms here belt-and-suspenders. The trail hook bails out;
+     hide the canvas too. */
+  .aurora,
+  .blob,
+  .blob1,
+  .blob2,
+  .blob3,
+  .blob4,
+  .blob5 {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+  .trail {
+    display: none;
+  }
+}

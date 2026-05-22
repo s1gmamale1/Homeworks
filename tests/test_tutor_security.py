@@ -247,11 +247,29 @@ def test_practice_question_context_uses_allowlist_for_answer_leaks():
         assert token not in blob
 
 
-def test_preview_question_context_still_allows_full_answer_context():
+def test_preview_strips_answer_bearing_question():
+    """BLOCKER #4 (alias hardening): phase="preview" must NOT pass an
+    answer-bearing question through. A gated question carrying the bare `answer`
+    alias is scrubbed even under preview, so a tampered client can't tag it as
+    preview to leak the answer. The teaching `prompt` still survives."""
     from server.services.tutor import _redact_question_for_tutor
 
     question = {"prompt": "Explain", "answer": "42", "work": "Javob: 42"}
-    assert _redact_question_for_tutor(question, "preview") == question
+    result = _redact_question_for_tutor(question, "preview")
+    assert result["prompt"] == "Explain"
+    assert "answer" not in result  # answer-bearing alias scrubbed
+    # `work` is display-tier (not in the tutor allow-list) → also dropped here.
+    assert "42" not in __import__("json").dumps(result, ensure_ascii=False)
+
+
+def test_preview_passes_pure_teaching_question_through():
+    """Control: a preview question with NO answer-bearing field is unaffected —
+    legit teaching panels still flow through."""
+    from server.services.tutor import _redact_question_for_tutor
+
+    question = {"prompt": "Why is the sky blue?", "text": "Rayleigh scattering."}
+    result = _redact_question_for_tutor(question, "preview")
+    assert result == question
 
 
 @pytest.mark.parametrize(

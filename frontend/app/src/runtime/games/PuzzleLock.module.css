@@ -1,0 +1,572 @@
+/* ============================================================
+   PuzzleLock.module.css — Combination lock game (Practice Arc)
+   Apple card system — canonical LearningHub recipe:
+     · White cards, ~18-20px radius
+     · Soft diffusion shadow (no heavy borders, no frosted glass)
+     · --grad-interaction (blue) accent bar + corner glow
+     · Crisp #1d1d1f ink, --text-secondary muted, Onest via inherit
+     · scale(1.03) hover, --landing-spring easing
+     · Hardware-accelerated: transform + opacity ONLY
+   Honors prefers-reduced-motion.
+   ============================================================ */
+
+/* ---- Pinned ink tokens (mirrors LearningHub shell) ---- */
+.wrap {
+  position: relative;
+  --pl-ink: #1d1d1f;
+  --pl-secondary: #86868b;
+  --pl-subtle: #a1a1a6;
+  --pl-blue: var(--c-blue, #0071e3);
+  --pl-line: #c7c7cc;
+  --pl-surface: #ffffff;
+  --pl-bg: #f5f5f7;
+  --pl-accent: var(--grad-interaction, linear-gradient(135deg, #5e9ed6, #4677b8));
+  --pl-glow-color: rgba(94, 158, 214, 0.28);
+  /* map legacy var names so inner elements resolve cleanly */
+  --v2-text: #1d1d1f;
+  --v2-text-muted: #6e6e73;
+  --v2-text-subtle: #86868b;
+  --landing-zinc-950: #1d1d1f;
+  --landing-zinc-400: #a1a1a6;
+  --landing-emerald-700: #047857;
+  --landing-fuchsia-500: #a21caf;
+  animation: fadeIn 320ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Ambient layer: corner glow only (no sprawling radial blobs) ---- */
+.ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* Single interaction-blue corner glow — mirrors LearningHub .cardGlow */
+.auraBlue {
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: var(--pl-glow-color);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Keep legacy class names present but invisible — no fuchsia / emerald blobs */
+.auraFuchsia { display: none; }
+.auraEmerald { display: none; }
+
+/* ---- All real content sits above ambient ---- */
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Header row ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pl-subtle);
+}
+
+.sub {
+  margin-top: 6px;
+}
+
+/* ---- Lock body ---- */
+.lockBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 28px 0 24px;
+}
+
+/* Shackle — locked: zinc; open: emerald spring-swing */
+.shackle {
+  width: 44px;
+  height: 30px;
+  border: 3px solid var(--pl-line);
+  border-bottom: none;
+  border-radius: 22px 22px 0 0;
+  margin-bottom: -2px;
+  transition:
+    transform 420ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 380ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  transform-origin: left bottom;
+  will-change: transform;
+}
+
+.shackleOpen {
+  transform: rotate(-55deg) translateY(-6px);
+  border-color: var(--landing-emerald-700);
+}
+
+/* ---- Tumbler strip — white Apple card ---- */
+.tumblerStrip {
+  display: flex;
+  gap: 6px;
+  padding: 16px 20px;
+  background: var(--pl-surface);
+  /* Interaction-blue accent bar across top (matches LearningHub .cardAccent) */
+  border-top: 4px solid transparent;
+  border-top-color: transparent; /* overridden via background-clip trick below */
+  position: relative;
+  border-radius: 18px;
+  /* soft diffusion shadow — no heavy outline */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Accent bar painted as ::before pseudo so border stays clean */
+.tumblerStrip::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--pl-accent);
+  border-radius: 18px 18px 0 0;
+  pointer-events: none;
+}
+
+/* Single tumbler segment */
+.tumbler {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f5f5f7;
+  border: 1.5px solid rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 260ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 260ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform 260ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 260ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  will-change: transform;
+}
+
+/* Active tumbler — interaction-blue ring + subtle fill */
+.tumblerActive {
+  border-color: var(--pl-blue);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+  background: rgba(0, 113, 227, 0.05);
+  animation: activePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes activePulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(0, 113, 227, 0.06); }
+}
+
+/* Opened tumbler — emerald spring pop */
+.tumblerOpen {
+  background: rgba(4, 120, 87, 0.08);
+  border-color: var(--landing-emerald-700);
+  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.16);
+  animation: tumblerClick 380ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes tumblerClick {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.22); }
+  65%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+/* Wrong answer — muted red tint (Apple error color) */
+.tumblerWrong {
+  border-color: #c93a3a;
+  background: rgba(201, 58, 58, 0.06);
+  box-shadow: 0 0 0 2px rgba(201, 58, 58, 0.12);
+}
+
+.tumblerCheckmark {
+  font-size: 17px;
+  color: var(--landing-emerald-700);
+  line-height: 1;
+  font-weight: 700;
+}
+
+.tumblerDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pl-line);
+}
+
+/* ---- Question card — white Apple card, interaction-blue accent ---- */
+.questionCard {
+  position: relative;
+  overflow: hidden;
+  background: var(--pl-surface);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  display: grid;
+  gap: 14px;
+  animation: cardIn 280ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  will-change: transform;
+  transition:
+    transform 320ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 320ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* Interaction-blue accent bar */
+.questionCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--pl-accent);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow — mirrors LearningHub .cardGlow */
+.questionCard::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: var(--pl-glow-color);
+  filter: blur(52px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All direct children above the glow pseudo */
+.questionCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hover lift on card — only when not shaking */
+.questionCard:not(.questionCardShake):hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.09);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Wrong-answer shake */
+.questionCardShake {
+  animation: shake 480ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-7px); }
+  40%       { transform: translateX(7px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* Clue block — nested inner tile with subtle surface */
+.clue {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--pl-ink);
+  padding: 14px 16px;
+  background: #f5f5f7;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  white-space: pre-wrap;
+}
+
+/* Question prompt */
+.question {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pl-ink);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Input + submit row */
+.inputRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.answerInput {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  background: #f5f5f7;
+  font-size: 16px;
+  color: var(--pl-ink);
+  outline: none;
+  transition:
+    border-color 180ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 180ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    background 180ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  font-family: inherit;
+}
+
+.answerInput::placeholder {
+  color: var(--pl-subtle);
+}
+
+.answerInput:focus {
+  border-color: var(--pl-blue);
+  background: var(--pl-surface);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.answerInput:disabled {
+  opacity: 0.5;
+}
+
+/* Submit button — canonical --c-blue accent, spring hover */
+.submitBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--pl-blue);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.26);
+  transition:
+    background 160ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform 160ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 160ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    opacity 160ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  will-change: transform;
+}
+
+.submitBtn:not(:disabled):hover {
+  transform: translateY(-1px) scale(1.045);
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.34);
+}
+
+.submitBtn:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+.submitBtn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---- Feedback band (wrong answer) — Apple error-adjacent warm tint ---- */
+.feedbackBand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #fff9f9;
+  border: 1px solid rgba(201, 58, 58, 0.14);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+  animation: cardIn 240ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+.feedbackText {
+  font-size: 14px;
+  color: var(--pl-secondary);
+  line-height: 1.4;
+}
+
+/* ---- Error ---- */
+.error {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.85);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ---- Completion screen — white Apple card, emerald accent ---- */
+.done {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 14px;
+  padding: 40px 36px;
+  border-radius: 20px;
+  background: var(--pl-surface);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  animation: fadeIn 360ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  /* Emerald accent bar on completion */
+  border-top: 4px solid transparent;
+}
+
+/* Emerald accent bar on done card */
+.done::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(135deg, #34d399, #047857);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Emerald corner glow */
+.done::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: rgba(4, 120, 87, 0.18);
+  filter: blur(60px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.done > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Lock-open icon wrapper — spring pop-open entrance */
+.lockOpenWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+  animation: lockPopOpen 640ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+@keyframes lockPopOpen {
+  0%   { opacity: 0; transform: scale(0.55) rotate(-22deg); }
+  55%  { transform: scale(1.18) rotate(9deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* Lock-open SVG — emerald tint */
+.lockOpenSvg {
+  color: var(--landing-emerald-700);
+  filter: drop-shadow(0 4px 12px rgba(4, 120, 87, 0.22));
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 560px) {
+  .tumbler {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+  }
+  .tumblerStrip {
+    padding: 12px 14px;
+    gap: 5px;
+  }
+  .questionCard {
+    padding: 18px 18px;
+    border-radius: 18px;
+  }
+  .question {
+    font-size: 15px;
+  }
+  .answerInput {
+    font-size: 15px;
+  }
+  .done {
+    padding: 32px 24px;
+    border-radius: 18px;
+  }
+}
+
+/* ---- Reduced motion: kill transforms + draw-in, show final state ---- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .done,
+  .questionCard,
+  .feedbackBand,
+  .lockOpenWrap {
+    animation: none;
+  }
+  .auraBlue {
+    animation: none !important;
+  }
+  .tumblerOpen {
+    animation: none;
+  }
+  .tumblerActive {
+    animation: none;
+  }
+  .questionCardShake {
+    animation: none;
+  }
+  .questionCard:not(.questionCardShake):hover {
+    transform: none;
+  }
+  .shackle {
+    transition: none;
+  }
+  .tumbler {
+    transition: none;
+  }
+  .answerInput {
+    transition: none;
+  }
+  .submitBtn {
+    transition: none;
+  }
+  .submitBtn:not(:disabled):hover {
+    transform: none;
+  }
+}

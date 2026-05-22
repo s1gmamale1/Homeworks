@@ -1,0 +1,53 @@
+.frame {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.frameBar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--v2-ring);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--v2-ring);
+}
+
+.frameLabel {
+  margin-left: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--v2-text-subtle);
+}
+
+.viewport {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  background: var(--v2-page-bg);
+}
+
+/* The runtime components use the full-bleed `.v2-shell` (max-width 760, large
+   bottom padding). Inside the preview pane we want them to sit naturally, so
+   trim the runaway bottom padding without touching the runtime CSS. */
+.viewport :global(.v2-shell) {
+  padding-bottom: 48px;
+}
+
+.bossWrap {
+  padding: clamp(20px, 4vw, 40px) 20px;
+}
+
+/* Practice Arc game components render their own .wrap/.stage with internal
+   padding; give them a light frame so they sit naturally in the preview pane. */
+.gameWrap {
+  padding: clamp(16px, 3vw, 32px) 16px;
+}

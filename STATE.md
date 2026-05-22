@@ -473,3 +473,168 @@ personalized per-student based on prior chat history; deterministic grading is u
 **Verification:**
 - `python -m pytest tests/test_ai_runtime.py tests/test_homework_page.py tests/test_tutor_chat.py -v` — all passing.
 - Full suite: `python -m pytest tests/ --ignore=tests/test_ai_runtime.py -q` — 66/66 (no regressions).
+
+---
+
+## v2 React SPA runtime — COMPLETE (DaddysBranch, 2026-05-21)
+
+**Branch:** `DaddysBranch` (NOT `server` — `server` stays on the legacy HTML
+runtime). Served at `/h/{id}` only when `content_json.flow_version == "v2"`; the
+fork in `server/routes/homework_page.py` leaves every legacy (v1) row on the
+unchanged injector path.
+
+### Confirmed working (F0–F7 complete)
+
+- **React SPA runtime** (`frontend/app/`, Vite + TypeScript, committed `dist/`):
+  - **Learning Hub** — top-down flowchart of the v2 flow.
+  - **Case-Based Preview** — guided 3-checkpoint real-life learning case (one of
+    the two ungated unlock paths).
+  - **Flashcards + Memory Check** — Quizlet-style gate (the second unlock path);
+    pass ≥ `pass_threshold_pct` (default 60%).
+  - **Practice Arc** — 8 built games: Tile Match, Sentence Fill, Real-Life
+    Challenge, Tic-Tac-Toe (Ttt), Memory Palace, Adaptive Quiz, Mystery Box,
+    Puzzle Lock. `<GameHost>` lazy-loads each via a key registry.
+  - **Boss** (`<BossArena>`, always the final arc node) + **Reflection** +
+    docked persistent **Tutor** widget.
+- **Server-authoritative gating** — `GET /api/runtime/homeworks/{id}/gate-state`
+  computes the Practice-Arc unlock from `phase_attempts` on server-derived
+  subphase keys (no client-side `question_id` inflation). The client renders
+  gate state, never decides it.
+- **Answer-leak redaction** — `GET /api/runtime/homeworks/{id}` returns a
+  redacted hydration payload (`runtime_redactor.py` + the shared
+  `ANSWER_BEARING_KEYS` deny-list). Tile-match ships opaque per-side tokens;
+  TTT ships unmarked shuffled options; `learning_block`/`feedback` come from the
+  `/check-answer` response, never hydration. All 8 practice-arc phases return
+  `403 PRACTICE_LOCKED` until the arc unlocks; CBP/MC are ungated.
+- **Test suite:** 2952 tests pass (Python pytest + frontend Vitest), as reported
+  on DaddysBranch.
+- **Full `landing.css` light Apple-glass redesign** applied across all v2
+  screens + games.
+
+### Confirmed working (continued — CBP redesign + reasoning step, commit 92824a3)
+
+- **CBP immersive redesign** (`frontend/app/src/runtime/CaseBasedPreview.tsx`):
+  full-bleed living backdrop (`CbpBackdrop.tsx`), winding 9-node journey rail
+  (`CbpJourney.tsx`) that lights up as the student advances, 3D press-buttons,
+  and a staged before/after consequence reveal. Matches Hub brand-blue Apple-glass
+  style.
+- **Shared `useColorTrail` hook** (`frontend/app/src/runtime/hooks/useColorTrail.ts`):
+  Hub's pointer/touch color-trail extracted into a shared hook consumed by both
+  the Hub and CBP. Zero regression on the Hub.
+- **"Decision Process Explanation" reasoning step**: after the 3 MCQ checkpoints,
+  the student types their reasoning. Server-graded via
+  `POST /api/ai/check-answer?phase=case_based_preview_reasoning`. Non-blocking
+  (the MCQ checkpoints remain the unlock gate). Only rendered when the homework
+  authors a `decision_process_explanation` sub-object; legacy CBPs without it skip
+  straight to the simulation.
+
+### Known
+
+- **story_mode** (`gb_story_mode` → `story_mode` game key) is unbuilt
+  (greenfield) — `<GameHost>` renders a graceful "coming soon" skip card so the
+  arc stays walkable.
+
+---
+
+## v2 Authoring: Dashboard routing + React builder — COMPLETE (DaddysBranch, 2026-05-21)
+
+### Dashboard routing (legacy `frontend/index.html` + `frontend/js/dashboard.js`)
+
+The legacy HTML dashboard remains the homework list at `/`. Two authoring-path changes shipped:
+
+- **No more Easy/Hard prompt on "Create".** New homeworks are created as a neutral draft and stamped `flow_version: "v2"` server-side at `POST /api/homeworks`.
+- **Route-by-`flow_version` on card open.** The dashboard reads the `flow_version` field now returned on every `GET /api/homeworks` list item and routes accordingly:
+  - `v2` → React builder at `/app/builder?id=<id>`
+  - absent / `v1` → vanilla builder at `/builder.html?id=<id>` (unchanged legacy path)
+
+### React v2 builder (`frontend/app/src/builder/`, `BuilderApp.tsx`)
+
+The React builder is reskinned to match the legacy builder's left-sidebar shell and authors the full v2 `content_json` via section editors:
+
+| Section | Editor component |
+|---|---|
+| Metadata | MetadataEditor |
+| Case-Based Preview | CbpEditor |
+| Memory Check + Flashcards | MemoryCheckEditor |
+| Practice Arc (game order + per-game) | PracticeArcSection |
+| Per-game editors | TileMatch, SentenceFill, MysteryBox, PuzzleLock, AdaptiveQuiz, MemoryPalace, Ttt, RealLifeChallenge |
+| Boss | BossEditor |
+| Reflection | ReflectionEditor |
+
+- **Live preview** renders the real runtime React components from the author's current draft. No iframe — same component tree as the student runtime; answers are visible (authoring context) because the builder reads from the unredacted `GET /api/homeworks/{id}`.
+- **Auto-save** debounces `PUT /api/homeworks/{id}` on every editor `onChange`.
+
+### Backend support
+
+- `GET /api/homeworks` list now returns a `flow_version` field per row (`"v2"` or null for v1 legacy). `content_json` is still omitted from the list payload.
+- `POST /api/homeworks` accepts an optional `content_json` on create (used internally by the dashboard to stamp the v2 scaffold).
+
+---
+
+## Dynamic Why→How→What AI Boss (Division 3) — COMPLETE (DaddysBranch, 2026-05-22)
+
+Shipped in PRs #252 (backend) and #253 (frontend).
+
+### Confirmed working
+
+- **Per-turn AI generation** — `/ai/boss/generate-question` calls Kimi
+  (`moonshot-v1-128k`) once per student turn, producing a fresh structured
+  question with `scenario` + `why`/`how`/`what` reasoning prompts. The
+  generator validates output server-side (Pydantic + business rules) before
+  storing and returning it.
+- **Grade-band HP** — `/ai/boss/start` derives the starting HP server-side
+  from `content_json.boss_meta.grade_band` (G1-4 → 50, G5-8 → 100, G9-11 →
+  150) or a `starting_hp_override`. The client's `max_hp` field is advisory
+  only and is never trusted.
+- **Coverage-based grading** — the boss answer-checker returns per-axis
+  `coverage: {why, how, what}` scores. Damage uses `coverage_mean` through the
+  spec §6 accuracy tiers (>= 0.85 → 1.0, >= 0.55 → 0.7, >= 0.30 → 0.5,
+  else → 0.0).
+- **Combo bonus** — +20% damage after 3+ consecutive full-accuracy correct
+  answers with zero hint use; resets on any wrong answer or hint.
+- **Weak-skill targeting** — the boss context builder feeds the generator the
+  student's weak topics derived from prior phase attempts; the difficulty
+  adapts after each answer (correct streak → harder, wrong streak → easier).
+- **Server-authoritative HP and outcome** — HP, trials, difficulty, and the
+  final `outcome`/`stars`/`outcome_xp` are all computed and persisted by the
+  server. The runtime renders what the server returns.
+- **Answer-leak redaction** — `/generate-question` and `/state` return only
+  prompt text (`scenario`/`why`/`how`/`what`/`question_text`). `expected_answer`
+  and `rubric` are stored server-side and never sent to the client. Student
+  text is wrapped in `<UNTRUSTED_STUDENT_MESSAGE>` before any LLM call.
+- **Full grading hardening** — `is_correct=true` floors `score` to 0.60 and
+  `damage_multiplier` to 1.0 so a correct answer always deals > 0 damage.
+  Coverage mean is similarly floored. Model-supplied `damage_multiplier` is
+  clamped to [0.0, 1.5].
+- **`boss_sessions` new columns** — `hints_used`, `correct_count`,
+  `total_attempts`, `question_kind` added via idempotent migration.
+
+### Known transient
+
+- **Kimi ReadTimeout on generation** — `moonshot-v1-128k` boss generation
+  can ReadTimeout under load, causing `/generate-question` to return 502
+  `BOSS_GEN_REJECTED`. The React `BossArena` shows a graceful "Try again"
+  error state; a single retry succeeds in practice. This is a provider-side
+  latency issue, not a contract bug.
+
+---
+
+## Academic-Integrity / Anti-Cheat — COMPLETE (DaddysBranch, PRs #255 backend + #256 frontend)
+
+Process-supervision-first per `docs/NETS_Academic_Integrity_AntiCheat_Research.md` — **no detection software**; signals are teacher intelligence, never auto-punishment. Policy published in `docs/AI_Use_Matrix.md`.
+
+### Working (verified live + tested)
+- **AI hardening:** student free-text `<UNTRUSTED>`-fenced at every grader holding the answer key (CBP-reasoning, RLC, generic/math/language answer-checkers) → closes a prompt-injection path; boss-context deny-list reuses `redaction_constants.ANSWER_BEARING_KEYS`; legacy boss-turn HP clamped server-side; `TILE_MATCH_SECRET` startup guard.
+- **Behavioral signals (advisory):** `client_time_ms` (server-clamped) + `paste_detected` → `phase_attempts.time_ms` + `session_events` `integrity:paste`. **Never affect score/is_correct/hp/gating.**
+- **Flag engine** (`server/services/integrity_signals.py`): `too_fast` (opt-in), `paste_on_assessment`, `sudden_mastery` (pre≤0.40 ∧ post≥0.90 ∧ ≥3 items). Conservative + false-positive-resistance test.
+- **Engine wired on BOTH submit paths:** the dynamic boss (`ai_plan5`) and a shared `_attach_integrity` hook on `/api/ai/check-answer` (CBP / Memory-Check / games) — all 3 divisions covered.
+- **Review-Queue integrity routing:** `review_queue` gains `integrity_reason/severity/kind/session_id`; `GET /ai/review-queue?kind=integrity`; integrity rows can't be mis-resolved as grades.
+- **Soft friction:** a strong flag adds `integrity_nudge {type,message}` to the response → dismissible, non-blocking `IntegrityNudge` card beside the feedback (verified in a live browser walk: 3rd aced CBP checkpoint with seeded low mastery → nudge shown, answer still graded ✓, Continue unaffected — `docs/screenshots/integrity-3-nudge.png`).
+- **Teacher Authentication-of-Authorship** (§9.6): `authorship_affirmations` + `POST/GET /api/integrity/affirm[ations]`(+`/view`); affirmations resolve linked integrity flags. Verified live (flag id resolved via affirmation).
+- **AI Use Matrix** constant `server/services/ai_use_policy.py` + FE mirror `aiUsePolicy.ts`.
+
+### Verification
+Full pytest **3306 passed** (incl. injection/leak canaries, signal-ingestion, flag-engine + false-positive-resistance, the `/check-answer` G1 hook, review-routing, soft-friction non-blocking, affirmation endpoints) · FE **64 vitest** (telemetry, nudge renders + non-blocking + advisory-only) · live API end-to-end (flags→review-queue→affirmation, grade unchanged) · Playwright nudge walk (`scripts/e2e/integrity_walk.cjs`).
+
+### Deferred (out of scope)
+Proctored exam-sim lockdown; Turnitin/detection integration; full teacher dashboard UI (affirmation is API + minimal `/view`); `sophistication_jump` flag (stub).

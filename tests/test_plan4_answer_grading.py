@@ -236,7 +236,9 @@ def test_prompt_file_shapes():
     prompts = [
         "server/prompts/runtime/answer-checker-language.md",
         "server/prompts/runtime/answer-checker-math.md",
-        "server/prompts/runtime/answer-checker-boss.md"
+        # Converged 2026-05-22: the legacy answer-checker-boss.md was deleted and
+        # the tutor.py final-boss branch now uses the canonical boss-answer-checker.md.
+        "server/prompts/runtime/boss-answer-checker.md",
     ]
     for p in prompts:
         path = os.path.join(os.path.dirname(__file__), "..", p)
@@ -247,3 +249,232 @@ def test_prompt_file_shapes():
         assert not raw.startswith(b"\xef\xbb\xbf"), f"{p} has BOM"
         assert b"\r\n" not in raw, f"{p} has CRLF line endings"
         assert b"\x0c" not in raw, f"{p} has form-feed control char"
+
+
+# ---------------------------------------------------------------------------
+# Hybrid-grading hardening regressions (2026-05-22)
+# ---------------------------------------------------------------------------
+
+
+def _patch_runtime_grading_deps(monkeypatch):
+    """Shared monkeypatch setup for process_runtime_answer tests: stub the DB
+    attempt writer + session validation so the tests stay pure-compute."""
+    async def _noop(*a, **k):
+        return None
+    monkeypatch.setattr("server.db.attempts_repo.add_phase_attempt", _noop)
+    monkeypatch.setattr("server.services.tutor._validate_session_id", lambda x: x)
+
+
+@pytest.mark.asyncio
+async def test_runtime_real_life_phase_routes_to_rlc_grader_prompt(monkeypatch):
+    """REGRESSION (item 1): a phase=='real-life-challenge' answer that falls
+    through to the AI judge must load the `real-life-challenge-grader` prompt —
+    NOT the generic answer-checker-language prompt. Before the fix the ladder
+    only branched on math/final-boss, so real-life fell through to the language
+    checker with the wrong rubric.
+
+    Also pins the no-leak guarantee: `acceptable_keywords` ride into the prompt
+    INPUT only and never appear in the response body.
+    """
+    from server.services.tutor import process_runtime_answer
+
+    _patch_runtime_grading_deps(monkeypatch)
+
+    loaded_prompts = []
+    real_loader = __import__(
+        "server.services.tutor", fromlist=["_load_runtime_prompt"]
+    )._load_runtime_prompt
+
+    def _spy_loader(name):
+        loaded_prompts.append(name)
+        return real_loader(name)
+
+    monkeypatch.setattr("server.services.tutor._load_runtime_prompt", _spy_loader)
+
+    captured = {}
+
+    async def _mock_structured(*args, **kwargs):
+        captured["prompt"] = kwargs.get("prompt", "")
+        return AnswerCheckResult(score=0.9, confidence=0.95, feedback="yaxshi")
+
+    monkeypatch.setattr(
+        "server.services.tutor.ai_gateway.generate_structured", _mock_structured
+    )
+    monkeypatch.setattr("server.db.set_answer_cache", _async_noop())
+
+    target = {
+        "session_id": "sess-rlc",
+        "answer_spec": {"type": "semantic"},  # forces AI judge
+        "phase": "real-life-challenge",
+        "question_text": "Bemorni qanday davolaysiz?",
+        "acceptable_keywords": ["SEKRET_ANCHOR_KW"],
+    }
+    res = await process_runtime_answer(target, "javobim")
+
+    assert "real-life-challenge-grader" in loaded_prompts, (
+        f"expected RLC grader prompt to load, got {loaded_prompts}"
+    )
+    # The keyword anchor is allowed in the PROMPT (server-side) ...
+    assert "SEKRET_ANCHOR_KW" in captured["prompt"]
+    # ... but must NOT leak into the response returned to the client.
+    import json as _json
+    assert "SEKRET_ANCHOR_KW" not in _json.dumps(res, ensure_ascii=False)
+
+
+@pytest.mark.asyncio
+async def test_runtime_final_boss_routes_to_canonical_boss_answer_checker(monkeypatch):
+    """REGRESSION (item 2): phase=='final-boss' must load the canonical
+    `boss-answer-checker` prompt, not the deleted legacy `answer-checker-boss`.
+    """
+    from server.services.tutor import process_runtime_answer
+
+    _patch_runtime_grading_deps(monkeypatch)
+
+    loaded_prompts = []
+    real_loader = __import__(
+        "server.services.tutor", fromlist=["_load_runtime_prompt"]
+    )._load_runtime_prompt
+
+    def _spy_loader(name):
+        loaded_prompts.append(name)
+        return real_loader(name)
+
+    monkeypatch.setattr("server.services.tutor._load_runtime_prompt", _spy_loader)
+
+    async def _mock_structured(*args, **kwargs):
+        return AnswerCheckResult(score=0.5, confidence=0.95, feedback="strict")
+
+    monkeypatch.setattr(
+        "server.services.tutor.ai_gateway.generate_structured", _mock_structured
+    )
+    monkeypatch.setattr("server.db.set_answer_cache", _async_noop())
+
+    target = {
+        "session_id": "sess-boss",
+        "answer_spec": {"type": "semantic"},
+        "phase": "final-boss",
+        "question_text": "Final savol",
+    }
+    await process_runtime_answer(target, "javob")
+
+    assert "boss-answer-checker" in loaded_prompts
+    assert "answer-checker-boss" not in loaded_prompts
+
+
+def _async_noop():
+    async def _noop(*a, **k):
+        return None
+    return _noop
+
+
+@pytest.mark.asyncio
+async def test_runtime_high_confidence_writes_answer_cache(monkeypatch):
+    """REGRESSION (item 3a): a >=0.90 confidence verdict from the AI judge in
+    process_runtime_answer must write the answer cache (parity with
+    tutor.check_answer). Before the fix the runtime ladder never cached.
+    """
+    from server.services.tutor import process_runtime_answer
+
+    _patch_runtime_grading_deps(monkeypatch)
+
+    cache_writes = []
+
+    async def _spy_set_cache(key, response):
+        cache_writes.append((key, response))
+
+    async def _spy_add_review(*a, **k):
+        raise AssertionError("review queue must NOT be called on high confidence")
+
+    async def _mock_structured(*args, **kwargs):
+        return AnswerCheckResult(score=0.95, confidence=0.95, feedback="great")
+
+    monkeypatch.setattr("server.db.set_answer_cache", _spy_set_cache)
+    monkeypatch.setattr("server.db.add_to_review_queue", _spy_add_review)
+    monkeypatch.setattr(
+        "server.services.tutor.ai_gateway.generate_structured", _mock_structured
+    )
+
+    target = {
+        "session_id": "sess-cache",
+        "question_id": "q-cache",
+        "answer_spec": {"type": "semantic"},
+        "phase": "practice",
+    }
+    res = await process_runtime_answer(target, "ans")
+    assert res["is_correct"] is True
+    assert len(cache_writes) == 1, "high-confidence verdict must write cache exactly once"
+
+
+@pytest.mark.asyncio
+async def test_runtime_low_confidence_enrolls_review_queue(monkeypatch):
+    """REGRESSION (item 3b): a <0.60 confidence verdict must enroll a review
+    item (parity with tutor.check_answer) and must NOT write the answer cache.
+    """
+    from server.services.tutor import process_runtime_answer
+
+    _patch_runtime_grading_deps(monkeypatch)
+
+    review_inserts = []
+    cache_writes = []
+
+    async def _spy_add_review(question_id, student_answer, answer_spec, ai_response):
+        review_inserts.append(question_id)
+        return True
+
+    async def _spy_set_cache(key, response):
+        cache_writes.append(key)
+
+    async def _mock_structured(*args, **kwargs):
+        return AnswerCheckResult(score=0.4, confidence=0.40, feedback="unsure")
+
+    monkeypatch.setattr("server.db.add_to_review_queue", _spy_add_review)
+    monkeypatch.setattr("server.db.set_answer_cache", _spy_set_cache)
+    monkeypatch.setattr(
+        "server.services.tutor.ai_gateway.generate_structured", _mock_structured
+    )
+
+    target = {
+        "session_id": "sess-review",
+        "question_id": "q-review",
+        "answer_spec": {"type": "semantic"},
+        "phase": "practice",
+    }
+    res = await process_runtime_answer(target, "ans")
+    assert res["requires_review"] is True
+    assert review_inserts == ["q-review"]
+    assert cache_writes == [], "low-confidence verdict must not write cache"
+
+
+@pytest.mark.asyncio
+async def test_runtime_ai_judge_exception_enrolls_review_queue(monkeypatch):
+    """REGRESSION (item 3c): when the AI judge raises, the attempt must be
+    enrolled for human review instead of silently dropped.
+    """
+    from server.services.tutor import process_runtime_answer
+
+    _patch_runtime_grading_deps(monkeypatch)
+
+    review_inserts = []
+
+    async def _spy_add_review(question_id, student_answer, answer_spec, ai_response):
+        review_inserts.append(question_id)
+        return True
+
+    async def _boom(*args, **kwargs):
+        raise RuntimeError("provider exploded")
+
+    monkeypatch.setattr("server.db.add_to_review_queue", _spy_add_review)
+    monkeypatch.setattr(
+        "server.services.tutor.ai_gateway.generate_structured", _boom
+    )
+
+    target = {
+        "session_id": "sess-exc",
+        "question_id": "q-exc",
+        "answer_spec": {"type": "semantic"},
+        "phase": "practice",
+    }
+    res = await process_runtime_answer(target, "ans")
+    assert res["grading_method"] == "error"
+    assert res["requires_review"] is True
+    assert review_inserts == ["q-exc"]

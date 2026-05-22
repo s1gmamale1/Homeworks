@@ -1,0 +1,880 @@
+/* ============================================================
+   Learning Hub — Duolingo-flavored winding PATH of tactile 3D
+   "pebble" nodes. Full-screen, mobile-first. Replaces the prior
+   "plain white cards" (owner: "very AI-generative, lacks style").
+
+   EVERYTHING here is SCOPED to `.shell` (the hub root). The play
+   palette + Fredoka/Nunito faces never leak onto sibling screens,
+   which keep their Apple/Onest look. The hub still only RENDERS the
+   server gate; it never decides unlock.
+
+   THE CONTRAST FIX (preserved): theme-flipping --v2-text* tokens are
+   pinned LIGHT on the shell, and every title is hard ink #1d1d1f or
+   white-on-saturated-fill — a dark-OS visitor can't wash out headings.
+   ============================================================ */
+
+/* Hub display + body faces (loaded in index.html). Scoped via variables. */
+
+.shell {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-top: max(28px, env(safe-area-inset-top));
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  overflow-x: clip;
+
+  /* ---- NETS blue-brand cool play palette (scoped to the hub only) ----
+     Re-derived around the app's brand blue (#0066CC / #007AFF family).
+     Per-node hues stay ANALOGOUS + COOL (brand-blue / cyan / teal /
+     indigo / periwinkle) for wayfinding without a Duolingo rainbow.
+     Var NAMES are kept stable so JS/CSS refs don't break — only the
+     hues change. (--hub-green is now the PRIMARY brand blue.)
+     Fills are contrast-tuned: white node titles (large/bold) need ≥3:1
+     and the 15px node lead body copy ≥4.5:1 — verified via WCAG relative
+     luminance (primary 4.67:1, azure 4.76:1, teal 4.15:1).            */
+  --hub-green: #0a72e0;        /* PRIMARY brand blue — "done" face + go */
+  --hub-green-edge: #0058b8;   /* darker bottom-edge lip                */
+  --hub-blue: #1577be;         /* cool azure — Flash cards              */
+  --hub-blue-edge: #0f5b94;
+  --hub-orange: #0e8c7d;       /* cool teal — Case-Study (analogous)    */
+  --hub-orange-edge: #0a6b5f;
+  --hub-red: #f0555f;          /* coral spark — boss / danger (secondary) */
+  --hub-violet: #5b6cff;       /* indigo — legendary unlock burst       */
+  --hub-violet-soft: #9aa9ff;  /* periwinkle                            */
+  --hub-gold: #ffc24d;         /* warm amber spark — progress ring + crown */
+
+  --hub-locked-face: #e5e5e5;
+  --hub-locked-edge: #bdbdbd;
+  --hub-locked-ink: #9a9a9a;
+
+  --hub-ink: #1d1d1f;          /* hard ink, never theme-flips          */
+  --hub-secondary: #4b4b4b;    /* Duolingo body gray                   */
+  --hub-subtle: #777777;
+  --hub-page-top: #f5f9ff;     /* very light blue-tinted wash (stays light) */
+  --hub-page-bot: #e9f1fe;
+
+  /* Pin theme-flipping tokens to LIGHT (the prior rejection fix). */
+  --v2-text: #1d1d1f;
+  --v2-text-muted: #4b4b4b;
+  --v2-text-subtle: #777777;
+
+  /* Fonts — Fredoka display + Nunito body, Onest as the safe fallback. */
+  --font-hub-display: "Fredoka", var(--font-onest), system-ui, sans-serif;
+  --font-hub-body: "Nunito", var(--font-onest), system-ui, sans-serif;
+
+  background:
+    radial-gradient(120% 56% at 50% -6%, #ffffff 0%, transparent 56%),
+    radial-gradient(90% 40% at 50% 4%, rgba(10, 114, 224, 0.06) 0%, transparent 60%),
+    linear-gradient(180deg, var(--hub-page-top) 0%, var(--hub-page-bot) 100%);
+  color: var(--hub-ink);
+  font-family: var(--font-hub-body);
+}
+
+/* Soft luminous backdrop behind the header — depth without competing ink. */
+.heroGlow {
+  position: absolute;
+  left: 50%;
+  top: -80px;
+  width: 760px;
+  height: 380px;
+  max-width: 150vw;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(10, 114, 224, 0.1) 0%, transparent 66%);
+  filter: blur(56px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   INTERACTIVE CANDY BACKDROP — a living aurora + drifting soft blobs
+   behind the path. Sits at z-index 0 (under .intro/.path at z-index 1)
+   and is pointer-events:none, so it can NEVER intercept a node tap or
+   the unlock choreography. All motion is GPU-only (transform/opacity).
+
+   Two layers of motion compose:
+     • idle drift  — slow infinite CSS float, always on (per-blob keyframe)
+     • parallax    — JS writes --bx/--by (-1..1, smoothed) on this layer;
+                     each blob multiplies them by its own depth factor so
+                     near blobs move more than far ones. translate3d only.
+   ============================================================ */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;        /* clip blob bleed to the shell */
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  contain: layout paint;   /* isolate paints from the rest of the hub */
+  /* parallax offsets, written by the rAF loop in HubBackdrop (default still). */
+  --bx: 0;
+  --by: 0;
+}
+
+/* Living aurora — a soft mesh wash that breathes hue + position forever. */
+.aurora {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(38% 44% at 22% 26%, rgba(10, 114, 224, 0.16) 0%, transparent 64%),
+    radial-gradient(40% 46% at 80% 30%, rgba(91, 108, 255, 0.13) 0%, transparent 64%),
+    radial-gradient(46% 50% at 64% 82%, rgba(14, 140, 125, 0.14) 0%, transparent 66%),
+    radial-gradient(40% 44% at 18% 78%, rgba(21, 119, 190, 0.12) 0%, transparent 64%);
+  filter: blur(8px);
+  opacity: 0.9;
+  transform: translate3d(
+    calc(var(--bx) * 10px),
+    calc(var(--by) * 10px),
+    0
+  );
+  animation: hubAurora 22s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+@keyframes hubAurora {
+  0%   { transform: translate3d(calc(var(--bx) * 10px), calc(var(--by) * 10px), 0) scale(1); opacity: 0.86; }
+  50%  { opacity: 0.95; }
+  100% { transform: translate3d(calc(var(--bx) * 10px - 30px), calc(var(--by) * 10px + 24px), 0) scale(1.11); opacity: 0.9; }
+}
+
+/* Soft candy blobs — blurred, low-opacity orbs in the Duolingo palette. */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.5;
+  /* depth-scaled parallax: --depth set per-blob; translate3d only. */
+  transform: translate3d(
+    calc(var(--bx) * var(--depth, 16px)),
+    calc(var(--by) * var(--depth, 16px)),
+    0
+  );
+}
+/* Each blob idle-floats on its own loop AROUND its parallax position. We nest
+   the parallax translate in the keyframe so the two motions compose cleanly. */
+.blob1 {
+  width: 220px; height: 220px;
+  top: -42px; left: -36px;
+  --depth: 22px;
+  background: radial-gradient(circle at 38% 34%, var(--hub-blue) 0%, transparent 70%);
+  animation: hubFloat1 16s ease-in-out infinite alternate;
+}
+.blob2 {
+  width: 260px; height: 260px;
+  top: 8%; right: -64px;
+  --depth: 30px;
+  background: radial-gradient(circle at 38% 34%, var(--hub-violet-soft) 0%, transparent 70%);
+  animation: hubFloat2 20s ease-in-out infinite alternate;
+}
+.blob3 {
+  width: 200px; height: 200px;
+  top: 46%; left: -52px;
+  --depth: 14px;
+  background: radial-gradient(circle at 38% 34%, var(--hub-green) 0%, transparent 70%);
+  opacity: 0.42;
+  animation: hubFloat3 23s ease-in-out infinite alternate;
+}
+.blob4 {
+  width: 180px; height: 180px;
+  bottom: 6%; right: -28px;
+  --depth: 24px;
+  background: radial-gradient(circle at 38% 34%, var(--hub-orange) 0%, transparent 70%);
+  opacity: 0.4;
+  animation: hubFloat4 18s ease-in-out infinite alternate;
+}
+.blob5 {
+  width: 150px; height: 150px;
+  bottom: -34px; left: 32%;
+  --depth: 18px;
+  background: radial-gradient(circle at 38% 34%, var(--hub-gold) 0%, transparent 72%);
+  opacity: 0.34;
+  animation: hubFloat5 21s ease-in-out infinite alternate;
+}
+@keyframes hubFloat1 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 40px), calc(var(--by) * var(--depth) + 52px),  0) scale(1.05); }
+}
+@keyframes hubFloat2 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 50px), calc(var(--by) * var(--depth) + 38px),  0) scale(1.06); }
+}
+@keyframes hubFloat3 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 46px), calc(var(--by) * var(--depth) - 40px),  0) scale(1.04); }
+}
+@keyframes hubFloat4 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) - 38px), calc(var(--by) * var(--depth) - 46px),  0) scale(1.05); }
+}
+@keyframes hubFloat5 {
+  0%   { transform: translate3d(calc(var(--bx) * var(--depth)),        calc(var(--by) * var(--depth)),         0) scale(1); }
+  100% { transform: translate3d(calc(var(--bx) * var(--depth) + 32px), calc(var(--by) * var(--depth) - 34px),  0) scale(1.06); }
+}
+
+/* Pointer/touch color trail — a single <canvas> the rAF loop in HubBackdrop
+   paints into. Inside .backdrop, so it inherits its z-index:0 region (BELOW
+   .intro/.path at z-index 1) and pointer-events:none — it can NEVER block a
+   node tap or the unlock choreography. Last child of .backdrop so it paints
+   ABOVE the aurora + blobs (no z-index needed; document order wins within the
+   same stacking context). The canvas is sized in JS via ResizeObserver. */
+.trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;    /* HARD RULE: never blocks interaction */
+  mix-blend-mode: normal;  /* colored light over the pale bg (screen → invisible on white) */
+}
+
+/* ---- Homework-theme header ---------------------------------------- */
+.intro {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.eyebrow {
+  font-family: var(--font-hub-body);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hub-blue);
+  margin: 0 0 10px;
+}
+.pageTitle {
+  font-family: var(--font-hub-display);
+  font-size: clamp(30px, 7vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.06;
+  margin: 0;
+  color: var(--hub-ink);
+}
+.pageSub {
+  font-family: var(--font-hub-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--hub-secondary);
+  margin: 12px auto 0;
+  max-width: 48ch;
+}
+
+/* Overall "stations cleared" progress chip. */
+.progressChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 18px auto 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.05);
+  font-family: var(--font-hub-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hub-secondary);
+}
+.progressChip svg {
+  color: var(--hub-gold);
+}
+.progressChip strong {
+  font-weight: 700;
+  color: var(--hub-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Completion badge — the "X/3 cleared" chip flips to this once the whole
+   journey is done (server gate flags all_divisions_complete + reflection_passed).
+   Additive: a tinted border + accent ink, same chip chrome. */
+.progressChipDone {
+  border-color: rgba(10, 114, 224, 0.4);
+  box-shadow: 0 3px 0 rgba(10, 114, 224, 0.12);
+}
+.progressChipDone svg { color: var(--hub-green); }
+.progressChipDone strong { color: var(--hub-green); }
+.progressChipDone span { color: var(--hub-green); font-weight: 700; }
+.progressChipRetry {
+  border-color: rgba(240, 85, 95, 0.42);
+  box-shadow: 0 3px 0 rgba(240, 85, 95, 0.12);
+}
+.progressChipRetry svg { color: var(--hub-red); }
+.progressChipRetry strong { color: var(--hub-red); }
+
+/* ---- The winding path: connectors behind, nodes stacked above ----- */
+.path {
+  position: relative;
+  z-index: 1;
+  margin: clamp(36px, 9vw, 60px) auto 0;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(40px, 9vw, 72px);
+}
+
+/* SVG path layer — painted behind the nodes, fills the whole column. */
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.line {
+  stroke: var(--hub-locked-edge);
+  opacity: 0.85;
+  transition: stroke 360ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.lineLive {
+  stroke: var(--hub-green);
+  opacity: 1;
+}
+.lineGoal {
+  fill: var(--hub-green);
+  opacity: 0.9;
+}
+
+/* ---- Hidden→reveal path: the node-2 → node-3 segment + its draw-in dots ----
+   While LOCKED the segment + dots aren't rendered at all (the path ends at Flash
+   cards). During the reveal the stroke fades in AFTER the trial dots have popped
+   in, so the line reads as "drawn" by the dots. */
+.lineReveal {
+  opacity: 0;
+  animation: hubLineReveal 520ms cubic-bezier(0.16, 1, 0.3, 1) 760ms both;
+}
+@keyframes hubLineReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Trial dots that pop in one-by-one toward the appearing node. Staggered by the
+   per-dot --d index; pure transform/opacity (transform-box on the <circle> so
+   scaling pivots on the dot itself, not the SVG origin). */
+.trialDot {
+  fill: var(--hub-green);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hubTrialDot 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(60ms + var(--d, 0) * 150ms);
+}
+@keyframes hubTrialDot {
+  0% { opacity: 0; transform: scale(0); }
+  60% { opacity: 1; transform: scale(1.18); }
+  100% { opacity: 0.92; transform: scale(1); }
+}
+
+/* ============================================================
+   THE 3D "PEBBLE" NODE = the pressable button
+   ============================================================ */
+.node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 86vw);
+  min-height: 132px;
+  padding: 20px 22px;
+  border: none;
+  border-radius: 26px;
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation; /* kill 300ms tap delay */
+  font-family: var(--font-hub-body);
+  /* the 3D lip: a hard colored bottom-edge (no layout shift) */
+  box-shadow: 0 6px 0 var(--node-edge, var(--hub-locked-edge)), 0 12px 22px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    filter 160ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  will-change: transform;
+  /* gentle mount draw-in (staggered per node below) */
+  animation: hubNodeIn 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.node:nth-child(2) { animation-delay: 80ms; }  /* node 1 (after connectors svg) */
+.node:nth-child(3) { animation-delay: 200ms; } /* node 2 */
+.node:nth-child(4) { animation-delay: 320ms; } /* node 3 */
+
+.node:hover {
+  filter: brightness(1.04);
+}
+.node:active {
+  /* the depress — translate down by the lip thickness, lip collapses */
+  transform: translateY(6px);
+  box-shadow: 0 0 0 var(--node-edge, var(--hub-locked-edge)), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.node:focus-visible {
+  outline: 3px solid var(--hub-ink);
+  outline-offset: 4px;
+}
+
+/* per-node fill + edge (drives the 3D lip color) */
+.nodeCase { background: var(--hub-orange); --node-edge: var(--hub-orange-edge); }
+.nodeFlash { background: var(--hub-blue); --node-edge: var(--hub-blue-edge); }
+.nodeDone { background: var(--hub-green); --node-edge: var(--hub-green-edge); }
+
+/* path winding: gentle horizontal offset so the eye travels */
+.alignLeft { align-self: flex-start; transform: translateX(10px); }
+.alignRight { align-self: flex-end; transform: translateX(-10px); }
+.alignCenter { align-self: center; }
+/* keep the offset under :active (compose with the depress) */
+.alignLeft:active { transform: translateX(10px) translateY(6px); }
+.alignRight:active { transform: translateX(-10px) translateY(6px); }
+
+/* idle bob — only the single next actionable node (max one per view) */
+@keyframes hubBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.isNext.alignLeft { animation: hubNodeIn 560ms cubic-bezier(0.16, 1, 0.3, 1) both, hubBob 2.4s ease-in-out 700ms infinite; }
+.isNext.alignRight { animation: hubNodeIn 560ms cubic-bezier(0.16, 1, 0.3, 1) both, hubBob 2.4s ease-in-out 700ms infinite; }
+.isNext:active { animation: none; } /* press wins over bob */
+
+/* ---- node anatomy --------------------------------------------------- */
+.nodeTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* number badge + conic progress ring (transform/opacity only, no layout cost) */
+.numRing {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--hub-gold) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.28) 0);
+  flex-shrink: 0;
+}
+.numRingDone { background: conic-gradient(var(--hub-gold) 100%, rgba(255, 255, 255, 0.28) 0); }
+.numRingOpen { background: conic-gradient(var(--hub-gold) 100%, rgba(91, 108, 255, 0.25) 0); }
+.numInner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(2px);
+  color: #ffffff;
+}
+.nodeNum {
+  font-family: var(--font-hub-display);
+  font-size: clamp(18px, 5vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+.practicesOpen .numInner { background: rgba(255, 255, 255, 0.22); color: #ffffff; }
+
+.statusGlyph {
+  display: inline-flex;
+  align-items: center;
+}
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+.crownStamp {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--hub-gold);
+  animation: hubStamp 520ms cubic-bezier(0.16, 1, 0.3, 1) 220ms both;
+}
+@keyframes hubStamp {
+  0% { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+  60% { opacity: 1; transform: scale(1.12) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.nodeTitle {
+  font-family: var(--font-hub-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  color: #ffffff;
+}
+.nodeLead {
+  font-family: var(--font-hub-body);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+  margin-top: 7px;
+  max-width: 40ch;
+}
+
+.nodeFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+.meta {
+  font-family: var(--font-hub-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+.ctaLabel {
+  font-family: var(--font-hub-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.subGlyph {
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   03 · Homework Practices — HIDDEN while locked; reveals on unlock
+   ============================================================ */
+.nodePractices {
+  width: min(360px, 90vw);
+  min-height: 168px;
+}
+/* unlocked look: violet→green legendary clay fill (the ONLY Practices state —
+   the locked node isn't rendered at all). */
+.practicesOpen {
+  background: linear-gradient(135deg, var(--hub-violet) 0%, var(--hub-green) 100%);
+  --node-edge: var(--hub-green-edge);
+  color: #ffffff;
+  box-shadow: 0 6px 0 var(--hub-green-edge), 0 14px 26px rgba(10, 114, 224, 0.22);
+}
+.practicesOpen .nodeTitle { color: #ffffff; }
+
+.practiceScope {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ---- Chain-wrap overlay positioning ---------------------------------------
+   <HubChains> renders an absolute inset:0 overlay; this just lifts it ABOVE the
+   node content (which sits at z-index 2 via .practiceScope) so the chains read
+   as wrapping over the box. pointer-events:none lives inside HubChains, so the
+   CTA below it stays tappable. */
+.chains {
+  z-index: 3;
+}
+
+/* ---- Gray→color transition driven by the node's data-chain attribute -------
+   While the node is "bound"/"rattle" it reads as a desaturated, dimmed locked
+   box; at "snap" it transitions to the full violet→green .practicesOpen fill.
+   Filter-only (compositor-friendly); the base node already animates its own
+   fade-in via §REVEAL below. */
+.nodePractices {
+  transition: filter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nodePractices[data-chain="bound"],
+.nodePractices[data-chain="rattle"] {
+  filter: grayscale(1) brightness(0.8);
+}
+.nodePractices[data-chain="snap"],
+.nodePractices[data-chain="gone"] {
+  filter: none;
+}
+
+/* Beat 3 — the node's CONTENT shakes while the chains rattle. The shake lives on
+   the INNER .practiceScope wrapper, NOT on .nodePractices itself: putting it on
+   the node would override the node's own `hubNodeFadeIn` animation, and when
+   data-chain leaves "rattle" the animation property would revert to
+   hubNodeFadeIn → the browser RESTARTS it from t=0, holding its 0.9s-delayed 0%
+   (opacity:0) keyframe and making the box vanish through the whole snap window.
+   Scoping the shake to the inner wrapper composes independently, so the node's
+   fade-in declaration never changes across phases and `both` holds opacity:1
+   continuously through snap + gone. The HubChains overlay does its own internal
+   rattle, so the chains still visibly shake regardless. Transform-only; the
+   wrapper has no static transform, so this is collision-free. */
+.shell[data-unlock="playing"] .nodePractices[data-chain="rattle"] .practiceScope {
+  animation: hubNodeShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes hubNodeShake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-4px); }
+  20% { transform: translateX(4px); }
+  30% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  50% { transform: translateX(-2px); }
+  60% { transform: translateX(2px); }
+  70% { transform: translateX(-1.5px); }
+  80% { transform: translateX(1.5px); }
+  90% { transform: translateX(-1px); }
+}
+
+/* what's inside the Practice Arc — sub-item list on the unlocked node */
+.subItems {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.subItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-hub-body);
+  font-size: 14px;
+  font-weight: 700;
+}
+.practicesOpen .subItem { color: rgba(255, 255, 255, 0.95); }
+.practicesOpen .subItem .subGlyph { color: #ffffff; }
+.subItemBoss { font-weight: 800; }
+
+/* "Enter Practice Arc →" CTA — a white 3D-press chip on the unlocked node. */
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 16px;
+  font-family: var(--font-hub-display);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--hub-green);
+  background: #ffffff;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+  touch-action: manipulation;
+  transition: transform 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.ctaBtn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.18); }
+.ctaBtn:focus-visible { outline: 3px solid #ffffff; outline-offset: 3px; }
+/* hook the unlocked CTA carries so the choreography (beat 4) can scale it in */
+.enterCta { will-change: transform, opacity; }
+
+/* ============================================================
+   HIDDEN → REVEAL CHOREOGRAPHY — a ~3.7s celebration driven by the shell's
+   data-unlock="playing" attribute AND the node's data-chain attribute (the
+   chain-wrap beats, set from JS). The locked node is not rendered at all; the
+   reveal fades the node in GRAYED + chained, rattles it, breaks the chains, then
+   celebrates. Beats (all transform/opacity/filter only):
+     1 · Dots draw in    0 → ~900ms   five SVG "trial" dots pop in one-by-one
+                                        toward the appearing node (see .trialDot)
+     2 · Node binds      ~900ms       node FADES IN grayed (hubNodeFadeIn) +
+                                        chained (data-chain="bound")
+     3 · Chains rattle    ~1500ms     chains jitter + the node shakes
+                                        (data-chain="rattle", hubNodeShake)
+     4 · Chains SNAP      ~2050ms     links break + the node goes gray→color
+                                        (data-chain="snap", filter→none)
+     5 · Celebrate        ~2450ms     glow ring expands + pulses (.glowRing) +
+                                        fireworks burst (.spark) + CTA scales in;
+                                        the path stroke fades in (.lineReveal).
+   On a return visit `data-unlock="open"` → no animation, the node is static.
+   ============================================================ */
+
+/* Beat 2 — the Practices node FADES IN (grayed; the data-chain filter handles
+   the desaturation). A gentle scale-up rather than a spring-pop, since it lands
+   as a locked/chained box, not an unlocked one. .alignCenter has no static
+   translate, so the transform is collision-free. */
+.shell[data-unlock="playing"] .nodePractices {
+  transform-origin: center;
+  animation: hubNodeFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.9s both;
+}
+@keyframes hubNodeFadeIn {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* The CTA scales in just after the chains snap. Only animates during the play. */
+.shell[data-unlock="playing"] .enterCta {
+  animation: hubCtaIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 2.45s both;
+}
+@keyframes hubCtaIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---- Celebration layer: glow ring + fireworks (reveal-only) -------------
+   Mounted by JS only during the reveal window. Absolutely centered over the
+   node, pointer-events:none, behind the node content (z-index 0 inside the
+   node, content sits at z-index 1+). All transform/opacity. */
+.celebrate {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Beat 3 — a bright ring that expands out from the node center and pulses,
+   colored from the hub blue/indigo family. Two pulses then settle to nothing. */
+.glowRing {
+  position: absolute;
+  width: 56%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 4px solid var(--hub-violet);
+  box-shadow:
+    0 0 22px 4px rgba(91, 108, 255, 0.55),
+    inset 0 0 18px 2px rgba(10, 114, 224, 0.4);
+  opacity: 0;
+  animation: hubGlowRing 1.4s cubic-bezier(0.16, 1, 0.3, 1) 2.45s both;
+}
+@keyframes hubGlowRing {
+  0% { opacity: 0; transform: scale(0.5); }
+  25% { opacity: 1; transform: scale(1.35); border-color: var(--hub-green); }
+  55% { opacity: 0.65; transform: scale(1.75); }
+  80% { opacity: 0.3; transform: scale(2.05); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+/* Beat 4 — firework burst. Each .spark is a small dot at the node center; the
+   per-particle --i / --n drive a CSS-trig radial direction so all 12 fan out
+   evenly, then fade. Reused dot geometry, retimed for this reveal. */
+.fireworks {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 50%;
+  /* alternate the blue family across particles for a lively burst */
+  background: var(--hub-violet);
+  box-shadow: 0 0 10px 2px rgba(91, 108, 255, 0.85);
+  opacity: 0;
+  /* even radial angle for this particle, + travel distance */
+  --angle: calc(var(--i) / var(--n) * 360deg);
+  --dist: 92px;
+  --dx: calc(cos(var(--angle)) * var(--dist));
+  --dy: calc(sin(var(--angle)) * var(--dist));
+  animation: hubSpark 0.95s cubic-bezier(0.22, 0.61, 0.36, 1) 2.55s both;
+}
+/* every 3rd particle in azure / gold for color variety */
+.spark:nth-child(3n + 1) { background: var(--hub-green); box-shadow: 0 0 10px 2px rgba(10, 114, 224, 0.85); }
+.spark:nth-child(3n + 2) { background: var(--hub-gold); box-shadow: 0 0 10px 2px rgba(255, 194, 77, 0.85); }
+@keyframes hubSpark {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  18% { opacity: 1; transform: translate(calc(var(--dx) * 0.3), calc(var(--dy) * 0.3)) scale(1.15); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.5); }
+}
+
+/* ---- node mount draw-in -------------------------------------------- */
+@keyframes hubNodeIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================================
+   Responsive — single winding column at every width (NO 2-up grid;
+   that would re-create the rejected "card grid" feel). The path
+   amplitude (offset) grows with width so the winding reads more.
+   ============================================================ */
+@media (min-width: 480px) {
+  .alignLeft { transform: translateX(28px); }
+  .alignRight { transform: translateX(-28px); }
+  .alignLeft:active { transform: translateX(28px) translateY(6px); }
+  .alignRight:active { transform: translateX(-28px) translateY(6px); }
+}
+@media (min-width: 680px) {
+  .node { width: 360px; }
+  .nodePractices { width: 380px; }
+  .alignLeft { transform: translateX(48px); }
+  .alignRight { transform: translateX(-48px); }
+  .alignLeft:active { transform: translateX(48px) translateY(6px); }
+  .alignRight:active { transform: translateX(-48px) translateY(6px); }
+}
+@media (min-width: 1024px) {
+  .heroGlow { width: 980px; height: 460px; }
+}
+
+/* ============================================================
+   prefers-reduced-motion — final state instantly, no draw-in/pop/glow/burst.
+   The JS in LearningHub.tsx ALSO short-circuits the play-once arming (it never
+   sets data-unlock="playing" under reduced motion → straight to "open"), so the
+   reveal layer never even mounts. These rules are belt-and-suspenders for the
+   case where the OS toggle flips mid-sequence.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .node,
+  .crownStamp,
+  .isNext.alignLeft,
+  .isNext.alignRight {
+    animation: none;
+    opacity: 1;
+  }
+  .shell[data-unlock="playing"] .nodePractices,
+  .shell[data-unlock="playing"] .nodePractices[data-chain="rattle"] .practiceScope,
+  .shell[data-unlock="playing"] .enterCta,
+  .glowRing,
+  .spark,
+  .trialDot,
+  .lineReveal {
+    animation: none;
+    opacity: 1;
+  }
+  /* keep the revealed node at its final scale + full color (no fade/shake/gray
+     pop start). data-chain may briefly be set if the OS toggle flips mid-run;
+     pin transform + filter to the settled OPEN look regardless. The inner
+     wrapper carries the shake now, so pin its transform too. */
+  .shell[data-unlock="playing"] .nodePractices,
+  .nodePractices[data-chain],
+  .nodePractices[data-chain] .practiceScope {
+    transform: none;
+    transition: none;
+    filter: none;
+  }
+  /* the celebration layer is purely decorative — hide it entirely */
+  .celebrate { display: none; }
+
+  /* Backdrop: kill all motion + parallax → a calm, near-static wash. The JS
+     also attaches NO input listeners under reduced motion, so --bx/--by stay
+     at 0; we still pin transforms here for belt-and-suspenders safety. */
+  .aurora,
+  .blob,
+  .blob1,
+  .blob2,
+  .blob3,
+  .blob4,
+  .blob5 {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* The trail attaches NO listeners + runs NO rAF under reduced motion (the JS
+     bails out), so it stays empty. Hide it for belt-and-suspenders safety. */
+  .trail {
+    display: none;
+  }
+}

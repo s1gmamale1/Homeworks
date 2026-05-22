@@ -1,0 +1,683 @@
+/* ============================================================
+   Boss Arena — canonical Apple design language.
+   Matches the LearningHub recipe exactly:
+   white card (#ffffff), 20px radius, soft diffusion shadow,
+   --grad-security (red) top-accent + corner glow,
+   #1d1d1f ink, spring var(--landing-spring), scale(1.03) hover.
+   Reduced-motion honored throughout.
+   ============================================================ */
+
+/* ---- Pinned ink + red-accent tokens (contrast guarantee) ---- */
+.arena.arena {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 34px;
+
+  /* Hub token pins */
+  --boss-ink:       #1d1d1f;
+  --boss-secondary: #86868b;
+  --boss-subtle:    #a1a1a6;
+  /* Security-red accent — maps to --grad-security / --c-red */
+  --boss-accent:    var(--c-red, #c93a3a);
+  --boss-accent-lt: rgba(201, 58, 58, 0.08);
+  --boss-accent-ring: rgba(201, 58, 58, 0.18);
+
+  color: var(--boss-ink);
+
+  /* Hub .node recipe: white card, 20px radius, diffusion shadow */
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+
+  animation: arenaIn 460ms var(--landing-spring) both;
+  transition:
+    transform   320ms var(--landing-spring),
+    box-shadow  320ms var(--landing-spring);
+}
+.arena.arena:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+}
+
+@keyframes arenaIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);     }
+}
+
+/* Red top-accent bar — 4px, full-width (Hub .cardAccent pattern) */
+.arena.arena::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-security, linear-gradient(135deg, #e05252, #c93a3a));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Red corner glow — Hub .cardGlow pattern */
+.arena.arena::after {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 188px;
+  height: 188px;
+  border-radius: 999px;
+  background: rgba(201, 58, 58, 0.22);
+  filter: blur(52px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure all direct children sit above the pseudo-element glows */
+.arena > :not(.arenaGlow) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Arena glow layer (runtime-rendered div, kept for JS state changes) ---- */
+.arenaGlow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  width: 480px;
+  height: 300px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    circle,
+    rgba(201, 58, 58, 0.12) 0%,
+    rgba(201, 58, 58, 0.05) 48%,
+    transparent 72%
+  );
+  filter: blur(36px);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 500ms var(--landing-spring);
+}
+/* Win state — switch to green glow */
+.arenaGlowWin {
+  background: radial-gradient(
+    circle,
+    rgba(4, 120, 87, 0.14) 0%,
+    rgba(4, 120, 87, 0.06) 48%,
+    transparent 74%
+  );
+}
+
+/* Win state — subtle green outer shadow overlay */
+.arenaWin.arenaWin {
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    0 30px 80px rgba(4, 120, 87, 0.14);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ============================================================
+   BOSS HEADER + HP BAR
+   ============================================================ */
+.bossHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Boss name — small red all-caps eyebrow (Hub divisionLabel style) */
+.bossName {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--boss-accent);
+}
+
+.hpLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--boss-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* HP track — inset recessed trough */
+.hpTrack {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+/* HP fill — red gradient matching --grad-security, spring transition */
+.hpFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--grad-security, linear-gradient(90deg, #e05252, #c93a3a));
+  /* Soft inner shadow to simulate depth rather than neon glow */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: width 620ms var(--landing-spring);
+}
+
+/* Hit flash — brightness burst, GPU transform only */
+.hpFillHit {
+  animation: hpFlash 480ms var(--landing-spring) both;
+}
+@keyframes hpFlash {
+  0%   { filter: brightness(1.7); }
+  100% { filter: brightness(1); }
+}
+
+/* ============================================================
+   WHY → HOW → WHAT TILES — Hub .subItem recipe:
+   #f5f5f7 background, 14px radius, 1px border, ink text.
+   ============================================================ */
+.whw {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0;
+  margin: 26px 0 4px;
+}
+
+.whwStep {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition:
+    background  220ms var(--landing-spring),
+    transform   220ms var(--landing-spring);
+}
+.whwStep:hover {
+  background: #eef0f3;
+  transform: translateX(3px);
+}
+
+/* Index badge — red tint ring (mirrors Hub subItemBoss .subGlyph color) */
+.whwIndex {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--boss-accent-lt);
+  border: 1px solid rgba(201, 58, 58, 0.30);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--boss-accent);
+}
+
+.whwBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.whwLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--boss-ink);
+}
+.whwHint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--boss-secondary);
+}
+
+/* ============================================================
+   QUESTION PANEL + TURN CARD
+   ============================================================ */
+.qLabel {
+  margin: 26px 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--boss-accent);
+}
+.question {
+  margin-top: 0;
+  color: var(--boss-ink);
+}
+
+/* Turn card — white card surface (Hub .node recipe, 14px radius for nested item) */
+.turn {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  animation: turnIn 320ms var(--landing-spring) both;
+  transition:
+    border-color 220ms var(--landing-spring),
+    background   220ms var(--landing-spring);
+}
+@keyframes turnIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Correct answer state — subtle green tint */
+.turnHit {
+  border-color: rgba(4, 120, 87, 0.35);
+  background: #f0faf5;
+}
+
+/* Incorrect answer state — subtle red tint */
+.turnMiss {
+  border-color: rgba(201, 58, 58, 0.28);
+  background: #fdf4f4;
+}
+
+.turnHead {
+  margin-bottom: 8px;
+}
+.bossLine {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--boss-ink);
+}
+.hintLine {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--boss-accent);
+}
+
+/* Error state — Hub error recipe */
+.error {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(201, 58, 58, 0.06);
+  border: 1px solid rgba(201, 58, 58, 0.30);
+  color: var(--boss-accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   ANSWER INPUT
+   ============================================================ */
+.answerWrap {
+  margin-top: 22px;
+}
+.answerLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--boss-secondary);
+  margin-bottom: 8px;
+}
+.answerInput {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.04);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--boss-ink);
+  resize: vertical;
+  transition:
+    border-color 200ms var(--landing-spring),
+    box-shadow   200ms var(--landing-spring);
+}
+.answerInput::placeholder {
+  color: var(--boss-subtle);
+}
+.answerInput:focus {
+  outline: none;
+  border-color: var(--boss-accent);
+  box-shadow: 0 0 0 4px var(--boss-accent-ring);
+}
+
+/* ============================================================
+   MASTERY STARS
+   ============================================================ */
+.stars {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.star {
+  font-size: 30px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.12);
+  transition:
+    color     300ms var(--landing-spring),
+    transform 300ms var(--landing-spring);
+}
+.starOn {
+  color: #f5a623;
+  text-shadow: 0 4px 14px rgba(245, 166, 35, 0.35);
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   STATUS RAIL — trials pill · difficulty chip · combo meter
+   (sits under the HP bar; small inline chips, ink-on-tint)
+   ============================================================ */
+.statusRail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -14px 0 22px;
+}
+
+/* Trials remaining — neutral inset chip */
+.trialsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--boss-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Difficulty tier chip — red-tinted to read as "stakes" */
+.tierChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--boss-accent-lt);
+  border: 1px solid var(--boss-accent-ring);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--boss-accent);
+}
+
+/* Combo meter — neutral until the streak earns the bonus, then amber */
+.combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--boss-secondary);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 220ms var(--landing-spring),
+    color      220ms var(--landing-spring);
+}
+.comboHot {
+  background: rgba(245, 166, 35, 0.10);
+  border-color: rgba(245, 166, 35, 0.35);
+  color: #b8770f;
+}
+.comboBonus {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(245, 166, 35, 0.18);
+  color: #b8770f;
+}
+
+/* ============================================================
+   STRUCTURED WHY → HOW → WHAT ANSWER INPUTS
+   ============================================================ */
+.scenario {
+  margin: 14px 0 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--boss-ink);
+}
+
+.whwInputs {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+.whwField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.whwFieldLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--boss-accent);
+}
+.whwFieldPrompt {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--boss-secondary);
+  margin: 0 0 2px;
+}
+
+/* ============================================================
+   HINT AFFORDANCE
+   ============================================================ */
+.hintRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.hintBtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--boss-secondary);
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--landing-spring),
+    color        200ms var(--landing-spring),
+    transform    200ms var(--landing-spring);
+}
+.hintBtn:hover {
+  border-color: var(--boss-accent-ring);
+  color: var(--boss-accent);
+  transform: translateY(-1px);
+}
+.hintNote {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--boss-subtle);
+}
+
+/* ============================================================
+   MISCONCEPTION CHIPS + COVERAGE BARS (turn-result card)
+   ============================================================ */
+.miscRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.miscChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(201, 58, 58, 0.07);
+  border: 1px solid rgba(201, 58, 58, 0.22);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--boss-accent);
+}
+
+.coverage {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.covRow {
+  display: grid;
+  grid-template-columns: 48px 1fr 38px;
+  align-items: center;
+  gap: 10px;
+}
+.covLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--boss-secondary);
+}
+.covTrack {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.covFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34c759, #28a745);
+  transition: width 520ms var(--landing-spring);
+}
+.covPct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--boss-ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   GENERATION LOADING SKELETON
+   ============================================================ */
+.skeleton {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+.skelLine {
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 25%,
+    rgba(0, 0, 0, 0.09) 37%,
+    rgba(0, 0, 0, 0.05) 63%
+  );
+  background-size: 400% 100%;
+  animation: skelShimmer 1.4s ease-in-out infinite;
+}
+.skelLine:nth-child(2) { width: 86%; }
+.skelLine:nth-child(3) { width: 64%; }
+.skelLine.skelTall { height: 64px; border-radius: 14px; }
+@keyframes skelShimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+.skelLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--boss-secondary);
+}
+
+/* ============================================================
+   GENERATION-ERROR (502) BLOCK
+   ============================================================ */
+.genError {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(201, 58, 58, 0.06);
+  border: 1px solid rgba(201, 58, 58, 0.28);
+}
+.genErrorTitle {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--boss-accent);
+}
+.genErrorBody {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--boss-ink);
+}
+
+/* XP pill on the win screen */
+.xpPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(4, 120, 87, 0.08);
+  border: 1px solid rgba(4, 120, 87, 0.30);
+  font-size: 13px;
+  font-weight: 700;
+  color: #0a7d4f;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 560px) {
+  .whw { grid-template-columns: 1fr; }
+  .arena.arena { padding: 28px 20px; }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .arena.arena,
+  .turn {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .arena.arena:hover { transform: none; }
+  .hpFill    { transition: none; }
+  .hpFillHit { animation: none; }
+  .whwStep:hover { transform: none; }
+  .hintBtn:hover { transform: none; }
+  .covFill   { transition: none; }
+  .skelLine  { animation: none; }
+}

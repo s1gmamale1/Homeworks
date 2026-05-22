@@ -1,0 +1,297 @@
+/* Real-Life Challenge editor — v2 builder token language.
+   Tokens: --v2-accent, --v2-accent-soft, --v2-ring, --v2-card-bg,
+   --v2-card-tinted, --v2-text, --v2-text-muted, --v2-text-subtle,
+   --v2-radius-card (defined in _tokens.css / fields.module.css).
+   Builder surface — NOT the runtime Apple-glass recipe. */
+
+.editor {
+  display: block;
+}
+
+/* ---- Case-level meta grid (2-up rows that wrap to 1-up on narrow) ---- */
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0 16px;
+}
+
+/* ---- Empty state ---- */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 24px;
+  border: 1.5px dashed var(--v2-ring);
+  border-radius: var(--v2-radius-card, 16px);
+  text-align: center;
+  background: color-mix(in srgb, var(--v2-card-tinted) 60%, transparent);
+}
+
+.emptyIcon {
+  color: var(--v2-text-subtle);
+  opacity: 0.75;
+}
+
+.emptyLabel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+}
+
+.emptyBody {
+  margin: 0;
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+  max-width: 380px;
+  line-height: 1.55;
+}
+
+/* ---- Steps section ---- */
+.stepsNote {
+  font-size: 12.5px;
+  color: var(--v2-text-subtle);
+  line-height: 1.55;
+  margin: 4px 2px 12px;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- One collapsible step card ---- */
+.stepCard {
+  background: var(--v2-card-tinted);
+  border: 1px solid var(--v2-ring);
+  border-radius: var(--v2-radius-card, 16px);
+  overflow: hidden;
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.stepCardOpen {
+  border-color: var(--v2-accent-soft, var(--v2-accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 12%, transparent);
+}
+
+/* ---- Step header (the whole bar is the toggle) ---- */
+.stepHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--v2-card-bg);
+  border: none;
+  border-bottom: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: background 120ms ease;
+}
+
+.stepHead:hover {
+  background: color-mix(in srgb, var(--v2-accent) 5%, var(--v2-card-bg));
+}
+
+.stepCardOpen .stepHead {
+  border-bottom-color: var(--v2-ring);
+}
+
+.stepBadge {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--v2-accent);
+  border-radius: 999px;
+  user-select: none;
+}
+
+.stepHeadText {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepKind {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--v2-accent);
+}
+
+.stepTitlePreview {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--v2-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stepSummary {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+  background: color-mix(in srgb, var(--v2-accent) 9%, transparent);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex: 0 0 auto;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--v2-text-subtle);
+  transition: transform 180ms ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ---- Step body ---- */
+.stepBody {
+  padding: 14px;
+}
+
+.stepHelp {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--v2-text-subtle);
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--v2-accent) 6%, transparent);
+  border-radius: 10px;
+}
+
+/* ---- Choice groups (options + chips share the layout) ---- */
+.choiceGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.choiceGroupLabel {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text);
+}
+
+.choiceGroupHint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--v2-text-subtle);
+}
+
+/* Decision option: a top row (radio + tag + label + remove) plus a
+   consequence input beneath. */
+.optionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  background: var(--v2-card-bg);
+}
+
+.optionRowTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.correctRadio {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--v2-text-subtle);
+  background: var(--v2-card-bg);
+  border: 2px solid var(--v2-ring);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.correctRadioOn {
+  color: #fff;
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.optionTag {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--v2-text-muted);
+  width: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+.optionInput,
+.consequenceInput {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--v2-text);
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: 9px;
+  padding: 8px 11px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.optionInput {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.consequenceInput {
+  font-size: 13px;
+  color: var(--v2-text-muted);
+  margin-left: 34px; /* align under the label, past the radio */
+  width: calc(100% - 34px);
+}
+
+.optionInput:focus,
+.consequenceInput:focus {
+  outline: none;
+  border-color: var(--v2-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 18%, transparent);
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stepCard,
+  .stepHead,
+  .chevron,
+  .correctRadio,
+  .optionInput,
+  .consequenceInput {
+    transition: none;
+  }
+}

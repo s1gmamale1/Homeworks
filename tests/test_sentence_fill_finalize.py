@@ -13,6 +13,19 @@ import pytest
 import server.routes.ai as _ai_routes
 
 
+async def _always_unlocked(*a, **k):
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _unlock_practice_arc(monkeypatch):
+    """Sentence-Fill submits are now server-gated (BLOCKER #3). These finalize
+    tests pre-submit answers to seed the attempt tracker — patch the unlock
+    check always-True so the submits reach the grader rather than 403. The gate
+    itself is pinned by tests/test_practice_gate_server_enforced.py."""
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
+
 @pytest.fixture(autouse=True)
 def _wipe_sf_attempts():
     _ai_routes._SF_ATTEMPTS.clear()

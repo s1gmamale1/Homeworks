@@ -1,0 +1,346 @@
+/* TileMatch — Apple design-system card recipe, CONTENT-YELLOW accent.
+   Mirrors the LearningHub .node / .entryNode system:
+     • white solid cards, 20px radius, soft diffusion shadow (no heavy outlines)
+     • 4px --grad-content accent bar across card tops
+     • faint yellow corner glow tucked behind content
+     • crisp #1d1d1f (#ink) titles, --text-secondary subtitles
+     • gentle translateY(-4px) scale(1.03) hover on spring
+     • prefers-reduced-motion fully honored
+   Accent palette: --grad-content (linear-gradient(135deg,#ffd166,#f4a261))
+                   --c-yellow (#f4a261) for tints / rings
+   No data-contract changes — only presentation. */
+
+/* ---- wrap: fade-in rise on mount ----------------------------------- */
+.wrap {
+  position: relative;
+  animation: tmFadeIn 360ms var(--landing-spring) both;
+}
+@keyframes tmFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ---- ambient: warm yellow-amber diffusion behind board ------------- */
+.ambient {
+  position: absolute;
+  inset: -10% -8% auto -8%;
+  height: 52%;
+  max-height: 420px;
+  background:
+    radial-gradient(58% 78% at 22% 10%, rgba(255, 209, 102, 0.22) 0%, transparent 60%),
+    radial-gradient(50% 68% at 80%  6%, rgba(244, 162, 97,  0.16) 0%, transparent 62%),
+    radial-gradient(44% 60% at 50% 36%, rgba(255, 209, 102, 0.10) 0%, transparent 64%);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- head: eyebrow + counter --------------------------------------- */
+.head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #86868b);
+}
+
+.sub {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+}
+
+/* ---- the match board ----------------------------------------------- */
+.board {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 24px;
+}
+.column {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+/* ---- Base tile: Apple white-card recipe from LearningHub .node ----- */
+/* Solid white surface, minimal 1px border (0.05 opacity = barely visible),
+   soft diffusion shadow matching entryNode, generous padding, 20px radius. */
+.tile {
+  position: relative;           /* stacking context for ::before accent bar */
+  overflow: hidden;             /* clip the top accent bar inside the radius */
+  width: 100%;
+  min-height: 58px;
+  padding: 16px 18px 14px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink, #1d1d1f);
+  text-align: left;
+  transition:
+    transform    220ms var(--landing-spring),
+    border-color 220ms var(--landing-spring),
+    background   220ms var(--landing-spring),
+    box-shadow   220ms var(--landing-spring),
+    opacity      220ms var(--landing-spring);
+}
+
+/* 4px content-yellow accent bar across the very top (LearningHub .cardAccent recipe) */
+.tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-content, linear-gradient(135deg, #ffd166, #f4a261));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Faint yellow corner glow — top-right, behind content (LearningHub .cardGlow recipe) */
+.tile::after {
+  content: "";
+  position: absolute;
+  right: -48px;
+  top: -48px;
+  width: 148px;
+  height: 148px;
+  border-radius: 999px;
+  background: rgba(244, 162, 97, 0.22);
+  filter: blur(44px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Hover: gentle lift + scale (LearningHub .entryNode:hover pattern) */
+.tile:not(:disabled):hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+  border-color: rgba(244, 162, 97, 0.35);
+  background: #ffffff;
+}
+.tile:not(:disabled):active {
+  transform: translateY(-1px) scale(1.012);
+}
+
+/* Left-column: no extra accent — the shared ::before bar is sufficient.
+   Left-edge stripe replaced by a marginally warmer shadow tint for column
+   differentiation without adding a second color stripe. */
+.tileLeft {
+  /* intentionally empty — accent bar ::before handles the brand hit */
+}
+
+/* Right-column: same card system; a cooler amber tint for the corner glow
+   differentiates the two columns subtly. */
+.tileRight::after {
+  background: rgba(255, 209, 102, 0.20);
+}
+
+/* ---- Selected: warm yellow ring + tint (CONTENT-YELLOW ring recipe) */
+.tileSelected {
+  background: rgba(255, 209, 102, 0.08);
+  border-color: rgba(244, 162, 97, 0.55);
+  box-shadow:
+    0 0 0 3px rgba(244, 162, 97, 0.22),
+    0 18px 48px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px) scale(1.03);
+}
+
+/* ---- Matched: soft green wash (success recipe) --------------------- */
+.tileMatched {
+  background: linear-gradient(
+    160deg,
+    rgba(236, 253, 245, 0.90),
+    rgba(255, 255, 255, 0.70) 70%
+  );
+  border-color: rgba(4, 120, 87, 0.22);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  color: var(--landing-emerald-700, #047857);
+  opacity: 0.80;
+  cursor: default;
+}
+/* Matched corner glow — green tint */
+.tileMatched::after {
+  background: rgba(52, 211, 153, 0.18);
+}
+/* Matched top bar — dim to a gentle green wash */
+.tileMatched::before {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.45), rgba(4, 120, 87, 0.30));
+}
+
+/* ---- Wrong: brief red-pink wash + horizontal shake animation ------- */
+.tileWrong {
+  background: linear-gradient(
+    160deg,
+    rgba(254, 226, 226, 0.85),
+    rgba(255, 255, 255, 0.70) 70%
+  );
+  border-color: rgba(201, 58, 58, 0.32);
+  box-shadow:
+    0 0 0 2px rgba(201, 58, 58, 0.16),
+    0 4px 16px rgba(0, 0, 0, 0.04);
+  animation: tmShake 460ms var(--landing-spring) both;
+}
+/* Wrong top bar — red accent */
+.tileWrong::before {
+  background: var(--grad-security, linear-gradient(135deg, #e26d6d, #c93a3a));
+}
+@keyframes tmShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* ---- Wrong-match hint: white Apple card pill ----------------------- */
+.hint {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(244, 162, 97, 0.20);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  animation: tmFadeIn 280ms var(--landing-spring) both;
+}
+.hintText {
+  font-size: 14px;
+  color: var(--text-secondary, #86868b);
+}
+
+/* ---- Error: warm amber notice -------------------------------------- */
+.error {
+  position: relative;
+  z-index: 1;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.90);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- Complete card: Apple white-card with content-yellow ring + glow */
+/* Mirrors LearningHub .practicesOpen style — inset ring + deeper shadow. */
+.done {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  display: grid;
+  gap: 12px;
+  padding: 36px 32px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.04),
+    inset 0 0 0 1.5px rgba(244, 162, 97, 0.40);
+  animation: tmFadeIn 400ms var(--landing-spring) both,
+             tmUnlockPop 760ms var(--landing-spring) 440ms 1 both;
+}
+
+/* Content-yellow corner glow (top-right, wide — LearningHub .cardGlow recipe) */
+.done::before {
+  content: "";
+  position: absolute;
+  right: -56px;
+  top: -56px;
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.28);
+  filter: blur(52px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Secondary warm amber glow in bottom-left */
+.done::after {
+  content: "";
+  position: absolute;
+  left: -40px;
+  bottom: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: rgba(244, 162, 97, 0.18);
+  filter: blur(44px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* One-shot "unlock pop" (LearningHub hubUnlockPop pattern) */
+@keyframes tmUnlockPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.025); }
+  70%  { transform: scale(0.992); }
+  100% { transform: scale(1); }
+}
+
+/* ---- Actions row --------------------------------------------------- */
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ---- Mobile: tighter spacing --------------------------------------- */
+@media (max-width: 560px) {
+  .board { gap: 10px; }
+  .tile {
+    font-size: 14px;
+    padding: 13px 14px 11px;
+    border-radius: 18px;
+  }
+  .tile::before { border-radius: 18px 18px 0 0; }
+  .done {
+    padding: 28px 22px;
+    border-radius: 18px;
+  }
+}
+
+/* ---- Reduced motion: kill all transforms + animations -------------- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .hint,
+  .done {
+    animation: none;
+  }
+  .tile:not(:disabled):hover {
+    transform: none;
+  }
+  .tileSelected {
+    transform: none;
+  }
+  .tileWrong {
+    animation: none;
+  }
+  .ambient {
+    display: none;
+  }
+}

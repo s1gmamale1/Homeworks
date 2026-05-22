@@ -117,3 +117,89 @@ def test_existing_schema_fields_preserved():
     assert existing_keys.issubset(set(out.keys())), (
         f"Missing expected keys: {existing_keys - set(out.keys())}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Item 4 — server-authoritative boss-fail wiring into /grading/aggregate.
+#
+# The runtime still sends `homework_failed`, but the route now re-derives it
+# from the persisted boss-session terminal state so a tampered/forgetful client
+# can't dodge the failed-homework penalty. A boss arc is "failed" when it ended
+# in status='failed' (trials ran out) AND the boss still held > 40% of max HP.
+# ---------------------------------------------------------------------------
+
+import pytest
+
+from server.routes import grading as grading_route
+
+
+def _mock_latest_boss(monkeypatch, session: dict | None):
+    async def _fake(session_id, homework_id):
+        return session
+    monkeypatch.setattr(
+        grading_route.boss_session_repo, "get_latest_boss_session_for", _fake
+    )
+
+
+class _AggReq:
+    """Minimal stand-in for AggregateRequest (the route only reads attributes)."""
+    def __init__(self, **kw):
+        self.items = kw.get("items", [_amr_item(4.0, 4.0)])
+        self.session_id = kw.get("session_id", "sess-1")
+        self.homework_id = kw.get("homework_id", "hw-1")
+        self.warning_deductions = kw.get("warning_deductions", 0)
+        self.homework_failed = kw.get("homework_failed", False)
+        self.subject = kw.get("subject", None)
+        self.expected_open_count = kw.get("expected_open_count", None)
+
+
+@pytest.mark.asyncio
+async def test_boss_failed_terminal_state_forces_homework_failed(monkeypatch):
+    """REGRESSION (item 4): a final-boss session that ended 'failed' with the
+    boss still above 40% HP must force homework_failed even when the client
+    omits the flag (homework_failed=False in the request)."""
+    _mock_latest_boss(monkeypatch, {"status": "failed", "hp": 60, "max_hp": 100})
+    out = await grading_route.aggregate(_AggReq(homework_failed=False))
+    assert out["action"]["kind"] == "failed"
+    assert out["homework_failed"] is True
+
+
+@pytest.mark.asyncio
+async def test_boss_failed_below_hp_threshold_does_not_force_fail(monkeypatch):
+    """A 'failed' arc where the boss was nearly dead (HP <= 40% of max) is a
+    near-win — the per-axis tier carries the grade, NOT a blanket fail."""
+    _mock_latest_boss(monkeypatch, {"status": "failed", "hp": 40, "max_hp": 100})
+    out = await grading_route.aggregate(_AggReq(homework_failed=False))
+    assert out["homework_failed"] is False
+    assert out["action"]["kind"] != "failed"
+
+
+@pytest.mark.asyncio
+async def test_boss_won_does_not_force_fail(monkeypatch):
+    """A 'won' boss session never forces a fail regardless of HP."""
+    _mock_latest_boss(monkeypatch, {"status": "won", "hp": 0, "max_hp": 100})
+    out = await grading_route.aggregate(_AggReq(homework_failed=False))
+    assert out["homework_failed"] is False
+
+
+@pytest.mark.asyncio
+async def test_client_reported_fail_still_honored_when_no_boss_session(monkeypatch):
+    """The server ORs into the client flag — it can trip the fail, but can never
+    UN-fail a client that already reported failure (e.g. non-boss homeworks)."""
+    _mock_latest_boss(monkeypatch, None)
+    out = await grading_route.aggregate(_AggReq(homework_failed=True))
+    assert out["homework_failed"] is True
+    assert out["action"]["kind"] == "failed"
+
+
+@pytest.mark.asyncio
+async def test_boss_state_lookup_error_is_non_fatal(monkeypatch):
+    """A boss-state read failure must never block the scorecard — it degrades
+    to the client-supplied flag (here False)."""
+    async def _boom(session_id, homework_id):
+        raise RuntimeError("db down")
+    monkeypatch.setattr(
+        grading_route.boss_session_repo, "get_latest_boss_session_for", _boom
+    )
+    out = await grading_route.aggregate(_AggReq(homework_failed=False))
+    assert out["homework_failed"] is False

@@ -1,0 +1,82 @@
+/* MetadataEditor — v2 builder design token language. */
+
+.editor {
+  display: block;
+}
+
+/* Two-column row for section + topic */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 540px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Mode button-group ---- */
+
+.modeGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 0;
+  justify-content: center;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  background: var(--v2-card-bg);
+  border: 1.5px solid var(--v2-ring);
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.modeBtn:hover {
+  color: var(--v2-text);
+  border-color: var(--v2-accent-soft);
+}
+
+.modeBtnActive {
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 10%, var(--v2-card-bg));
+  border-color: var(--v2-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 14%, transparent);
+}
+
+.modeBtnActive:hover {
+  border-color: var(--v2-accent);
+  color: var(--v2-accent);
+}
+
+.modeBtnIcon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* ---- Always-hard note ---- */
+
+.alwaysHardNote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--v2-text-subtle);
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--v2-accent) 6%, var(--v2-card-bg));
+  border: 1px solid color-mix(in srgb, var(--v2-accent) 20%, transparent);
+  border-radius: 10px;
+}

@@ -1,0 +1,438 @@
+/* ============================================================
+   HubChains.module.css — decorative chain-wrap + chain-break overlay
+   for the Division-3 "Homework Practices" node.
+
+   Layout: fills the parent node (`inset:0`); two diagonal chain RUNS cross
+   over the center forming an X, bound by a central padlock. All motion is
+   transform/opacity-only (GPU-friendly). Phase is read off `data-phase` on
+   the root so a single attribute swap drives the whole choreography.
+
+   Metal palette (the brief): highlight #9aa3af · mid #6b7280 · shadow #3f4654.
+   Spring: Apple no-overshoot cubic-bezier(.16,1,.3,1).
+   ============================================================ */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3; /* above the node fill + content, below any modal layer */
+  border-radius: 26px; /* match .nodePractices so chains clip to the box */
+  overflow: visible; /* recoiling halves + sparks fly past the edge on snap */
+
+  --metal-hi: #9aa3af;
+  --metal-mid: #6b7280;
+  --metal-lo: #3f4654;
+  --metal-ink: #2a2f3a;
+  --spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* fade the whole wrap in when first bound */
+  animation: chainsFadeIn 420ms var(--spring) both;
+}
+
+@keyframes chainsFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---- the two diagonal chain runs (the X-wrap) ---------------------------- */
+/* Each run is a vertical stack of links, then rotated to lie diagonally across
+   the box. Left run leans one way, right run the other → they cross at center. */
+.run {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px; /* links sit nearly flush so the ring overlap reads as interlock */
+  /* the run is taller than the box so it visibly wraps past both edges */
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* base resting transforms (composed with the recoil on snap below) */
+.runLeft {
+  transform: translate(-50%, -50%) rotate(-34deg);
+}
+.runRight {
+  transform: translate(-50%, -50%) rotate(34deg);
+}
+
+/* ---- a single metallic link --------------------------------------------- */
+.link {
+  display: block;
+  filter: drop-shadow(0 1px 1.5px rgba(15, 18, 24, 0.45));
+}
+/* horizontal vs vertical link → alternating axis sells the interlock; the
+   negative margin tucks each link into the previous ring's opening. */
+.linkH {
+  width: 26px;
+  height: 36px;
+  margin-top: -12px;
+}
+.linkV {
+  width: 34px;
+  height: 26px;
+  margin-top: -12px;
+  transform: rotate(90deg);
+}
+.run > .link:first-child {
+  margin-top: 0;
+}
+
+.linkSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* the link body: a thick metal ring with a vertical sheen gradient. We fake the
+   gradient with stroke + two layered rects (ring = mid→shadow, sheen = thin hi). */
+.linkRing {
+  fill: none;
+  stroke: var(--metal-mid);
+  stroke-width: 7;
+  /* sheen: brighter at the top-left lip, darker bottom-right */
+  stroke-linecap: round;
+  paint-order: stroke;
+}
+.linkSheen {
+  fill: none;
+  stroke: var(--metal-hi);
+  stroke-width: 2;
+  opacity: 0.65;
+  /* nudge the highlight toward the top-left to read as a catch-light */
+  transform: translate(-0.6px, -0.6px);
+}
+
+/* depth: a darker ring under the bright one for a beveled tube look. We use a
+   second box-shadow-like trick via the drop-shadow on .link + the lo stroke
+   layered through ::before-free SVG; keep it simple with the two strokes. */
+
+/* ---- central padlock ----------------------------------------------------- */
+.padlock {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+  transform-origin: top center;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 3px 4px rgba(15, 18, 24, 0.5));
+}
+.padlockSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.shackle {
+  fill: none;
+  stroke: var(--metal-hi);
+  stroke-width: 7;
+  stroke-linecap: round;
+  transform-origin: 46px 28px; /* right leg of the U = the hinge */
+  will-change: transform;
+}
+.lockBody {
+  fill: var(--metal-mid);
+  stroke: var(--metal-lo);
+  stroke-width: 1.5;
+}
+.lockSheen {
+  fill: none;
+  stroke: var(--metal-hi);
+  stroke-width: 2;
+  opacity: 0.5;
+  transform: translate(-0.5px, -0.5px);
+}
+.keyhole {
+  fill: var(--metal-ink);
+}
+
+/* ---- glow burst behind the break point (snap only) ----------------------- */
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 240px;
+  height: 240px;
+  transform: translate(-50%, -50%) scale(0.2);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(226, 232, 240, 0.6) 0%,
+    rgba(154, 163, 175, 0.4) 34%,
+    rgba(107, 114, 128, 0.18) 60%,
+    transparent 74%
+  );
+  filter: blur(18px);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ---- spark shards flung at the break (snap only) ------------------------- */
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  box-shadow: 0 0 10px rgba(203, 213, 225, 0.95);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ===========================================================================
+   PHASE: rattle — chains jitter/vibrate in place (tension building).
+   Tiny sub-pixel shake on each run + the padlock; opacity untouched.
+   =========================================================================== */
+.overlay[data-phase="rattle"] .runLeft {
+  animation: rattleLeft 110ms linear infinite;
+}
+.overlay[data-phase="rattle"] .runRight {
+  animation: rattleRight 124ms linear infinite;
+}
+.overlay[data-phase="rattle"] .padlock {
+  animation: rattleLock 96ms linear infinite;
+}
+
+@keyframes rattleLeft {
+  0% {
+    transform: translate(-50%, -50%) rotate(-34deg);
+  }
+  25% {
+    transform: translate(calc(-50% - 1px), calc(-50% + 0.5px)) rotate(-35.2deg);
+  }
+  50% {
+    transform: translate(calc(-50% + 1px), -50%) rotate(-33deg);
+  }
+  75% {
+    transform: translate(-50%, calc(-50% - 0.8px)) rotate(-34.8deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-34deg);
+  }
+}
+@keyframes rattleRight {
+  0% {
+    transform: translate(-50%, -50%) rotate(34deg);
+  }
+  25% {
+    transform: translate(calc(-50% + 1px), calc(-50% - 0.5px)) rotate(35.2deg);
+  }
+  50% {
+    transform: translate(calc(-50% - 1px), -50%) rotate(33deg);
+  }
+  75% {
+    transform: translate(-50%, calc(-50% + 0.8px)) rotate(34.8deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(34deg);
+  }
+}
+@keyframes rattleLock {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  30% {
+    transform: translate(calc(-50% + 0.8px), -50%) rotate(1.4deg);
+  }
+  60% {
+    transform: translate(calc(-50% - 0.8px), calc(-50% + 0.5px)) rotate(-1.2deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+/* ===========================================================================
+   PHASE: snap — links break, halves recoil outward, padlock pops + drops,
+   burst flashes, sparks fly. A premium one-shot "unlock" break.
+   =========================================================================== */
+
+/* left half recoils up-left + over-rotates, then fades */
+.overlay[data-phase="snap"] .runLeft {
+  animation: snapRunLeft 760ms var(--spring) both;
+}
+/* right half recoils down-right + over-rotates, then fades */
+.overlay[data-phase="snap"] .runRight {
+  animation: snapRunRight 760ms var(--spring) both;
+}
+/* padlock: shackle springs open, body drops away + spins slightly, fades */
+.overlay[data-phase="snap"] .padlock {
+  animation: lockDrop 820ms var(--spring) 60ms both;
+}
+.overlay[data-phase="snap"] .shackle {
+  animation: shacklePop 320ms var(--spring) both;
+}
+.overlay[data-phase="snap"] .burst {
+  animation: burst 900ms var(--spring) 40ms both;
+}
+.overlay[data-phase="snap"] .spark1 {
+  animation: spark1 760ms var(--spring) 60ms both;
+}
+.overlay[data-phase="snap"] .spark2 {
+  animation: spark2 760ms var(--spring) 90ms both;
+}
+.overlay[data-phase="snap"] .spark3 {
+  animation: spark3 760ms var(--spring) 70ms both;
+}
+.overlay[data-phase="snap"] .spark4 {
+  animation: spark4 760ms var(--spring) 110ms both;
+}
+
+@keyframes snapRunLeft {
+  0% {
+    transform: translate(-50%, -50%) rotate(-34deg);
+    opacity: 1;
+  }
+  16% {
+    /* brief tension pull inward before the break */
+    transform: translate(-50%, calc(-50% + 3px)) rotate(-32deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% - 120px), calc(-50% - 64px)) rotate(-92deg);
+    opacity: 0;
+  }
+}
+@keyframes snapRunRight {
+  0% {
+    transform: translate(-50%, -50%) rotate(34deg);
+    opacity: 1;
+  }
+  16% {
+    transform: translate(-50%, calc(-50% - 3px)) rotate(32deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + 120px), calc(-50% + 64px)) rotate(92deg);
+    opacity: 0;
+  }
+}
+/* shackle hinges open ~70° around its right leg */
+@keyframes shacklePop {
+  0% {
+    transform: rotate(0deg);
+  }
+  60% {
+    transform: rotate(-74deg);
+  }
+  100% {
+    transform: rotate(-66deg);
+  }
+}
+/* whole lock drops down + tumbles + fades after popping */
+@keyframes lockDrop {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 1;
+  }
+  22% {
+    transform: translate(-50%, calc(-50% - 6px)) rotate(-4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% + 96px)) rotate(38deg);
+    opacity: 0;
+  }
+}
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  40% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+}
+@keyframes spark1 {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-260%, -360%) scale(0.4);
+  }
+}
+@keyframes spark2 {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(220%, -300%) scale(0.4);
+  }
+}
+@keyframes spark3 {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-180%, 320%) scale(0.4);
+  }
+}
+@keyframes spark4 {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(240%, 300%) scale(0.4);
+  }
+}
+
+/* ===========================================================================
+   REDUCED MOTION — render nothing/transparent regardless of phase. No chains,
+   no padlock, no animation. The box simply appears free.
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    display: none;
+    animation: none;
+  }
+  .run,
+  .runLeft,
+  .runRight,
+  .padlock,
+  .shackle,
+  .burst,
+  .spark,
+  .spark1,
+  .spark2,
+  .spark3,
+  .spark4 {
+    animation: none !important;
+  }
+}

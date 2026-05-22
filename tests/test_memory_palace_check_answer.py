@@ -38,6 +38,19 @@ from __future__ import annotations
 import pytest
 
 
+async def _always_unlocked(*a, **k):
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _unlock_practice_arc(monkeypatch):
+    """Memory Palace is now a server-gated practice-arc game (BLOCKER #3).
+    These are grading unit tests, not gating tests — patch the unlock check
+    always-True so they exercise the grader, not the 403 PRACTICE_LOCKED guard.
+    The gate itself is pinned by tests/test_practice_gate_server_enforced.py."""
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
+
 # ---------------------------------------------------------------------------
 # Helpers — minimal homework + 5-location palace + 5 concepts.
 # ---------------------------------------------------------------------------
@@ -151,6 +164,40 @@ def test_mp_perfect_session_returns_perfect_outcome(client):
     assert data["session_xp_display"] == 450
     assert data["retry_offered"] is False
     assert data["missed_location_indices"] == []
+
+
+def test_mp_persists_phase_attempts_for_reflection(client):
+    """Memory Palace was the ONLY graded Practice-Arc game writing NOTHING to
+    phase_attempts, so the Reflection engine's data extraction was blind to it.
+    A graded submit with a session_id must now persist one row per recall
+    location under phase="memory-palace" (the string the engine groups)."""
+    import asyncio
+    from server.db.attempts_repo import list_phase_attempts
+
+    hw_id = _seed_homework(client)
+    sid = "mp-persist-sess"
+    code, data = _post_check(
+        client,
+        phase="memory-palace",
+        homework_id=hw_id,
+        session_id=sid,
+        palace_key="test-palace",
+        placements=_build_placements(5),
+        recall_results=_build_correct_recall(5),
+    )
+    assert code == 200, data
+
+    loop = asyncio.new_event_loop()
+    try:
+        rows = loop.run_until_complete(
+            list_phase_attempts(sid, hw_id, phase="memory-palace")
+        )
+    finally:
+        loop.close()
+
+    assert len(rows) == 5  # one row per recall location
+    assert all(r["phase"] == "memory-palace" for r in rows)
+    assert sum(1 for r in rows if r["correct"] == 1) == 5  # perfect session
 
 
 # ---------------------------------------------------------------------------

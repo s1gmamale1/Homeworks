@@ -25,7 +25,8 @@ EXPECTED_SELECT_IDS = [
     "mode-filter",
     "homework-subject",
     "homework-grade",
-    "homework-mode",
+    # NOTE: "homework-mode" (the create-modal Easy/Hard select) was intentionally
+    # removed — v2 homeworks don't ask difficulty at create time.
 ]
 
 # Minimal pattern: <select ... id="X" ... > — captures full attribute string

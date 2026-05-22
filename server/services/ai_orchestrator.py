@@ -238,6 +238,9 @@ async def generate(
     model: str = FAST_MODEL,
     json_mode: bool = False,
     temperature: float = 0.7,
+    *,
+    tier: Optional[str] = None,
+    preference_override: Optional[list[str]] = None,
 ) -> str:
     """Return raw text from the first provider in the preference list that
     succeeds.
@@ -252,21 +255,65 @@ async def generate(
     raw exception; that meant a single Vertex 5xx took the tutor down even
     when Kimi and the Gemini API were healthy. The chain advertised in
     `STATE.md` (Vertex → Gemini → Kimi → stock) is now actually wired.
+
+    Tier-based per-provider model resolution
+    ----------------------------------------
+    ``tier`` (``"pro"`` or ``"fast"``) lets the gateway route across providers
+    that use different model identifiers. When ``tier`` is set, each provider
+    in the fallback walk picks its OWN model name from ``provider.pro_model``
+    / ``provider.fast_model`` — so an ``openai → kimi`` chain swaps model
+    strings as it walks instead of trying to send ``gpt-4o-mini`` to Moonshot
+    or vice versa.
+
+    Backward compatible: callers that pass ``model=`` (the old API) keep
+    working unchanged. ``model=`` takes precedence over ``tier=``.
+
+    ``preference_override`` lets a per-call preference list bypass the global
+    ``AI_BACKEND_PREFERENCE`` env. Used by ``ai_gateway.TASK_PROVIDER_PREFERENCE``
+    so boss tasks can route ``openai → kimi`` without changing the global
+    default for tutor / answer-check / reflection.
     """
     full_prompt = f"{prompt}\n\n---\n\nCONTEXT:\n{context}" if context else prompt
-    available = list(_iter_available_providers(_preference_list()))
+    # Per-call preference takes precedence over env. Falls back to AI_BACKEND_PREFERENCE.
+    preference = preference_override or _preference_list()
+    available = list(_iter_available_providers(preference))
     if not available:
         raise RuntimeError(
             "No AI backend available. Set KIMI_API_KEY in .env."
         )
 
+    # Detect whether the caller is using tier-based resolution. The legacy
+    # default `model=FAST_MODEL` would be indistinguishable from an explicit
+    # "fast-tier Kimi" request, so we only switch to tier mode when the
+    # caller explicitly passes a `tier` kwarg.
+    use_tier_mode = tier is not None
+
     tried: list[str] = []
     last_exc: Optional[BaseException] = None
     for provider in available:
+        # In tier mode, ask each provider for its OWN model name so the
+        # fallback walk can cross provider boundaries cleanly.
+        if use_tier_mode:
+            try:
+                effective_model = (
+                    provider.pro_model if tier == "pro" else provider.fast_model
+                )
+            except NotImplementedError as exc:
+                # Provider doesn't expose tier models — skip it; let the walk
+                # find one that does. Logged for ops visibility.
+                _log.warning(
+                    "AI provider %s missing %s_model; skipping in tier-mode walk",
+                    provider.name, tier,
+                )
+                tried.append(provider.name)
+                last_exc = exc
+                continue
+        else:
+            effective_model = model
         try:
             envelope = await provider.generate_json(
                 full_prompt,
-                model,
+                effective_model,
                 json_mode=json_mode,
                 temperature=temperature,
             )

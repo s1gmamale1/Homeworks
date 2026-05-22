@@ -1,0 +1,160 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text);
+}
+
+.hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--v2-text-subtle);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  color: var(--v2-text);
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: 10px;
+  padding: 9px 12px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--v2-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-accent) 18%, transparent);
+}
+
+.select {
+  cursor: pointer;
+}
+
+.card {
+  background: var(--v2-card-tinted);
+  border: 1px solid var(--v2-ring);
+  border-radius: var(--v2-radius-card);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--v2-text);
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.cardBody {
+  display: block;
+}
+
+.smallBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  background: var(--v2-card-bg);
+  border: 1px solid var(--v2-ring);
+  border-radius: 8px;
+  padding: 5px 10px;
+  transition: background 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.smallBtn:hover:not(:disabled) {
+  color: var(--v2-text);
+  border-color: var(--v2-accent-soft);
+}
+
+.smallBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btnPrimary {
+  color: #fff;
+  background: var(--v2-accent);
+  border-color: var(--v2-accent);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  color: #fff;
+  filter: brightness(1.05);
+}
+
+.btnDanger {
+  color: #ef4444;
+  border-color: color-mix(in srgb, #ef4444 35%, transparent);
+}
+
+.btnDanger:hover:not(:disabled) {
+  color: #fff;
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.optionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.correctRadio {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--v2-text-subtle);
+  background: var(--v2-card-bg);
+  border: 2px solid var(--v2-ring);
+  border-radius: 999px;
+  transition: all 140ms ease;
+}
+
+.correctRadioOn {
+  color: #fff;
+  background: #16a34a;
+  border-color: #16a34a;
+}

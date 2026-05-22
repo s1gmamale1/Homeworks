@@ -299,10 +299,12 @@
       return request(`/api/quotes${suffix}`);
     },
 
-    createHomework({ title, subject, grade, mode }) {
+    createHomework({ title, subject, grade, mode, content_json }) {
+      const body = { title, subject, grade: Number(grade), mode };
+      if (content_json !== undefined) body.content_json = content_json;
       return request("/api/homeworks", {
         method: "POST",
-        body: { title, subject, grade: Number(grade), mode },
+        body,
       });
     },
 

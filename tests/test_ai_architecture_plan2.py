@@ -45,13 +45,24 @@ def test_find_question_in_content_works():
     assert _find_question_in_content({"a": 1}, "") is None
 
 
-def test_redact_question_for_tutor_works():
-    # Preview passes through
+def test_redact_question_for_tutor_strips_answer_bearing_in_preview():
+    # BLOCKER #4 (alias hardening): a gated question carrying an answer-bearing
+    # field (here the `expected_answer` alias) must be scrubbed even under
+    # phase="preview" — the client-claimed phase no longer bypasses the scrub.
     q = {"text": "What is 2+2?", "expected_answer": "4"}
     result = _redact_question_for_tutor(q, "preview")
-    assert result["expected_answer"] == "4"
+    assert "expected_answer" not in result
+    assert "text" in result  # teaching prompt still allowed through
 
-    # Practice strips non-safe keys
+    # Practice strips non-safe keys too (unchanged).
     result = _redact_question_for_tutor(q, "practice")
     assert "expected_answer" not in result
     assert "text" in result
+
+
+def test_redact_question_for_tutor_passes_pure_teaching_in_preview():
+    # Control: a preview question with NO answer-bearing field is unaffected.
+    q = {"text": "Explain why 2+2=4.", "tier": "EASY"}
+    result = _redact_question_for_tutor(q, "preview")
+    assert result["text"] == "Explain why 2+2=4."
+    assert result["tier"] == "EASY"

@@ -105,39 +105,6 @@ class MemorySprintItem(_Permissive):
 
 
 # --------------------------------------------------------------------------- #
-# Flow v2 — Memory Check (Flashcards readiness gate).
-# --------------------------------------------------------------------------- #
-
-
-class MemoryCheckItem(_Permissive):
-    """Quizlet-style retrieval item shown after Flashcards in Flow v2.
-
-    V1 runtime support intentionally covers only the PR-3 modes:
-    mcq, fill_blank, and choose_explanation. Extra fields are allowed so the
-    generator can carry subject hints, distractor notes, or future metadata
-    without breaking old content rows.
-    """
-
-    type: Literal["mcq", "fill_blank", "choose_explanation"] = "mcq"
-    prompt: str
-    options: Optional[List[str]] = None
-    answer_spec: AnswerSpec = Field(default_factory=AnswerSpec)
-    flashcard_ref: Optional[str] = None
-    explanation: Optional[str] = None
-
-
-class MemoryCheck(_Permissive):
-    """Flashcards branch gate: score at least pass_threshold_pct to continue."""
-
-    items: List[MemoryCheckItem] = Field(default_factory=list)
-    pass_threshold_pct: int = 60
-    modes_enabled: List[str] = Field(
-        default_factory=lambda: ["mcq", "fill_blank", "choose_explanation"]
-    )
-    retake_pool_size: Optional[int] = None
-
-
-# --------------------------------------------------------------------------- #
 # Phase 3 — Real Life (scenario + per-question answers).
 # --------------------------------------------------------------------------- #
 
@@ -257,6 +224,22 @@ class BossQuestion(_Permissive):
     pisa_level: Optional[BossPisaLevel] = None    # explicit per-q PISA enum (was implicit in tags)
     bloom_level: Optional[BossBloomLevel] = None  # explicit Bloom level (was implicit in tags)
     hint_cost_per_use: Optional[int] = None       # grade-banded default 10; spec §8 override
+    # Boss-Arena authored Why→How→What shape (spec §4/§9) — all optional, never
+    # required. They document the authored question shape; the dynamic boss
+    # generator produces the same shape at runtime. extra="allow" already lets
+    # unknown keys through; these make the contract explicit for tooling.
+    scenario: Optional[str] = None
+    why: Optional[str] = None
+    how: Optional[str] = None
+    what: Optional[str] = None
+    expected_concepts: Optional[List[str]] = None  # grading anchor (server-only — see ANSWER_BEARING_KEYS)
+    concept_tag: Optional[str] = None
+    bloom: Optional[str] = None                    # free-form Bloom label (distinct from the bloom_level enum)
+    pisa: Optional[str] = None                     # free-form PISA label (distinct from the pisa_level enum)
+    hints: Optional[List[str]] = None              # progressive hints; never reveal the answer
+    correct_feedback: Optional[str] = None
+    partial_feedback: Optional[str] = None
+    wrong_feedback: Optional[str] = None
 
 
 # --------------------------------------------------------------------------- #
@@ -433,11 +416,40 @@ class SentenceFillItem(BaseModel):
 # --------------------------------------------------------------------------- #
 
 
+class ReflectionAnalysis(_Permissive):
+    """Server-authoritative reflection debrief block (additive — absent on
+    legacy homeworks). The reflection engine reads real `phase_attempts` data,
+    computes a verdict + mark, and surfaces a debrief.
+
+    Student-visible fields (`narrative`, `weak_points`, `strong_points`,
+    `next_steps`, `redo_recommendation`) SURVIVE hydration — they come back in
+    the debrief. The grading config (`analysis_rubric`, the keyword buckets,
+    `pass_threshold`) is answer-bearing and is stripped by the runtime redactor
+    (these keys live in ANSWER_BEARING_KEYS). The server reads the full object
+    from the DB row to grade; the browser only ever sees the debrief fields.
+    """
+
+    # ---- Student-visible (survive redaction) — these come back in the debrief ----
+    narrative: Optional[str] = None
+    weak_points: Optional[List[str]] = None
+    strong_points: Optional[List[str]] = None
+    next_steps: Optional[List[str]] = None
+    redo_recommendation: Optional[str] = None
+
+    # ---- Server-only grading config (STRIPPED before hydration) ----
+    analysis_rubric: Optional[Dict[str, Any]] = None
+    weak_point_keywords: Optional[List[str]] = None
+    strong_point_keywords: Optional[List[str]] = None
+    pass_threshold: Optional[int] = None
+
+
 class ReflectionPhase(_Permissive):
     summary: Optional[str] = None
     question: Optional[str] = None
     spaced_rep: Optional[str] = None
     closing: Optional[str] = None
+    # Server-authoritative reflection debrief + grading config (additive).
+    analysis: Optional[ReflectionAnalysis] = None
 
 
 # --------------------------------------------------------------------------- #
@@ -716,6 +728,89 @@ class MemoryPalaceConfig(_Permissive):
 
 
 # --------------------------------------------------------------------------- #
+# v2 flow (flow_version == "v2") — Case-Based Preview + Memory Check.
+# All fields optional + extra="allow" so partial/draft authoring validates and
+# new fields fail-open at the schema while the runtime redactor fails-closed.
+# See docs/HOMEWORK_FLOW_V2_PLAN.md + docs/HOMEWORK_FLOW_V2_REACT_ARCHITECTURE.md.
+# --------------------------------------------------------------------------- #
+
+
+class CaseCheckpoint(_Permissive):
+    """One of exactly 3 Case-Based Preview checkpoints (identify/decide/justify).
+
+    answer_spec is the grading contract — stripped server-side before the React
+    runtime ever sees it (runtime_redactor). learning_block is the post-submit
+    teaching text, returned via the check-answer RESPONSE, not hydration.
+    """
+
+    kind: Optional[str] = None  # "identify" | "decide" | "justify"
+    question: Optional[str] = None
+    options: Optional[List[str]] = None
+    answer_spec: Optional[AnswerSpec] = None
+    learning_block: Optional[str] = None
+    feedback: Optional[str] = None
+
+
+class DecisionProcessExplanation(_Permissive):
+    """Open-ended, AI-graded "Decision Process Explanation" step appended after
+    the 3 CBP MCQ checkpoints (additive — absent on legacy/v1 homeworks).
+
+    Student-visible fields (`prompt`, `min_chars`) survive hydration; everything
+    else is answer-bearing and is stripped by the runtime redactor (the keyword
+    buckets + `rubric` + `pass_score` are in ANSWER_BEARING_KEYS). The server
+    reads the full object from the DB row to grade; the browser only ever sees
+    `prompt` + `min_chars`.
+    """
+
+    # ---- Student-visible (survive redaction) ----
+    prompt: Optional[str] = None
+    min_chars: Optional[int] = None
+
+    # ---- Answer-bearing (stripped before hydration; server-only grading anchors) ----
+    concept_keywords: Optional[List[str]] = None
+    method_keywords: Optional[List[str]] = None
+    mistake_keywords: Optional[List[str]] = None
+    acceptable_keywords: Optional[List[str]] = None
+    rubric: Optional[Dict[str, Any]] = None
+    pass_score: Optional[int] = None
+
+
+class CaseBasedPreview(_Permissive):
+    """Tile A of the Learning Hub — guided 3-checkpoint real-life learning case."""
+
+    title: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    source_extraction: Optional[Dict[str, Any]] = None
+    visual_plan: Optional[List[Dict[str, Any]]] = None
+    case_setup: Optional[Dict[str, Any]] = None   # {story, role, task}
+    checkpoints: Optional[List[CaseCheckpoint]] = None
+    # Open-ended AI-graded reasoning step after the 3 MCQ checkpoints (additive).
+    decision_process_explanation: Optional[DecisionProcessExplanation] = None
+    final_simulation: Optional[Dict[str, Any]] = None  # {correct_path(redacted), wrong_path}
+    feedback_summary: Optional[Dict[str, Any]] = None
+    completion_rules: Optional[Dict[str, Any]] = None
+
+
+class MemoryCheckItem(_Permissive):
+    """One Quizlet-style Memory Check item. answer_spec stripped server-side."""
+
+    type: Optional[str] = None  # mcq | fill_blank | choose_explanation | true_false | tile_match | term_definition
+    prompt: Optional[str] = None
+    options: Optional[List[str]] = None
+    answer_spec: Optional[AnswerSpec] = None
+    flashcard_ref: Optional[str] = None
+
+
+class MemoryCheck(_Permissive):
+    """Tile B gate — Quizlet-style test after flashcards. Pass ≥ pass_threshold_pct."""
+
+    items: Optional[List[MemoryCheckItem]] = None
+    pass_threshold_pct: Optional[int] = None  # default 60 (runtime)
+    modes_enabled: Optional[List[str]] = None
+    retake_pool_size: Optional[int] = None
+
+
+# --------------------------------------------------------------------------- #
 # Top-level — every phase optional so partial homeworks still validate.
 # --------------------------------------------------------------------------- #
 
@@ -731,14 +826,18 @@ class ContentJSON(_Permissive):
     panels: Optional[List[Panel]] = None
     gate_quote: Optional[GateQuote] = None
 
+    # v2 runtime dispatcher: absent/"v1" -> legacy HTML injector; "v2" -> React SPA.
+    flow_version: Optional[str] = None
+    # v2 Learning Sections (additive — legacy homeworks omit these).
+    case_based_preview: Optional[CaseBasedPreview] = None
+    memory_check: Optional[MemoryCheck] = None
+
     # Final-boss section name. Optional override; when missing the runtime
     # falls back to a subject-aware default (see services/injector.boss_name_for).
     boss_name: Optional[str] = None
 
     # Phase 1
-    flow_version: Optional[Literal["v1", "v2"]] = None
     flashcards: Optional[List[FlashcardItem]] = None
-    memory_check: Optional[MemoryCheck] = None
     # Phase 2
     memory_sprint: Optional[List[MemorySprintItem]] = None
     # Phase 3 — legacy scenario (untouched; all existing rows use this)

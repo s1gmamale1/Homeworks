@@ -1,0 +1,374 @@
+/* ============================================================
+   Memory Check — Apple card system (LANGUAGE-GREEN accent).
+   Canonical recipe: LearningHub.module.css.
+   White ~20px-radius cards, soft diffusion shadow, LANGUAGE
+   gradient top-accent + corner glow, crisp #1d1d1f ink,
+   gentle scale(1.03) hover, spring var(--landing-spring).
+   Onest + ink tokens are global — reused here, not redeclared.
+   prefers-reduced-motion honored.
+   ============================================================ */
+
+/* ---- Accent tokens (LANGUAGE = green) ---- */
+.stage {
+  --mc-accent-bar:  var(--grad-language, linear-gradient(135deg, #74aa9c, #4a8576));
+  --mc-accent-glow: rgba(116, 170, 156, 0.22);
+  --mc-accent-ink:  var(--c-green, #4a8576);
+  --mc-card-bg:     #ffffff;
+  --mc-radius:      20px;
+
+  position: relative;
+  animation: mcStageIn var(--landing-dur-md, 480ms) var(--landing-spring) both;
+}
+
+@keyframes mcStageIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Cool green ambient glow behind the quiz. */
+.stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -40px;
+  width: min(640px, 120%);
+  height: 340px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(116, 170, 156, 0.16) 0%,
+    rgba(74, 133, 118, 0.1) 44%,
+    transparent 72%
+  );
+  filter: blur(54px);
+  pointer-events: none;
+  z-index: 0;
+}
+.stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Back link ---- */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  transition: color 180ms var(--landing-spring),
+              transform 180ms var(--landing-spring);
+}
+.back:hover {
+  color: var(--ink, #1d1d1f);
+  transform: translateX(-3px);
+}
+
+/* ---- Header row ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 18px;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+}
+.score {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mc-accent-ink);
+}
+
+/* ---- Progress pills — Hub-style dots ---- */
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.dot {
+  width: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--v2-ring);
+  transition: background 300ms var(--landing-spring),
+              width 300ms var(--landing-spring);
+}
+.dotActive {
+  width: 38px;
+  background: var(--mc-accent-ink);
+}
+.dotCorrect {
+  background: var(--landing-emerald-700);
+}
+.dotWrong {
+  background: var(--landing-fuchsia-500);
+}
+
+/* ---- Kind pill spacing ---- */
+.kind {
+  margin-top: 6px;
+}
+
+/* ---- Option rows (LessonPanel handles row chrome, we control the grid) ---- */
+.options {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+/* ---- Fill-in-blank input ---- */
+.fillWrap {
+  margin-top: 24px;
+}
+.fillLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--v2-text-subtle);
+  margin-bottom: 8px;
+}
+.fillInput {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  background: #ffffff;
+  color: var(--ink, #1d1d1f);
+  font-size: 16px;
+  font-weight: 500;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: border-color 200ms var(--landing-spring),
+              box-shadow 200ms var(--landing-spring),
+              background 200ms var(--landing-spring);
+}
+.fillInput::placeholder {
+  color: var(--v2-text-subtle);
+}
+.fillInput:hover:not(:disabled) {
+  background: #fafafa;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.fillInput:focus {
+  outline: none;
+  border-color: var(--mc-accent-ink);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(116, 170, 156, 0.15);
+}
+.fillInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---- Action row ---- */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ---- Error / submission warning ---- */
+.error {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: var(--mc-radius);
+  background: rgba(255, 251, 235, 0.9);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- Inline feedback — Apple card treatment with semantic colour tints ---- */
+.feedback {
+  position: relative;
+  margin-top: 22px;
+  padding: 22px 24px;
+  border-radius: var(--mc-radius);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--mc-card-bg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: mcFeedbackIn 360ms var(--landing-spring) both;
+}
+
+/* Accent top bar on the feedback card. */
+.feedback::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: var(--mc-radius) var(--mc-radius) 0 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Good feedback: green tint + green bar. */
+.feedbackGood {
+  border-color: rgba(4, 120, 87, 0.25);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(52, 211, 153, 0.14), transparent 60%),
+    rgba(236, 253, 245, 0.9);
+}
+.feedbackGood::before {
+  background: linear-gradient(135deg, #34d399, var(--landing-emerald-700));
+}
+
+/* Wrong feedback: fuchsia tint + fuchsia bar. */
+.feedbackWrong {
+  border-color: rgba(217, 70, 239, 0.25);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(217, 70, 239, 0.11), transparent 60%),
+    rgba(255, 251, 235, 0.9);
+}
+.feedbackWrong::before {
+  background: linear-gradient(135deg, #e879f9, var(--landing-fuchsia-500));
+}
+
+@keyframes mcFeedbackIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.feedbackHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+.feedbackBody {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink, #1d1d1f);
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Result screen ---- */
+.resultHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+/* FeatureCard from primitives wraps this — we layer in Apple card extras. */
+.resultCard {
+  margin-top: 28px;
+  display: grid;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--mc-radius) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04) !important;
+  padding: 28px !important;
+}
+
+/* Green corner glow on the result card — Hub .cardGlow recipe. */
+.resultCard::after {
+  content: "";
+  position: absolute;
+  right: -56px;
+  top: -56px;
+  width: 180px;
+  height: 180px;
+  border-radius: 999px;
+  background: var(--mc-accent-glow);
+  filter: blur(48px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.resultStat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+.resultBig {
+  font-size: clamp(36px, 7vw, 56px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink, #1d1d1f);
+  font-variant-numeric: tabular-nums;
+}
+.resultUnit {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+}
+
+/* Progress bar — green accent. */
+.resultBar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--v2-ring);
+  overflow: hidden;
+  z-index: 1;
+}
+.resultBarFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--mc-accent-ink), #74aa9c);
+  box-shadow: 0 0 12px rgba(116, 170, 156, 0.4);
+  transition: width var(--landing-dur-lg, 1050ms) var(--landing-spring);
+}
+.resultBarFill.pass {
+  background: linear-gradient(90deg, #34d399, var(--landing-emerald-700));
+  box-shadow: 0 0 16px rgba(4, 120, 87, 0.4);
+}
+.resultThreshold {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--v2-text-subtle);
+  z-index: 1;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .stage::before {
+    display: none;
+  }
+  .feedback {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .back,
+  .fillInput,
+  .dot {
+    transition: none;
+  }
+  .back:hover { transform: none; }
+  .resultBarFill { transition: none; }
+}

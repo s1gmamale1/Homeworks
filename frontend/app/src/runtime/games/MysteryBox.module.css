@@ -1,0 +1,514 @@
+/* ============================================================
+   MysteryBox.module.css — Apple design system, GAME-PURPLE accent.
+   Matches LearningHub.module.css token discipline:
+     • White cards, 18-20px radius, soft diffusion shadow (no heavy borders)
+     • Accent: --grad-game (purple) / --c-purple corner glow
+     • Ink: --ink (#1d1d1f), secondary: --text-secondary (#86868b)
+     • Hover: scale(1.03) / translateY(-4px), spring var(--landing-spring)
+     • prefers-reduced-motion honored via global _tokens.css rule
+   CSS-only restyle — no TSX/logic changes.
+   ============================================================ */
+
+/* ---- ambient glow layer (pointer-events none, behind component) ---- */
+.wrap {
+  position: relative;
+  animation: mbFadeIn 320ms var(--landing-spring) both;
+}
+/* Soft purple+lavender radial blobs — matches the game-purple family */
+.wrap::before {
+  content: "";
+  position: absolute;
+  inset: -60px -40px auto -40px;
+  height: 360px;
+  background:
+    radial-gradient(440px 280px at 14% 0%,  rgba(138,  95, 200, 0.11), transparent 68%),
+    radial-gradient(380px 260px at 88%  6%,  rgba(179, 136, 235, 0.09), transparent 70%),
+    radial-gradient(320px 220px at 52% 28%,  rgba(138,  95, 200, 0.07), transparent 72%);
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 0;
+}
+.wrap > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes mbFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ---- header ---- */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.sub {
+  margin-top: 6px;
+}
+
+/* ---- box grid ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ---- Individual box button — Apple white card ---- */
+.box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 96px;
+  padding: 14px 10px;
+  border-radius: 18px;
+  /* White solid card — same as LearningHub .node */
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 220ms var(--landing-spring),
+    border-color 220ms var(--landing-spring),
+    background 220ms var(--landing-spring),
+    box-shadow 220ms var(--landing-spring),
+    opacity 200ms ease;
+  will-change: transform;
+}
+
+/* Sealed corner glow — purple tint, top-right (mirrors LearningHub .cardGlow) */
+.box::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: -28px;
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.22);
+  filter: blur(20px);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 220ms var(--landing-spring), background 220ms var(--landing-spring);
+}
+
+/* Purple top-accent bar on each box (subtle, 3px, game-purple gradient) */
+.box::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  border-radius: 18px 18px 0 0;
+  pointer-events: none;
+  opacity: 0.55;
+  transition: opacity 220ms var(--landing-spring);
+}
+
+.box:not(:disabled):hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.10);
+  border-color: rgba(138, 95, 200, 0.18);
+}
+.box:not(:disabled):hover::before {
+  opacity: 0.9;
+}
+.box:not(:disabled):hover::after {
+  opacity: 0.9;
+}
+
+/* ---- opened (awaiting answer) ---- */
+.box.boxOpen {
+  border-color: rgba(138, 95, 200, 0.30);
+  background: #ffffff;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.05),
+    0 0 0 2px rgba(138, 95, 200, 0.10);
+}
+.box.boxOpen::before { opacity: 0.75; }
+.box.boxOpen::after {
+  background: rgba(138, 95, 200, 0.20);
+  opacity: 0.85;
+}
+
+/* ---- active (selected + open) ---- */
+.box.boxActive {
+  border-color: var(--c-purple, #8a5fc8);
+  background: #ffffff;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.06),
+    0 0 0 3px rgba(138, 95, 200, 0.18);
+  transform: translateY(-2px);
+}
+.box.boxActive::before { opacity: 1; }
+.box.boxActive::after {
+  background: rgba(138, 95, 200, 0.28);
+  opacity: 1;
+}
+
+/* ---- solved (correct) — emerald accent ---- */
+.box.boxSolved {
+  border-color: rgba(4, 120, 87, 0.25);
+  background: linear-gradient(
+    160deg,
+    rgba(236, 253, 245, 0.92) 0%,
+    #ffffff 60%
+  );
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  opacity: 0.88;
+  cursor: default;
+}
+.box.boxSolved::before {
+  background: linear-gradient(135deg, #6ee7b7, #047857);
+  opacity: 0.55;
+}
+.box.boxSolved::after {
+  background: rgba(52, 211, 153, 0.20);
+  opacity: 0.7;
+}
+.box.boxSolved:hover {
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- missed (incorrect) — muted fuchsia accent ---- */
+.box.boxMissed {
+  border-color: rgba(217, 70, 239, 0.20);
+  background: linear-gradient(
+    160deg,
+    rgba(253, 244, 255, 0.92) 0%,
+    #ffffff 60%
+  );
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  opacity: 0.82;
+  cursor: default;
+}
+.box.boxMissed::before {
+  background: linear-gradient(135deg, #e879f9, #a21caf);
+  opacity: 0.45;
+}
+.box.boxMissed::after {
+  background: rgba(217, 70, 239, 0.16);
+  opacity: 0.7;
+}
+.box.boxMissed:hover {
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- box icon ---- */
+.boxIcon {
+  font-size: 28px;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+.boxSolved .boxIcon,
+.boxMissed .boxIcon {
+  font-size: 22px;
+  font-weight: 700;
+}
+.boxSolved .boxIcon {
+  color: var(--landing-emerald-700);
+}
+.boxMissed .boxIcon {
+  color: var(--landing-fuchsia-500);
+}
+
+.boxLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* "Pop open" spring animation plays once when sealed → open */
+.boxOpen .boxIcon,
+.boxActive .boxIcon {
+  animation: mbPopOpen 380ms var(--landing-spring) both;
+}
+@keyframes mbPopOpen {
+  0%   { transform: scale(0.6) rotate(-8deg); opacity: 0.4; }
+  60%  { transform: scale(1.18) rotate(4deg);  opacity: 1;   }
+  100% { transform: scale(1)    rotate(0deg);  opacity: 1;   }
+}
+
+/* ---- active question panel — Apple white card slab ---- */
+.panel {
+  position: relative;
+  margin-top: 20px;
+  padding: 22px 24px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  animation: mbPanelSlide 340ms var(--landing-spring) both;
+}
+
+/* Purple accent bar at top of panel */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Corner glow — purple tint, top-right */
+.panel::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.20);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+}
+.panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes mbPanelSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Solved panel — emerald tint */
+.panel.panelSolved {
+  border-color: rgba(4, 120, 87, 0.20);
+  background: linear-gradient(
+    160deg,
+    rgba(236, 253, 245, 0.80) 0%,
+    #ffffff 55%
+  );
+}
+.panel.panelSolved::before {
+  background: linear-gradient(135deg, #6ee7b7, #047857);
+}
+.panel.panelSolved::after {
+  background: rgba(52, 211, 153, 0.18);
+}
+
+/* Missed panel — fuchsia tint */
+.panel.panelMissed {
+  border-color: rgba(217, 70, 239, 0.18);
+  background: linear-gradient(
+    160deg,
+    rgba(253, 244, 255, 0.80) 0%,
+    #ffffff 55%
+  );
+}
+.panel.panelMissed::before {
+  background: linear-gradient(135deg, #e879f9, #a21caf);
+  opacity: 0.7;
+}
+.panel.panelMissed::after {
+  background: rgba(217, 70, 239, 0.14);
+}
+
+.categoryRow {
+  display: flex;
+  gap: 8px;
+}
+
+.question {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink, #1d1d1f);
+  margin: 0;
+}
+
+/* ---- answer input row ---- */
+.answerRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.answerInput {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  color: var(--ink, #1d1d1f);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color 180ms var(--landing-spring),
+    box-shadow 180ms var(--landing-spring),
+    background 180ms var(--landing-spring);
+}
+.answerInput::placeholder {
+  color: var(--text-secondary, #86868b);
+}
+.answerInput:focus {
+  border-color: var(--c-purple, #8a5fc8);
+  background: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 0 3px rgba(138, 95, 200, 0.14);
+}
+.answerInput.inputSubmitting {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* ---- feedback row (post-submission) ---- */
+.feedbackRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  animation: mbFadeIn 300ms var(--landing-spring) both;
+}
+.feedbackText {
+  font-size: 14px;
+  color: var(--text-secondary, #86868b);
+  line-height: 1.55;
+  flex: 1 1 200px;
+}
+
+/* ---- error banner — amber, consistent with existing app patterns ---- */
+.error {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.92);
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- complete screen — Apple white card, purple glow ---- */
+.done {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 36px 32px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: mbFadeIn 360ms var(--landing-spring) both;
+}
+
+/* Purple gradient top-accent bar */
+.done::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--grad-game, linear-gradient(135deg, #b388eb, #8a5fc8));
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Purple corner glow — top-right, matches LearningHub .cardGlow */
+.done::after {
+  content: "";
+  position: absolute;
+  right: -50px;
+  top: -50px;
+  width: 200px;
+  height: 200px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.26);
+  filter: blur(52px);
+  pointer-events: none;
+  z-index: 0;
+}
+.done > * {
+  position: relative;
+  z-index: 1;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+  .box {
+    min-height: 80px;
+    padding: 10px 8px;
+  }
+  .boxIcon {
+    font-size: 22px;
+  }
+  .panel {
+    padding: 16px 16px;
+  }
+  .question {
+    font-size: 15px;
+  }
+  .done {
+    padding: 28px 20px;
+  }
+}
+
+/* ---- reduced motion ---- */
+/* The global _tokens.css rule sets animation/transition durations to 0.01ms
+   for prefers-reduced-motion, which covers all animations declared here.
+   These rules additionally suppress transform-based motion explicitly. */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .panel,
+  .done,
+  .feedbackRow {
+    animation: none;
+  }
+  .box:not(:disabled):hover {
+    transform: none;
+  }
+  .box.boxActive {
+    transform: none;
+  }
+  .boxOpen .boxIcon,
+  .boxActive .boxIcon {
+    animation: none;
+  }
+}

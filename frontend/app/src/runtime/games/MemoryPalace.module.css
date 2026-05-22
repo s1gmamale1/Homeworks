@@ -1,0 +1,560 @@
+/* MemoryPalace.module.css
+   Apple design system elevation — GAME-PURPLE accent.
+   Tokens: --grad-game / --c-purple, --ink, --text-secondary, --v2-text,
+   --v2-text-muted, --v2-text-subtle, --v2-ring, --landing-spring,
+   --landing-shadow-card, --landing-shadow-soft, --v2-radius-card,
+   --v2-radius-pill.
+   White cards ~18-20px radius · soft diffusion shadow · generous padding ·
+   purple accent top-bar + corner glow · scale(1.03) hover · spring easing.
+   CSS-only: zero markup or data-contract changes. */
+
+/* ---- Ambient page glow (fixed, pointer-events none) ---- */
+.wrap {
+  position: relative;
+  animation: mpFadeIn 360ms var(--landing-spring) both;
+}
+.wrap::before {
+  content: "";
+  position: fixed;
+  inset: -10% 0 auto 0;
+  height: 56vh;
+  max-height: 600px;
+  background:
+    radial-gradient(60% 80% at 18% 8%,  rgba(138, 95, 200, 0.18) 0%, transparent 62%),
+    radial-gradient(55% 75% at 82% 4%,  rgba(179, 136, 235, 0.12) 0%, transparent 64%),
+    radial-gradient(50% 70% at 55% 30%, rgba(138, 95, 200, 0.08) 0%, transparent 66%);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes mpFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Shared header row ---- */
+.head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  padding: 4px 14px;
+  border-radius: var(--v2-radius-pill);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: var(--landing-shadow-soft);
+}
+
+/* ---- Phase wrapper ---- */
+.phase {
+  position: relative;
+  z-index: 1;
+  animation: mpFadeIn 300ms var(--landing-spring) both;
+}
+.phaseHeader {
+  margin-bottom: 16px;
+}
+.sub {
+  margin-top: 6px;
+}
+
+/* ---- Progress dots — pill style ---- */
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 22px;
+}
+.dot {
+  width: 24px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--v2-ring);
+  transition:
+    background 220ms var(--landing-spring),
+    width     220ms var(--landing-spring);
+}
+.dotDone {
+  background: var(--c-purple);
+  opacity: 0.45;
+}
+.dotActive {
+  width: 36px;
+  background: var(--grad-game);
+  box-shadow: 0 2px 10px rgba(138, 95, 200, 0.40);
+}
+.progressLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--v2-text-subtle);
+  margin-left: 4px;
+}
+
+/* ---- Shared Apple-card chrome (used by station + concept + missed) ---- */
+/* All cards: white, 20px radius, soft diffusion shadow, NO heavy border. */
+
+/* ---- Station card — white Apple card with purple top-accent + corner glow ---- */
+.stationCard {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 22px 24px 22px 24px;
+  margin-bottom: 16px;
+  box-shadow:
+    var(--landing-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  animation: mpCardIn 400ms var(--landing-spring) both;
+}
+/* Purple accent top-bar */
+.stationCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Purple corner glow */
+.stationCard::after {
+  content: "";
+  position: absolute;
+  right: -52px;
+  top: -52px;
+  width: 168px;
+  height: 168px;
+  border-radius: 999px;
+  background: rgba(138, 95, 200, 0.22);
+  filter: blur(48px);
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes mpCardIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.975); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.locationRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+.locationIcon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.locationLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-purple);
+  margin-bottom: 3px;
+}
+.locationName {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.28;
+}
+.sensoryCue {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.55;
+}
+
+/* ---- Concept card (study phase) — white Apple card with purple-tinted glow ---- */
+.conceptCard {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow:
+    var(--landing-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+/* Accent top-bar */
+.conceptCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Corner glow — softer violet tint */
+.conceptCard::after {
+  content: "";
+  position: absolute;
+  right: -52px;
+  top: -52px;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  background: rgba(179, 136, 235, 0.20);
+  filter: blur(44px);
+  pointer-events: none;
+  z-index: 0;
+}
+.conceptLabel {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.conceptTerm {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.22;
+  margin-bottom: 6px;
+}
+.conceptDesc {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  color: var(--v2-text-muted);
+  line-height: 1.58;
+  margin: 0;
+}
+.imageCue {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--c-purple);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ---- Instruction line ---- */
+.instruction {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v2-text-muted);
+  margin: 0 0 14px;
+}
+
+/* ---- Option grid — crisp white chip buttons (place + recall pickers) ---- */
+.optionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.optionBtn {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--landing-shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 1);
+  transition:
+    transform     240ms var(--landing-spring),
+    border-color  240ms var(--landing-spring),
+    background    240ms var(--landing-spring),
+    box-shadow    240ms var(--landing-spring);
+}
+.optionBtn:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: rgba(138, 95, 200, 0.30);
+  background: #faf8ff;
+  box-shadow:
+    var(--landing-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+.optionBtn:not(:disabled):active {
+  transform: scale(0.98);
+}
+.optionSelected {
+  border-color: var(--c-purple) !important;
+  background: rgba(138, 95, 200, 0.07) !important;
+  box-shadow:
+    0 0 0 3px rgba(138, 95, 200, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  transform: translateY(-3px) scale(1.03);
+}
+.optionUsed {
+  opacity: 0.28;
+  cursor: default;
+}
+
+/* ---- Actions row ---- */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ---- Error strip ---- */
+.error {
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(254, 243, 199, 0.90);
+  color: #92400e;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  box-shadow: var(--landing-shadow-soft);
+}
+
+/* ---- Result phase ---- */
+.result {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  padding: 4px 0;
+  animation: mpFadeIn 380ms var(--landing-spring) both;
+}
+
+/* Stats row — four white Apple tiles */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.stat {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 20px 10px;
+  gap: 5px;
+  box-shadow:
+    var(--landing-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  animation: mpStatPop 440ms var(--landing-spring) both;
+  transition: transform 280ms var(--landing-spring), box-shadow 280ms var(--landing-spring);
+}
+/* Purple accent top-bar on each stat tile */
+.stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game);
+  pointer-events: none;
+}
+/* Subtle corner glow */
+.stat::after {
+  content: "";
+  position: absolute;
+  right: -24px;
+  top: -24px;
+  width: 80px;
+  height: 80px;
+  border-radius: 999px;
+  background: rgba(138, 95, 200, 0.14);
+  filter: blur(24px);
+  pointer-events: none;
+}
+.stat:nth-child(1) { animation-delay:  60ms; }
+.stat:nth-child(2) { animation-delay: 120ms; }
+.stat:nth-child(3) { animation-delay: 180ms; }
+.stat:nth-child(4) { animation-delay: 240ms; }
+.stat:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: var(--landing-shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+@keyframes mpStatPop {
+  from { opacity: 0; transform: translateY(14px) scale(0.91); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.statValue {
+  position: relative;
+  z-index: 1;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.statLabel {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* ---- Missed locations block — white Apple card with purple accent ---- */
+.missedBlock {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(138, 95, 200, 0.14);
+  border-radius: 20px;
+  padding: 20px 22px;
+  box-shadow:
+    var(--landing-shadow-card),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+/* Purple accent top-bar */
+.missedBlock::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+  background: var(--grad-game);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Corner glow */
+.missedBlock::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  background: rgba(138, 95, 200, 0.18);
+  filter: blur(36px);
+  pointer-events: none;
+  z-index: 0;
+}
+.missedLabel {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-purple);
+  margin: 0 0 12px;
+}
+.missedList {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.missedItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #faf8ff;
+  border: 1px solid rgba(138, 95, 200, 0.10);
+  transition: transform 220ms var(--landing-spring), background 220ms var(--landing-spring);
+}
+.missedItem:hover {
+  transform: translateX(4px);
+  background: rgba(138, 95, 200, 0.06);
+}
+.missedStation {
+  font-weight: 700;
+  color: var(--ink);
+}
+.missedConcept {
+  color: var(--v2-text-muted);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 560px) {
+  .optionGrid {
+    grid-template-columns: 1fr;
+  }
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .optionBtn {
+    font-size: 14px;
+    padding: 14px 16px;
+  }
+  .stationCard,
+  .conceptCard {
+    padding: 18px 18px;
+  }
+  .stat {
+    padding: 16px 8px;
+  }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .wrap,
+  .phase,
+  .result,
+  .stationCard,
+  .stat {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .optionBtn:not(:disabled):hover,
+  .optionSelected {
+    transform: none;
+  }
+  .stat:hover,
+  .missedItem:hover {
+    transform: none;
+  }
+  .dot,
+  .dotActive {
+    transition: none;
+    width: 24px;
+  }
+  .optionBtn:not(:disabled):active {
+    transform: none;
+  }
+}

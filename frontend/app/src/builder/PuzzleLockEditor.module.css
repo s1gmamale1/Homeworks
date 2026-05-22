@@ -1,0 +1,80 @@
+/* PuzzleLock editor — v2 builder token language.
+   Tokens: --v2-text, --v2-text-muted, --v2-text-subtle, --v2-accent,
+           --v2-card-bg, --v2-card-tinted, --v2-ring, --v2-radius-card */
+
+.editor {
+  display: block;
+}
+
+/* ---- Ordered tumbler list ---- */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- Single tumbler row ---- */
+.tumbler {
+  border: 1px solid var(--v2-ring);
+  border-radius: 12px;
+  padding: 14px 16px 6px;
+  background: var(--v2-card-bg);
+  /* Subtle left accent bar keyed to the game category (purple family) */
+  border-left: 3px solid color-mix(in srgb, var(--v2-accent) 55%, transparent);
+}
+
+.tumblerHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tumblerIndex {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: var(--v2-accent);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  /* Optical nudge — index sits flush with the field labels */
+  margin-left: 2px;
+}
+
+/* ---- Empty state ---- */
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--v2-text-subtle);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ---- Footer strip ---- */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--v2-text-subtle);
+  line-height: 1.5;
+}
+
+.count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--v2-text-muted);
+  background: color-mix(in srgb, var(--v2-accent) 12%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+}

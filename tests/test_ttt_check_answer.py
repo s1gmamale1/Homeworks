@@ -39,6 +39,19 @@ import server.services.injector as _injector
 # ---------------------------------------------------------------------------
 
 
+async def _always_unlocked(*a, **k):
+    return True
+
+
+@pytest.fixture(autouse=True)
+def _unlock_practice_arc(monkeypatch):
+    """TTT is now a server-gated practice-arc game (BLOCKER #3). These are
+    grading unit tests, not gating tests — patch the unlock check always-True
+    so they exercise the grader, not the 403 PRACTICE_LOCKED guard. The gate
+    itself is pinned by tests/test_practice_gate_server_enforced.py."""
+    monkeypatch.setattr("server.routes.ai.is_practice_unlocked", _always_unlocked)
+
+
 @pytest.fixture(autouse=True)
 def _wipe_ttt_answer_key():
     """Reset the in-memory answer key between tests so render-state doesn't leak."""
@@ -154,6 +167,37 @@ def test_ttt_wrong_pick_no_mercy_returns_zero_xp(client, monkeypatch):
     assert data["xp_delta"] == 0
     # Post-resolution reveal — frontend uses this to highlight the winning option.
     assert data["correct_value"] == "56"
+
+
+def test_ttt_grades_from_content_json_without_injector_render(client):
+    """React-served (v2) homeworks never call inject(), so _TTT_ANSWER_KEY is
+    never populated. The grader must resolve the answer key directly from
+    content_json. Regression for the v2 React TTT grading gap (404
+    ttt_item_not_found) found during the v2 game browser-walk."""
+    items = _build_ttt_items()
+    resp = client.post("/api/homeworks", json={
+        "title": "TTT v2 no-render HW",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {"meta": {"title": "TTT v2 no-render HW"}, "gb_ttt": items},
+    })
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+    # Deliberately DO NOT render the preview — _TTT_ANSWER_KEY stays empty,
+    # mirroring the React hydration path that never goes through inject().
+    assert not _injector._TTT_ANSWER_KEY.get(hw_id)
+
+    code, data = _post_check(client, phase="ttt", homework_id=hw_id, item_id="ttt-A", picked="56")
+    assert code == 200, data
+    assert data["is_correct"] is True
+    assert data["correct_value"] == "56"
+
+    # A wrong pick still grades (not a 404) via the content_json-resolved key.
+    code2, data2 = _post_check(client, phase="ttt", homework_id=hw_id, item_id="ttt-B", picked="99")
+    assert code2 == 200, data2
+    assert data2["is_correct"] is False
 
 
 # ---------------------------------------------------------------------------
