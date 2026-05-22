@@ -224,6 +224,22 @@ class BossQuestion(_Permissive):
     pisa_level: Optional[BossPisaLevel] = None    # explicit per-q PISA enum (was implicit in tags)
     bloom_level: Optional[BossBloomLevel] = None  # explicit Bloom level (was implicit in tags)
     hint_cost_per_use: Optional[int] = None       # grade-banded default 10; spec §8 override
+    # Boss-Arena authored Why→How→What shape (spec §4/§9) — all optional, never
+    # required. They document the authored question shape; the dynamic boss
+    # generator produces the same shape at runtime. extra="allow" already lets
+    # unknown keys through; these make the contract explicit for tooling.
+    scenario: Optional[str] = None
+    why: Optional[str] = None
+    how: Optional[str] = None
+    what: Optional[str] = None
+    expected_concepts: Optional[List[str]] = None  # grading anchor (server-only — see ANSWER_BEARING_KEYS)
+    concept_tag: Optional[str] = None
+    bloom: Optional[str] = None                    # free-form Bloom label (distinct from the bloom_level enum)
+    pisa: Optional[str] = None                     # free-form PISA label (distinct from the pisa_level enum)
+    hints: Optional[List[str]] = None              # progressive hints; never reveal the answer
+    correct_feedback: Optional[str] = None
+    partial_feedback: Optional[str] = None
+    wrong_feedback: Optional[str] = None
 
 
 # --------------------------------------------------------------------------- #

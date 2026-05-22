@@ -62,6 +62,9 @@ ANSWER_BEARING_KEYS = frozenset(
         "method_keywords",
         "mistake_keywords",
         "pass_score",
+        # Boss-Arena authored grading anchor (spec §6) — the concept list the
+        # answer-checker grades coverage against. Server-only; never hydrated.
+        "expected_concepts",
         # short answer aliases + invariants the grader keys on
         "a",
         "answer",

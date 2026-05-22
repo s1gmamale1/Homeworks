@@ -204,3 +204,146 @@ async def test_kimi_k2_generate_json_uses_native_json_mode(monkeypatch):
     assert payload["model"] == "kimi-k2.6"
     assert payload["temperature"] == 1.0
     assert payload["response_format"] == {"type": "json_object"}
+
+
+# ── 7. OpenAI provider (new — per-task routing for dynamic boss) ─────────────
+
+
+def test_openai_registry_lookup():
+    """OpenAIProvider must be registered alongside KimiProvider."""
+    from server.services.ai_providers import get_provider
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    provider = get_provider("openai")
+    assert isinstance(provider, OpenAIProvider)
+
+
+def test_openai_is_available_with_key(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().is_available() is True
+
+
+def test_openai_is_available_without_key(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().is_available() is False
+
+
+def test_openai_pro_model_defaults_to_gpt_4o_mini(monkeypatch):
+    monkeypatch.delenv("OPENAI_MODEL_PRO", raising=False)
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().pro_model == "gpt-4o-mini"
+
+
+def test_openai_fast_model_defaults_to_gpt_4o_mini(monkeypatch):
+    monkeypatch.delenv("OPENAI_MODEL_FAST", raising=False)
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().fast_model == "gpt-4o-mini"
+
+
+def test_openai_pro_model_env_override(monkeypatch):
+    monkeypatch.setenv("OPENAI_MODEL_PRO", "gpt-4o")
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().pro_model == "gpt-4o"
+
+
+@pytest.mark.asyncio
+async def test_openai_envelope_shape(monkeypatch):
+    """Same envelope contract Kimi returns; orchestrator depends on it."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    fake_response_body = {
+        "choices": [
+            {"message": {"content": '{"answer": "test"}'}}
+        ]
+    }
+    mock_response = MagicMock()
+    mock_response.json.return_value = fake_response_body
+    mock_response.raise_for_status = MagicMock()
+    mock_client = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    provider = OpenAIProvider()
+    provider._client = mock_client
+
+    result = await provider.generate_json('{"q":"x"}', "gpt-4o-mini")
+
+    assert set(result.keys()) >= {"text", "raw", "provider", "model"}
+    assert result["provider"] == "openai"
+    assert result["model"] == "gpt-4o-mini"
+    assert isinstance(result["raw"], dict)
+    assert isinstance(result["text"], str)
+
+
+@pytest.mark.asyncio
+async def test_openai_uses_json_mode_response_format(monkeypatch):
+    """JSON-mode payload must include response_format={'type':'json_object'}."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "choices": [{"message": {"content": '{"ok": true}'}}]
+    }
+    mock_response.raise_for_status = MagicMock()
+    mock_client = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    provider = OpenAIProvider()
+    provider._client = mock_client
+
+    await provider.generate_json('{"q":"x"}', "gpt-4o-mini", temperature=0.3)
+
+    _, kwargs = mock_client.post.call_args
+    payload = kwargs["json"]
+    assert payload["model"] == "gpt-4o-mini"
+    assert payload["temperature"] == 0.3
+    assert payload["response_format"] == {"type": "json_object"}
+    # OpenAI accepts arbitrary temperatures unlike K2.X — no clamping
+    assert payload["messages"][0]["role"] == "user"
+
+
+@pytest.mark.asyncio
+async def test_openai_http_error_surfaces_useful_runtime_error(monkeypatch):
+    """4xx/5xx from OpenAI must become a RuntimeError with body excerpt so
+    the orchestrator's fallback walk can log it and try Kimi next."""
+    import httpx
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-fake")
+
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    mock_response = MagicMock()
+    mock_response.text = '{"error":{"message":"invalid api key"}}'
+    mock_response.status_code = 401
+
+    def _raise():
+        raise httpx.HTTPStatusError(
+            "401 Unauthorized", request=MagicMock(), response=mock_response
+        )
+
+    mock_response.raise_for_status = _raise
+    mock_client = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    provider = OpenAIProvider()
+    provider._client = mock_client
+
+    with pytest.raises(RuntimeError, match="OpenAI call failed"):
+        await provider.generate_json('{"q":"x"}', "gpt-4o-mini")
+
+
+def test_openai_does_not_support_vision_in_v1():
+    """v1 wiring routes notebook capture to Kimi only. If this ever flips,
+    notebook_grade.py + ai_orchestrator.generate_vision need updates first."""
+    from server.services.ai_providers.openai import OpenAIProvider
+
+    assert OpenAIProvider().supports_vision is False

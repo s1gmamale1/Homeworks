@@ -29,11 +29,19 @@ async def create_boss_session(
     current_difficulty: str = "medium",
     weak_topics: Optional[list[str]] = None,
     strong_topics: Optional[list[str]] = None,
+    hp: Optional[int] = None,
+    question_kind: Optional[str] = None,
 ) -> dict:
-    """Insert a new boss session row and return its hydrated dict form."""
+    """Insert a new boss session row and return its hydrated dict form.
+
+    ``hp`` defaults to ``max_hp`` (fresh boss starts at full health). Boss-
+    Arena (spec §6) adds ``hints_used`` / ``correct_count`` / ``total_attempts``
+    (start at 0) and an optional ``question_kind`` shape tag.
+    """
     now = _utc_now_iso()
     weak_json = json.dumps(weak_topics or [])
     strong_json = json.dumps(strong_topics or [])
+    start_hp = int(hp) if hp is not None else int(max_hp)
     db = await connect()
     try:
         await db.execute(
@@ -42,14 +50,15 @@ async def create_boss_session(
                 id, session_id, homework_id, status, hp, max_hp,
                 trials_left, current_difficulty, current_question_id,
                 asked_question_ids_json, weak_topics_json, strong_topics_json,
+                hints_used, correct_count, total_attempts, question_kind,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, 'active', ?, ?, ?, ?, NULL, '[]', ?, ?, ?, ?)
+            VALUES (?, ?, ?, 'active', ?, ?, ?, ?, NULL, '[]', ?, ?, 0, 0, 0, ?, ?, ?)
             """,
             (
                 boss_session_id, session_id, homework_id,
-                max_hp, max_hp, trials_left, current_difficulty,
-                weak_json, strong_json, now, now,
+                start_hp, max_hp, trials_left, current_difficulty,
+                weak_json, strong_json, question_kind, now, now,
             ),
         )
         await db.commit()
@@ -61,7 +70,7 @@ async def create_boss_session(
         "session_id": session_id,
         "homework_id": homework_id,
         "status": "active",
-        "hp": max_hp,
+        "hp": start_hp,
         "max_hp": max_hp,
         "trials_left": trials_left,
         "current_difficulty": current_difficulty,
@@ -69,6 +78,10 @@ async def create_boss_session(
         "asked_question_ids": [],
         "weak_topics": list(weak_topics or []),
         "strong_topics": list(strong_topics or []),
+        "hints_used": 0,
+        "correct_count": 0,
+        "total_attempts": 0,
+        "question_kind": question_kind,
         "created_at": now,
         "updated_at": now,
     }
@@ -122,8 +135,25 @@ async def update_boss_session(
     current_question_id: Optional[str] = None,
     asked_question_ids: Optional[list[str]] = None,
     status: Optional[str] = None,
+    # Boss-Arena (spec §6) — absolute setters for the tally/shape columns.
+    hints_used: Optional[int] = None,
+    correct_count: Optional[int] = None,
+    total_attempts: Optional[int] = None,
+    question_kind: Optional[str] = None,
+    # Boss-Arena — atomic SQL increments (preferred over read-modify-write on
+    # the per-submit counters so concurrent submits don't clobber each other).
+    increment_hints_used: Optional[int] = None,
+    increment_correct_count: Optional[int] = None,
+    increment_total_attempts: Optional[int] = None,
 ) -> Optional[dict]:
-    """Patch any subset of mutable fields. Returns the updated row, or None if missing."""
+    """Patch any subset of mutable fields. Returns the updated row, or None if missing.
+
+    The ``increment_*`` kwargs apply an atomic ``col = col + N`` update so the
+    per-submit counters (correct_count / total_attempts / hints_used) stay
+    correct under concurrent /boss/submit-answer calls. Absolute setters and
+    increments for the same column should not be mixed in one call; if both
+    are supplied the increment wins (it is appended last).
+    """
     fields: list[str] = []
     values: list[Any] = []
     if hp is not None:
@@ -144,6 +174,28 @@ async def update_boss_session(
     if status is not None:
         fields.append("status = ?")
         values.append(status)
+    if hints_used is not None:
+        fields.append("hints_used = ?")
+        values.append(int(hints_used))
+    if correct_count is not None:
+        fields.append("correct_count = ?")
+        values.append(int(correct_count))
+    if total_attempts is not None:
+        fields.append("total_attempts = ?")
+        values.append(int(total_attempts))
+    if question_kind is not None:
+        fields.append("question_kind = ?")
+        values.append(question_kind)
+    # Atomic increments — guard against NULL legacy rows with COALESCE(col, 0).
+    if increment_hints_used is not None:
+        fields.append("hints_used = COALESCE(hints_used, 0) + ?")
+        values.append(int(increment_hints_used))
+    if increment_correct_count is not None:
+        fields.append("correct_count = COALESCE(correct_count, 0) + ?")
+        values.append(int(increment_correct_count))
+    if increment_total_attempts is not None:
+        fields.append("total_attempts = COALESCE(total_attempts, 0) + ?")
+        values.append(int(increment_total_attempts))
     if not fields:
         return await get_boss_session(boss_session_id)
 
@@ -164,15 +216,44 @@ async def update_boss_session(
 
 
 async def append_asked_question(boss_session_id: str, question_id: str) -> Optional[dict]:
-    """Append `question_id` to the asked queue and bump current_question_id."""
-    existing = await get_boss_session(boss_session_id)
-    if not existing:
-        return None
-    asked = list(existing.get("asked_question_ids") or [])
-    if question_id not in asked:
-        asked.append(question_id)
-    return await update_boss_session(
-        boss_session_id,
-        asked_question_ids=asked,
-        current_question_id=question_id,
-    )
+    """Append ``question_id`` to the asked queue and bump current_question_id.
+
+    Bug-Backend-#4 fix (2026-05-13 audit): the read-then-write sequence used
+    to be split across two SQLite connections, racing with any concurrent
+    /generate-question for the same boss session. Two parallel calls could
+    both see asked_question_ids=[A], both append their B/C locally, and one
+    write would overwrite the other (losing B or C from the queue, which
+    then weakens anti-repetition for that lost question).
+
+    Fix: hold a single connection across SELECT+UPDATE wrapped in
+    BEGIN IMMEDIATE — SQLite acquires a RESERVED lock on the first write
+    intent, blocking concurrent writers until COMMIT. Other readers proceed.
+    """
+    db = await connect()
+    try:
+        await db.execute("BEGIN IMMEDIATE")
+        try:
+            async with db.execute(
+                "SELECT asked_question_ids_json FROM boss_sessions WHERE id = ?",
+                (boss_session_id,),
+            ) as cursor:
+                row = await cursor.fetchone()
+            if not row:
+                await db.execute("ROLLBACK")
+                return None
+            asked = json.loads(row[0] or "[]")
+            if question_id not in asked:
+                asked.append(question_id)
+            await db.execute(
+                "UPDATE boss_sessions "
+                "SET asked_question_ids_json = ?, current_question_id = ?, updated_at = ? "
+                "WHERE id = ?",
+                (json.dumps(asked), question_id, _utc_now_iso(), boss_session_id),
+            )
+            await db.commit()
+        except Exception:
+            await db.execute("ROLLBACK")
+            raise
+    finally:
+        await db.close()
+    return await get_boss_session(boss_session_id)

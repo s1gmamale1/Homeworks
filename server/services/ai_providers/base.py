@@ -43,6 +43,34 @@ class AIProvider(ABC):
             }
         """
 
+    # ── Per-provider model identifiers ────────────────────────────────────────
+    #
+    # Providers expose their OWN pro/fast model names so the orchestrator can
+    # walk a multi-provider fallback chain without each provider needing to
+    # accept another provider's model string. The gateway resolves
+    # `(provider, model)` together: gateway asks the chosen provider for its
+    # pro/fast model name, never the other way around.
+    #
+    # Defaults raise NotImplementedError so a provider that forgets to expose
+    # these fails loud when first routed via tier mode. Providers that only
+    # serve legacy callers passing explicit `model=` kwargs are unaffected.
+
+    @property
+    def pro_model(self) -> str:
+        """Model ID this provider uses for the 'pro' tier (deeper/longer ctx)."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not expose a pro_model. "
+            "Either define one or only call it with an explicit model= kwarg."
+        )
+
+    @property
+    def fast_model(self) -> str:
+        """Model ID this provider uses for the 'fast' tier (cheaper/quicker)."""
+        raise NotImplementedError(
+            f"{type(self).__name__} does not expose a fast_model. "
+            "Either define one or only call it with an explicit model= kwarg."
+        )
+
     # ── Vision extension (optional — default: not supported) ─────────────────
 
     @property

@@ -492,6 +492,72 @@
           ],
           "default": null,
           "title": "Hint Cost Per Use"
+        },
+        "scenario": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Scenario"
+        },
+        "why": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Why"
+        },
+        "how": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "How"
+        },
+        "what": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "What"
+        },
+        "expected_concepts": {
+          "anyOf": [
+            { "items": { "type": "string" }, "type": "array" },
+            { "type": "null" }
+          ],
+          "default": null,
+          "title": "Expected Concepts"
+        },
+        "concept_tag": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Concept Tag"
+        },
+        "bloom": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Bloom"
+        },
+        "pisa": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Pisa"
+        },
+        "hints": {
+          "anyOf": [
+            { "items": { "type": "string" }, "type": "array" },
+            { "type": "null" }
+          ],
+          "default": null,
+          "title": "Hints"
+        },
+        "correct_feedback": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Correct Feedback"
+        },
+        "partial_feedback": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Partial Feedback"
+        },
+        "wrong_feedback": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "default": null,
+          "title": "Wrong Feedback"
         }
       },
       "title": "BossQuestion",

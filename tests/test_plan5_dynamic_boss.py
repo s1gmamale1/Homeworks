@@ -34,22 +34,25 @@ from server.schemas.ai_contracts import (
 
 def test_calculate_damage_clamps_multiplier_so_model_cannot_one_shot_boss():
     # Even if the model reports damage_multiplier=99, the boss can never lose
-    # >37 HP from one medium-difficulty correct answer (15 base * 1.5 cap).
+    # more than base * 1.0(accuracy tier) * 1.5(multiplier cap) from one
+    # medium-difficulty correct answer. spec §6: medium base = 20 → cap = 30.
     dmg = boss_dynamic.calculate_damage(score=1.0, difficulty="medium", multiplier=99.0)
-    assert dmg <= 25, f"multiplier should be clamped <=1.5x base; got {dmg}"
+    assert dmg <= 30, f"multiplier should be clamped <=1.5x base; got {dmg}"
 
 
-def test_calculate_damage_zero_below_60_score_regardless_of_difficulty():
+def test_calculate_damage_zero_below_accuracy_floor_regardless_of_difficulty():
+    # spec §6: the zero-damage accuracy tier is value < 0.30 (was < 0.60 under
+    # the legacy two-tier table). 0.29 → 0 damage; 0.0 → 0 damage.
     for diff in ("easy", "medium", "hard"):
-        assert boss_dynamic.calculate_damage(0.59, diff) == 0
+        assert boss_dynamic.calculate_damage(0.29, diff) == 0
         assert boss_dynamic.calculate_damage(0.0, diff) == 0
 
 
 def test_calculate_damage_invalid_difficulty_falls_back_to_medium_not_zero():
     # Defensive: a typo in the runtime should not silently zero damage on
-    # correct answers.
+    # correct answers. spec §6: medium base = 20 → score 1.0 deals 20.
     dmg = boss_dynamic.calculate_damage(1.0, "ULTRA-HARD")
-    assert dmg == 15, f"unknown difficulty must fall back to medium=15, got {dmg}"
+    assert dmg == 20, f"unknown difficulty must fall back to medium=20, got {dmg}"
 
 
 def test_next_difficulty_requires_two_correct_streak_before_escalating():
@@ -97,6 +100,47 @@ def test_generated_question_rejected_when_paraphrase_of_previous():
     with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
         boss_dynamic._validate_generated_question(raw, asked_questions=asked)
     assert "repeats_previous" in str(exc.value)
+
+
+def test_generated_question_allows_near_duplicate_at_threshold_1_point_0():
+    # Design change (2026-05-21, prompt v5): the SequenceMatcher fuzzy threshold
+    # was raised from 0.85 to 1.0 — only byte-identical duplicates (caught by
+    # the `prev_text == norm_new` branch) are rejected post-gateway. Variation
+    # responsibility moves to the prompt itself (Rule 3 in
+    # boss-question-generator.md v5), which now spells out concrete variation
+    # axes + a self-check directive. The narrow-topic-homework case (every
+    # candidate scoring 0.93+ vs. a prior question) used to 502; now it passes
+    # and we measure prompt quality empirically rather than letting the
+    # hard-coded floor block legitimate runs.
+    #
+    # This fixture (one-digit change + trailing period — similarity ≈ 0.94)
+    # used to fail under the 0.85 threshold; under 1.0 it must pass.
+    asked = [{"question_text": "Find the absolute error of 12.345 meters"}]
+    raw = {
+        "question_text": "Find the absolute error of 12.346 meters.",
+        "expected_answer": {"canonical": "0.001"},
+        "rubric": {"full_credit": ["0.001"]},
+        "target_skill": "absolyut_xatolik",
+        "difficulty": "medium",
+    }
+    # No exception — the near-duplicate now flows through to the runtime.
+    boss_dynamic._validate_generated_question(raw, asked_questions=asked)
+
+
+def test_generated_question_passes_when_topically_related_but_substantively_different():
+    # Counterpart to the near-duplicate test: two different questions on the
+    # same topic must NOT trip the fuzzy similarity threshold. Without this
+    # the generator could be blocked from asking multiple legitimate questions
+    # about, e.g., absolute error in one boss session.
+    asked = [{"question_text": "Find the absolute error of 12.345 meters"}]
+    raw = {
+        "question_text": "Round 0.084736 to two significant figures.",
+        "expected_answer": {"canonical": "0.085"},
+        "rubric": {"full_credit": ["0.085"]},
+        "target_skill": "yaxlitlash",
+        "difficulty": "medium",
+    }
+    boss_dynamic._validate_generated_question(raw, asked_questions=asked)
 
 
 def test_generated_question_rejects_invalid_difficulty_token():
@@ -156,7 +200,7 @@ def _make_homework(client, *, hw_id_hint: str = "plan5-hw") -> str:
             "title": f"Plan 5 dynamic boss test ({hw_id_hint})",
             "subject": "english",
             "grade": 8,
-            "language": "uz",
+            "language": "en",
             "preview": {"text": "according to means as stated by"},
         },
     }
@@ -399,10 +443,11 @@ def test_boss_submit_answer_backend_owns_hp_not_model(mock_gen, client):
     })
     assert resp.status_code == 200, resp.text
     body = resp.json()
-    # Medium base = 15, max multiplier = 1.5 → max damage = 22 or 23 (rounding).
-    # HP must NOT be 100 - (15 * 99) = -1385.
-    assert body["damage"] <= 25, f"damage not clamped: {body['damage']}"
-    assert body["hp"] >= 75, f"hp not clamped: {body['hp']}"
+    # spec §6: medium base = 20, accuracy tier 1.0, multiplier clamp 1.5 →
+    # max damage = 30. Grade-8 homework derives max_hp = 100 (band G5-8), so
+    # HP must NOT be 100 - (20 * 99) = -1880; it lands at exactly 70.
+    assert body["damage"] <= 30, f"damage not clamped: {body['damage']}"
+    assert body["hp"] >= 70, f"hp not clamped: {body['hp']}"
     assert body["boss_status"] == "active"
 
 
@@ -671,3 +716,463 @@ def test_boss_answer_checker_prompt_json_example_validates_against_schema():
 
     parsed = json.loads(match.group(1))
     BossAnswerCheckResult(**parsed)
+
+
+# ---------------------------------------------------------------------------
+# Section F — recompute_session_metrics called on /boss/start
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Section G — empty-pool guard (no stems AND no phases → no_anchor_context)
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_generate_question_rejects_when_both_pools_empty(mock_gen):
+    """Plan Wave 2 §G — when the boss_context has neither authored stems nor
+    phase summaries, generate_boss_question must bail with
+    BossQuestionRejected("no_anchor_context") BEFORE paying the LLM call.
+    Without this guard the generator hallucinates an off-topic skill from
+    nothing.
+    """
+    boss_context = {
+        "session_id": "sess-empty",
+        "homework_id": "hw-empty",
+        "authored_question_stems": [],
+        "phase_summaries": [],
+        "authored_difficulty_floor": None,
+        "asked_questions": [],
+        "boss_policy": {"max_question_length": 900},
+    }
+    with pytest.raises(boss_dynamic.BossQuestionRejected) as exc:
+        asyncio.run(
+            boss_dynamic.generate_boss_question(boss_context, difficulty="medium")
+        )
+    assert exc.value.reason == "no_anchor_context"
+    # The empty-pool guard must short-circuit BEFORE the gateway is called.
+    mock_gen.assert_not_called()
+
+
+@patch("server.routes.ai_plan5.session_metrics_repo.recompute_session_metrics")
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_recompute_session_metrics_called_on_boss_start(mock_gen, mock_recompute, client):
+    """Section F regression — /boss/start must trigger recompute_session_metrics so
+    that overall_metrics is fresh by the time /boss/generate-question fires.
+    Before the fix, recompute_session_metrics was never called and
+    overall_metrics was always {}, causing missing_context_flags=['empty_metrics'].
+    This test fails on pre-fix code (where the call is absent).
+    """
+    import asyncio
+
+    # Make the mock awaitable (recompute_session_metrics is async)
+    async def _noop(*args, **kwargs):
+        return {}
+
+    mock_recompute.side_effect = _noop
+
+    hw_id = _make_homework(client, hw_id_hint="t_recompute")
+    sess = "plan5recompute01"
+    _seed_attempts(sess, hw_id)
+
+    resp = client.post("/api/ai/boss/start", json={
+        "session_id": sess,
+        "homework_id": hw_id,
+        "max_hp": 100,
+        "trials_left": 5,
+    })
+    assert resp.status_code == 200, resp.text
+
+    # recompute_session_metrics must have been called exactly once with the
+    # correct session_id and hw_id keyword arguments.
+    mock_recompute.assert_called_once_with(
+        session_id=sess,
+        hw_id=hw_id,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Bug #7 — attempt_number increments per question_id
+# ---------------------------------------------------------------------------
+
+
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_attempt_number_increments_when_same_question_resubmitted(mock_gen, client):
+    """Bug #7: attempt_number was hardcoded to 1 on every boss submit.
+    Re-submitting the same question_id (retry path) created multiple rows
+    with attempt_number=1, inflating _streaks_from_recent_attempts. After
+    the fix, the second submit must record attempt_number=2."""
+    import asyncio
+    from server.db import attempts_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_atn")
+    sess = "plan5atn00001"
+    _seed_attempts(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    mock_gen.return_value = _boss_question_factory(
+        question_text="Q for attempt-number test.",
+        expected_answer=BossExpectedAnswer(canonical="x"),
+        rubric=BossRubric(full_credit=["x"]),
+        target_skill="topic1",
+        why_this_question="test",
+    )
+    q = client.post("/api/ai/boss/generate-question", json={"boss_session_id": bsid}).json()
+    qid = q["question_id"]
+
+    mock_gen.return_value = _boss_check_factory(
+        is_correct=False, score=0.0, confidence=0.9,
+        feedback="wrong", misconception_tags=[],
+        damage_multiplier=1.0, difficulty_recommendation="stay",
+        should_retry_same_skill=True,
+    )
+    # First submit
+    r1 = client.post("/api/ai/boss/submit-answer", json={
+        "boss_session_id": bsid, "question_id": qid, "student_answer": "wrong1",
+    })
+    assert r1.status_code == 200, r1.text
+    # Second submit on SAME question_id (retry path)
+    r2 = client.post("/api/ai/boss/submit-answer", json={
+        "boss_session_id": bsid, "question_id": qid, "student_answer": "wrong2",
+    })
+    assert r2.status_code == 200, r2.text
+
+    # Verify DB has two rows for this question with attempt_number 1 and 2.
+    rows = asyncio.run(attempts_repo.attempts_for_question(sess, hw_id, qid))
+    nums = sorted(r.get("attempt_number") for r in rows)
+    assert nums == [1, 2], (
+        f"Expected attempt_number=[1, 2] for two submits, got {nums}. "
+        f"Bug #7 regression — attempt_number must increment per question."
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit Backend Bug #4 — append_asked_question atomic on race
+# ---------------------------------------------------------------------------
+
+
+def test_append_asked_question_serializes_concurrent_writes(client):
+    """Backend Bug #4: append_asked_question used to read-then-write in two
+    separate connections, racing with concurrent /generate-question calls.
+    After the BEGIN IMMEDIATE fix, concurrent appends to the same session
+    must serialize — both question IDs end up in the array. Simulates the
+    race with two threads calling append simultaneously."""
+    import asyncio
+    import threading
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_race")
+    sess = "plan5race0001"
+    _seed_attempts(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    errors = []
+
+    def _do_append(qid: str):
+        try:
+            asyncio.run(boss_session_repo.append_asked_question(bsid, qid))
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=_do_append, args=(f"gbq_race_{i:02d}",))
+        for i in range(8)
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert not errors, f"concurrent appends raised: {errors}"
+
+    # Final state must contain ALL 8 question IDs (no overwrites).
+    final = asyncio.run(boss_session_repo.get_boss_session(bsid))
+    asked = final["asked_question_ids"]
+    expected = {f"gbq_race_{i:02d}" for i in range(8)}
+    assert set(asked) >= expected, (
+        f"concurrent appends lost some IDs (race condition still present): "
+        f"expected ⊇ {expected}, got {set(asked)}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 audit — boss session staleness check on /boss/start
+# ---------------------------------------------------------------------------
+
+
+def test_boss_start_archives_stale_active_session_and_spawns_fresh(client):
+    """When /boss/start finds an existing active session whose updated_at is
+    older than the staleness threshold (30 minutes), it must mark that session
+    as 'abandoned' and create a brand-new row with fresh trials_left and HP.
+
+    Bug context (2026-05-14):
+        Threshold was 6 hours originally. A real test on 2026-05-13 had a
+        4h22m gap between two playthroughs of the same homework — well under
+        the 6h window — so the second playthrough silently inherited a session
+        whose trials_left was already depleted from the first. Student got
+        2 questions instead of 5 and the session ended in 'failed' state.
+
+        30 minutes is the new threshold: covers legitimate same-sitting
+        breaks (snack, bathroom, doorbell) without spanning hour-long gaps
+        that a student would mentally count as a separate attempt.
+    """
+    import asyncio
+    from datetime import datetime, timezone, timedelta
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_stale")
+    sess = "plan5stale001"
+    _seed_attempts(sess, hw_id)
+
+    # First /boss/start — creates a fresh session.
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # Forcibly age the session by writing a stale updated_at directly to DB.
+    # 45 minutes ago — well past the 30-minute threshold.
+    stale_ts = (datetime.now(timezone.utc) - timedelta(minutes=45)).isoformat()
+    import sqlite3
+    from server.config import DB_PATH
+    con = sqlite3.connect(str(DB_PATH))
+    con.execute(
+        "UPDATE boss_sessions SET updated_at = ?, trials_left = 1 WHERE id = ?",
+        (stale_ts, first_bsid),
+    )
+    con.commit()
+    con.close()
+
+    # Second /boss/start — same (session, hw). Must NOT reuse the stale row.
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+    second_bsid = second["boss_session_id"]
+
+    assert second_bsid != first_bsid, (
+        "Stale session was reused — staleness check failed. "
+        "Expected a new boss_session_id."
+    )
+    # _make_homework doesn't author boss_questions, so trials_left falls
+    # back to the default (5) per the 2026-05-13 pool-size-derived logic.
+    assert second["trials_left"] == 5, (
+        f"New session must start with fresh trials_left=5 (fallback default "
+        f"since fixture has no authored boss_questions), got {second['trials_left']}"
+    )
+    assert second["hp"] == 100
+
+    # Old session must be marked 'abandoned' (no longer active).
+    old_state = asyncio.run(boss_session_repo.get_boss_session(first_bsid))
+    assert old_state["status"] == "abandoned", (
+        f"Stale session was not archived. Got status={old_state['status']!r}"
+    )
+
+
+def test_boss_start_reuses_recent_active_session(client):
+    """Counterpart: a session whose updated_at is RECENT (< 30 min) must still
+    be reused per the original idempotence rule (state survives refresh).
+    Guards against accidentally making the staleness check fire too eagerly."""
+    hw_id = _make_homework(client, hw_id_hint="t_fresh")
+    sess = "plan5fresh001"
+    _seed_attempts(sess, hw_id)
+
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # Immediately call /boss/start again — must reuse.
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+
+    assert second["boss_session_id"] == first_bsid, (
+        "Recent session was NOT reused — staleness check is firing too eagerly. "
+        "Idempotence (Plan 5 acceptance test 5) is broken."
+    )
+
+
+def test_boss_start_archives_session_aged_just_past_threshold(client):
+    """Boundary test — a session aged 35 minutes (5 min past the 30-min
+    threshold) MUST be archived. Was previously a 6h threshold; a session
+    aged 35 min was incorrectly reused, leading to the 2026-05-13 trial-leak
+    bug. This test guards against the threshold accidentally creeping back
+    up via refactor."""
+    import asyncio
+    from datetime import datetime, timezone, timedelta
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_boundary")
+    sess = "plan5boundary001"
+    _seed_attempts(sess, hw_id)
+
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # 35 min stale — past the 30-min threshold but well short of the old 6h.
+    stale_ts = (datetime.now(timezone.utc) - timedelta(minutes=35)).isoformat()
+    import sqlite3
+    from server.config import DB_PATH
+    con = sqlite3.connect(str(DB_PATH))
+    con.execute(
+        "UPDATE boss_sessions SET updated_at = ? WHERE id = ?",
+        (stale_ts, first_bsid),
+    )
+    con.commit()
+    con.close()
+
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 7,
+    }).json()
+
+    assert second["boss_session_id"] != first_bsid, (
+        "Session aged 35 min (past 30-min threshold) was reused — would let "
+        "the trial-leak bug regress."
+    )
+
+    old_state = asyncio.run(boss_session_repo.get_boss_session(first_bsid))
+    assert old_state["status"] == "abandoned"
+
+
+def test_boss_start_force_fresh_archives_active_session_regardless_of_age(client):
+    """When the frontend sends `force_fresh=True` (e.g. student clicked an
+    explicit 'Restart boss' / 'New attempt' button), /boss/start must archive
+    any active row for this (session_id, homework_id) regardless of its age
+    and spawn a fresh session. This is the explicit-intent path so the UI
+    can offer a 'Resume or restart?' dialog without fighting the time-based
+    staleness heuristic."""
+    import asyncio
+    from server.db import boss_session_repo
+
+    hw_id = _make_homework(client, hw_id_hint="t_fforce")
+    sess = "plan5force001"
+    _seed_attempts(sess, hw_id)
+
+    # First call creates a fresh, very-recent session.
+    first = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id,
+    }).json()
+    first_bsid = first["boss_session_id"]
+
+    # Second call with force_fresh=True — must NOT reuse despite session
+    # being seconds old (well within the 30-min staleness window).
+    second = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "force_fresh": True,
+    }).json()
+    second_bsid = second["boss_session_id"]
+
+    assert second_bsid != first_bsid, (
+        "force_fresh=True must archive any existing session and spawn fresh, "
+        "even when the existing session is recent."
+    )
+    assert second["trials_left"] == 5
+    assert second["hp"] == 100
+
+    old_state = asyncio.run(boss_session_repo.get_boss_session(first_bsid))
+    assert old_state["status"] == "abandoned"
+
+
+def test_boss_start_force_fresh_works_when_no_existing_session(client):
+    """force_fresh=True on a session that has no active boss row must still
+    create a fresh row (not crash, not 404). The flag is a hint about intent,
+    not a precondition."""
+    hw_id = _make_homework(client, hw_id_hint="t_fnone")
+    sess = "plan5fnone001"
+    _seed_attempts(sess, hw_id)
+
+    resp = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "force_fresh": True,
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["boss_session_id"].startswith("bs_")
+    assert body["hp"] == 100
+    assert body["trials_left"] == 5
+
+
+# ---------------------------------------------------------------------------
+# 2026-05-13 — trials_left derived from authored boss_questions pool size
+# ---------------------------------------------------------------------------
+
+
+def test_trials_left_matches_authored_boss_questions_count(client):
+    """Design decision (2026-05-13): trials_left should equal the number of
+    authored boss_questions in the homework. One Kimi-generated question per
+    author-supplied anchor. The req.trials_left field becomes advisory; the
+    server computes the effective value from content_json.boss_questions."""
+    # Build a homework with exactly 3 boss_questions.
+    payload = {
+        "title": "trials count test 3",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {
+            "title": "trials count test 3",
+            "subject": "math-algebra",
+            "grade": 8,
+            "language": "uz",
+            "boss_questions": [
+                {"q": "Stem A", "dmg": 10},
+                {"q": "Stem B", "dmg": 20},
+                {"q": "Stem C", "dmg": 30},
+            ],
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+
+    # Frontend passes the legacy default of 7; server must override to 3.
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": "trials_test_3", "homework_id": hw_id,
+        "max_hp": 100, "trials_left": 7,
+    })
+    assert started.status_code == 200, started.text
+    assert started.json()["trials_left"] == 3, (
+        f"Server must override trials_left to authored pool size "
+        f"(3), got {started.json()['trials_left']}. "
+        f"req.trials_left=7 was treated as advisory."
+    )
+
+
+def test_trials_left_falls_back_to_5_when_no_authored_boss_questions(client):
+    """Counterpart: when content_json has no boss_questions[] (or empty),
+    the server falls back to a default of 5 trials."""
+    payload = {
+        "title": "trials count test 0",
+        "subject": "math-algebra",
+        "grade": 8,
+        "mode": "hard",
+        "family": "aniq-fanlar",
+        "content_json": {
+            "title": "trials count test 0",
+            "subject": "math-algebra",
+            "grade": 8,
+            "language": "uz",
+            # No boss_questions key at all.
+        },
+    }
+    resp = client.post("/api/homeworks", json=payload)
+    assert resp.status_code == 200, resp.text
+    hw_id = resp.json()["id"]
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": "trials_test_0", "homework_id": hw_id,
+        "max_hp": 100, "trials_left": 7,
+    })
+    assert started.status_code == 200, started.text
+    assert started.json()["trials_left"] == 5, (
+        f"Expected fallback trials_left=5 when no authored boss_questions, "
+        f"got {started.json()['trials_left']}"
+    )

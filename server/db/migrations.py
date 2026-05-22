@@ -247,6 +247,10 @@ CREATE TABLE IF NOT EXISTS boss_sessions (
   asked_question_ids_json TEXT NOT NULL DEFAULT '[]',
   weak_topics_json TEXT NOT NULL DEFAULT '[]',
   strong_topics_json TEXT NOT NULL DEFAULT '[]',
+  hints_used INTEGER NOT NULL DEFAULT 0,
+  correct_count INTEGER NOT NULL DEFAULT 0,
+  total_attempts INTEGER NOT NULL DEFAULT 0,
+  question_kind TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -322,6 +326,13 @@ async def init_db() -> None:
             "ALTER TABLE sessions ADD COLUMN performance_summary_json TEXT",
             "ALTER TABLE sessions ADD COLUMN boss_state_json TEXT",
             "ALTER TABLE sessions ADD COLUMN updated_at TEXT",
+            # Boss-Arena (spec §6) — hint threading + per-session tallies +
+            # question shape. Idempotent: re-running on a DB that already has
+            # the column is swallowed by the try/except below.
+            "ALTER TABLE boss_sessions ADD COLUMN hints_used INTEGER DEFAULT 0",
+            "ALTER TABLE boss_sessions ADD COLUMN correct_count INTEGER DEFAULT 0",
+            "ALTER TABLE boss_sessions ADD COLUMN total_attempts INTEGER DEFAULT 0",
+            "ALTER TABLE boss_sessions ADD COLUMN question_kind TEXT",
         ):
             try:
                 await db.execute(migration)

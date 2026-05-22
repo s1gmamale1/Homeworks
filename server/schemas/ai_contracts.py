@@ -48,9 +48,22 @@ class BossRubric(BaseModel):
 
 
 class BossQuestionGenerated(BaseModel):
-    """Plan 7 strict contract for the Boss Question Generator output."""
+    """Plan 7 strict contract for the Boss Question Generator output.
+
+    Boss-Arena Why→How→What additions (spec §4/§9): the generator emits a
+    ``scenario`` plus three reasoning prompts (``why`` / ``how`` / ``what``).
+    All four default to "" so legacy single-field generations (which only
+    populate ``question_text``) still validate. ``question_text`` stays the
+    composite/headline used for anti-repetition + display fallback.
+    """
 
     question_text: str = Field(..., max_length=900)
+    # Structured Why→How→What reasoning shape (spec §4/§9). PROMPT text only —
+    # safe to send to the client; never carries answer/rubric content.
+    scenario: str = ""
+    why: str = ""
+    how: str = ""
+    what: str = ""
     expected_answer: BossExpectedAnswer
     rubric: BossRubric
     target_skill: str
@@ -77,6 +90,11 @@ class BossAnswerCheckResult(BaseModel):
     damage_multiplier: float = Field(default=1.0, ge=0.0, le=1.5)
     difficulty_recommendation: Literal["increase", "decrease", "stay"] = "stay"
     should_retry_same_skill: bool = False
+    # Boss-Arena coverage-based grading (spec §6): per-axis reasoning coverage
+    # for the Why→How→What chain, each 0..1. Default empty so legacy single-
+    # score generations still validate; calculate_damage falls back to ``score``
+    # when coverage is absent.
+    coverage: dict[str, float] = Field(default_factory=dict)
 
 
 class FinalReportResult(BaseModel):
