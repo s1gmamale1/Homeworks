@@ -92,6 +92,10 @@ class BossSubmitAnswerRequest(BaseModel):
     boss_session_id: str
     question_id: str
     student_answer: str
+    # Anti-cheat signal ingestion (ADVISORY — never alters grading/HP/status).
+    # Optional; absent = "unknown / not measured" → zero integrity signal.
+    client_time_ms: Optional[int] = None
+    paste_detected: Optional[bool] = None
 
 
 class BossSubmitAnswerResponse(BaseModel):
@@ -120,6 +124,13 @@ class BossSubmitAnswerResponse(BaseModel):
     # surface to the client to render coverage bars. Populated only when the
     # verdict carries a coverage breakdown; None for legacy/flat verdicts.
     coverage: Optional[dict[str, float]] = None
+    # Soft-friction nudge (anti-cheat wiring, 2026-05-22). Populated ONLY when a
+    # 'strong'-severity integrity flag (sudden_mastery) fires for this submit.
+    # ADVISORY: a pedagogical "explain in your own words" prompt — it NEVER
+    # gates progress. is_correct / score / hp / boss_status are already final
+    # and returned alongside. We deliberately do NOT leak reason_code /
+    # thresholds to the client (those are teacher-only intelligence).
+    integrity_nudge: Optional[dict] = None
 
 
 class BossStateRequest(BaseModel):
@@ -521,6 +532,34 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
             content_json.get("subject") or (homework or {}).get("subject")
         )
 
+    # Anti-cheat (ADVISORY): snapshot the pre-boss mastery_score BEFORE grading
+    # + state update, so the sudden-mastery detector compares the established
+    # baseline against the boss's in-progress correct-rate. Best-effort; a miss
+    # yields None (= no signal). Also record a paste during this submit.
+    pre_boss_mastery: Optional[float] = None
+    try:
+        from ..services.integrity_wiring import _mastery_score_for_session
+
+        pre_boss_mastery = await _mastery_score_for_session(
+            state["session_id"], state["homework_id"]
+        )
+    except Exception as _pm_exc:
+        _log.warning("pre-boss mastery read failed (non-fatal): %s", _pm_exc)
+    if req.paste_detected:
+        try:
+            await session_events_repo.add_session_event(
+                session_id=state["session_id"],
+                hw_id=state["homework_id"],
+                event_type="integrity:paste",
+                payload={"phase": "boss", "question_id": req.question_id},
+                phase="boss",
+                question_id=req.question_id,
+            )
+        except Exception as _paste_exc:
+            _log.warning(
+                "integrity:paste session_event failed (non-fatal): %s", _paste_exc
+            )
+
     verdict = await boss_dynamic.check_boss_answer(
         question_text=q["question_text"],
         expected_answer=q["expected_answer"],
@@ -674,6 +713,42 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
             "trials_left": new_trials,
         })
 
+    # Anti-cheat flag engine (ADVISORY — best-effort, post-grading). The boss is
+    # an assessment. correct_count / total_attempts come from the updated boss
+    # row (post-increment); the correct-rate is correct_count / max(1, total).
+    # Enrolls any flags into the review queue and, on a strong (sudden_mastery)
+    # flag, returns a soft-friction nudge. NONE of this changes is_correct /
+    # score / hp / boss_status above; a failure is swallowed.
+    integrity_nudge = None
+    try:
+        from ..services.integrity_wiring import evaluate_boss_submit
+
+        row = updated or state
+        total_attempts = int(row.get("total_attempts") or 0)
+        correct_count = int(row.get("correct_count") or 0)
+        grade_for_signal = (
+            content_json.get("grade") or (homework or {}).get("grade")
+        )
+        boss_meta = content_json.get("boss_meta")
+        from ..services.integrity_wiring import clamp_client_time_ms
+
+        integrity_nudge = await evaluate_boss_submit(
+            session_id=state["session_id"],
+            hw_id=state["homework_id"],
+            question_id=req.question_id,
+            time_ms=clamp_client_time_ms(req.client_time_ms),
+            paste_detected=req.paste_detected,
+            pre_assessment_mastery=pre_boss_mastery,
+            correct_count=correct_count,
+            total_attempts=total_attempts,
+            grade=grade_for_signal,
+            boss_meta=boss_meta,
+        )
+    except Exception as _integrity_exc:
+        _log.warning(
+            "boss integrity flag engine failed (non-fatal): %s", _integrity_exc
+        )
+
     return BossSubmitAnswerResponse(
         is_correct=verdict.is_correct,
         score=verdict.score,
@@ -690,6 +765,7 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
         stars=outcome_payload.get("stars"),
         outcome_xp=outcome_payload.get("outcome_xp"),
         coverage=verdict.coverage or None,
+        integrity_nudge=integrity_nudge,
     )
 
 

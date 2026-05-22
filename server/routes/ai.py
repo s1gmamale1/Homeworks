@@ -44,6 +44,12 @@ class RuntimeAnswerSubmitRequest(BaseModel):
     student_work_text: Optional[str] = None
     client_context: dict[str, Any] = Field(default_factory=dict)
     attempt_number: Optional[int] = None
+    # Anti-cheat signal ingestion (ADVISORY — never alters grading). Both
+    # optional; an absent value is treated as "unknown / not measured" and
+    # produces zero integrity signal. `client_time_ms` is clamped server-side
+    # before use; `paste_detected` only matters on opt-in assessment phases.
+    client_time_ms: Optional[int] = None
+    paste_detected: Optional[bool] = None
 
 class CheckAnswerRequest(BaseModel):
     # Legacy free-form fields (made optional so sentence-fill phase callers
@@ -117,6 +123,13 @@ class CheckAnswerRequest(BaseModel):
     # client NEVER sends the expected answer value.
     item_index: Optional[int] = None
 
+    # Anti-cheat signal ingestion (ADVISORY — never alters grading). Optional;
+    # absent = "unknown / not measured" → zero integrity signal. Mirrors the
+    # fields on RuntimeAnswerSubmitRequest so the legacy /check-answer surface
+    # can carry the same signals.
+    client_time_ms: Optional[int] = None
+    paste_detected: Optional[bool] = None
+
 
 class FinalizeCheckAnswerRequest(BaseModel):
     phase: str
@@ -175,6 +188,13 @@ class ReviewDecideRequest(BaseModel):
     correct: bool
     score: float
     feedback: str
+    # Integrity-resolution fields (anti-cheat wiring, 2026-05-22). Optional so
+    # the legacy grading-review decide path is unchanged. The whole request is
+    # persisted verbatim into `decision_json`, so a teacher can record how an
+    # integrity flag was resolved (e.g. integrity_outcome="cleared" /
+    # "confirmed" / "dismissed") without a schema change.
+    integrity_reason: Optional[str] = None
+    integrity_outcome: Optional[str] = None
 
 
 # Wave F1 — live tutor chat + boss-plan + history.
@@ -374,14 +394,24 @@ async def ai_status() -> dict:
 # --- Review-queue endpoints (Fix #5: moved under /ai/ prefix for consistency) ---
 
 @router.get("/ai/review-queue")
-async def get_review_queue():
+async def get_review_queue(kind: Optional[str] = Query(default=None)):
+    """List pending review items.
+
+    Without ``?kind=`` this returns every pending row (grading + integrity),
+    preserving the legacy behavior. With ``?kind=integrity`` (or
+    ``?kind=grading``) the listing is filtered to that lane so a teacher can
+    triage ADVISORY integrity flags separately from grading-review items.
+    """
     from .. import db
-    return await db.get_review_queue()
+    return await db.get_review_queue(kind=kind)
 
 @router.post("/ai/review-queue/{id}/decide")
 async def decide_review_queue(req: ReviewDecideRequest, id: int = PathParam(...)):
     from .. import db
-    success = await db.resolve_review_item(id, req.model_dump())
+    # exclude_none keeps the legacy {correct, score, feedback} decision payload
+    # byte-identical when the optional integrity-resolution fields are omitted;
+    # they only appear in `decision_json` when a teacher actually sets them.
+    success = await db.resolve_review_item(id, req.model_dump(exclude_none=True))
     if not success:
         raise HTTPException(404, detail="Review item not found or already resolved")
     return {"status": "ok"}
@@ -3084,16 +3114,46 @@ async def _check_answer_puzzle_lock(req: CheckAnswerRequest) -> dict:
 @router.post("/ai/runtime/submit-answer")
 async def submit_runtime_answer(req: RuntimeAnswerSubmitRequest):
     from ..services.runtime_answer_resolver import resolve_runtime_answer
-    
+
     if req.session_id:
         tutor._validate_session_id(req.session_id)
-        
+
+    # Soft-friction follow-up (anti-cheat wiring). A submit that carries a
+    # `nudge_response` (in client_context, or via subphase=="integrity-nudge")
+    # records an ADVISORY session event and is NEVER scored. Best-effort.
+    nudge_response = None
+    if isinstance(req.client_context, dict):
+        nudge_response = req.client_context.get("nudge_response")
+    if nudge_response is not None or req.subphase == "integrity-nudge":
+        try:
+            from ..db import session_events_repo
+
+            await session_events_repo.add_session_event(
+                session_id=req.session_id,
+                hw_id=req.homework_id,
+                event_type="integrity_nudge_response",
+                payload={
+                    "question_id": req.question_id,
+                    "nudge_response": nudge_response,
+                },
+                phase=req.phase or None,
+                subphase=req.subphase or None,
+                question_id=req.question_id or None,
+            )
+        except Exception as _nudge_exc:
+            _log.warning(
+                "integrity_nudge_response session_event failed (non-fatal): %s",
+                _nudge_exc,
+            )
+
     try:
         target = await resolve_runtime_answer(req)
         result = await tutor.process_runtime_answer(
             target=target.model_dump(),
             student_answer=req.student_answer,
-            attempt_number=req.attempt_number or 1
+            attempt_number=req.attempt_number or 1,
+            client_time_ms=req.client_time_ms,
+            paste_detected=req.paste_detected,
         )
         return result
     except HTTPException:

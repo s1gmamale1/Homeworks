@@ -64,7 +64,11 @@ CREATE TABLE IF NOT EXISTS review_queue (
     status TEXT NOT NULL DEFAULT 'pending',
     created_at TEXT NOT NULL,
     decision_json TEXT NULL,
-    resolved_at TEXT NULL
+    resolved_at TEXT NULL,
+    integrity_reason TEXT NULL,
+    integrity_severity TEXT NULL,
+    kind TEXT DEFAULT 'grading',
+    session_id TEXT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_versions_hw_saved
@@ -72,6 +76,9 @@ CREATE INDEX IF NOT EXISTS idx_versions_hw_saved
 
 CREATE INDEX IF NOT EXISTS idx_review_pending
     ON review_queue(question_id, student_answer) WHERE status='pending';
+
+CREATE INDEX IF NOT EXISTS idx_review_queue_kind
+    ON review_queue(status, kind, created_at);
 
 CREATE TABLE IF NOT EXISTS tutor_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -347,12 +354,35 @@ async def init_db() -> None:
             "ALTER TABLE boss_sessions ADD COLUMN correct_count INTEGER DEFAULT 0",
             "ALTER TABLE boss_sessions ADD COLUMN total_attempts INTEGER DEFAULT 0",
             "ALTER TABLE boss_sessions ADD COLUMN question_kind TEXT",
+            # Academic-integrity routing (anti-cheat wiring, 2026-05-22). The
+            # review_queue grows ADVISORY integrity columns so a flagged attempt
+            # can land in the teacher queue alongside grading-review rows without
+            # ever altering the student's score. `kind` defaults to 'grading' so
+            # every pre-existing row keeps its meaning; `session_id` lets a
+            # teacher trace a flag back to the playthrough. Idempotent —
+            # re-running on a DB that already has the column is swallowed below.
+            "ALTER TABLE review_queue ADD COLUMN integrity_reason TEXT",
+            "ALTER TABLE review_queue ADD COLUMN integrity_severity TEXT",
+            "ALTER TABLE review_queue ADD COLUMN kind TEXT DEFAULT 'grading'",
+            "ALTER TABLE review_queue ADD COLUMN session_id TEXT",
         ):
             try:
                 await db.execute(migration)
             except Exception:
                 # Column already exists — safe to ignore.
                 pass
+        # Index for the integrity-aware review-queue listing (status + kind +
+        # recency). CREATE INDEX IF NOT EXISTS is itself idempotent, but it
+        # references the `kind` column that the ADD COLUMN above provisions, so
+        # it must run AFTER that loop (a fresh DB gets `kind` from _SCHEMA; an
+        # old DB gets it from the migration above).
+        try:
+            await db.execute(
+                "CREATE INDEX IF NOT EXISTS idx_review_queue_kind "
+                "ON review_queue(status, kind, created_at)"
+            )
+        except Exception:
+            pass
         await db.commit()
     finally:
         await db.close()

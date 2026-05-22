@@ -52,6 +52,7 @@ from .review_queue_repo import (
     get_answer_cache,
     set_answer_cache,
     add_to_review_queue,
+    add_integrity_flag,
     get_review_queue,
     resolve_review_item,
 )
@@ -134,6 +135,7 @@ __all__ = [
     "get_answer_cache",
     "set_answer_cache",
     "add_to_review_queue",
+    "add_integrity_flag",
     "get_review_queue",
     "resolve_review_item",
     # authorship affirmations
