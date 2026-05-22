@@ -114,6 +114,12 @@ class BossSubmitAnswerResponse(BaseModel):
     outcome: Optional[str] = None       # "expert" | "strong" | "passing" | "hali_emas"
     stars: Optional[int] = None         # 0–3
     outcome_xp: Optional[int] = None    # cumulative XP awarded
+    # Per-axis Why→How→What coverage (Boss-Arena spec §4/§9). These are the
+    # STUDENT's own per-axis scores for the answer they just submitted — they
+    # are NOT answer-bearing (no expected/rubric text), so they're safe to
+    # surface to the client to render coverage bars. Populated only when the
+    # verdict carries a coverage breakdown; None for legacy/flat verdicts.
+    coverage: Optional[dict[str, float]] = None
 
 
 class BossStateRequest(BaseModel):
@@ -683,6 +689,7 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
         outcome=outcome_payload.get("outcome"),
         stars=outcome_payload.get("stars"),
         outcome_xp=outcome_payload.get("outcome_xp"),
+        coverage=verdict.coverage or None,
     )
 
 

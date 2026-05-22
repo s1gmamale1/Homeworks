@@ -3,7 +3,10 @@
 // Every call throws on a non-2xx response so callers can surface error UI.
 
 import type {
-  BossTurnResult,
+  BossGenerateQuestionResponse,
+  BossStartResponse,
+  BossStateResponse,
+  BossSubmitAnswerResponse,
   CheckAnswerResult,
   GateState,
   HydratePayload,
@@ -204,39 +207,98 @@ export function submitTileMatch(
   });
 }
 
+// ---- F4: Dynamic Boss (Plan 5) — /api/ai/boss/* ----
+//
+// The dynamic boss owns its own endpoints (NOT the legacy /check-answer
+// phase="final-boss" path). The SERVER owns HP/trials/difficulty and grades
+// every answer; the client only forwards the student's `student_answer` and
+// renders the projected state. NONE of these calls ever send or receive an
+// answer/rubric/expected field — the answer-leak guarantee lives in the
+// response types (BossGenerateQuestionResponse / BossSubmitAnswerResponse).
+
 /**
- * Submit one Boss combat turn. Routed through /check-answer phase="final-boss"
- * (NOT the legacy /api/ai/boss-turn): that endpoint resolves the expected
- * answers SERVER-SIDE from content_json.boss_questions by `question_id`, so the
- * redacted client never holds or sends the answer. The response carries
- * server-computed {correct, damage_dealt, boss_response, hint?, ...}. Win/lose
- * is driven by the client's HP cursor (HP is frontend authoritative per the
- * backend adapter), not by a client verdict. The boss NEVER self-grades
- * correctness.
+ * POST /api/ai/boss/start — open or resume a boss session for this
+ * (session_id, homework_id). HP is SERVER-DERIVED from the grade band;
+ * `max_hp` here is advisory only (the server may ignore it). `force_fresh`
+ * archives any active session and spawns a clean one (used by "Restart boss").
  */
-export function bossTurn(
-  hwId: string,
-  sessionId: string,
-  questionId: string,
-  studentAnswer: string,
-  opts: {
-    hpRemaining: number;
-    attemptNumber: number;
-    bossType?: string;
-  }
-): Promise<BossTurnResult> {
-  return request<BossTurnResult>("/api/ai/check-answer", {
+export function bossStart(opts: {
+  sessionId: string;
+  homeworkId: string;
+  maxHp?: number;
+  trialsLeft?: number;
+  initialDifficulty?: string;
+  forceFresh?: boolean;
+}): Promise<BossStartResponse> {
+  return request<BossStartResponse>("/api/ai/boss/start", {
     method: "POST",
     body: JSON.stringify({
-      phase: "final-boss",
-      homework_id: hwId,
-      session_id: sessionId,
-      question_id: questionId,
-      student_answer: studentAnswer,
-      hp_remaining: opts.hpRemaining,
-      attempt_number: opts.attemptNumber,
-      ...(opts.bossType ? { boss_type: opts.bossType } : {}),
+      session_id: opts.sessionId,
+      homework_id: opts.homeworkId,
+      ...(typeof opts.maxHp === "number" ? { max_hp: opts.maxHp } : {}),
+      ...(typeof opts.trialsLeft === "number" ? { trials_left: opts.trialsLeft } : {}),
+      ...(opts.initialDifficulty ? { initial_difficulty: opts.initialDifficulty } : {}),
+      ...(opts.forceFresh ? { force_fresh: true } : {}),
     }),
+  });
+}
+
+/**
+ * POST /api/ai/boss/generate-question — fetch the next on-demand question.
+ * A 502 means generation retries were exhausted; it surfaces as
+ * `ApiError.status === 502` so the UI can offer Try again / Refresh.
+ * `recentBossPhrases` lets the generator vary surface form.
+ */
+export function bossGenerateQuestion(opts: {
+  bossSessionId: string;
+  recentBossPhrases?: string[];
+}): Promise<BossGenerateQuestionResponse> {
+  return request<BossGenerateQuestionResponse>("/api/ai/boss/generate-question", {
+    method: "POST",
+    body: JSON.stringify({
+      boss_session_id: opts.bossSessionId,
+      ...(opts.recentBossPhrases && opts.recentBossPhrases.length
+        ? { recent_boss_phrases: opts.recentBossPhrases }
+        : {}),
+    }),
+  });
+}
+
+/**
+ * POST /api/ai/boss/submit-answer — submit the student's answer for grading.
+ * `studentAnswer` is a SINGLE string; for structured Why→How→What questions
+ * the caller concatenates the three parts as "Why: …\nHow: …\nWhat: …". The
+ * server returns the verdict + ABSOLUTE post-turn hp/trials/difficulty. The
+ * client NEVER sends an answer key — only the student's own text.
+ */
+export function bossSubmitAnswer(opts: {
+  bossSessionId: string;
+  questionId: string;
+  studentAnswer: string;
+}): Promise<BossSubmitAnswerResponse> {
+  return request<BossSubmitAnswerResponse>("/api/ai/boss/submit-answer", {
+    method: "POST",
+    body: JSON.stringify({
+      boss_session_id: opts.bossSessionId,
+      question_id: opts.questionId,
+      student_answer: opts.studentAnswer,
+    }),
+  });
+}
+
+/** POST /api/ai/boss/state — projected session state (no answer keys). */
+export function bossState(bossSessionId: string): Promise<BossStateResponse> {
+  return request<BossStateResponse>("/api/ai/boss/state", {
+    method: "POST",
+    body: JSON.stringify({ boss_session_id: bossSessionId }),
+  });
+}
+
+/** POST /api/ai/boss/give-up — abandon the session; returns projected state. */
+export function bossGiveUp(bossSessionId: string): Promise<BossStateResponse> {
+  return request<BossStateResponse>("/api/ai/boss/give-up", {
+    method: "POST",
+    body: JSON.stringify({ boss_session_id: bossSessionId }),
   });
 }
 

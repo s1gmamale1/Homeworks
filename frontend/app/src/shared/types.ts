@@ -343,32 +343,123 @@ export interface BossMeta {
   [key: string]: unknown;
 }
 
+// ---- Dynamic Boss (Plan 5) — /api/ai/boss/* contract ----
+//
+// These mirror the Pydantic models in server/routes/ai_plan5.py 1:1. The
+// dynamic boss flow REPLACES the static content_json.boss_questions turn loop:
+// the server owns HP/trials/difficulty, generates each question on demand, and
+// grades server-side. The client NEVER holds an answer, rubric, or expected
+// value — the response types below carry only prompt + projected-state fields,
+// guarded by `never` so a regression can't smuggle an answer key in.
+
 /**
- * Boss turn grade result. Mirrors the `tutor.boss_turn` shape plus the
- * Final-Boss adapter metadata. Correctness + damage are server-computed; the
- * client renders HP drama from these fields and never derives the verdict.
+ * POST /api/ai/boss/start → opens (or resumes) a boss session. HP is
+ * SERVER-DERIVED from the homework's grade band; the client never decides it.
  */
-export interface BossTurnResult {
-  correct: boolean;
-  damage_dealt: number;
-  boss_response: string;
-  hint: string | null;
-  score?: number;
-  axis_1?: number;
-  axis_2?: number;
-  axis_1_label?: string;
-  axis_2_label?: string;
-  done?: boolean;
-  // Final-Boss adapter metadata (additive).
-  phase?: string;
-  boss_type_used?: string;
-  grade_band?: string;
-  max_hp?: number;
-  hint_cost_per_use?: number;
-  attempts_used?: number;
-  hints_used?: number;
-  // Surfaced only on defeat.
-  outcome?: string;
-  stars?: number;
-  outcome_xp?: number;
+export interface BossStartResponse {
+  boss_session_id: string;
+  hp: number;
+  max_hp: number;
+  trials_left: number;
+  current_difficulty: string;
+  weak_topics: string[];
+  strong_topics: string[];
+  missing_context_flags: string[];
+  // Leak guards — /start never returns an answer key.
+  expected?: never;
+  expected_answer?: never;
+  rubric?: never;
+  answer?: never;
+}
+
+/**
+ * POST /api/ai/boss/generate-question → the next on-demand question. The
+ * structured Why→How→What prompt (`scenario`/`why`/`how`/`what`) may be empty
+ * for legacy questions; fall back to `question_text`. NEVER any answer/rubric.
+ */
+export interface BossGenerateQuestionResponse {
+  question_id: string;
+  question_text: string;
+  // Structured prompt parts — PROMPT text only, safe to render. May be "".
+  scenario?: string;
+  why?: string;
+  how?: string;
+  what?: string;
+  target_skill: string;
+  difficulty: string;
+  why_this_question: string;
+  boss_session_id: string;
+  // Leak guards — the generated question never carries its own answer.
+  expected?: never;
+  expected_answer?: never;
+  rubric?: never;
+  answer?: never;
+  accepted_answers?: never;
+  answer_spec?: never;
+  correct?: never;
+}
+
+/**
+ * POST /api/ai/boss/submit-answer → server-graded verdict + absolute state.
+ * `hp`/`trials_left`/`current_difficulty` are ABSOLUTE post-turn values (the
+ * client mirrors them, it does not compute them). `coverage` carries the
+ * STUDENT's own per-axis why/how/what scores (NOT answer-bearing) for the
+ * coverage bars. `outcome`/`stars`/`outcome_xp` populate only on terminal
+ * status transitions.
+ */
+export interface BossSubmitAnswerResponse {
+  is_correct: boolean;
+  score: number;
+  confidence: number;
+  feedback: string;
+  damage: number;
+  hp: number;
+  trials_left: number;
+  current_difficulty: string;
+  boss_status: "active" | "won" | "failed";
+  should_retry_same_skill: boolean;
+  misconception_tags: string[];
+  outcome?: string | null;
+  stars?: number | null;
+  outcome_xp?: number | null;
+  coverage?: { why: number; how: number; what: number } | null;
+  // Leak guards — the verdict reveals feedback, not the expected answer.
+  expected?: never;
+  expected_answer?: never;
+  rubric?: never;
+  answer?: never;
+}
+
+/**
+ * POST /api/ai/boss/state and /api/ai/boss/give-up → projected session state
+ * (no answer keys). `current_question` mirrors the active question's prompt
+ * parts on resume.
+ */
+export interface BossStateResponse {
+  boss_session_id: string;
+  session_id: string;
+  homework_id: string;
+  status: string;
+  hp: number;
+  max_hp: number;
+  trials_left: number;
+  current_difficulty: string;
+  current_question_id?: string | null;
+  asked_question_ids?: string[];
+  weak_topics?: string[];
+  strong_topics?: string[];
+  current_question?: {
+    question_id: string;
+    question_text: string;
+    scenario?: string;
+    why?: string;
+    how?: string;
+    what?: string;
+    difficulty: string;
+    target_skill: string;
+  } | null;
+  // Leak guards.
+  expected?: never;
+  expected_answer?: never;
+  rubric?: never;
 }

@@ -452,6 +452,57 @@ def test_boss_submit_answer_backend_owns_hp_not_model(mock_gen, client):
 
 
 @patch("server.services.boss_dynamic.ai_gateway.generate_structured")
+def test_boss_submit_response_surfaces_per_axis_coverage(mock_gen, client):
+    """Boss-Arena coverage surfacing — when the verdict carries per-axis
+    why/how/what coverage, the submit-answer response must expose it under
+    ``coverage`` so the UI can render coverage bars. These are the STUDENT's
+    own per-axis scores (not answer-bearing), so surfacing them is safe.
+
+    Regression guard: the field was computed server-side (verdict.coverage)
+    but dropped from BossSubmitAnswerResponse, so the runtime could never
+    render coverage feedback.
+    """
+    hw_id = _make_homework(client, hw_id_hint="t_cov")
+    sess = "plan5cov00001"
+    _seed_attempts(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "max_hp": 100, "trials_left": 5,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    mock_gen.return_value = _boss_question_factory(
+        question_text="Explain why 'according to' attributes a claim.",
+        target_skill="according_to",
+        why_this_question="weak topic",
+    )
+    q = client.post("/api/ai/boss/generate-question", json={"boss_session_id": bsid}).json()
+
+    # Verdict carries a full per-axis coverage breakdown.
+    mock_gen.return_value = _boss_check_factory(
+        is_correct=True, score=0.9, confidence=0.92,
+        feedback="Strong reasoning.",
+        coverage={"why": 0.9, "how": 0.8, "what": 1.0},
+    )
+    resp = client.post("/api/ai/boss/submit-answer", json={
+        "boss_session_id": bsid, "question_id": q["question_id"],
+        "student_answer": "Why: attribution\nHow: cite the source\nWhat: the claim is sourced",
+    })
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert "coverage" in body, "submit-answer response must expose `coverage`"
+    cov = body["coverage"]
+    assert cov is not None, "coverage should be present when the verdict has it"
+    assert set(cov.keys()) == {"why", "how", "what"}, cov
+    assert cov["why"] == pytest.approx(0.9)
+    assert cov["how"] == pytest.approx(0.8)
+    assert cov["what"] == pytest.approx(1.0)
+    # Coverage is per-axis student scores — it must NOT carry answer keys.
+    for forbidden in ("expected", "expected_answer", "rubric", "canonical", "answer"):
+        assert forbidden not in cov, f"coverage leaked an answer-bearing key: {forbidden}"
+
+
+@patch("server.services.boss_dynamic.ai_gateway.generate_structured")
 def test_boss_state_persists_across_request_for_refresh(mock_gen, client):
     """Plan 5 acceptance test 5 — /state must return the same HP / trials
     as set by submit-answer. Guards the database round-trip."""

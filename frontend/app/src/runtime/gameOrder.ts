@@ -66,8 +66,16 @@ function hasContent(content: ContentJson, key: string): boolean {
 export function resolveGameOrder(content: ContentJson | undefined): string[] {
   if (!content) return [];
 
+  // The DYNAMIC boss (Plan 5) generates its questions on demand, so it may
+  // ship with NO static `boss_questions` array. Treat the boss as present when
+  // ANY of: static boss_questions exist, boss_meta is authored (the dynamic
+  // boss's config home), or the authored practice_arc.games already lists
+  // "boss". Without this the dynamic-only boss would never appear in the arc.
   const hasBoss =
-    Array.isArray(content.boss_questions) && content.boss_questions.length > 0;
+    (Array.isArray(content.boss_questions) && content.boss_questions.length > 0) ||
+    (content.boss_meta != null && typeof content.boss_meta === "object") ||
+    (Array.isArray(content.practice_arc?.games) &&
+      content.practice_arc!.games!.some((k) => k === BOSS_KEY));
 
   // 1) Author-specified order wins.
   const authored = content.practice_arc?.games;
