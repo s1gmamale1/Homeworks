@@ -130,6 +130,17 @@ class CheckAnswerRequest(BaseModel):
     client_time_ms: Optional[int] = None
     paste_detected: Optional[bool] = None
 
+    # Soft-friction follow-up (anti-cheat wiring). When the runtime surfaces an
+    # `integrity_nudge` (a strong-flag "explain in your own words" prompt), the
+    # student's free-text reply is posted back here. A submit that carries a
+    # `nudge_response` (or `subphase=="integrity-nudge"`) is recorded as an
+    # ADVISORY session event and EARLY-RETURNS `{"advisory": true}` — it is NEVER
+    # graded and never produces a score. Mirrors the same contract on the
+    # /ai/runtime/submit-answer surface. `subphase` is also threaded into the
+    # integrity engine on graded submits (G1).
+    subphase: Optional[str] = None
+    nudge_response: Optional[str] = None
+
 
 class FinalizeCheckAnswerRequest(BaseModel):
     phase: str
@@ -281,6 +292,77 @@ def _result_action(result: dict[str, Any]) -> str:
     return "completed"
 
 
+async def _attach_integrity(
+    req: CheckAnswerRequest,
+    result: dict[str, Any],
+) -> dict[str, Any]:
+    """Shared post-grading integrity hook for the /ai/check-answer surface (G1).
+
+    The v2 React runtime submits CBP checkpoints, CBP reasoning, Memory Check
+    and the practice-arc games to ``POST /api/ai/check-answer`` — which NEVER
+    routes through ``tutor.process_runtime_answer``. So the integrity engine +
+    signal ingestion + soft-friction nudge only ran for the tutor runtime + the
+    boss before this hook. This wires the SAME engine into the check-answer
+    branches by REUSING ``evaluate_runtime_submit`` (no forked flag logic).
+
+    ADVISORY + BEST-EFFORT, exactly like the runtime path:
+      - never changes ``correct`` / ``is_correct`` / ``score`` / ``feedback`` /
+        ``passed`` — it only *adds* an optional ``integrity_nudge`` key,
+      - any failure is swallowed and the graded ``result`` is returned unchanged,
+      - ``client_time_ms`` is clamped via ``clamp_client_time_ms`` (H1),
+      - it runs AFTER the branch persisted its ``phase_attempt`` row, so the
+        assessment correct-rate the engine derives includes THIS submit.
+
+    Covers ``case_based_preview`` / ``case_based_preview_reasoning`` /
+    ``memory_check`` (the assessment phases) plus the games (which the engine
+    no-ops as non-assessment under the AI-use policy). Returns ``result``.
+    """
+    if not isinstance(result, dict):
+        return result
+    try:
+        from ..services.integrity_wiring import (
+            evaluate_runtime_submit,
+            clamp_client_time_ms,
+        )
+
+        session_id = req.session_id or "default"
+        hw_id = req.homework_id
+        if not hw_id:
+            return result  # no homework context → nothing to attribute a flag to
+
+        # Resolve the per-homework anti-cheat policy + grade-level from
+        # content_json (mirrors the runtime path's boss_meta sourcing).
+        boss_meta = None
+        hw_grade = None
+        try:
+            homework = await db.get_homework(hw_id)
+            content_json = (homework or {}).get("content_json") or {}
+            boss_meta = content_json.get("boss_meta")
+            hw_grade = content_json.get("grade") or (homework or {}).get("grade")
+        except Exception:
+            boss_meta = None
+            hw_grade = None
+
+        nudge = await evaluate_runtime_submit(
+            session_id=session_id,
+            hw_id=hw_id,
+            phase=req.phase or "",
+            subphase=req.subphase or None,
+            question_id=req.question_id or None,
+            time_ms=clamp_client_time_ms(req.client_time_ms),
+            paste_detected=req.paste_detected,
+            grade=hw_grade,
+            boss_meta=boss_meta,
+        )
+        if nudge:
+            result["integrity_nudge"] = nudge
+    except Exception as _integrity_exc:  # never break grading
+        _log.warning(
+            "check-answer integrity hook failed (non-fatal): %s", _integrity_exc
+        )
+    return result
+
+
 def _attach_check_answer_debug(
     req: CheckAnswerRequest,
     result: dict[str, Any],
@@ -408,6 +490,25 @@ async def get_review_queue(kind: Optional[str] = Query(default=None)):
 @router.post("/ai/review-queue/{id}/decide")
 async def decide_review_queue(req: ReviewDecideRequest, id: int = PathParam(...)):
     from .. import db
+
+    # M2 — an ADVISORY kind='integrity' row is NOT gradeable. A teacher resolves
+    # it by recording an `integrity_outcome` (e.g. "cleared" / "confirmed" /
+    # "dismissed"), never a normal {correct, score, feedback} grading verdict.
+    # Refuse a grading decision against an integrity row so a flag can never be
+    # mistaken for / converted into a grade.
+    kind = await db.get_review_item_kind(id)
+    if kind == "integrity" and not req.integrity_outcome:
+        raise HTTPException(
+            400,
+            detail={
+                "error": (
+                    "integrity review rows are advisory — resolve them with an "
+                    "integrity_outcome, not a grading decision"
+                ),
+                "code": "RQ_INTEGRITY_NOT_GRADEABLE",
+            },
+        )
+
     # exclude_none keeps the legacy {correct, score, feedback} decision payload
     # byte-identical when the optional integrity-resolution fields are omitted;
     # they only appear in `decision_json` when a teacher actually sets them.
@@ -3167,6 +3268,36 @@ async def submit_runtime_answer(req: RuntimeAnswerSubmitRequest):
 
 @router.post("/ai/check-answer")
 async def check_answer(req: CheckAnswerRequest):
+    # C2 — Soft-friction follow-up. A submit carrying a `nudge_response` (or
+    # marked subphase=="integrity-nudge") is the student's reply to a
+    # strong-flag "explain in your own words" nudge. It is ADVISORY, never a
+    # gradeable answer: record a session_events `integrity_nudge_response` event
+    # and EARLY-RETURN `{"advisory": true}` BEFORE any grading dispatch below.
+    # This must precede every phase branch so a nudge reply never falls through
+    # to a real grader (and never produces a score).
+    if req.nudge_response is not None or req.subphase == "integrity-nudge":
+        try:
+            from ..db import session_events_repo
+
+            await session_events_repo.add_session_event(
+                session_id=req.session_id or "default",
+                hw_id=req.homework_id or "",
+                event_type="integrity_nudge_response",
+                payload={
+                    "question_id": req.question_id or None,
+                    "nudge_response": req.nudge_response,
+                },
+                phase=req.phase or None,
+                subphase=req.subphase or None,
+                question_id=req.question_id or None,
+            )
+        except Exception as _nudge_exc:  # never break on the advisory write
+            _log.warning(
+                "integrity_nudge_response session_event failed (non-fatal): %s",
+                _nudge_exc,
+            )
+        return {"advisory": True}
+
     # Phase dispatch — the new sentence-fill grading branch is keyed on
     # phase=="sentence-fill" AND presence of `homework_id`. The phase string
     # alone is insufficient because pre-existing tests/clients submit
@@ -3273,6 +3404,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "case_based_preview_reasoning" and req.homework_id:
         try:
             result = await _check_answer_cbp_reasoning(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:case_based_preview_reasoning"
             )
@@ -3287,6 +3419,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "case_based_preview" and req.homework_id:
         try:
             result = await _check_answer_case_based_preview(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:case_based_preview"
             )
@@ -3301,6 +3434,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "memory_check" and req.homework_id:
         try:
             result = await _check_answer_memory_check(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:memory_check"
             )
@@ -3314,6 +3448,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "adaptive-quiz" and req.homework_id:
         try:
             result = await _check_answer_adaptive_quiz(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:adaptive-quiz"
             )
@@ -3327,6 +3462,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "mystery-box" and req.homework_id:
         try:
             result = await _check_answer_mystery_box(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:mystery-box"
             )
@@ -3340,6 +3476,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "puzzle-lock" and req.homework_id:
         try:
             result = await _check_answer_puzzle_lock(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:puzzle-lock"
             )

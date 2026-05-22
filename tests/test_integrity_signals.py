@@ -197,6 +197,23 @@ def test_slow_careful_student_yields_zero_flags():
     assert compute_flags(careful, policy) == []
 
 
+def test_ready_student_high_score_yields_zero_flags():
+    """H3 — false-positive resistance: a genuinely READY student who scores
+    near-perfectly is NOT flagged. ``pre=0.60`` is above the sudden-mastery
+    pre-ceiling (0.40), so even with ``post=0.95`` over 5 items the strong
+    detector must stay silent under the default policy. This is the load-bearing
+    fairness case — a strong student must never be treated as a cheater."""
+    policy = AntiCheatPolicy()  # default: sudden_mastery on, paste/time off
+    ready = _inp(
+        phase="boss",
+        is_assessment=True,
+        pre_assessment_mastery=0.60,   # already-ready — above the 0.40 ceiling
+        assessment_correct_rate=0.95,  # near-perfect — above the 0.90 floor
+        assessment_item_count=5,
+    )
+    assert compute_flags(ready, policy) == []
+
+
 def test_default_policy_on_non_assessment_yields_zero():
     """A fully-default policy on a non-assessment interaction → no flags."""
     policy = AntiCheatPolicy()

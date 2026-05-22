@@ -15,7 +15,7 @@ This router computes no grade and no verdict — affirmation is advisory metadat
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -85,7 +85,22 @@ async def list_affirmations_endpoint(
     session_id: Optional[str] = Query(default=None),
     homework_id: Optional[str] = Query(default=None),
 ) -> list[dict]:
-    """List affirmations, optionally filtered by session and/or homework."""
+    """List affirmations, filtered by session and/or homework.
+
+    Affirmations are teacher notes about a specific student's authorship. An
+    UNFILTERED query would dump every teacher note across every homework to an
+    unauthenticated caller (H2), so at least one of ``session_id`` /
+    ``homework_id`` is REQUIRED — an empty filter is a 400, never a full-table
+    read.
+    """
+    if not session_id and not homework_id:
+        raise HTTPException(
+            400,
+            detail={
+                "error": "at least one of session_id / homework_id is required",
+                "code": "AFFIRM_FILTER_REQUIRED",
+            },
+        )
     return await db.list_affirmations(session_id=session_id, homework_id=homework_id)
 
 

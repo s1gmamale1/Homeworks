@@ -207,6 +207,13 @@ ON phase_attempts(session_id, hw_id, phase, created_at);
 CREATE INDEX IF NOT EXISTS idx_phase_attempts_question
 ON phase_attempts(session_id, hw_id, question_id, created_at);
 
+-- Anti-cheat post-grading rate read: the integrity engine scans a session's
+-- phase_attempts on (session_id, hw_id) on EVERY graded submit to derive the
+-- assessment correct-rate. Explicit idempotent index so that per-submit scan is
+-- index-backed rather than a table scan as the session grows.
+CREATE INDEX IF NOT EXISTS idx_phase_attempts_session_hw
+ON phase_attempts(session_id, hw_id);
+
 CREATE TABLE IF NOT EXISTS session_metrics (
   session_id TEXT NOT NULL,
   hw_id TEXT NOT NULL,

@@ -159,6 +159,26 @@ async def get_review_queue(kind: Optional[str] = None) -> list[dict]:
     finally:
         await db.close()
 
+async def get_review_item_kind(id: int) -> Optional[str]:
+    """Return the ``kind`` ('grading' | 'integrity') of a review row, or None.
+
+    Used by the decide route to refuse a normal grading decision against an
+    ADVISORY ``kind='integrity'`` row (M2). Returns ``None`` when the row does
+    not exist (the caller then 404s as before).
+    """
+    db = await connect()
+    try:
+        cursor = await db.execute(
+            "SELECT kind FROM review_queue WHERE id = ?", (id,)
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        return row["kind"]
+    finally:
+        await db.close()
+
+
 async def resolve_review_item(id: int, decision: dict) -> bool:
     """Persist the teacher's decision and mark the review item resolved.
 
