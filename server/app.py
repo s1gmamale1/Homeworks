@@ -20,6 +20,7 @@ from server.routes.taskboard import router as taskboard_router
 from server.routes.equations import router as equations_router
 from server.routes.runtime import router as runtime_router
 from server.routes.reflection import router as reflection_router
+from server.routes.integrity import router as integrity_router
 from server import db
 from server.config import BASE_DIR
 
@@ -124,6 +125,7 @@ app.include_router(taskboard_router, prefix="/api")
 app.include_router(equations_router, prefix="/api")
 app.include_router(runtime_router, prefix="/api")
 app.include_router(reflection_router, prefix="/api")
+app.include_router(integrity_router, prefix="/api")
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 

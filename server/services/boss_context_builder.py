@@ -17,6 +17,7 @@ from typing import Optional, Any
 from ..db.homework_repo import get_homework
 from ..db.attempts_repo import list_phase_attempts
 from ..db.session_metrics_repo import get_session_metrics
+from .redaction_constants import ANSWER_BEARING_KEYS
 
 
 # Bug A (2026-05-14 audit): authored boss_questions occasionally contain
@@ -45,15 +46,15 @@ def _strip_html_tags(text: str) -> str:
 
 
 # Fields the LLM must never see, anywhere in the boss context.
-_ANSWER_LEAK_KEYS: tuple[str, ...] = (
-    "expected",
-    "expected_answer",
-    "ans",
-    "answers",
-    "accepted_answers",
-    "correct",
-    "canonical",
-    "answer_spec",
+#
+# Bound to the single source of truth (`redaction_constants.ANSWER_BEARING_KEYS`)
+# so the boss boundary and the hydration boundary CANNOT drift — adding a new
+# answer-bearing key there (e.g. `expected_concepts`, added 2026-05 for Boss-Arena)
+# automatically protects the boss prompt too. The union keeps the boss-local
+# historical extras (`answers`, `canonical`) that predate the shared constant.
+_BOSS_LOCAL_EXTRA_LEAK_KEYS = {"answers", "canonical"}
+_ANSWER_LEAK_KEYS: tuple[str, ...] = tuple(
+    set(ANSWER_BEARING_KEYS) | _BOSS_LOCAL_EXTRA_LEAK_KEYS
 )
 
 # Field-length caps inside the boss prompt. The orchestrator's

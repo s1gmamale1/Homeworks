@@ -56,6 +56,12 @@ from .review_queue_repo import (
     resolve_review_item,
 )
 
+# authorship affirmations (academic-integrity §9.6)
+from .affirmations_repo import (
+    create_affirmation,
+    list_affirmations,
+)
+
 # tutor conversations + warnings
 from .tutor_repo import (
     add_tutor_turn,
@@ -130,6 +136,9 @@ __all__ = [
     "add_to_review_queue",
     "get_review_queue",
     "resolve_review_item",
+    # authorship affirmations
+    "create_affirmation",
+    "list_affirmations",
     # tutor
     "add_tutor_turn",
     "list_tutor_turns",

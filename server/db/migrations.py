@@ -292,6 +292,20 @@ CREATE TABLE IF NOT EXISTS ai_eval_runs (
 );
 CREATE INDEX IF NOT EXISTS idx_ai_eval_runs_name ON ai_eval_runs(eval_name, created_at);
 CREATE INDEX IF NOT EXISTS idx_ai_eval_runs_task ON ai_eval_runs(task_type, created_at);
+
+CREATE TABLE IF NOT EXISTS authorship_affirmations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  homework_id TEXT NOT NULL,
+  teacher_id TEXT,
+  affirmed INTEGER NOT NULL DEFAULT 0,
+  note TEXT,
+  checkpoints_json TEXT NOT NULL DEFAULT '[]',
+  integrity_queue_ids_json TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_affirmations_session
+ON authorship_affirmations(session_id, homework_id, created_at);
 """
 
 

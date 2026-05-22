@@ -2215,3 +2215,88 @@ Practice Arc.
 | 400 | `CBP_NO_REASONING` | `reasoning_text` absent or blank |
 | 404 | `HW_NOT_FOUND` | `homework_id` does not resolve |
 | 403 | `CBP_REASONING_NOT_AUTHORED` | homework has no `decision_process_explanation` field |
+
+## Academic integrity (teacher intelligence)
+
+Per `docs/NETS_Academic_Integrity_AntiCheat_Research.md` §9.6. Integrity here is
+**teacher intelligence**, never an automated grade-penalty or hard block. An
+*authorship affirmation* is a teacher's human-in-the-loop record that they
+reviewed a session and affirm (or decline to affirm) the student's authorship.
+These endpoints compute no grade and no verdict — affirmations are advisory
+metadata only.
+
+### POST /api/integrity/affirm
+
+Record a teacher's authorship affirmation for a session. Optionally resolves the
+integrity review-queue items the teacher addressed when affirming, so the audit
+trail links the affirmation to the signals it covers.
+
+**Request**
+```json
+{
+  "session_id": "string",
+  "homework_id": "string",
+  "teacher_id": "string | null",
+  "affirmed": false,
+  "note": "string | null",
+  "checkpoints": [],
+  "resolve_queue_ids": [123, 124]
+}
+```
+
+- `affirmed`: the teacher's verdict (default `false`).
+- `checkpoints`: optional free-form list of the review points the teacher
+  inspected (stored verbatim).
+- `resolve_queue_ids`: review-queue item ids to mark resolved with a
+  `{"resolved_by": "teacher_affirmation", ...}` decision. Only ids that are still
+  `pending` resolve; the returned `resolved_queue_ids` reflects what actually
+  resolved.
+
+**Response 200**
+```json
+{
+  "ok": true,
+  "affirmation": {
+    "id": 1,
+    "session_id": "string",
+    "homework_id": "string",
+    "teacher_id": "string | null",
+    "affirmed": false,
+    "note": "string | null",
+    "checkpoints": [],
+    "integrity_queue_ids": [123],
+    "created_at": "ISO-8601 string"
+  },
+  "resolved_queue_ids": [123]
+}
+```
+
+### GET /api/integrity/affirmations
+
+List affirmations, optionally filtered. Newest first.
+
+**Query params**
+
+| Param | Type | When |
+|---|---|---|
+| `session_id` | string? | filter to one session |
+| `homework_id` | string? | filter to one homework |
+
+With neither filter, returns all rows (admin/audit view).
+
+**Response 200** — a JSON array of affirmation records (same shape as
+`affirmation` above). An empty result is `[]`.
+
+### GET /api/integrity/affirmations/view
+
+Read-only `<pre>` JSON dump of a session's affirmations (no framework — a plain
+HTML inspection surface for a teacher).
+
+**Query params**
+
+| Param | Type | When |
+|---|---|---|
+| `session_id` | string? | filter to one session |
+
+**Response 200** — `text/html`: a single `<pre>` element containing the
+pretty-printed (HTML-escaped) affirmation JSON.

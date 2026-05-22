@@ -21,14 +21,47 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import logging
 import os
 import random
 
-_SECRET = (
-    os.environ.get("TILE_MATCH_SECRET")
-    or os.environ.get("SECRET_KEY")
-    or "nets-tile-match-fallback-secret"
-).encode()
+_log = logging.getLogger("nets.tile_match_tokens")
+
+# Dev-only fallback. NEVER reached in production: `_resolve_secret` raises if
+# `NETS_ENV == "production"` and no real secret is configured, so a prod deploy
+# that forgot to set the secret fails loud instead of signing tokens any other
+# instance (sharing the literal below) could forge.
+_DEV_FALLBACK_SECRET = "nets-tile-match-fallback-secret"
+
+
+def _resolve_secret() -> bytes:
+    """Resolve the HMAC secret for tile-match tokens.
+
+    Order:
+      1. ``TILE_MATCH_SECRET`` or ``SECRET_KEY`` env → use it (the real secret).
+      2. else if ``NETS_ENV == "production"`` → raise RuntimeError (fail loud —
+         a prod instance must never sign with the well-known dev fallback).
+      3. else (dev/test) → log a warning and use the dev fallback.
+
+    Called once at module load, so a misconfigured production process refuses to
+    start rather than silently degrading token security.
+    """
+    configured = os.environ.get("TILE_MATCH_SECRET") or os.environ.get("SECRET_KEY")
+    if configured:
+        return configured.encode()
+    if os.getenv("NETS_ENV") == "production":
+        raise RuntimeError(
+            "TILE_MATCH_SECRET (or SECRET_KEY) must be set in production — "
+            "refusing to sign tile-match tokens with the well-known dev fallback."
+        )
+    _log.warning(
+        "TILE_MATCH_SECRET/SECRET_KEY unset; using the dev fallback secret. "
+        "This is fine for local/dev/test but MUST NOT happen in production."
+    )
+    return _DEV_FALLBACK_SECRET.encode()
+
+
+_SECRET = _resolve_secret()
 
 
 def _tok(hw_id: str, idx: int, side: str) -> str:

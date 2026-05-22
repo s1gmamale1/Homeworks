@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Any
 
 from ..services import tutor, ai_orchestrator, injector, ai_debug, ai_context, ai_gateway
+from ..services.tutor import _fence_untrusted, _strip_fence_tags
 from ..services.slur_filter import classify, detect_slurs
 from ..services import warnings as warnings_svc
 from ..services.gate_state import is_practice_unlocked
@@ -1099,7 +1100,10 @@ async def _grade_rlc_reasoning(
         "expert_role": expert_role or "general",
         "case_intro": case_intro or "",
         "step_prompt": step.get("prompt", "") if isinstance(step, dict) else "",
-        "student_text": text or "",
+        # Fence the student's free text — the server-only acceptable_keywords ride
+        # in the same prompt, so the student value must be treated strictly as
+        # data to grade, never as instructions.
+        "student_text": _fence_untrusted(text or ""),
         # Server-only anchor — never echoed back to client; prompt instructs
         # the LLM to use these as a check, not to quote them.
         "acceptable_keywords": (
@@ -1132,7 +1136,9 @@ async def _grade_rlc_reasoning(
     except (TypeError, ValueError):
         score = 0
     score = max(0, min(100, score))
-    feedback = str(ai_response.get("feedback") or "")
+    # Defensive: strip any fence tags the model echoed back so a fenced copy of
+    # the student's text can't surface in the returned feedback.
+    feedback = _strip_fence_tags(str(ai_response.get("feedback") or ""))
     return (score, feedback)
 
 
@@ -1200,7 +1206,11 @@ async def _grade_cbp_reasoning(
     payload = {
         "case_setup": case_setup_str,
         "prompt": dpe.get("prompt", "") if isinstance(dpe, dict) else "",
-        "student_text": text or "",
+        # Fence the student's free text — the server-only keyword anchors ride in
+        # the same prompt, so the student value must be treated strictly as data
+        # to grade, never as instructions. (cbp-reasoning-checker.md already
+        # carries the matching "treat as untrusted" rule.)
+        "student_text": _fence_untrusted(text or ""),
         # Server-only anchors — never echoed back to client; prompt instructs
         # the LLM to use these as a check, not to quote them.
         "concept_keywords": (dpe.get("concept_keywords") or []) if isinstance(dpe, dict) else [],
@@ -1230,7 +1240,9 @@ async def _grade_cbp_reasoning(
     except (TypeError, ValueError):
         score = 0
     score = max(0, min(100, score))
-    feedback = str(ai_response.get("feedback") or "")
+    # Defensive: strip any fence tags the model echoed back so a fenced copy of
+    # the student's text can't surface in the returned feedback.
+    feedback = _strip_fence_tags(str(ai_response.get("feedback") or ""))
     return (score, feedback)
 
 
@@ -1640,6 +1652,39 @@ def _fb_grade_band_from_grade(grade: Optional[int]) -> str:
     return "g9_11"
 
 
+# One-time deprecation flag for the legacy boss HP/outcome path. The v2 boss
+# (POST /ai/boss/*) is server-authoritative on HP; the legacy turn path only
+# mirrors a client-reported HP cursor, which a tampered client could inflate.
+# We keep the endpoint working (the v1 template still calls it) but no longer
+# let client HP push stars/XP beyond what the boss's own max_hp allows.
+_LEGACY_BOSS_HP_WARNED = False
+
+
+def _legacy_boss_hp_warn_once() -> None:
+    """Log the legacy-path deprecation warning at most once per process."""
+    global _LEGACY_BOSS_HP_WARNED
+    if not _LEGACY_BOSS_HP_WARNED:
+        _LEGACY_BOSS_HP_WARNED = True
+        _log.warning("legacy boss-turn path is deprecated; v2 uses /ai/boss/*")
+
+
+def _safe_outcome_hp(client_hp: Optional[int], max_hp: int) -> int:
+    """Clamp a client-reported HP cursor into ``[0, max_hp]`` for outcome math.
+
+    Conservative anti-inflation guard (Gap C): the legacy path can only TRUST a
+    client HP value up to the boss's own maximum. A forged ``hp_remaining`` above
+    ``max_hp`` (or below 0) can no longer inflate the star/XP outcome. This does
+    NOT make HP server-authoritative — that's the v2 boss's job — it just stops
+    the legacy path's outcome from being driven past its server-known ceiling.
+    """
+    try:
+        hp = int(client_hp or 0)
+    except (TypeError, ValueError):
+        hp = 0
+    ceiling = max(1, int(max_hp or 1))
+    return max(0, min(hp, ceiling))
+
+
 # XP table per spec §11 — by boss_type and stars (1-3).
 # Mythical only rewards 3-star defeats; lesser stars award 0.
 _FB_XP_TABLE: dict[str, dict[int, int]] = {
@@ -1934,8 +1979,10 @@ async def _check_answer_final_boss(req: CheckAnswerRequest) -> dict:
     # client-reported HP (defeat = hp_remaining > 0 AND attempt_number is final).
     done = bool(boss_response.get("done"))
     if done:
+        # Gap C: legacy path — do not trust client HP beyond the boss ceiling.
+        _legacy_boss_hp_warn_once()
         outcome, stars, outcome_xp = _boss_outcome_for(
-            hp_remaining=int(req.hp_remaining or 0),
+            hp_remaining=_safe_outcome_hp(req.hp_remaining, int(max_hp)),
             max_hp=int(max_hp),
             hints_used=int(req.attempts_used or state.get("hints_used", 0) or 0),
             attempt_number=attempt_number,
@@ -3344,8 +3391,10 @@ async def boss_turn(req: BossTurnRequest):
             boss_type = req.boss_type if req.boss_type in _FB_XP_TABLE else "sub"
             grade_band = req.grade_band or _fb_grade_band_from_grade(req.grade)
             max_hp = int(req.max_hp) if req.max_hp else _fb_default_hp_for_grade_band(grade_band)
+            # Gap C: legacy path — do not trust client HP beyond the boss ceiling.
+            _legacy_boss_hp_warn_once()
             outcome, stars, outcome_xp = _boss_outcome_for(
-                hp_remaining=int(req.hp_remaining or 0),
+                hp_remaining=_safe_outcome_hp(req.hp_remaining, int(max_hp)),
                 max_hp=max_hp,
                 hints_used=int(req.hints_used or 0),
                 attempt_number=int(req.attempt_number or 1),
