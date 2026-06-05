@@ -148,6 +148,68 @@ async def test_tutor_chat_v2_includes_screen_context_in_prompt():
 
 
 @pytest.mark.asyncio
+async def test_tutor_chat_v2_blocks_visible_option_echo_in_practice():
+    ctx = ai_context.TutorContextPacket(
+        session_id="sess_v2_option_echo",
+        hw_id="hw_v2_option_echo",
+        phase="practice",
+        current_question_id="q1",
+        subject="geometriya-g7-11",
+        grade=8,
+        current_question_text="Uchburchak yuzi formulasi qaysi?",
+        visible_screen_text="Savol: Uchburchak yuzi formulasi? Variantlar: a*h/2, a+h, a*h, 2a",
+        missing_context_flags=[],
+    )
+
+    with patch("server.services.tutor.db.count_session_messages", return_value=0):
+        with patch("server.services.tutor.db.add_tutor_turn", return_value=1):
+            with patch("server.services.tutor.db.list_tutor_turns", return_value=[]):
+                with patch("server.services.tutor.ai_gateway.generate_text") as mock_gen:
+                    mock_gen.return_value = (
+                        "Uchburchak yuzi = asos * balandlik / 2. Qaysi variant a*h/2?"
+                    )
+                    result = await tutor.tutor_chat_v2(
+                        context=ctx,
+                        message="Menga usulni tushuntir",
+                    )
+
+    assert "a*h/2" not in result["response"]
+    assert "asos * balandlik / 2" not in result["response"]
+    assert "Javob, bo'sh joy yoki variantni aytmayman" in result["response"]
+    assert mock_gen.call_count == 2
+    first_prompt = mock_gen.call_args_list[0].kwargs["prompt"]
+    assert "SCREEN_CONTEXT_AVAILABLE_BUT_HIDDEN_FOR_INTEGRITY: True" in first_prompt
+    assert "a*h/2" not in first_prompt
+
+
+@pytest.mark.asyncio
+async def test_tutor_chat_v2_fails_closed_without_practice_screen_context():
+    ctx = ai_context.TutorContextPacket(
+        session_id="sess_v2_missing_context",
+        hw_id="hw_v2_missing_context",
+        phase="practice",
+        subject="geometriya-g7-11",
+        grade=8,
+        visible_screen_text="",
+        missing_context_flags=["empty_screen_context"],
+    )
+
+    with patch("server.services.tutor.db.count_session_messages", return_value=0):
+        with patch("server.services.tutor.db.add_tutor_turn", return_value=1):
+            with patch("server.services.tutor.db.list_tutor_turns", return_value=[]):
+                with patch("server.services.tutor.ai_gateway.generate_text") as mock_gen:
+                    mock_gen.return_value = "The formula = 2."
+                    result = await tutor.tutor_chat_v2(
+                        context=ctx,
+                        message="Nega 2 ga bo'lamiz?",
+                    )
+
+    assert "formula = 2" not in result["response"]
+    assert "Javob, bo'sh joy yoki variantni aytmayman" in result["response"]
+    assert mock_gen.call_count == 2
+
+
+@pytest.mark.asyncio
 async def test_tutor_chat_v2_includes_missing_context_flags():
     ctx = ai_context.TutorContextPacket(
         session_id="sess_v2_02",

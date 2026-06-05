@@ -60,6 +60,13 @@ def _make_assessment_hw(client, *, hint: str) -> str:
             "title": f"Soft-friction HW ({hint})",
             "subject": "math-algebra",
             "grade": 8,
+            "boss_meta": {
+                "anti_cheat": {
+                    "paste_detect": True,
+                    "teacher_review_queue": True,
+                    "no_auto_punishment": True,
+                }
+            },
             "consolidation": {
                 "items": [
                     {
@@ -106,7 +113,7 @@ def _seed_low_mastery_and_assessment(session_id: str, hw_id: str, *, n_correct: 
     _run(go())
 
 
-def _submit_consolidation(client, hw_id, sess, *, answer="4"):
+def _submit_consolidation(client, hw_id, sess, *, answer="4", paste_detected=False):
     return client.post("/api/ai/runtime/submit-answer", json={
         "session_id": sess,
         "homework_id": hw_id,
@@ -114,6 +121,7 @@ def _submit_consolidation(client, hw_id, sess, *, answer="4"):
         "question_id": "c1",
         "answer_type": "text",
         "student_answer": answer,
+        "paste_detected": paste_detected,
     })
 
 
@@ -155,6 +163,23 @@ def test_runtime_normal_scenario_has_no_nudge(client):
     assert body["integrity_nudge"] is None
 
 
+def test_runtime_paste_detected_sets_own_words_nudge_without_changing_grade(client):
+    hw_id = _make_assessment_hw(client, hint="rt-paste")
+    sess = "sf-rt-paste-001"
+
+    resp = _submit_consolidation(client, hw_id, sess, paste_detected=True)
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+
+    assert body["is_correct"] is True
+    assert body["score"] == 1.0
+    nudge = body["integrity_nudge"]
+    assert isinstance(nudge, dict)
+    assert nudge["type"] == "own_words_required"
+    assert "ehtimoliy cheating aniqlandi" in nudge["message"].lower()
+    assert "reason_code" not in nudge
+
+
 # ---------------------------------------------------------------------------
 # boss (ai_plan5) path
 # ---------------------------------------------------------------------------
@@ -173,6 +198,13 @@ def _make_boss_hw(client, *, hint: str) -> str:
             "grade": 8,
             "language": "en",
             "preview": {"text": "according to means as stated by"},
+            "boss_meta": {
+                "anti_cheat": {
+                    "paste_detect": True,
+                    "teacher_review_queue": True,
+                    "no_auto_punishment": True,
+                }
+            },
         },
     }
     resp = client.post("/api/homeworks", json=payload)
@@ -281,3 +313,37 @@ def test_boss_normal_scenario_has_no_nudge(client):
     body = r.json()
     assert body["is_correct"] is True
     assert body["integrity_nudge"] is None
+
+
+def test_boss_paste_detected_sets_own_words_nudge_without_changing_state(client):
+    hw_id = _make_boss_hw(client, hint="boss-paste")
+    sess = "sf-boss-paste-1"
+    _seed_low_mastery(sess, hw_id)
+
+    started = client.post("/api/ai/boss/start", json={
+        "session_id": sess, "homework_id": hw_id, "trials_left": 10,
+    }).json()
+    bsid = started["boss_session_id"]
+
+    with patch("server.services.boss_dynamic.ai_gateway.generate_structured") as mock_gen:
+        mock_gen.return_value = _boss_question()
+        g = client.post("/api/ai/boss/generate-question",
+                        json={"boss_session_id": bsid}).json()
+        mock_gen.return_value = _correct_verdict()
+        r = client.post("/api/ai/boss/submit-answer", json={
+            "boss_session_id": bsid, "question_id": g["question_id"],
+            "student_answer": "the source",
+            "paste_detected": True,
+        })
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["is_correct"] is True
+    assert body["score"] == 1.0
+    assert body["hp"] >= 0
+    assert body["boss_status"] in ("active", "won", "failed")
+    nudge = body["integrity_nudge"]
+    assert isinstance(nudge, dict)
+    assert nudge["type"] == "own_words_required"
+    assert "ehtimoliy cheating aniqlandi" in nudge["message"].lower()
+    assert "reason_code" not in nudge

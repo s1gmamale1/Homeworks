@@ -201,6 +201,32 @@ describe("structured Why/How/What submit", () => {
     expect(screen.getByTestId("boss-attack")).toBeEnabled();
   });
 
+  it("shows an immediate teacher-review alert when a boss answer is pasted", async () => {
+    const user = userEvent.setup();
+    mockStart.mockResolvedValue(startResponse());
+    mockGen.mockResolvedValueOnce(structuredQuestion());
+    render(<BossArena onComplete={onComplete} />);
+    await user.click(screen.getByTestId("boss-begin"));
+    await waitFor(() => screen.getByTestId("boss-fighting"));
+
+    await user.click(screen.getByTestId("boss-input-what"));
+    await user.paste("ChatGPT-style copied answer");
+
+    expect(screen.getByTestId("integrity-nudge-message")).toHaveTextContent(
+      "Ehtimoliy cheating aniqlandi"
+    );
+    expect(screen.getByTestId("integrity-nudge-message")).toHaveTextContent(
+      "tekshiruv uchun belgilanadi"
+    );
+
+    mockSubmit.mockResolvedValue(submitResponse({ boss_status: "won", hp: 0 }));
+    await user.click(screen.getByTestId("boss-attack"));
+    await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
+    expect(mockSubmit.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ pasteDetected: true })
+    );
+  });
+
   it("renders a single textarea for a flat (non-structured) question", async () => {
     const user = userEvent.setup();
     mockStart.mockResolvedValue(startResponse());

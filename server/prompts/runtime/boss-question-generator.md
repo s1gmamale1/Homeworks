@@ -1,4 +1,4 @@
-<!-- prompt-version: boss-question-generator:v6 -->
+<!-- prompt-version: boss-question-generator:v7 -->
 # Boss Question Generator (Plan 7 §6)
 
 > **🔒 OUTPUT LANGUAGE — STRICT, FIRST RULE.** Read `INPUT.output_language`
@@ -85,6 +85,14 @@ You will receive a JSON `INPUT` block with these fields:
     - `how` — a prompt asking *how* to carry out the method / procedure / approach.
     - `what` — a prompt asking *what* the result / decision / conclusion is.
     Write all four in `boss_policy.language`, same as every other field. They are PROMPT text shown to the student — do NOT put any answer, expected value, or rubric content inside them. Keep `question_text` populated as a readable composite headline (e.g. the scenario plus the three prompts) so anti-repetition and display still work; if you only fill the four structured fields, the backend will compose `question_text` for you, but a populated `question_text` is preferred.
+13. **Grade-appropriate depth.** For `target_difficulty:"easy"` or `"medium"` in
+    grades 6-8, ask for conceptual cause/process/result reasoning. Do NOT ask
+    for exact molecule counts, exhaustive product lists, biochemical pathways,
+    or named sub-stages unless an `authored_question_stems[]` entry explicitly
+    asks for that same level of detail. If the topic is metabolism, acceptable
+    easy/medium depth is terms like assimilation, dissimilation, energy/ATP,
+    water/mineral balance, and simple real-life effects; reserve numeric ATP
+    yields and full reaction products for hard stems that clearly require them.
 
 ## Required JSON output
 

@@ -25,6 +25,7 @@ from typing import Optional
 from .. import db
 from .integrity_signals import (
     IntegritySignalInput,
+    SEVERITY_MEDIUM,
     SEVERITY_STRONG,
     compute_flags,
     policy_from_boss_meta,
@@ -60,13 +61,19 @@ def clamp_client_time_ms(value) -> Optional[int]:
 
 
 def _nudge_for_flags(flags) -> Optional[dict]:
-    """Build the soft-friction nudge iff a ``strong`` flag fired.
-
-    Only the (single) strong detector — ``sudden_mastery`` — surfaces a nudge.
-    The nudge is a gentle pedagogical "explain in your own words" prompt; it
-    NEVER carries the reason_code or thresholds (teacher-only intelligence) and
-    NEVER gates progress.
-    """
+    """Build a student-facing nudge for actionable advisory flags."""
+    if any(
+        getattr(f, "severity", None) == SEVERITY_MEDIUM
+        and getattr(f, "reason_code", None) == "paste_on_assessment"
+        for f in flags
+    ):
+        return {
+            "type": "own_words_required",
+            "message": (
+                "Ehtimoliy cheating aniqlandi: bu urinish o‘qituvchi tekshiruvi "
+                "uchun belgilandi. Javobni o‘z so‘zlaringiz bilan qayta yozing."
+            ),
+        }
     if any(getattr(f, "severity", None) == SEVERITY_STRONG for f in flags):
         return {
             "type": "explain_reasoning",

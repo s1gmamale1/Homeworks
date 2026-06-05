@@ -27,7 +27,7 @@ from server.services.boss_dynamic import compute_boss_outcome
 def test_perfect_win_yields_expert_three_stars():
     """Defeated boss with HP retention >= 70% AND correctness >= 80%."""
     r = compute_boss_outcome(
-        hp=90, max_hp=100,
+        hp=0, max_hp=100,
         correct_count=5, total_attempts=5,
         hints_used=0, status="won",
     )
@@ -39,7 +39,7 @@ def test_perfect_win_yields_expert_three_stars():
 def test_solid_win_yields_strong_two_stars():
     """Won with HP retention 40-69% and correctness 60-79%."""
     r = compute_boss_outcome(
-        hp=50, max_hp=100,
+        hp=0, max_hp=100,
         correct_count=4, total_attempts=6,  # correctness ~0.67
         hints_used=0, status="won",
     )
@@ -50,8 +50,8 @@ def test_solid_win_yields_strong_two_stars():
 def test_won_but_low_hp_yields_passing_one_star():
     """Won with low HP retention but correctness floor — 1 star, passing."""
     r = compute_boss_outcome(
-        hp=15, max_hp=100,
-        correct_count=3, total_attempts=5,  # correctness 0.60
+        hp=0, max_hp=100,
+        correct_count=2, total_attempts=5,  # correctness 0.40
         hints_used=0, status="won",
     )
     assert r["outcome"] == "passing"
@@ -89,8 +89,8 @@ def test_failed_with_perfect_correctness_still_yields_passing(client=None):
     assert r["outcome"] == "passing"
     assert r["stars"] == 1
     # 50 XP per correct + (hp/max_hp * 100) bonus = 100 + 10 = 110
-    assert r["outcome_xp"] == 110, (
-        f"Expected 110 XP (50*2 correct + 10 HP bonus), got {r['outcome_xp']}"
+    assert r["outcome_xp"] == 190, (
+        f"Expected 190 XP (50*2 correct + 90 progress bonus), got {r['outcome_xp']}"
     )
 
 
@@ -149,7 +149,7 @@ def test_failed_with_low_correctness_yields_hali_emas_zero_stars():
 def test_zero_attempts_yields_hali_emas():
     """Edge case — never answered. Hali emas + 0 everything."""
     r = compute_boss_outcome(
-        hp=100, max_hp=100,
+        hp=0, max_hp=100,
         correct_count=0, total_attempts=0,
         hints_used=0, status="failed",
     )
@@ -158,15 +158,15 @@ def test_zero_attempts_yields_hali_emas():
     assert r["outcome_xp"] == 0
 
 
-def test_xp_formula_includes_hp_bonus():
-    """50 per correct + hp_ratio * 100 bonus."""
+def test_xp_formula_includes_progress_bonus():
+    """50 per correct + boss-defeat progress bonus."""
     r1 = compute_boss_outcome(
-        hp=100, max_hp=100,
+        hp=0, max_hp=100,
         correct_count=3, total_attempts=3,
         hints_used=0, status="won",
     )
     r2 = compute_boss_outcome(
-        hp=10, max_hp=100,
+        hp=90, max_hp=100,
         correct_count=3, total_attempts=3,
         hints_used=0, status="won",
     )
@@ -208,15 +208,15 @@ def test_outcome_tier_mapping_is_consistent():
     """Each star count must map to exactly one outcome tier."""
     mappings = {3: "expert", 2: "strong", 1: "passing", 0: "hali_emas"}
     # 3 stars / expert
-    r = compute_boss_outcome(hp=100, max_hp=100, correct_count=10,
+    r = compute_boss_outcome(hp=0, max_hp=100, correct_count=10,
                               total_attempts=10, hints_used=0, status="won")
     assert (r["stars"], r["outcome"]) == (3, mappings[3])
     # 2 stars / strong
-    r = compute_boss_outcome(hp=50, max_hp=100, correct_count=7,
+    r = compute_boss_outcome(hp=0, max_hp=100, correct_count=7,
                               total_attempts=10, hints_used=0, status="won")
     assert (r["stars"], r["outcome"]) == (2, mappings[2])
     # 1 star / passing
-    r = compute_boss_outcome(hp=10, max_hp=100, correct_count=5,
+    r = compute_boss_outcome(hp=0, max_hp=100, correct_count=4,
                               total_attempts=10, hints_used=0, status="won")
     assert (r["stars"], r["outcome"]) == (1, mappings[1])
     # 0 stars / hali_emas

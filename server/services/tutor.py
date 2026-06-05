@@ -991,6 +991,280 @@ def _build_tutor_chat_prompt(
     return "\n\n".join(parts)
 
 
+_DIRECT_ANSWER_PATTERNS: tuple[str, ...] = (
+    # Uzbek / Uzbek slang
+    "aniq javob",
+    "aniqjavob",
+    "javobni ber",
+    "javob ber",
+    "javobini ber",
+    "javobini ayt",
+    "javobni ayt",
+    "javob nima",
+    "javobi nima",
+    "javob qanaqa",
+    "mana shu javob",
+    "javob tashla",
+    "javobni tashla",
+    "qaysi variant",
+    "qaysi javob",
+    "togri javob",
+    "to'g'ri javob",
+    "tugri javob",
+    "togrisi qaysi",
+    "to'g'risi qaysi",
+    "variantdan bittasini",
+    "bittasini ber",
+    "bittasini bergin",
+    "variantni ayt",
+    # English
+    "give me the answer",
+    "just the answer",
+    "exact answer",
+    "what is the answer",
+    "what's the answer",
+    "answer here",
+    "which option",
+    "correct option",
+    "which choice",
+    "correct answer",
+    "answer key",
+    # Russian
+    "дай ответ",
+    "скажи ответ",
+    "точный ответ",
+    "какой вариант",
+    "правильный вариант",
+    "правильный ответ",
+)
+
+
+def _normalise_direct_answer_probe(text: str) -> str:
+    lowered = (text or "").casefold()
+    return (
+        lowered
+        .replace("ʻ", "'")
+        .replace("’", "'")
+        .replace("`", "'")
+        .replace("gʻ", "g'")
+        .replace("oʻ", "o'")
+    )
+
+
+def _is_direct_answer_request(message: str) -> bool:
+    """Detect requests for the result/choice itself, not requests for help.
+
+    This is intentionally conservative and used only in practice/boss phases.
+    The goal is to catch "which variant / give exact answer" before the LLM can
+    infer a visible multiple-choice answer and accidentally name it.
+    """
+    text = _normalise_direct_answer_probe(message)
+    if any(pattern in text for pattern in _DIRECT_ANSWER_PATTERNS):
+        return True
+    has_answer_word = any(word in text for word in ("javob", "answer", "ответ"))
+    has_give_word = any(
+        word in text
+        for word in (
+            "ber",
+            "bergin",
+            "ayt",
+            "tashla",
+            "show",
+            "give",
+            "tell",
+            "дай",
+            "скажи",
+        )
+    )
+    return has_answer_word and has_give_word
+
+
+def _direct_answer_redirect(message_lang: str) -> str:
+    """Canned response for direct-answer requests in practice/boss.
+
+    Never names an option, term, formula result, or model answer. This is a
+    hard server-side answer-leak boundary, not a style preference left to the
+    model.
+    """
+    lang = (message_lang or "").lower()
+    if lang.startswith("ru"):
+        return (
+            "Otvet ne dam, no sposob pokazhu. Snachala naydi klyuchevoe "
+            "deystvie v voprose, potom sravni varianty po smyslu."
+        )
+    if lang.startswith("en"):
+        return (
+            "I can't give the answer, but I can show the method. First spot "
+            "the key action in the question, then compare which option describes "
+            "that action."
+        )
+    return (
+        "Javobni bermayman, lekin yo'lini ko'rsataman. Avval savoldagi "
+        "kalit harakatni top, keyin variantlarni shu harakat ma'nosi bilan "
+        "solishtir."
+    )
+
+
+def _visible_options_redirect(message_lang: str) -> str:
+    """Safe tutor response when an assessment screen is visible."""
+    lang = (message_lang or "").lower()
+    if lang.startswith("ru"):
+        return (
+            "Otvet ili variant ne nazovu. Naydi klyuchevoe deystvie v zadanii, "
+            "reshi ego na chernovike, potom sravni smysl so svoim vyborom."
+        )
+    if lang.startswith("en"):
+        return (
+            "I won't name the answer, option, or blank. Identify the key "
+            "operation in the task, work it out on scratch paper, then compare "
+            "your result with your choices."
+        )
+    return (
+        "Javob, bo'sh joy yoki variantni aytmayman. Topshiriqdagi asosiy "
+        "amalni top, uni qoralamada ishlab ko'r, keyin natijangni tanlovlar "
+        "bilan solishtir."
+    )
+
+
+def _missing_assessment_context_redirect(message_lang: str) -> str:
+    """Fail closed when practice/boss tutor lacks reliable screen context."""
+    lang = (message_lang or "").lower()
+    if lang.startswith("ru"):
+        return (
+            "Ekrandagi topshiriqni aniq ko'rmayapman, shuning uchun javob "
+            "yoki formula aytmayman. Qaysi amal kerakligini o'zing belgila: "
+            "berilganlarni ajrat, so'ralgan narsani top, keyin qoralamada tekshir."
+        )
+    if lang.startswith("en"):
+        return (
+            "I can't reliably see the active task, so I won't give an answer, "
+            "formula, or option. Identify the given values, identify what is "
+            "being asked, then check your work on scratch paper."
+        )
+    return (
+        "Ekrandagi topshiriqni aniq ko'rmayapman, shuning uchun javob, formula "
+        "yoki variant aytmayman. Berilganlarni ajrat, nima so'ralganini top, "
+        "keyin qoralamada tekshir."
+    )
+
+
+def _extract_visible_options(screen_context: str | None) -> list[str]:
+    """Pull visible MCQ option strings from runtime screen text.
+
+    Student screen context is untrusted and may be Uzbek/English UI copy, so
+    this is deliberately lightweight: it only extracts the comma/newline
+    separated tail after common "options" labels. The result is used for an
+    output leak guard, never for grading.
+    """
+    if not screen_context:
+        return []
+    text = str(screen_context)
+    match = re.search(
+        r"(?:variantlar|options|choices)\s*[:：]\s*(.+)$",
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not match:
+        return []
+    tail = match.group(1)
+    tail = re.split(
+        r"(?:\n\s*(?:savol|question|submit|checking|memory check|checkpoint)\b)",
+        tail,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    raw_options = re.split(r"\s*(?:,|;|\||\n| {2,})\s*", tail)
+    options: list[str] = []
+    for raw in raw_options:
+        opt = re.sub(r"^\s*(?:[A-Da-d][).:-]|\d+[).:-])\s*", "", raw).strip()
+        opt = opt.strip("\"'“”‘’`")
+        if 1 <= len(opt) <= 80:
+            options.append(opt)
+    return options[:8]
+
+
+def _normalise_option_probe(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").casefold()).strip()
+
+
+def _response_repeats_visible_option(response_text: str, screen_context: str | None) -> bool:
+    response_norm = _normalise_option_probe(response_text)
+    if not response_norm:
+        return False
+    for opt in _extract_visible_options(screen_context):
+        opt_norm = _normalise_option_probe(opt)
+        if len(opt_norm) < 2:
+            continue
+        # Exact visible option repeats are answer-bearing in assessment phases,
+        # even when the option text is a formula/value rather than a word.
+        if opt_norm in response_norm:
+            return True
+    return False
+
+
+def _build_safe_assessment_prompt(
+    *,
+    phase: str,
+    subphase: str | None,
+    subject: str | None,
+    grade: int | None,
+    student_message: str,
+    message_lang: str,
+    has_screen_context: bool,
+    is_direct_answer_request: bool,
+) -> str:
+    """Prompt DeepSeek for assessment-safe coaching without answer-bearing context."""
+    return "\n".join([
+        "You are the NETS tutor during an active graded/practice assessment.",
+        "Write a natural, varied coaching reply in the student's language.",
+        "",
+        "Hard rules:",
+        "- Do NOT give the answer, option, blank word, formula, equation, final value, or equivalent paraphrase.",
+        "- Do NOT quote answer-like text from the student's message.",
+        "- Do NOT solve the current item.",
+        "- Give 1-2 short process hints and ask one guiding question.",
+        "- If the student asks for the answer, politely refuse and redirect to method.",
+        "",
+        f"PHASE: {phase}",
+        f"SUBPHASE: {subphase or '(unknown)'}",
+        f"SUBJECT: {subject or '(unknown)'}",
+        f"GRADE: {grade if grade is not None else '(unknown)'}",
+        f"MESSAGE_LANG: {message_lang}",
+        f"SCREEN_CONTEXT_AVAILABLE_BUT_HIDDEN_FOR_INTEGRITY: {bool(has_screen_context)}",
+        f"DIRECT_ANSWER_REQUEST: {bool(is_direct_answer_request)}",
+        "",
+        "STUDENT_MESSAGE_UNTRUSTED:",
+        _fence_untrusted(student_message),
+    ])
+
+
+def _assessment_response_leaks(response_text: str, context_text: str | None, student_message: str) -> bool:
+    """Conservative post-filter for assessment-safe tutor output."""
+    if _response_repeats_visible_option(response_text, context_text):
+        return True
+    response_norm = _normalise_option_probe(response_text)
+    if not response_norm:
+        return False
+    # If the student pasted possible answers/options, do not let the model echo
+    # short answer-like chunks from that untrusted text back to them.
+    suspicious_chunks = re.split(r"[\s,;|]+", student_message or "")
+    for chunk in suspicious_chunks:
+        chunk_norm = _normalise_option_probe(chunk.strip("\"'“”‘’`()[]{}"))
+        if len(chunk_norm) < 3:
+            continue
+        if chunk_norm in {"what", "answer", "javob", "nima", "nega", "menga", "mana", "shu", "bor", "here"}:
+            continue
+        if chunk_norm in response_norm:
+            return True
+    # Formula/value style output is too close to answer-giving in active
+    # assessment mode. General prose is fine; symbolic solving is not.
+    if re.search(r"([=×÷*/^]|\bformula\b|\bformulasi\b)", response_norm):
+        return True
+    if re.search(r"\b(answer|javob)\s*(is|:|bu|shu)\b", response_norm):
+        return True
+    return False
+
+
 async def tutor_chat_v2(
     context: ai_context.TutorContextPacket,
     message: str,
@@ -1044,33 +1318,58 @@ async def tutor_chat_v2(
     )
 
     # Step 4 — build the prompt.
-    system_prompt = _load_runtime_prompt("tutor-assistant")
-
-    full_prompt = _build_tutor_chat_prompt(
-        system_prompt=system_prompt,
-        phase=context.phase,
-        subject=context.subject,
-        grade=context.grade,
-        question_text=context.current_question_text,
-        question_context=context.current_question_context,
-        screen_context=context.visible_screen_text or None,
-        student_attempt=context.student_work_text or None,
-        subphase=context.subphase,
-        student_profile=None,
-        persona_traits=None,
-        chat_history=chat_history,
-        student_message=message,
-        severity=severity,
-        warning_level=warning_level,
-        cumulative_deduction_pct=cumulative_deduction_pct,
-        is_big_warning=is_big_warning,
-        deduction_pct_this=deduction_pct_this,
-        behavior_summary=behavior_summary,
-        message_lang=message_lang,
-        recent_assistant_phrases=recent_assistant_phrases,
-        missing_context_flags=context.missing_context_flags or None,
-        metrics=context.metrics or None,
+    gated_phase = context.phase in {"practice", "boss"}
+    direct_answer_blocked = gated_phase and _is_direct_answer_request(message)
+    visible_options_blocked_pre_llm = (
+        gated_phase and bool((context.visible_screen_text or "").strip())
     )
+    missing_assessment_context_blocked = (
+        gated_phase and not (context.visible_screen_text or "").strip()
+    )
+    safe_assessment_mode = (
+        direct_answer_blocked
+        or missing_assessment_context_blocked
+        or visible_options_blocked_pre_llm
+    )
+    if safe_assessment_mode:
+        full_prompt = _build_safe_assessment_prompt(
+            phase=context.phase,
+            subphase=context.subphase,
+            subject=context.subject,
+            grade=context.grade,
+            student_message=message,
+            message_lang=message_lang,
+            has_screen_context=bool((context.visible_screen_text or "").strip()),
+            is_direct_answer_request=direct_answer_blocked,
+        )
+    else:
+        system_prompt = _load_runtime_prompt("tutor-assistant")
+
+        full_prompt = _build_tutor_chat_prompt(
+            system_prompt=system_prompt,
+            phase=context.phase,
+            subject=context.subject,
+            grade=context.grade,
+            question_text=context.current_question_text,
+            question_context=context.current_question_context,
+            screen_context=context.visible_screen_text or None,
+            student_attempt=context.student_work_text or None,
+            subphase=context.subphase,
+            student_profile=None,
+            persona_traits=None,
+            chat_history=chat_history,
+            student_message=message,
+            severity=severity,
+            warning_level=warning_level,
+            cumulative_deduction_pct=cumulative_deduction_pct,
+            is_big_warning=is_big_warning,
+            deduction_pct_this=deduction_pct_this,
+            behavior_summary=behavior_summary,
+            message_lang=message_lang,
+            recent_assistant_phrases=recent_assistant_phrases,
+            missing_context_flags=context.missing_context_flags or None,
+            metrics=context.metrics or None,
+        )
 
     # Step 5 — call the LLM through the canonical gateway.
     gateway_task = ai_gateway.AITask.TUTOR_CHAT
@@ -1111,8 +1410,48 @@ async def tutor_chat_v2(
                 },
             ) from exc
 
+    if safe_assessment_mode and not prompt_cap_exceeded:
+        response_text = _strip_fence_tags(response_text)
+        if _assessment_response_leaks(
+            response_text,
+            context.visible_screen_text or None,
+            message,
+        ):
+            retry_prompt = full_prompt + (
+                "\n\nYour previous draft leaked answer-like content. Try again. "
+                "Do not include formulas, exact operations, option text, blank words, "
+                "or any copied words from the student's possible answers. Keep it "
+                "short and ask a guiding question."
+            )
+            try:
+                retry_text = await ai_gateway.generate_text(
+                    task=gateway_task,
+                    prompt=retry_prompt,
+                    session_id=context.session_id,
+                    homework_id=context.hw_id,
+                    prompt_version="tutor-assistant:safe-assessment-retry",
+                )
+                retry_text = _strip_fence_tags(retry_text)
+                if not _assessment_response_leaks(
+                    retry_text,
+                    context.visible_screen_text or None,
+                    message,
+                ):
+                    response_text = retry_text
+                else:
+                    response_text = _visible_options_redirect(message_lang)
+            except Exception:
+                response_text = _visible_options_redirect(message_lang)
+
     # Strip any <UNTRUSTED> fence tags the LLM may have mirrored back.
     response_text = _strip_fence_tags(response_text)
+    visible_option_blocked = False
+    if gated_phase and _response_repeats_visible_option(
+        response_text,
+        context.visible_screen_text or None,
+    ):
+        visible_option_blocked = True
+        response_text = _direct_answer_redirect(message_lang)
 
     # Step 6 — persist the assistant turn and return.
     asst_turn_id = await db.add_tutor_turn(
@@ -1141,7 +1480,23 @@ async def tutor_chat_v2(
             "prompt_size": len(full_prompt),
             "prompt_cap": _PROMPT_SIZE_CAP,
             "prompt_cap_exceeded": prompt_cap_exceeded,
-            "fallback_status": "prompt_too_large" if prompt_cap_exceeded else "llm_success",
+            "direct_answer_blocked": direct_answer_blocked,
+            "missing_assessment_context_blocked": missing_assessment_context_blocked,
+            "visible_options_blocked_pre_llm": visible_options_blocked_pre_llm,
+            "visible_option_blocked": visible_option_blocked,
+            "fallback_status": (
+                "direct_answer_blocked"
+                if direct_answer_blocked
+                else "missing_assessment_context_blocked"
+                if missing_assessment_context_blocked
+                else "visible_options_blocked_pre_llm"
+                if visible_options_blocked_pre_llm
+                else "visible_option_blocked"
+                if visible_option_blocked
+                else "prompt_too_large"
+                if prompt_cap_exceeded
+                else "llm_success"
+            ),
         },
         route="service.tutor_chat",
     )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { ClipboardEvent, KeyboardEvent } from "react";
 import { useRuntimeStore, COMBO_BONUS_THRESHOLD } from "./store";
 import type { GameProps } from "./GameHost";
 import { DarkSection, Eyebrow, Title, Lead, Button, Pill } from "../shared/ui/primitives";
@@ -28,9 +28,9 @@ import { play } from "./sfx";
 // ---------------------------------------------------------------------------
 
 const WHW_STEPS = [
-  { key: "why", label: "Why", hint: "Name the concept in play." },
-  { key: "how", label: "How", hint: "Show the method you’d use." },
-  { key: "what", label: "What", hint: "State the result." },
+  { key: "why", label: "Nega", hint: "Qaysi tushuncha ishlayotganini ayting." },
+  { key: "how", label: "Qanday", hint: "Jarayon yoki usulni tushuntiring." },
+  { key: "what", label: "Natija", hint: "Xulosa va natijani yozing." },
 ] as const;
 
 export default function BossArena({ onComplete }: GameProps) {
@@ -64,15 +64,51 @@ export default function BossArena({ onComplete }: GameProps) {
   // Local advisory-nudge dismissal — display-only; resets per question so a new
   // turn can surface a fresh nudge. NEVER touches the server verdict.
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [pasteAlerted, setPasteAlerted] = useState(false);
   useEffect(() => {
     setWhy("");
     setHow("");
     setWhat("");
     setNudgeDismissed(false);
+    setPasteAlerted(false);
   }, [qid]);
 
-  // The advisory nudge rides on the server's last verdict (no extra store).
-  const nudge = nudgeDismissed ? null : boss.lastResult?.integrity_nudge ?? null;
+  const pasteNudge = pasteAlerted
+    ? {
+        type: "paste_review",
+        message:
+          "Ehtimoliy cheating aniqlandi: javobingiz tekshiruv uchun belgilanadi. Hujumni boshlashdan oldin fikringizni o‘z so‘zlaringiz bilan qayta yozing.",
+      }
+    : null;
+
+  // The advisory nudge rides on the server's last verdict. Before submit, a
+  // local paste nudge makes the same review boundary visible immediately.
+  const nudge = nudgeDismissed
+    ? null
+    : boss.lastResult?.integrity_nudge ?? pasteNudge;
+
+  const onAnswerPaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    tele.onPaste(e);
+    setPasteAlerted(true);
+    setNudgeDismissed(false);
+  };
+
+  const markPossiblePaste = () => {
+    tele.markPaste();
+    setPasteAlerted(true);
+    setNudgeDismissed(false);
+  };
+
+  const onAnswerChange = (
+    next: string,
+    prev: string,
+    setValue: (value: string) => void
+  ) => {
+    if (next.length - prev.length >= 24) {
+      markPossiblePaste();
+    }
+    setValue(next);
+  };
 
   // ---- intro ----
   if (boss.status === "intro") {
@@ -87,10 +123,10 @@ export default function BossArena({ onComplete }: GameProps) {
         <div className={s.arenaGlow} aria-hidden="true" />
         <div data-testid="boss-intro">
           <Eyebrow>Final Boss</Eyebrow>
-          <Title size="hero">{bossName} awaits.</Title>
+          <Title size="hero">{bossName} sizni kutmoqda.</Title>
           <Lead>
             {meta?.intro ??
-              "This is the peak. Defend every answer with your reasoning — vague guesses do no damage."}
+              "Bu yakuniy sinov. Har bir javobni fikrlash bilan himoya qiling — noaniq taxminlar zarar yetkazmaydi."}
           </Lead>
           <WhyHowWhatScaffold />
           {boss.submitError && (
@@ -110,7 +146,7 @@ export default function BossArena({ onComplete }: GameProps) {
               disabled={opening}
               data-testid="boss-begin"
             >
-              {opening ? "Opening…" : "Enter the arena →"}
+              {opening ? "Ochilmoqda…" : "Arenaga kirish →"}
             </Button>
           </div>
         </div>
@@ -126,11 +162,10 @@ export default function BossArena({ onComplete }: GameProps) {
       <DarkSection className={`${s.arena} ${s.arenaWin}`} glow={false}>
         <div className={`${s.arenaGlow} ${s.arenaGlowWin}`} aria-hidden="true" />
         <div data-testid="boss-won">
-          <Eyebrow>Victory</Eyebrow>
-          <Title size="hero">{bossName} is down.</Title>
+          <Eyebrow>G‘alaba</Eyebrow>
+          <Title size="hero">{bossName} yengildi.</Title>
           <Lead>
-            You drained the bar to zero with reasoning that held up. That’s
-            mastery.
+            Fikringiz bardosh berdi va boss HP nolga tushdi. Bu haqiqiy mahorat.
           </Lead>
           {typeof stars === "number" && <Stars count={stars} />}
           {typeof xp === "number" && xp > 0 && (
@@ -140,9 +175,16 @@ export default function BossArena({ onComplete }: GameProps) {
               </span>
             </div>
           )}
+          <IntegrityNudge
+            nudge={nudge}
+            onDismiss={() => setNudgeDismissed(true)}
+            onRespond={(choice) =>
+              acknowledgeNudge(hwId, sessionId, "boss", choice)
+            }
+          />
           <div className={s.actions}>
             <Button variant="blue" onClick={onComplete} data-testid="boss-finish">
-              Claim the arc →
+              Arkani yakunlash →
             </Button>
           </div>
         </div>
@@ -157,15 +199,21 @@ export default function BossArena({ onComplete }: GameProps) {
       <DarkSection className={s.arena} glow={false}>
         <div className={s.arenaGlow} aria-hidden="true" />
         <div data-testid="boss-lost">
-          <Eyebrow>Defeated</Eyebrow>
-          <Title size="hero">{bossName} stands.</Title>
+          <Eyebrow>Mag‘lubiyat</Eyebrow>
+          <Title size="hero">{bossName} hali turibdi.</Title>
           <Lead>
-            Trials ran out before the bar did. Regroup and come back sharper —
-            a fresh attempt resets your trials.
+            Urinishlar tugadi, boss HP esa qolgan. Qayta urinib ko‘ring — yangi urinish hammasini tiklaydi.
           </Lead>
           {boss.lastResult?.feedback && (
             <p className={s.bossLine}>{boss.lastResult.feedback}</p>
           )}
+          <IntegrityNudge
+            nudge={nudge}
+            onDismiss={() => setNudgeDismissed(true)}
+            onRespond={(choice) =>
+              acknowledgeNudge(hwId, sessionId, "boss", choice)
+            }
+          />
           {boss.submitError && (
             <p className={s.error} role="alert">
               {boss.submitError}
@@ -178,7 +226,7 @@ export default function BossArena({ onComplete }: GameProps) {
               disabled={restarting}
               data-testid="boss-retry"
             >
-              {restarting ? "Resetting…" : "Face it again →"}
+              {restarting ? "Tiklanmoqda…" : "Qayta urinish →"}
             </Button>
           </div>
         </div>
@@ -287,8 +335,10 @@ export default function BossArena({ onComplete }: GameProps) {
                           rows={2}
                           disabled={boss.submitting}
                           placeholder={step.hint}
-                          onChange={(e) => setValue(e.target.value)}
-                          onPaste={tele.onPaste}
+                          onChange={(e) =>
+                            onAnswerChange(e.target.value, value, setValue)
+                          }
+                          onPaste={onAnswerPaste}
                           data-testid={`boss-input-${step.key}`}
                         />
                       </div>
@@ -303,17 +353,19 @@ export default function BossArena({ onComplete }: GameProps) {
                 </Title>
                 <div className={s.answerWrap} onKeyDown={onKeyDown}>
                   <label className={s.answerLabel} htmlFor="boss-what">
-                    Your answer
+                    Javobingiz
                   </label>
                   <textarea
                     id="boss-what"
                     className={s.answerInput}
                     value={what}
-                    placeholder="Explain your reasoning, then your answer…"
+                    placeholder="Fikringizni, keyin javobingizni yozing…"
                     disabled={boss.submitting}
                     rows={3}
-                    onChange={(e) => setWhat(e.target.value)}
-                    onPaste={tele.onPaste}
+                    onChange={(e) =>
+                      onAnswerChange(e.target.value, what, setWhat)
+                    }
+                    onPaste={onAnswerPaste}
                     data-testid="boss-input-what"
                   />
                 </div>
@@ -328,12 +380,12 @@ export default function BossArena({ onComplete }: GameProps) {
                 onClick={() => { play("tick"); requestHint(); }}
                 data-testid="boss-hint"
               >
-                Ask for a hint
+                Yordam so‘rash
               </button>
               <span className={s.hintNote}>
                 {boss.hintsUsed > 0
-                  ? `Hints used: ${boss.hintsUsed} — each one trims the damage you deal.`
-                  : "A hint trims the damage you deal — try without one first."}
+                  ? `Yordam ishlatildi: ${boss.hintsUsed} — har biri zararni kamaytiradi.`
+                  : "Yordam zararni kamaytiradi — avval o‘zingiz urinib ko‘ring."}
               </span>
             </div>
 
@@ -346,9 +398,9 @@ export default function BossArena({ onComplete }: GameProps) {
               >
                 <div className={s.turnHead}>
                   {result.is_correct ? (
-                    <Pill tone="good">Hit · −{result.damage} HP</Pill>
+                    <Pill tone="good">Zarba · −{result.damage} HP</Pill>
                   ) : (
-                    <Pill tone="warn">Wrong · no damage</Pill>
+                    <Pill tone="warn">Noto‘g‘ri · zarar yo‘q</Pill>
                   )}
                 </div>
                 {result.feedback && <p className={s.bossLine}>{result.feedback}</p>}
@@ -404,7 +456,7 @@ export default function BossArena({ onComplete }: GameProps) {
                 disabled={boss.submitting || what.trim() === ""}
                 data-testid="boss-attack"
               >
-                {boss.submitting ? "Striking…" : "Attack →"}
+                {boss.submitting ? "Hujum qilinmoqda…" : "Hujum →"}
               </Button>
             </div>
           </>
@@ -421,7 +473,7 @@ function GeneratingFrame({ bossName }: { bossName: string }) {
       <div className={s.arenaGlow} aria-hidden="true" />
       <div>
         <Eyebrow>Final Boss</Eyebrow>
-        <Title size="hero">{bossName} sizes you up…</Title>
+        <Title size="hero">{bossName} sizni sinamoqda…</Title>
         <SkeletonBody />
       </div>
     </DarkSection>
@@ -432,7 +484,7 @@ function GeneratingFrame({ bossName }: { bossName: string }) {
 function SkeletonBody() {
   return (
     <div className={s.skeleton} data-testid="boss-loading-question" aria-busy="true">
-      <p className={s.skelLabel}>Forging the next challenge…</p>
+      <p className={s.skelLabel}>Keyingi sinov tayyorlanmoqda…</p>
       <div className={s.skelLine} />
       <div className={s.skelLine} />
       <div className={s.skelLine} />
@@ -456,7 +508,7 @@ function GenerateErrorBlock({
   return (
     <div className={s.genError} role="alert" data-testid="boss-generate-error">
       <p className={s.genErrorTitle}>
-        {refresh ? "The boss is stuck thinking." : "That question didn’t land."}
+        {refresh ? "Boss o‘ylanib qoldi." : "Bu savol tayyor bo‘lmadi."}
       </p>
       <p className={s.genErrorBody}>{message}</p>
       <div className={s.actions} style={{ marginTop: 0 }}>
@@ -466,11 +518,11 @@ function GenerateErrorBlock({
             onClick={() => window.location.reload()}
             data-testid="boss-generate-refresh"
           >
-            Refresh the page →
+            Sahifani yangilash →
           </Button>
         ) : (
           <Button variant="blue" onClick={onRetry} data-testid="boss-generate-retry">
-            Try again →
+            Qayta urinish →
           </Button>
         )}
       </div>
@@ -481,7 +533,7 @@ function GenerateErrorBlock({
 // Why → How → What — the 3-up reasoning scaffold shown on the intro screen.
 function WhyHowWhatScaffold() {
   return (
-    <ol className={s.whw} aria-label="What the boss demands">
+    <ol className={s.whw} aria-label="Boss talablari">
       {WHW_STEPS.map((step, i) => (
         <li key={step.label} className={s.whwStep}>
           <span className={s.whwIndex}>{i + 1}</span>
@@ -498,7 +550,7 @@ function WhyHowWhatScaffold() {
 function Stars({ count }: { count: number }) {
   const max = 3;
   return (
-    <div className={s.stars} aria-label={`${count} of ${max} stars`}>
+    <div className={s.stars} aria-label={`${count} / ${max} yulduz`}>
       {Array.from({ length: max }).map((_, i) => (
         <span key={i} className={`${s.star} ${i < count ? s.starOn : ""}`} aria-hidden="true">
           ★

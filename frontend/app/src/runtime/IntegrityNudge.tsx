@@ -74,7 +74,7 @@ export default function IntegrityNudge({
         <span className={s.glow} aria-hidden="true" />
 
         <Pill tone="warn" className={s.tag}>
-          {nudge.type ? prettyType(nudge.type) : "Heads up"}
+          {nudge.type ? prettyType(nudge.type) : "Ogohlantirish"}
         </Pill>
 
         {/* TEXT ONLY — never dangerouslySetInnerHTML. The testid lives on a
@@ -89,14 +89,14 @@ export default function IntegrityNudge({
             onClick={() => onRespond?.("explain")}
             data-testid="integrity-nudge-respond"
           >
-            Explain my reasoning
+            Fikrimni tushuntiraman
           </Button>
           <Button
             variant="outline"
             onClick={() => onDismiss?.()}
             data-testid="integrity-nudge-dismiss"
           >
-            Dismiss
+            Yopish
           </Button>
         </div>
       </div>
@@ -106,7 +106,10 @@ export default function IntegrityNudge({
 
 // Turn a snake/kebab `type` token into a friendly chip label.
 function prettyType(type: string): string {
+  if (type === "paste_review" || type === "own_words_required") {
+    return "Ehtimoliy cheating";
+  }
   const cleaned = type.replace(/[_-]+/g, " ").trim();
-  if (!cleaned) return "Heads up";
+  if (!cleaned) return "Ogohlantirish";
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
