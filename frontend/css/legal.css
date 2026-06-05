@@ -1,7 +1,7 @@
 /* ============================================================
-   Homeworks — Privacy Policy (legal long-form)
+   Homeworks — Legal long-form (Privacy + Terms)
    Loaded AFTER landing.css; inherits --landing-* tokens.
-   Trilingual: panels toggled via html[data-lang]; see privacy.js.
+   Trilingual: panels toggled via html[data-lang]; see legal.js.
    ============================================================ */
 
 /* -------- Language panel switching -------- */
