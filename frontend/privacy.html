@@ -10,13 +10,13 @@
   <link rel="apple-touch-icon" href="/img/classa-logo.png?v=__VERSION__" />
   <link rel="preload" href="/css/landing.css?v=__VERSION__" as="style" />
   <link rel="stylesheet" href="/css/landing.css?v=__VERSION__" />
-  <link rel="stylesheet" href="/css/privacy.css?v=__VERSION__" />
+  <link rel="stylesheet" href="/css/legal.css?v=__VERSION__" />
   <script src="/js/theme.js?v=__VERSION__"></script>
   <script>
     /* Phase A — set language synchronously before paint (flash-free). */
     (function () {
       try {
-        var l = localStorage.getItem('landing_lang');
+        var l = localStorage.getItem('nets-landing-lang');
         var s = ['uz', 'ru', 'en'];
         document.documentElement.setAttribute('data-lang', s.indexOf(l) !== -1 ? l : 'uz');
       } catch (e) {
@@ -1039,6 +1039,6 @@
     </div>
   </footer>
 
-  <script src="/js/privacy.js?v=__VERSION__" defer></script>
+  <script src="/js/legal.js?v=__VERSION__" defer></script>
 </body>
 </html>

@@ -1,13 +1,13 @@
-/* Homeworks — Privacy page language toggle.
- * Shares the `landing_lang` localStorage key with landing.js so the choice
+/* Homeworks — Legal pages (Privacy + Terms) language toggle.
+ * Shares the `nets-landing-lang` localStorage key with landing.js so the choice
  * carries across pages. The initial language is set synchronously by a small
- * inline <head> script (see privacy.html) to avoid a flash; this file wires the
- * .lang-pill click handlers, keeps the active state in sync, and translates the
- * shared chrome (back-link + footer link) via data-i18n-<lang> attributes.
+ * inline <head> script (see privacy.html / terms.html) to avoid a flash; this
+ * file wires the .lang-pill click handlers, keeps the active state in sync, and
+ * translates the shared chrome (back-link + footer links) via data-i18n-<lang>.
  * Theme stays owned by theme.js.
  */
 (function () {
-  var LANG_KEY = 'landing_lang';
+  var LANG_KEY = 'nets-landing-lang';
   var SUPPORTED = ['uz', 'ru', 'en'];
   var DEFAULT = 'uz';
 
