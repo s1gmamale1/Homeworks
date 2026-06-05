@@ -132,6 +132,8 @@ _HTML_PAGES: dict[str, str] = {
     "/builder.html":  "builder.html",
     "/library.html":  "library.html",
     "/landing.html":  "landing.html",
+    "/privacy":       "privacy.html",
+    "/privacy.html":  "privacy.html",
     "/taskboard.html": "taskboard.html",
 }
 
