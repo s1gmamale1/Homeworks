@@ -30,7 +30,28 @@
         </div>
       </div>
 
-      <nav class="phase-list" id="phase-list" aria-label="Phase navigation"></nav>
+      <nav class="phase-list" id="phase-list" aria-label="Phase navigation" aria-busy="true">
+        <!-- Placeholder phase rows — replaced by renderPhases() once
+             loadHomework() returns and the real pipeline is known. -->
+        <div class="phase-list-skeleton" aria-hidden="true">
+          <div class="skeleton-card" style="padding:12px;min-height:48px;flex-direction:row;align-items:center;gap:12px">
+            <span class="skeleton-orb" style="height:28px;width:28px"></span>
+            <span class="skeleton-bar" style="flex:1;height:14px;width:auto"></span>
+          </div>
+          <div class="skeleton-card" style="padding:12px;min-height:48px;flex-direction:row;align-items:center;gap:12px">
+            <span class="skeleton-orb" style="height:28px;width:28px"></span>
+            <span class="skeleton-bar" style="flex:1;height:14px;width:auto"></span>
+          </div>
+          <div class="skeleton-card" style="padding:12px;min-height:48px;flex-direction:row;align-items:center;gap:12px">
+            <span class="skeleton-orb" style="height:28px;width:28px"></span>
+            <span class="skeleton-bar" style="flex:1;height:14px;width:auto"></span>
+          </div>
+          <div class="skeleton-card" style="padding:12px;min-height:48px;flex-direction:row;align-items:center;gap:12px">
+            <span class="skeleton-orb" style="height:28px;width:28px"></span>
+            <span class="skeleton-bar" style="flex:1;height:14px;width:auto"></span>
+          </div>
+        </div>
+      </nav>
 
       <div class="sidebar-footer">
         <p class="save-state" id="save-state" data-i18n="builder.idle">Idle</p>
@@ -73,10 +94,25 @@
                 <h3 id="active-phase-title" data-i18n="common.loading">Loading…</h3>
               </div>
             </div>
-            <div id="editor-root">
-              <div class="loading-state">
-                <div class="spinner" aria-hidden="true"></div>
-                <p data-i18n="builder.loading_editor">Loading editor…</p>
+            <div id="editor-root" aria-busy="true" aria-live="polite">
+              <div class="loading-state loading-state--skeleton" id="builder-editor-skeleton">
+                <span class="sr-only" data-i18n="builder.loading_editor">Loading editor…</span>
+                <div class="skeleton-card skeleton-card--editor" aria-hidden="true">
+                  <div class="skeleton-card__head">
+                    <span class="skeleton-bar" style="width:42%"></span>
+                    <span class="skeleton-pill"></span>
+                  </div>
+                  <span class="skeleton-line"></span>
+                  <span class="skeleton-line"></span>
+                  <span class="skeleton-line is-mid"></span>
+                  <div class="skeleton-card__row" style="margin-top:8px">
+                    <span class="skeleton-pill"></span>
+                    <span class="skeleton-pill"></span>
+                    <span class="skeleton-pill" style="width:140px"></span>
+                  </div>
+                  <span class="skeleton-line"></span>
+                  <span class="skeleton-line is-mid"></span>
+                </div>
               </div>
             </div>
           </div>

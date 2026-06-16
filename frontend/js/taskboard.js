@@ -130,6 +130,9 @@ function tasksFor(assigneeId) {
 
 function renderBoard() {
   if (!els.board) return;
+  // First successful render replaces the static loading skeleton — flip
+  // aria-busy off so screen readers stop announcing the board as resolving.
+  els.board.setAttribute("aria-busy", "false");
   els.board.innerHTML = "";
 
   const sortedUsers = [...state.users].sort(
@@ -607,6 +610,19 @@ function wireButtons() {
 }
 
 // ── Boot ────────────────────────────────────────────────────────────────────
+// Skeleton minimum-display floor — keep the placeholder columns visible for
+// at least SKELETON_MIN_MS so a cache-warm sync doesn't flash on/off.
+const SKELETON_MIN_MS = 500;
+const _now = () => (typeof performance !== "undefined" && performance.now)
+  ? performance.now()
+  : Date.now();
+const _skeletonShownAt = _now();
+function waitSkeletonFloor() {
+  const elapsed = _now() - _skeletonShownAt;
+  if (elapsed >= SKELETON_MIN_MS) return Promise.resolve();
+  return new Promise((r) => setTimeout(r, SKELETON_MIN_MS - elapsed));
+}
+
 async function syncState() {
   const [users, tasks] = await Promise.all([apiListUsers(), apiListAllTasks()]);
   state.users = users;
@@ -615,7 +631,18 @@ async function syncState() {
 }
 
 async function init() {
-  await syncState();
+  // Initial mount: kick off the fetch immediately so the wall-clock isn't
+  // serialised behind the floor, then await both. Whichever takes longer
+  // gates the swap, and a fast fetch still holds the skeleton long enough
+  // to read as a loading state. Subsequent in-app refreshes (drag-drop,
+  // modal saves) call syncState() directly with no floor, since the board
+  // is already populated.
+  const fetchPromise = Promise.all([apiListUsers(), apiListAllTasks()]);
+  await waitSkeletonFloor();
+  const [users, tasks] = await fetchPromise;
+  state.users = users;
+  state.tasks = tasks;
+  renderBoard();
   wireButtons();
 }
 

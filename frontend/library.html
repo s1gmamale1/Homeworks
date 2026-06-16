@@ -71,9 +71,76 @@
       </section>
 
       <!-- Loading / Error / Empty — keep the existing IDs so library.js can hide/show them -->
-      <div class="loading-state glass-card" id="lib-loading">
-        <div class="spinner" aria-hidden="true"></div>
-        <p data-i18n="library.loading">Loading library…</p>
+      <div class="loading-state loading-state--skeleton glass-card" id="lib-loading" aria-busy="true" aria-live="polite">
+        <span class="sr-only" data-i18n="library.loading">Loading library…</span>
+        <div class="skeleton-grid skeleton-grid--stats" aria-hidden="true">
+          <div class="skeleton-card skeleton-card--stat">
+            <span class="skeleton-line is-short"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--stat">
+            <span class="skeleton-line is-short"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--stat">
+            <span class="skeleton-line is-short"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--stat">
+            <span class="skeleton-line is-short"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+        </div>
+        <div class="skeleton-grid skeleton-grid--tiles" aria-hidden="true">
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+          <div class="skeleton-card skeleton-card--tile">
+            <div class="skeleton-card__head">
+              <div class="skeleton-orb"></div>
+              <span class="skeleton-pill"></span>
+            </div>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-line is-mid"></span>
+          </div>
+        </div>
       </div>
       <div class="error-state glass-card hidden" id="lib-error">
         <div class="empty-orb" aria-hidden="true">⚠</div>

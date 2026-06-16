@@ -314,12 +314,43 @@
     return `${yr} year${yr === 1 ? "" : "s"} ago`;
   }
 
+  // Minimum time the skeleton must stay visible before being swapped for
+  // real content. Without this floor, a fast (cache-warm) API resolve flashes
+  // the skeleton on/off in a single frame and reads as a glitch rather than
+  // a loading state.
+  const SKELETON_MIN_MS = 500;
+  // Skeleton is in the initial HTML, so the clock starts at script init.
+  // Re-stamped on every setLoading(true) so the floor restarts when the
+  // user manually refreshes the library.
+  let _skeletonShownAt = (typeof performance !== "undefined" && performance.now)
+    ? performance.now()
+    : Date.now();
+
+  function _now() {
+    return (typeof performance !== "undefined" && performance.now)
+      ? performance.now()
+      : Date.now();
+  }
+
+  function waitSkeletonFloor() {
+    const elapsed = _now() - _skeletonShownAt;
+    if (elapsed >= SKELETON_MIN_MS) return Promise.resolve();
+    return new Promise((resolve) => window.setTimeout(resolve, SKELETON_MIN_MS - elapsed));
+  }
+
   function setLoading(isLoading) {
     state.loading = isLoading;
     els.loadingState.classList.toggle("hidden", !isLoading);
     els.refreshBtn.disabled = isLoading;
+    // aria-busy mirrors visual state so screen readers know the homework
+    // section is resolving — paired with the .sr-only "Loading…" label
+    // inside the skeleton block.
     if (isLoading) {
+      _skeletonShownAt = _now();
+      els.loadingState.setAttribute("aria-busy", "true");
       els.errorState.classList.add("hidden");
+    } else {
+      els.loadingState.setAttribute("aria-busy", "false");
     }
   }
 
@@ -750,6 +781,9 @@
       els.errorStateMessage.textContent = state.lastError;
       showToast(t("dashboard.toast_could_not_load"), state.lastError, "error");
     } finally {
+      // Hold the skeleton at least SKELETON_MIN_MS so a fast (cache-warm)
+      // resolve doesn't flash the layout on/off in a single frame.
+      await waitSkeletonFloor();
       setLoading(false);
       renderHomeworks();
       renderPaginationBar();

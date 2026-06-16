@@ -525,6 +525,9 @@
     const phaseNames = getPhaseNames();
     const phaseIcons = getPhaseIcons();
 
+    // Real phase buttons are about to replace the loading skeleton.
+    els.phaseList.setAttribute("aria-busy", "false");
+
     els.phaseList.innerHTML = phases
       .map(
         (phase) => `
@@ -721,6 +724,11 @@
     const editorKey = PHASE_EDITOR_KEYS[phase];
     const editor = window.Editors?.[editorKey];
 
+    // The skeleton was the editor-root's initial content; either an editor.render
+    // call or renderPlaceholderEditor below will overwrite it. Either way, we
+    // are no longer waiting on data — flip aria-busy off.
+    els.editorRoot.setAttribute("aria-busy", "false");
+
     els.activePhaseKicker.textContent = t("builder.active_phase_eyebrow");
     els.activePhaseTitle.textContent = phaseName;
     if (els.addItemBtn) els.addItemBtn.hidden = true;
@@ -853,6 +861,20 @@
     if (previewVisible) refreshPreview();
   }
 
+  // Skeleton minimum-display floor — keep the loading placeholders
+  // visible for at least SKELETON_MIN_MS so a fast (cache-warm) /api/homeworks/:id
+  // resolve does not flash the skeleton on/off in a single frame.
+  const SKELETON_MIN_MS = 500;
+  const _now = () => (typeof performance !== "undefined" && performance.now)
+    ? performance.now()
+    : Date.now();
+  const _skeletonShownAt = _now();
+  function waitSkeletonFloor() {
+    const elapsed = _now() - _skeletonShownAt;
+    if (elapsed >= SKELETON_MIN_MS) return Promise.resolve();
+    return new Promise((r) => setTimeout(r, SKELETON_MIN_MS - elapsed));
+  }
+
   async function loadHomework() {
     const id = getHomeworkId();
 
@@ -880,9 +902,15 @@
 
       setSaveState(t("builder.loaded"), "saved");
       updateSaveState("saved");
+      // Hold the skeleton at least SKELETON_MIN_MS before swapping in the
+      // real editor so a fast load does not flash the layout.
+      await waitSkeletonFloor();
       renderAll();
       checkMigrationStatus();
     } catch (error) {
+      // Same floor on the failure path so the user does not see the
+      // skeleton blink and then an error card jump in.
+      await waitSkeletonFloor();
       els.editorRoot.innerHTML = `
         <div class="empty-state glass-card">
           <div class="empty-orb" aria-hidden="true">🧯</div>

@@ -52,7 +52,59 @@
         role="list"
         data-i18n-aria-label="taskboard.board_aria"
         aria-label="Kanban board"
+        aria-busy="true"
       >
+        <!-- Layout-matching skeleton — replaced wholesale by renderBoard()
+             once syncState() resolves. Marked aria-hidden so screen readers
+             follow the board's aria-busy state, not these placeholder cards. -->
+        <div class="tb-skeleton skeleton-grid skeleton-grid--columns" aria-hidden="true">
+          <div class="skeleton-card skeleton-card--column">
+            <div class="skeleton-card__head">
+              <span class="skeleton-bar" style="width:55%"></span>
+              <span class="skeleton-pill" style="width:36px;height:22px"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line is-mid"></span>
+              <span class="skeleton-line is-short"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line"></span>
+              <span class="skeleton-line is-short"></span>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-card--column">
+            <div class="skeleton-card__head">
+              <span class="skeleton-bar" style="width:55%"></span>
+              <span class="skeleton-pill" style="width:36px;height:22px"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line is-mid"></span>
+              <span class="skeleton-line is-short"></span>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-card--column">
+            <div class="skeleton-card__head">
+              <span class="skeleton-bar" style="width:55%"></span>
+              <span class="skeleton-pill" style="width:36px;height:22px"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line"></span>
+              <span class="skeleton-line is-mid"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line is-short"></span>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-card--column">
+            <div class="skeleton-card__head">
+              <span class="skeleton-bar" style="width:55%"></span>
+              <span class="skeleton-pill" style="width:36px;height:22px"></span>
+            </div>
+            <div class="skeleton-card skeleton-card--hw" style="min-height:96px;padding:12px">
+              <span class="skeleton-line is-mid"></span>
+            </div>
+          </div>
+        </div>
         <!-- rendered by JS: pinned "Issues" column + one column per user -->
       </section>
     </main>

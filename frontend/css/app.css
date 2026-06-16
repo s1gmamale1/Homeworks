@@ -1306,6 +1306,21 @@ textarea:disabled {
     display: none !important;
 }
 
+/* Screen-reader-only helper (used by skeleton loaders so the loading
+   message is announced without painting visible "Loading…" copy on
+   top of the skeleton layout). */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
 .full-span {
     grid-column: 1 / -1;
 }
@@ -3965,3 +3980,177 @@ body:has(.preview-panel:not([hidden])) .fab-add {
     }
 }
 
+/* ============================================================
+   Skeleton loading system (shared across Dashboard / Library /
+   Taskboard / Builder; NOT applied inside the runtime preview
+   iframe — Homework Preview keeps its own loading flow).
+
+   Usage:
+     .skeleton-bar     — title / numeric headline shimmer block
+     .skeleton-line    — single text line
+     .skeleton-pill    — button-shaped placeholder
+     .skeleton-card    — full card-shaped wrapper
+     .skeleton-orb     — round avatar / icon
+
+   Containers carrying real loading state should add
+   aria-busy="true" while loading and aria-busy="false" / drop
+   the attribute when done. Inner skeleton blocks are decorative
+   and carry aria-hidden="true".
+   ============================================================ */
+
+:root {
+    --skeleton-base: rgba(15, 23, 42, 0.06);
+    --skeleton-highlight: rgba(255, 255, 255, 0.55);
+    --skeleton-radius: 10px;
+}
+
+[data-theme="dark"] {
+    --skeleton-base: rgba(148, 163, 184, 0.14);
+    --skeleton-highlight: rgba(226, 232, 240, 0.18);
+}
+
+.skeleton-bar,
+.skeleton-line,
+.skeleton-pill,
+.skeleton-orb,
+.skeleton-card {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--skeleton-base);
+    background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--skeleton-highlight) 50%,
+        transparent 100%
+    );
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    background-position: 100% 0;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+    border-radius: var(--skeleton-radius);
+    /* Stop scroll-reveal observers from picking up skeletons. */
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+}
+
+.skeleton-bar    { height: 22px; width: 60%; border-radius: 8px; }
+.skeleton-line   { height: 12px; width: 100%; border-radius: 6px; margin-block: 6px; }
+.skeleton-line.is-short { width: 45%; }
+.skeleton-line.is-mid   { width: 70%; }
+.skeleton-pill   { height: 32px; width: 96px; border-radius: 999px; }
+.skeleton-orb    { height: 44px; width: 44px; border-radius: 50%; }
+
+.skeleton-card {
+    background-color: transparent;
+    background-image: none;
+    animation: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl, 20px);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Subtle outer pulse so an empty .skeleton-card still reads as loading. */
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02) inset;
+}
+
+.skeleton-card > .skeleton-bar,
+.skeleton-card > .skeleton-line,
+.skeleton-card > .skeleton-pill,
+.skeleton-card > .skeleton-orb,
+.skeleton-card .skeleton-bar,
+.skeleton-card .skeleton-line,
+.skeleton-card .skeleton-pill,
+.skeleton-card .skeleton-orb {
+    background-color: var(--skeleton-base);
+    background-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--skeleton-highlight) 50%,
+        transparent 100%
+    );
+    background-size: 220% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -120% 0; }
+}
+
+/* Grid wrappers per page (sizes mirror the real layouts so swapping
+   skeleton → real markup avoids any layout collapse). */
+.skeleton-grid {
+    display: grid;
+    gap: 18px;
+}
+
+.skeleton-grid--stats {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin-bottom: 18px;
+}
+
+.skeleton-grid--cards {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.skeleton-grid--tiles {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.skeleton-grid--columns {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    align-items: start;
+}
+
+.skeleton-card--hw       { min-height: 220px; }
+.skeleton-card--tile     { min-height: 180px; align-items: stretch; }
+.skeleton-card--stat     { min-height: 110px; }
+.skeleton-card--column   { min-height: 320px; gap: 14px; }
+.skeleton-card--editor   { min-height: 360px; gap: 14px; padding: 22px; }
+
+.skeleton-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.skeleton-card__row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.skeleton-card__footer {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* When the loading-state wrapper hosts a skeleton, drop the centered
+   spinner padding so the skeleton fills like the real grid would. */
+.loading-state.loading-state--skeleton {
+    padding: 0;
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+/* prefers-reduced-motion: keep skeleton visible but freeze shimmer. */
+@media (prefers-reduced-motion: reduce) {
+    .skeleton-bar,
+    .skeleton-line,
+    .skeleton-pill,
+    .skeleton-orb,
+    .skeleton-card .skeleton-bar,
+    .skeleton-card .skeleton-line,
+    .skeleton-card .skeleton-pill,
+    .skeleton-card .skeleton-orb {
+        animation: none;
+        background-image: none;
+    }
+}
