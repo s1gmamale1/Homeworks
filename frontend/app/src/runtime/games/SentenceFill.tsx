@@ -72,13 +72,15 @@ function makeBlankStates(count: number): BlankState[] {
   }));
 }
 
+const BLANK_MARKER_RE = /___|\[blank\]/gi;
+
 function countBlanks(passage: string): number {
-  return (passage.match(/___/g) ?? []).length;
+  return (passage.match(BLANK_MARKER_RE) ?? []).length;
 }
 
 // Split passage on "___" → segments; blanks sit between them.
 function splitPassage(passage: string): string[] {
-  return passage.split("___");
+  return passage.split(BLANK_MARKER_RE);
 }
 
 export default function SentenceFill({ onComplete }: GameProps) {

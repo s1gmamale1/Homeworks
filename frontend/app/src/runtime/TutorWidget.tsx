@@ -4,6 +4,28 @@ import { play } from "./sfx";
 import s from "./TutorWidget.module.css";
 
 // ---------------------------------------------------------------------------
+function collectScreenContext(): string {
+  if (typeof document === "undefined") return "";
+  const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-testid]"))
+    .filter((el) => {
+      const testid = el.dataset.testid ?? "";
+      if (testid.startsWith("tutor")) return false;
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        style.visibility !== "hidden" &&
+        style.display !== "none"
+      );
+    })
+    .map((el) => (el.innerText || "").replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+  return (nodes[0] ?? "").slice(0, 2000);
+}
+
+// ---------------------------------------------------------------------------
 // TutorWidget — the F5 docked, collapsible help channel. Mounted once at the
 // V2FlowController level so it PERSISTS across every screen (Hub → CBP →
 // Flashcards/Memory → Gate → Practice Arc → Boss → Reflection).
@@ -73,7 +95,7 @@ export function TutorWidget() {
     const text = draft.trim();
     if (!text || sending) return;
     setDraft("");
-    void send(text, {});
+    void send(text, { screenContext: collectScreenContext() });
   };
 
   return (

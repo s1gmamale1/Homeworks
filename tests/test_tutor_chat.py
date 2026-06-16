@@ -234,21 +234,21 @@ def test_practice_no_answer_leak(mock_generate, client):
         "hw_id": hw_id,
         "phase": "practice",
         "question_id": "qb1",
-        "message": "What's the answer?",
+        "message": "Help me understand this step.",
+        "screen_context": "Visible equation only: x + 5 = 12",
     }
     resp = client.post("/api/ai/tutor/chat", json=payload)
     assert resp.status_code == 200, resp.text
 
-    captured_prompt = captured.get("prompt", "")
-    assert captured_prompt, "ai_orchestrator.generate was never called"
-    assert "MAGIC_TOKEN_42" not in captured_prompt, (
-        "Answer-leak guard failed: MAGIC_TOKEN_42 ended up in the LLM prompt.\n"
-        f"Prompt:\n{captured_prompt[:1000]}"
-    )
-
-    # The (deliberately leaky) response is returned untouched — this is the
-    # documented behavior. Output filtering is not F1's job.
-    assert "MAGIC_TOKEN_42" in resp.json()["response"]
+    assert mock_generate.call_count >= 1
+    prompts = [
+        (call.args[0] if call.args else call.kwargs.get("prompt", ""))
+        for call in mock_generate.call_args_list
+    ]
+    assert prompts
+    assert all("MAGIC_TOKEN_42" not in prompt for prompt in prompts)
+    assert "MAGIC_TOKEN_42" not in resp.json()["response"]
+    assert "answer" in resp.json()["response"].casefold()
 
 
 @patch("server.services.ai_orchestrator.generate")
@@ -292,12 +292,18 @@ def test_practice_no_answer_alias_leak_from_answer_spec(mock_generate, client):
             "phase": "practice",
             "question_id": "qb-alias",
             "message": "Help me solve it.",
+            "screen_context": "Visible equation only: solve the equation.",
         },
     )
     assert resp.status_code == 200, resp.text
 
-    prompt = captured.get("prompt", "")
-    assert prompt
+    assert mock_generate.call_count >= 1
+    prompts = [
+        (call.args[0] if call.args else call.kwargs.get("prompt", ""))
+        for call in mock_generate.call_args_list
+    ]
+    assert prompts
+    response = resp.json()["response"]
     for token in (
         "LEAK_TOKEN_EXPECTED",
         "LEAK_TOKEN_CANONICAL",
@@ -307,7 +313,10 @@ def test_practice_no_answer_alias_leak_from_answer_spec(mock_generate, client):
         "LEAK_TOKEN_A",
         "LEAK_TOKEN_ACCEPTED",
     ):
-        assert token not in prompt, f"{token} leaked into prompt:\n{prompt[:1000]}"
+        assert all(token not in prompt for prompt in prompts), (
+            f"{token} leaked into prompt:\n{prompts[0][:1000]}"
+        )
+        assert token not in response, f"{token} leaked into response:\n{response[:1000]}"
 
 
 @patch("server.services.ai_orchestrator.generate")

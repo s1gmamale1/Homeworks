@@ -323,6 +323,8 @@ async def generate_structured(
             json_mode=True,
             temperature=temperature,
         )
+        if not isinstance(raw_text, str) or not raw_text.strip():
+            raise RuntimeError("AI provider returned empty structured output")
         parsed = json.loads(raw_text)
         return schema.model_validate(parsed)
 
@@ -370,7 +372,7 @@ async def generate_structured(
             provider=provider,
             model=model,
             input_chars=len(prompt),
-            output_chars=len(raw_text),
+            output_chars=len(raw_text or ""),
             latency_ms=latency_ms,
             success=success,
             error_code=error_code,

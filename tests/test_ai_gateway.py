@@ -357,6 +357,24 @@ async def test_generate_structured_fails_on_non_json():
     assert mock_gen.call_count == 2  # first fails, retry also fails
 
 
+@pytest.mark.asyncio
+async def test_generate_structured_empty_provider_output_does_not_crash_logging():
+    with patch("server.services.ai_gateway.ai_orchestrator.generate") as mock_gen:
+        with patch("server.services.ai_gateway._log_call") as mock_log:
+            mock_gen.return_value = None
+            with pytest.raises(RuntimeError, match="empty structured output"):
+                await ai_gateway.generate_structured(
+                    task=ai_gateway.AITask.TUTOR_CHAT,
+                    prompt="solve 2+2",
+                    schema=TutorResponse,
+                )
+
+    assert mock_gen.call_count == 1
+    assert mock_log.await_count == 1
+    assert mock_log.call_args.kwargs["output_chars"] == 0
+    assert mock_log.call_args.kwargs["error_code"] == "AI_PROVIDER_FAILED"
+
+
 # ---------------------------------------------------------------------------
 # 5. run_guardrail
 # ---------------------------------------------------------------------------

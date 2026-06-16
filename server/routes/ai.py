@@ -4016,6 +4016,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "sentence-fill" and req.homework_id:
         try:
             result = await _check_answer_sentence_fill(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:sentence-fill"
             )
@@ -4045,6 +4046,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "real-life-challenge" and req.homework_id:
         try:
             result = await _check_answer_real_life_challenge(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:real-life-challenge"
             )
@@ -4058,6 +4060,7 @@ async def check_answer(req: CheckAnswerRequest):
     if req.phase == "final-boss" and req.homework_id:
         try:
             result = await _check_answer_final_boss(req)
+            result = await _attach_integrity(req, result)
             return _attach_check_answer_debug(
                 req, result, checker_path="phase_adapter:final-boss"
             )

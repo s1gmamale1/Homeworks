@@ -124,12 +124,11 @@ class BossSubmitAnswerResponse(BaseModel):
     # surface to the client to render coverage bars. Populated only when the
     # verdict carries a coverage breakdown; None for legacy/flat verdicts.
     coverage: Optional[dict[str, float]] = None
-    # Soft-friction nudge (anti-cheat wiring, 2026-05-22). Populated ONLY when a
-    # 'strong'-severity integrity flag (sudden_mastery) fires for this submit.
-    # ADVISORY: a pedagogical "explain in your own words" prompt — it NEVER
-    # gates progress. is_correct / score / hp / boss_status are already final
-    # and returned alongside. We deliberately do NOT leak reason_code /
-    # thresholds to the client (those are teacher-only intelligence).
+    # Soft-friction nudge (anti-cheat wiring). Populated for actionable advisory
+    # integrity flags such as sudden mastery or an opted-in paste-on-assessment
+    # event. It NEVER gates progress. is_correct / score / hp / boss_status are
+    # already final and returned alongside. We deliberately do NOT leak
+    # reason_code / thresholds to the client (teacher-only intelligence).
     integrity_nudge: Optional[dict] = None
 
 
@@ -716,9 +715,9 @@ async def boss_submit_answer(req: BossSubmitAnswerRequest):
     # Anti-cheat flag engine (ADVISORY — best-effort, post-grading). The boss is
     # an assessment. correct_count / total_attempts come from the updated boss
     # row (post-increment); the correct-rate is correct_count / max(1, total).
-    # Enrolls any flags into the review queue and, on a strong (sudden_mastery)
-    # flag, returns a soft-friction nudge. NONE of this changes is_correct /
-    # score / hp / boss_status above; a failure is swallowed.
+    # Enrolls any flags into the review queue and may return a soft-friction
+    # nudge. NONE of this changes is_correct / score / hp / boss_status above;
+    # a failure is swallowed.
     integrity_nudge = None
     try:
         from ..services.integrity_wiring import evaluate_boss_submit

@@ -51,11 +51,15 @@ _log = logging.getLogger("nets.boss_dynamic")
 # ---- Prompt versions (Plan 7 §8) ------------------------------------------
 
 PROMPT_VERSION = {
-    # boss-question-generator bumped to v6 (Boss-Arena Why→How→What rework):
+    # boss-question-generator bumped to v7 (grade-appropriate depth guardrail):
+    #   v7 — prevents easy/medium grade 6-8 prompts from asking for exact
+    #     molecule counts or exhaustive biochemical product lists unless the
+    #     authored stems explicitly require that level of detail.
+    #   v6 — Boss-Arena Why→How→What rework:
     #   v6 — emits structured scenario + why/how/what reasoning prompts
     #     (spec §4/§9) IN ADDITION to the existing fields. question_text stays
     #     the composite headline used for anti-repetition + display.
-    "boss-question-generator": "v6",
+    "boss-question-generator": "v7",
     # boss-answer-checker bumped 2026-05-14:
     #   v2 (Bug B) — front-loaded language banner so feedback is written in
     #     the homework's language and misconception_tags avoid English
@@ -309,16 +313,17 @@ def compute_boss_outcome(
 ) -> dict[str, Any]:
     """Return ``{outcome, stars, outcome_xp}`` for a terminal boss session.
 
-    Tier thresholds combine HP retention with correctness — a student who
-    crawled to victory at 5 HP isn't an "expert," and a student who answered
-    perfectly but ran out of trials still earns a "passing" pat on the back.
+    ``hp`` is the remaining BOSS HP, not the student's retained HP. Lower is
+    better: ``0`` means the boss was defeated. Tier thresholds combine
+    correctness with fight progress, so a clean victory earns the visible
+    "expert" result instead of being misread as "0 HP retained."
 
-        - 3 stars / expert: won AND hp_ratio >= 0.70 AND correctness >= 0.80
-        - 2 stars / strong: won AND hp_ratio >= 0.40 AND correctness >= 0.60
+        - 3 stars / expert: won AND correctness >= 0.80
+        - 2 stars / strong: won AND correctness >= 0.60
         - 1 star  / passing: won OR correctness >= 0.50
         - 0 stars / hali_emas: failed AND correctness < 0.50
 
-    XP formula: 50 per correct + int(hp_ratio * 100) bonus - 25 per hint.
+    XP formula: 50 per correct + int(progress_ratio * 100) bonus - 25 per hint.
     Floored at 0 so a wholly empty session never produces negative XP.
     """
     won = (status == "won")
@@ -326,11 +331,12 @@ def compute_boss_outcome(
         return {"outcome": "hali_emas", "stars": 0, "outcome_xp": 0}
 
     correctness = correct_count / total_attempts
-    hp_ratio = (hp / max_hp) if max_hp > 0 else 0.0
+    progress_ratio = ((max_hp - max(0, hp)) / max_hp) if max_hp > 0 else 0.0
+    progress_ratio = max(0.0, min(1.0, progress_ratio))
 
-    if won and hp_ratio >= 0.70 and correctness >= 0.80:
+    if won and correctness >= 0.80:
         stars = 3
-    elif won and hp_ratio >= 0.40 and correctness >= 0.60:
+    elif won and correctness >= 0.60:
         stars = 2
     elif won or correctness >= 0.50:
         stars = 1
@@ -339,7 +345,7 @@ def compute_boss_outcome(
 
     outcome = {3: "expert", 2: "strong", 1: "passing", 0: "hali_emas"}[stars]
 
-    xp = 50 * correct_count + int(hp_ratio * 100) - 25 * hints_used
+    xp = 50 * correct_count + int(progress_ratio * 100) - 25 * hints_used
     xp = max(0, xp)
 
     return {"outcome": outcome, "stars": stars, "outcome_xp": xp}
