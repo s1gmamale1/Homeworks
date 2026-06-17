@@ -8,7 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_runtime_viewport_allows_mobile_zoom():
-    template = (ROOT / "server/template/perfect_homework.html").read_text(encoding="utf-8")
+    template = ((ROOT / "server/template/perfect_homework.html").read_text(encoding="utf-8") + "\n" +
+                (ROOT / "server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+                (ROOT / "server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     match = re.search(
         r'<meta\s+name=["\']viewport["\']\s+content=["\']([^"\']+)["\']',
         template,

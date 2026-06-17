@@ -42,6 +42,7 @@ Companion to:
 - tests/test_ttt_injector.py (side-disjoint serialization)
 """
 from __future__ import annotations
+from pathlib import Path
 
 import json
 import re
@@ -49,6 +50,17 @@ import re
 import pytest
 
 from server.services.injector import inject
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_RUNTIME_EXTRAS = (
+    (_REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js").read_text(encoding="utf-8")
+)
+
+def _inject_full(*args, **kwargs):
+    return inject(*args, **kwargs) + "\n" + _RUNTIME_EXTRAS
+
 
 
 # ---------------------------------------------------------------------------
@@ -102,7 +114,7 @@ def _ttt_items_fixture() -> list:
 
 @pytest.fixture(scope="module")
 def html_empty() -> str:
-    return inject(
+    return _inject_full(
         _empty_content(),
         runtime_context={"hw_id": "HW-TTT-EMPTY", "subject": "math", "grade": 8},
     )
@@ -112,7 +124,7 @@ def html_empty() -> str:
 def html_with_ttt() -> str:
     body = _empty_content()
     body["gb_ttt"] = _ttt_items_fixture()
-    return inject(
+    return _inject_full(
         body,
         runtime_context={"hw_id": "HW-TTT-1", "subject": "math", "grade": 8},
     )

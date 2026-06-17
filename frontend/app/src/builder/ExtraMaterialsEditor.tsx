@@ -31,7 +31,7 @@ const TYPE_OPTIONS: { value: ExtraMaterialType; label: string }[] = [
 
 // Mirrors the server upload allowlist (server/routes/uploads.py).
 const FILE_ACCEPT =
-  ".png,.jpg,.jpeg,.gif,.webp,.svg,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.mov,.pdf,.txt,.csv,.doc,.docx,.ppt,.pptx,.xls,.xlsx";
+  ".png,.jpg,.jpeg,.gif,.webp,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.mov,.pdf,.txt,.csv,.doc,.docx,.ppt,.pptx,.xls,.xlsx";
 
 function emptyItem(): DraftExtraMaterialItem {
   return { label: "", url: "", type: "link" };
@@ -40,11 +40,13 @@ function emptyItem(): DraftExtraMaterialItem {
 function ItemEditor({
   item,
   index,
+  hwId,
   onChange,
   onRemove,
 }: {
   item: DraftExtraMaterialItem;
   index: number;
+  hwId: string;
   onChange: (next: DraftExtraMaterialItem) => void;
   onRemove: () => void;
 }) {
@@ -57,7 +59,7 @@ function ItemEditor({
     setUploading(true);
     setUploadErr(null);
     try {
-      const res = await uploadFile(file);
+      const res = await uploadFile(file, hwId);
       onChange({ ...item, url: res.url, label: item.label || res.name });
     } catch (e) {
       setUploadErr((e as Error).message || "Upload failed.");
@@ -152,7 +154,7 @@ function ItemEditor({
   );
 }
 
-export function ExtraMaterialsEditor({ value, onChange }: ExtraMaterialsEditorProps) {
+export function ExtraMaterialsEditor({ value, onChange, hwId }: ExtraMaterialsEditorProps) {
   const patch = useCallback(
     (partial: Partial<typeof value>) => onChange({ ...value, ...partial }),
     [value, onChange]
@@ -222,6 +224,7 @@ export function ExtraMaterialsEditor({ value, onChange }: ExtraMaterialsEditorPr
               key={idx}
               item={it}
               index={idx}
+              hwId={hwId}
               onChange={(next) => updateItem(idx, next)}
               onRemove={() => removeItem(idx)}
             />

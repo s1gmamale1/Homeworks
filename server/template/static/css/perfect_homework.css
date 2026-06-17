@@ -6188,6 +6188,11 @@
             font-size: 15px;
         }
         .listening-cp-input:disabled { opacity: 0.7; }
+        [data-theme="dark"] .listening-cp-input {
+            background: rgba(15, 23, 42, 0.74);
+            border-color: rgba(96, 165, 250, 0.42);
+            color: var(--text);
+        }
         .listening-cp-fb { font-size: 14px; font-weight: 600; }
         .listening-cp-fb.is-correct { color: #2e8b57; }
         .listening-cp-fb.is-wrong { color: #d9534f; }

@@ -56,9 +56,13 @@ def _repo_root() -> str:
 
 @pytest.fixture(scope="module")
 def perfect_homework_html() -> str:
-    path = os.path.join(_repo_root(), "server", "template", "perfect_homework.html")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+    _js = os.path.join(_repo_root(), "server", "template", "js", "perfect_homework.js")
+    _css = os.path.join(_repo_root(), "server", "template", "static", "css", "perfect_homework.css")
+    with open(_js, "r", encoding="utf-8") as f:
+        content = f.read()
+    with open(_css, "r", encoding="utf-8") as f:
+        content += "\n" + f.read()
+    return content
 
 
 # ---------------------------------------------------------------------------

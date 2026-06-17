@@ -34,7 +34,9 @@ import pytest
 
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_PATH = os.path.join(REPO_ROOT, "server", "template", "perfect_homework.html")
+_JS_PATH = os.path.join(REPO_ROOT, "server", "template", "js", "perfect_homework.js")
+_CSS_PATH = os.path.join(REPO_ROOT, "server", "template", "static", "css", "perfect_homework.css")
+_HTML_PATH = os.path.join(REPO_ROOT, "server", "template", "perfect_homework.html")
 
 
 def _node_available() -> bool:
@@ -114,9 +116,13 @@ def _slice_function(src: str, fn_name: str) -> str:
 
 
 def _read_play_phase_intro() -> str:
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
-        src = f.read()
-    return _slice_function(src, "playPhaseIntro")
+    with open(_HTML_PATH, "r", encoding="utf-8") as f:
+        html = f.read()
+    with open(_JS_PATH, "r", encoding="utf-8") as f:
+        html += "\n" + f.read()
+    with open(_CSS_PATH, "r", encoding="utf-8") as f:
+        html += "\n" + f.read()
+    return _slice_function(html, "playPhaseIntro")
 
 
 # Minimal DOM + timer polyfill. We DO NOT use Node's native setTimeout
@@ -391,15 +397,19 @@ def test_wave2_phases_use_play_phase_announcement():
     """Pin the calling pattern — all three wave2 phases (reading,
     consolidation, reflection) must use the shared playPhaseAnnouncement
     helper so they all inherit the watchdog guarantee."""
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
-        src = f.read()
+    with open(_HTML_PATH, "r", encoding="utf-8") as f:
+        html = f.read()
+    with open(_JS_PATH, "r", encoding="utf-8") as f:
+        html += "\n" + f.read()
+    with open(_CSS_PATH, "r", encoding="utf-8") as f:
+        html += "\n" + f.read()
     # Reading uses playPhaseIntro directly (with reading-phase-center-card).
     # Consolidation + Reflection use playPhaseAnnouncement (which delegates
     # to playPhaseIntro on the shared phase-announce-card). Either way, the
     # underlying playPhaseIntro implementation owns the watchdog.
-    cons_body = _slice_function(src, "showConsolidationScreen")
-    refl_body = _slice_function(src, "showReflectionScreen")
-    read_body = _slice_function(src, "showReadingScreen")
+    cons_body = _slice_function(html, "showConsolidationScreen")
+    refl_body = _slice_function(html, "showReflectionScreen")
+    read_body = _slice_function(html, "showReadingScreen")
     assert "playPhaseAnnouncement('phase.consolidation'" in cons_body
     assert "playPhaseAnnouncement('phase.reflection'" in refl_body
     # Reading uses playPhaseIntro on its dedicated card.

@@ -29,6 +29,7 @@ Companion to:
 - tests/test_real_life_challenge_schema.py (schema invariants pinned)
 """
 from __future__ import annotations
+from pathlib import Path
 
 import json
 import re
@@ -36,6 +37,17 @@ import re
 import pytest
 
 from server.services.injector import inject
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_RUNTIME_EXTRAS = (
+    (_REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js").read_text(encoding="utf-8")
+)
+
+def _inject_full(*args, **kwargs):
+    return inject(*args, **kwargs) + "\n" + _RUNTIME_EXTRAS
+
 
 
 # ---------------------------------------------------------------------------
@@ -125,14 +137,14 @@ def _rlc_case_fixture() -> dict:
 
 @pytest.fixture(scope="module")
 def html_empty() -> str:
-    return inject(_empty_content(), runtime_context={"hw_id": "HW-RLC-EMPTY", "subject": "math", "grade": 8})
+    return _inject_full(_empty_content(), runtime_context={"hw_id": "HW-RLC-EMPTY", "subject": "math", "grade": 8})
 
 
 @pytest.fixture(scope="module")
 def html_with_case() -> str:
     body = _empty_content()
     body["real_life_challenge"] = _rlc_case_fixture()
-    return inject(body, runtime_context={"hw_id": "HW-RLC-1", "subject": "math", "grade": 8})
+    return _inject_full(body, runtime_context={"hw_id": "HW-RLC-1", "subject": "math", "grade": 8})
 
 
 # ---------------------------------------------------------------------------

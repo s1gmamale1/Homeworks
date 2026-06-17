@@ -29,14 +29,15 @@ from pathlib import Path
 import pytest
 
 
-HOMEWORK_HTML = (
-    Path(__file__).parent.parent / "server" / "template" / "perfect_homework.html"
-)
+_JS_PATH = Path(__file__).parent.parent / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = Path(__file__).parent.parent / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = Path(__file__).parent.parent / "server" / "template" / "perfect_homework.html"
+HOMEWORK_HTML = _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 
 @pytest.fixture(scope="module")
 def runtime_source() -> str:
-    return HOMEWORK_HTML.read_text(encoding="utf-8")
+    return HOMEWORK_HTML
 
 
 # ---------------------------------------------------------------------------

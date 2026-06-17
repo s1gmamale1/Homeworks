@@ -23,11 +23,18 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).parent.parent
-TEMPLATE = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+_TUTOR_JS_PATH = REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js"
+TEMPLATE = (_HTML_PATH.read_text(encoding="utf-8") + "\n" +
+            _JS_PATH.read_text(encoding="utf-8") + "\n" +
+            _CSS_PATH.read_text(encoding="utf-8") + "\n" +
+            _TUTOR_JS_PATH.read_text(encoding="utf-8"))
 
 
 def _runtime() -> str:
-    return TEMPLATE.read_text(encoding="utf-8")
+    return TEMPLATE
 
 
 # ---------------------------------------------------------------------------

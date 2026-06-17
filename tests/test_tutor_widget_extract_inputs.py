@@ -38,7 +38,10 @@ import pytest
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_PATH = os.path.join(REPO_ROOT, "server", "template", "perfect_homework.html")
+_JS_PATH = os.path.join(REPO_ROOT, "server", "template", "js", "perfect_homework.js")
+_CSS_PATH = os.path.join(REPO_ROOT, "server", "template", "static", "css", "perfect_homework.css")
+_HTML_PATH = os.path.join(REPO_ROOT, "server", "template", "perfect_homework.html")
+_TUTOR_JS_PATH = os.path.join(REPO_ROOT, "server", "template", "static", "js", "tutor.js")
 
 
 def _node_available() -> bool:
@@ -120,8 +123,14 @@ def _slice_function(src: str, fn_name: str) -> str:
 
 
 def _read_helpers() -> tuple[str, str]:
-    with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
+    with open(_HTML_PATH, "r", encoding="utf-8") as f:
         src = f.read()
+    with open(_JS_PATH, "r", encoding="utf-8") as f:
+        src += "\n" + f.read()
+    with open(_CSS_PATH, "r", encoding="utf-8") as f:
+        src += "\n" + f.read()
+    with open(_TUTOR_JS_PATH, "r", encoding="utf-8") as f:
+        src += "\n" + f.read()
     extract = _slice_function(src, "extractStudentWork")
     sanitize = _slice_function(src, "sanitizeScreenContext")
     return extract, sanitize

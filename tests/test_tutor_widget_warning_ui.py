@@ -41,7 +41,14 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).parent.parent
-TEMPLATE = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+_TUTOR_JS_PATH = REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js"
+TEMPLATE = (_HTML_PATH.read_text(encoding="utf-8") + "\n" +
+            _JS_PATH.read_text(encoding="utf-8") + "\n" +
+            _CSS_PATH.read_text(encoding="utf-8") + "\n" +
+            _TUTOR_JS_PATH.read_text(encoding="utf-8"))
 
 
 # ---------------------------------------------------------------------------
@@ -59,7 +66,7 @@ pytestmark = pytest.mark.skipif(
 
 
 def _read_template() -> str:
-    return TEMPLATE.read_text(encoding="utf-8")
+    return TEMPLATE
 
 
 def _extract_tutor_iife(html: str) -> str:
@@ -69,21 +76,21 @@ def _extract_tutor_iife(html: str) -> str:
     `// Wave F2 — persistent floating tutor widget.`
     inside an IIFE just before `</body>`.
     """
-    # Match the LAST <script> ... (function () { ... })(); ... </script>
-    # that contains the Wave F2 marker.
+    # Match the Wave F2 IIFE — either inline in HTML (<script> wrapper)
+    # or bare in tutor.js (no wrapper, with leading indent).
     pattern = re.compile(
-        r"<script>\s*\n"
-        r"\s*\(function\s*\(\)\s*\{\s*\n"
+        r"(?:<script>\s*\n\s*)?"
+        r"\(function\s*\(\)\s*\{\s*\n"
         r"\s*//\s*Wave F2 — persistent floating tutor widget"
         r"[\s\S]*?"
         r"\}\)\(\);\s*\n"
-        r"\s*</script>",
+        r"(?:\s*</script>)?",
         re.MULTILINE,
     )
     m = pattern.search(html)
     assert m, "Could not locate the Wave F2 tutor IIFE in the template"
     block = m.group(0)
-    # Strip the <script>...</script> wrapper.
+    # Strip optional <script>...</script> wrapper.
     inner = re.sub(r"^<script>\s*", "", block)
     inner = re.sub(r"\s*</script>\s*$", "", inner)
     return inner

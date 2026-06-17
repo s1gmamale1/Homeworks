@@ -52,7 +52,8 @@ def test_library_toolbar_prioritizes_search_column():
 
 
 def test_tutor_chat_has_polished_panel_and_assistant_identity():
-    html = _read("server/template/perfect_homework.html")
+    html = (_read("server/template/js/perfect_homework.js") + "\n" +
+            _read("server/template/static/css/perfect_homework.css"))
 
     assert "width: 390px" in html
     assert "height: 540px" in html

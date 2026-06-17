@@ -37,7 +37,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parent.parent
-RUNTIME = ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = ROOT / "server" / "template" / "perfect_homework.html"
+RUNTIME = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 BUILDER = ROOT / "frontend" / "builder.html"
 APPCSS = ROOT / "frontend" / "css" / "app.css"
 
@@ -51,10 +54,13 @@ _VIEWPORT_RE = re.compile(
 )
 
 
-def _viewport_content(path: Path) -> str:
-    html = path.read_text(encoding="utf-8")
+def _viewport_content(src) -> str:
+    if isinstance(src, str):
+        html = src
+    else:
+        html = src.read_text(encoding="utf-8")
     m = _VIEWPORT_RE.search(html)
-    assert m, f"<meta name=viewport> not found in {path.name}"
+    assert m, "viewport meta tag not found"
     return m.group(1)
 
 
@@ -91,11 +97,11 @@ def test_viewport_preserves_user_zoom():
     """We must NOT add ``user-scalable=no`` or ``maximum-scale=1`` —
     WCAG 1.4.4 requires pinch-zoom for accessibility. Pin both files
     to keep the zoom-block out of the viewport content string."""
-    for path in (RUNTIME, BUILDER):
-        content = _viewport_content(path)
+    for src, name in ((RUNTIME, "perfect_homework.js"), (BUILDER, "builder.html")):
+        content = _viewport_content(src)
         normalised = content.replace(" ", "").lower()
         assert "user-scalable=no" not in normalised, (
-            f"Mobile-viewport regression: {path.name} disables pinch-zoom. "
+            f"Mobile-viewport regression: {name} disables pinch-zoom. "
             f"WCAG 1.4.4 requires that users can zoom to at least 200% — "
             f"never ship `user-scalable=no`."
         )
@@ -104,7 +110,7 @@ def test_viewport_preserves_user_zoom():
         assert not re.search(
             r"maximum-scale\s*=\s*1(?:\.0+)?(?:,|$)", normalised,
         ), (
-            f"Mobile-viewport regression: {path.name} sets "
+            f"Mobile-viewport regression: {name} sets "
             f"`maximum-scale=1` which blocks zoom on iOS. Either drop it "
             f"or raise it to at least 5 (WCAG 1.4.4)."
         )
@@ -277,7 +283,7 @@ def test_runtime_action_button_states_consume_safe_bottom():
     `bottom`. The viewport-fit=cover fix is meaningless without these
     consumers; this test prevents a future refactor from removing the
     consumption side."""
-    html = RUNTIME.read_text(encoding="utf-8")
+    html = RUNTIME
     for selector in (".state-line", ".state-pill"):
         rule = re.search(
             re.escape(selector) + r"\s*\{([^}]*)\}",

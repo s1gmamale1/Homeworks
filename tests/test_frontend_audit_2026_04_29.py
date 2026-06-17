@@ -230,7 +230,9 @@ def test_api_js_no_longer_only_inspects_top_level_error():
 
 
 def _runtime_html() -> str:
-    return (TEMPLATE_DIR / "perfect_homework.html").read_text(encoding="utf-8")
+    return ((TEMPLATE_DIR / "perfect_homework.html").read_text(encoding="utf-8") + "\n" +
+            (TEMPLATE_DIR / "js" / "perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+            (TEMPLATE_DIR / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8"))
 
 
 def test_runtime_has_main_landmark():

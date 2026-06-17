@@ -18,10 +18,22 @@ Companion to:
 - tests/test_optional_games.py (registry + advance hook for all 7 games)
 """
 from __future__ import annotations
+from pathlib import Path
 
 import re
 
 from server.services.injector import inject
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_RUNTIME_EXTRAS = (
+    (_REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js").read_text(encoding="utf-8")
+)
+
+def _inject_full(*args, **kwargs):
+    return inject(*args, **kwargs) + "\n" + _RUNTIME_EXTRAS
+
 
 
 def _empty_content():
@@ -55,7 +67,7 @@ def test_sf_panel_markup_hooks_present():
     """Every ID/class the JS state machine writes into must be in the
     template. If any of these go missing, gbInitSF / gbSFRenderPassage /
     gbSFApplyMode would silently fail at runtime."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-UI", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-UI", "subject": "math-algebra", "grade": 8})
     required_ids = [
         "gb-panel-sf",
         "gb-sf-eyebrow",
@@ -91,7 +103,7 @@ def test_sf_panel_has_no_runtime_mode_toggle():
     """Mode is author-set in the builder (per content_json item). The
     runtime must NOT expose a student-facing toggle. Pins that the old
     segmented control + per-mode buttons are gone for good."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-NT", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-NT", "subject": "math-algebra", "grade": 8})
     forbidden_ids = ["gb-sf-segmented", "gb-sf-mode-bank", "gb-sf-mode-recall"]
     for el_id in forbidden_ids:
         assert f'id="{el_id}"' not in html, (
@@ -107,7 +119,7 @@ def test_sf_panel_has_no_runtime_mode_toggle():
 def test_sf_mode_chip_is_read_only_span():
     """The mode chip must be a `<span>`, not a `<button>` or other
     interactive element. Mirrors AQ tier-eyebrow pattern."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-CH", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-CH", "subject": "math-algebra", "grade": 8})
     assert re.search(
         r'<span\s+class="gb-sf-mode-chip"\s+id="gb-sf-mode-chip"',
         html,
@@ -118,7 +130,7 @@ def test_sf_panel_uses_enter_right_class():
     """The Stage-5 panel transition relies on .enter-right being on every
     game panel before activation. Catches the regression where SF reverts
     to a static `display: none` placeholder."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-EH", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-EH", "subject": "math-algebra", "grade": 8})
     assert re.search(r'class="gb-game-panel enter-right"\s+id="gb-panel-sf"', html), (
         "SF panel must have class 'gb-game-panel enter-right' before mount — "
         "otherwise the Stage-5 sliding transition won't run."
@@ -129,7 +141,7 @@ def test_no_sf_placeholder_leak():
     """The original backend placeholder ('SENTENCE FILL — PLACEHOLDER')
     must NOT appear once the frontend ships — that text is a sign someone
     re-introduced the stub block."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-PL", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-PL", "subject": "math-algebra", "grade": 8})
     assert "SENTENCE FILL — PLACEHOLDER" not in html
     assert "gb-sf-placeholder" not in html
 
@@ -158,7 +170,7 @@ REQUIRED_SF_FUNCTIONS = [
 def test_sf_state_machine_functions_present():
     """All 12 SF JS functions must be defined. Any one missing means a
     runtime error on first mount."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-FN", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-FN", "subject": "math-algebra", "grade": 8})
     for fn in REQUIRED_SF_FUNCTIONS:
         assert f"function {fn}(" in html, (
             f"SF state machine function {fn}() is missing — was it deleted?"
@@ -168,7 +180,7 @@ def test_sf_state_machine_functions_present():
 def test_sf_grade_blank_posts_phase_sentence_fill():
     """gbSFGradeBlank must POST to /api/ai/check-answer with
     phase='sentence-fill'. Backend Chunk B routes on this phase string."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-PH", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-PH", "subject": "math-algebra", "grade": 8})
     grade_fn = re.search(
         r"async function gbSFGradeBlank\([^)]*\)\s*\{[\s\S]*?(?=\n\s{8}(?:async\s+)?function )",
         html,
@@ -193,7 +205,7 @@ def test_sf_grade_blank_reads_hwid_from_nets_ctx():
     /api/ai/check-answer endpoint can't grade. PR #140 added this fix to
     gbTMCheckPair; SF must mirror it.
     """
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-HWID", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-HWID", "subject": "math-algebra", "grade": 8})
     grade_fn = re.search(
         r"async function gbSFGradeBlank\([^)]*\)\s*\{[\s\S]*?(?=\n\s{8}(?:async\s+)?function )",
         html,
@@ -215,7 +227,7 @@ def test_sf_grade_blank_reads_hwid_from_nets_ctx():
 def test_sf_registered_at_slot_6():
     """gbActiveGameOrder must include {id:'sf', sub:6, ...}. Without this,
     the registry walk never reaches SF and the game is dead code."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-R6", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-R6", "subject": "math-algebra", "grade": 8})
     assert re.search(
         r"id:\s*'sf',\s*sub:\s*6,\s*init:\s*gbInitSF,\s*panel:\s*'gb-panel-sf'",
         html,
@@ -225,7 +237,7 @@ def test_sf_registered_at_slot_6():
 def test_sf_subphase_map_slot_6_is_sentence_fill():
     """GB_SUBGAME_TO_SUBPHASE[6] must map to 'sentence-fill' so the tutor
     chat picks up the right phase context when SF is active."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-SUB", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-SUB", "subject": "math-algebra", "grade": 8})
     map_match = re.search(r"const GB_SUBGAME_TO_SUBPHASE\s*=\s*\{([^}]+)\}", html)
     assert map_match, "GB_SUBGAME_TO_SUBPHASE map not found"
     body = map_match.group(1)
@@ -238,7 +250,7 @@ def test_exit_sentinel_bumped_to_99():
     """The Stage-5 exit sentinel was 6 (collided with SF's slot). It must
     now be 99 (or any non-game-slot value). If it's still 6, advancing past
     the last game would land in the SF branch instead of exiting."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-EX", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-EX", "subject": "math-algebra", "grade": 8})
     assert "gbState.subGame = 99;" in html, (
         "Exit-Stage-5 sentinel must be 99 (was 6 — collided with SF slot 6)"
     )
@@ -250,7 +262,7 @@ def test_exit_sentinel_bumped_to_99():
 def test_sf_handler_dispatch_branch_present():
     """gbHandleAction must dispatch SF actions when subGame===6 and
     advance via gbAdvanceFromGame on completion."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-H", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-H", "subject": "math-algebra", "grade": 8})
     handler = re.search(r"function gbHandleAction\(\)\s*\{[\s\S]*?\n\s{8}\}", html)
     assert handler, "gbHandleAction not found"
     body = handler.group(0)
@@ -270,7 +282,7 @@ def test_sf_i18n_keys_present_in_all_languages():
     """The `sf.*` keys are read at runtime via RT('sf.*'). They must exist
     in all three RUNTIME_LABELS dicts (uz, ru, en) — otherwise UI shows the
     raw key string."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-I18", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-I18", "subject": "math-algebra", "grade": 8})
     sf_keys = [
         "sf.title", "sf.eyebrow", "sf.passage_label",
         "sf.mode_word_bank", "sf.mode_free_recall",
@@ -298,7 +310,7 @@ def test_sf_i18n_keys_present_in_all_languages():
 def test_sf_dark_mode_overrides_present():
     """Dark mode must override the key SF surfaces (panel cards, blanks,
     inputs). If these are missing the SF panel inverts ugly in dark mode."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-DM", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-DM", "subject": "math-algebra", "grade": 8})
     required_dark_selectors = [
         '[data-theme="dark"] .gb-sf-blank',
         '[data-theme="dark"] .gb-sf-main-card',
@@ -318,7 +330,7 @@ def test_sf_js_does_not_read_data_correct_attrs():
     """The frontend must never read data-correct/data-answer/data-expected
     on SF blanks. The only path the client learns the right answer is the
     server's response on a 2nd-attempt-wrong reveal."""
-    html = inject(_empty_content(), runtime_context={"hw_id": "HW-SF-LK", "subject": "math-algebra", "grade": 8})
+    html = _inject_full(_empty_content(), runtime_context={"hw_id": "HW-SF-LK", "subject": "math-algebra", "grade": 8})
     # Find the SF block (between gbWCFinish and gbInitMM).
     block = re.search(r"function gbWCFinish\(\)[\s\S]*?function gbInitMM", html)
     assert block, "could not isolate SF JS block"

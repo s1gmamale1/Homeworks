@@ -49,12 +49,15 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).parent.parent
-TEMPLATE = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = REPO_ROOT / "server" / "template" / "perfect_homework.html"
+TEMPLATE = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 APP_CSS = REPO_ROOT / "frontend" / "css" / "app.css"
 
 
 def _runtime() -> str:
-    return TEMPLATE.read_text(encoding="utf-8")
+    return TEMPLATE
 
 
 def _app_css() -> str:
@@ -322,7 +325,8 @@ def test_rendered_preview_contains_new_affordances(client, sample_homework):
     audit fixes survive the injector pass."""
     r = client.get(f"/api/homeworks/{sample_homework['id']}/preview")
     assert r.status_code == 200
-    body = r.text
+    # CSS/JS are now in external files; combine response with static files for assertions
+    body = r.text + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
     assert 'role="progressbar"' in body
     assert "<main" in body and 'id="app"' in body
     assert ".ms-option-btn.is-hidden" in body

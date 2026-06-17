@@ -97,9 +97,10 @@ export function ExtraMaterialItemView({ item }: { item: ExtraMaterialViewItem })
     );
   }
 
+  const safeUrl = /^https?:|^mailto:/i.test(url) ? url : undefined;
   const icon = type === "video" ? "🎬" : type === "file" ? "📎" : "🔗";
   return (
-    <a className={s.link} href={url} target="_blank" rel="noopener noreferrer">
+    <a className={s.link} href={safeUrl} target="_blank" rel="noopener noreferrer">
       <span className={s.linkIcon} aria-hidden="true">
         {icon}
       </span>

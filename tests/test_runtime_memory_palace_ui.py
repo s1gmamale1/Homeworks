@@ -32,12 +32,24 @@ Companion to:
 - tests/test_memory_palace_injector.py (wire format)
 """
 from __future__ import annotations
+from pathlib import Path
 
 import re
 
 import pytest
 
 from server.services.injector import inject
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+_RUNTIME_EXTRAS = (
+    (_REPO_ROOT / "server" / "template" / "js" / "perfect_homework.js").read_text(encoding="utf-8").replace("__GB_MEMORY_PALACE__", "null") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8") + "\n" +
+    (_REPO_ROOT / "server" / "template" / "static" / "js" / "tutor.js").read_text(encoding="utf-8")
+)
+
+def _inject_full(*args, **kwargs):
+    return inject(*args, **kwargs) + "\n" + _RUNTIME_EXTRAS
+
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +147,7 @@ def _mp_fixture() -> dict:
 
 @pytest.fixture(scope="module")
 def html_empty() -> str:
-    return inject(
+    return _inject_full(
         _empty_content(),
         runtime_context={"hw_id": "HW-MP-EMPTY", "subject": "bio", "grade": 7},
     )
@@ -145,7 +157,7 @@ def html_empty() -> str:
 def html_with_mp() -> str:
     body = _empty_content()
     body["gb_memory_palace"] = _mp_fixture()
-    return inject(
+    return _inject_full(
         body,
         runtime_context={"hw_id": "HW-MP-1", "subject": "bio", "grade": 7, "tier": "basic"},
     )

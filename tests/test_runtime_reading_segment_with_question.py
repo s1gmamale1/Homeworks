@@ -20,11 +20,13 @@ from pathlib import Path
 
 import pytest
 
-TEMPLATE_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
+_JS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
 
 
 def _template() -> str:
-    return TEMPLATE_PATH.read_text(encoding="utf-8")
+    return _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 
 def _slice_function(name: str, html: str | None = None) -> str:

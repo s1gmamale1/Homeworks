@@ -396,6 +396,7 @@ export function BuilderApp() {
             {section === "extra_materials" && (
               <ExtraMaterialsEditor
                 value={draft.extra_materials}
+                hwId={hwId}
                 onChange={(extra_materials) =>
                   updateDraft({ ...draft, extra_materials })
                 }

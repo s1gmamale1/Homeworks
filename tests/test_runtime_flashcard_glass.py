@@ -1,7 +1,8 @@
 from pathlib import Path
 import re
 
-PH = Path("server/template/perfect_homework.html").read_text(encoding="utf-8")
+PH = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+      Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
 
 def _block(selector: str) -> str:
     m = re.search(re.escape(selector) + r"\s*\{[^}]*\}", PH, re.S)
@@ -30,9 +31,8 @@ def test_fc_tip_pill_cream_palette():
     assert "var(--fc-gold-soft)" in blk or "fdf8eb" in blk.lower() or "fef3c7" in blk.lower()
 
 def test_no_hardcoded_card_label_in_css():
-    css_section_match = re.search(r"<style[^>]*>([\s\S]*?)</style>", PH)
-    assert css_section_match, "no <style> found"
-    css = css_section_match.group(1)
+    # CSS is now in a separate file without <style> wrapper; check raw content
+    css = PH
     # Reference's runtime DOES NOT inject literal "OLDINGI KARTA" / "KEYINGI KARTA" via CSS content
     assert "content: \"OLDINGI" not in css.upper()
     assert "content: \"KEYINGI" not in css.upper()

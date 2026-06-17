@@ -20,12 +20,17 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parent.parent
-RUNTIME = ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = ROOT / "server" / "template" / "perfect_homework.html"
+RUNTIME = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 QUOTES_DB = ROOT / "server" / "data" / "quotes_database.json"
 
 
-def _read(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
+def _read(src) -> str:
+    if isinstance(src, str):
+        return src
+    return src.read_text(encoding="utf-8")
 
 
 # ── Opening gate quote / fact (Phase 0) ──────────────────────────────
@@ -415,7 +420,8 @@ def test_fact_default_label_is_bilarmidingiz():
 
 def test_quote_card_drops_linen_repeating_gradient():
     """PR #128's repeating-linear-gradient linen layer was removed (user-flagged "weird inner light")."""
-    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    src = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+       Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     import re
     block = re.search(
         r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
@@ -426,7 +432,8 @@ def test_quote_card_drops_linen_repeating_gradient():
 
 
 def test_quote_card_uses_premium_radius():
-    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    src = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+       Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     import re
     block = re.search(
         r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
@@ -435,7 +442,8 @@ def test_quote_card_uses_premium_radius():
 
 
 def test_quote_card_uses_explicit_blur_46():
-    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    src = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+       Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     import re
     block = re.search(
         r"\.quote-card(?:\s*,\s*\.break-card)?\s*\{[^}]*\}", src, re.S
@@ -444,7 +452,8 @@ def test_quote_card_uses_explicit_blur_46():
 
 
 def test_quote_text_line_has_premium_letter_spacing():
-    src = (Path("server/template/perfect_homework.html")).read_text(encoding="utf-8")
+    src = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+       Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     import re
     block = re.search(r"\.quote-card \.quote-text-line\s*\{[^}]*\}", src, re.S).group(0)
     assert "letter-spacing" in block

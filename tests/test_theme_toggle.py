@@ -17,7 +17,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THEME_JS = os.path.join(BASE_DIR, "frontend", "js", "theme.js")
 APP_CSS = os.path.join(BASE_DIR, "frontend", "css", "app.css")
 LIBRARY_CSS = os.path.join(BASE_DIR, "frontend", "css", "library.css")
-TUTOR_TEMPLATE = os.path.join(BASE_DIR, "server", "template", "perfect_homework.html")
+_TUTOR_JS_PATH = os.path.join(BASE_DIR, "server", "template", "js", "perfect_homework.js")
+_TUTOR_CSS_PATH = os.path.join(BASE_DIR, "server", "template", "static", "css", "perfect_homework.css")
+_TUTOR_HTML_PATH = os.path.join(BASE_DIR, "server", "template", "perfect_homework.html")
+_TUTOR_WIDGET_JS_PATH = os.path.join(BASE_DIR, "server", "template", "static", "js", "tutor.js")
 
 
 def _read(path: str) -> str:
@@ -98,7 +101,14 @@ def test_theme_js_storage_key_matches_runtime_tutor():
     """Cross-file consistency: the navbar toggle's storage key must match
     the runtime AI tutor's storage key, or the two will drift."""
     theme = _read(THEME_JS)
-    tutor = _read(TUTOR_TEMPLATE)
+    with open(_TUTOR_HTML_PATH, "r", encoding="utf-8") as _f:
+        tutor = _f.read()
+    with open(_TUTOR_JS_PATH, "r", encoding="utf-8") as _f:
+        tutor += "\n" + _f.read()
+    with open(_TUTOR_CSS_PATH, "r", encoding="utf-8") as _f:
+        tutor += "\n" + _f.read()
+    with open(_TUTOR_WIDGET_JS_PATH, "r", encoding="utf-8") as _f:
+        tutor += "\n" + _f.read()
     # Both files reference the same string literal.
     assert "'nets_theme'" in theme or '"nets_theme"' in theme
     assert "'nets_theme'" in tutor or '"nets_theme"' in tutor

@@ -28,13 +28,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-TEMPLATE_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "server"
-    / "template"
-    / "perfect_homework.html"
-)
-TEMPLATE = TEMPLATE_PATH.read_text(encoding="utf-8")
+_JS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
+TEMPLATE = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 
 def _find_media_blocks(template: str, query: str) -> list[str]:

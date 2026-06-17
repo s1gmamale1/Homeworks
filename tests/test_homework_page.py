@@ -9,7 +9,11 @@ exposed by `server/routes/homework_page.py`. Covers the three response branches:
          JSON detail on `/api/homeworks/{id}/preview`).
 """
 
+from pathlib import Path
+
 import pytest
+
+_TUTOR_JS = Path(__file__).resolve().parent.parent / "server" / "template" / "static" / "js" / "tutor.js"
 
 
 @pytest.fixture
@@ -322,7 +326,7 @@ def test_tutor_widget_hwid_uses_lazy_getter(client, created_hw):
     """
     r = client.get(f"/h/{created_hw['id']}")
     assert r.status_code == 200
-    body = r.text
+    body = r.text + "\n" + _TUTOR_JS.read_text(encoding="utf-8")
 
     # Load-bearing assertion: the getter must be present in the tutor widget.
     assert "get hwId() { return currentHwId(); }" in body, \
@@ -355,7 +359,7 @@ def test_tutor_no_local_theme_toggle(client, created_hw):
     and rewrite the rule rather than silently regress."""
     r = client.get(f"/h/{created_hw['id']}")
     assert r.status_code == 200
-    body = r.text
+    body = r.text + "\n" + _TUTOR_JS.read_text(encoding="utf-8")
     assert 'id="nets-tutor-theme-toggle"' not in body, (
         "tutor panel must not ship a per-chat theme toggle — the "
         "navbar toggle drives `data-theme` for the whole player"
@@ -467,7 +471,8 @@ def test_runtime_button_text_same_label_restores_visibility():
     from pathlib import Path
     import re
 
-    html = Path("server/template/perfect_homework.html").read_text(encoding="utf-8")
+    html = (Path("server/template/js/perfect_homework.js").read_text(encoding="utf-8") + "\n" +
+            Path("server/template/static/css/perfect_homework.css").read_text(encoding="utf-8"))
     match = re.search(
         r"function setBtnText\(text\)\s*\{(?P<body>[\s\S]*?)\n\s*\}\n\n\s*function skipCurrentPhase",
         html,

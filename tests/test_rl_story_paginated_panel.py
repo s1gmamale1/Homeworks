@@ -26,12 +26,14 @@ from pathlib import Path
 import pytest
 
 
-TEMPLATE_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
+_JS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
 
 
 @pytest.fixture(scope="module")
 def template_html() -> str:
-    return TEMPLATE_PATH.read_text(encoding="utf-8")
+    return _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 
 # ── Negative assertions: pre-fix code cannot return ─────────────────────────
@@ -194,10 +196,13 @@ def test_injector_renders_template_with_pagination_classes(tmp_path, monkeypatch
             "endSub": "Done",
         },
     }
+    from pathlib import Path
+    _repo = Path(__file__).resolve().parent.parent
+    _css = (_repo / "server" / "template" / "static" / "css" / "perfect_homework.css").read_text(encoding="utf-8")
     rendered = injector.inject(
         sample_content,
         runtime_context={"hw_id": "HW-TEST-001"},
-    )
+    ) + "\n" + _css
     assert "rl-story-page" in rendered
     assert 'id="rl-story-dots"' in rendered
     assert "scroll-snap-type: x mandatory" in rendered

@@ -500,6 +500,7 @@ export interface ListeningEditorProps {
 export interface ExtraMaterialsEditorProps {
   value: DraftExtraMaterials;
   onChange: (next: DraftExtraMaterials) => void;
+  hwId: string;
 }
 
 export interface MetadataEditorProps {

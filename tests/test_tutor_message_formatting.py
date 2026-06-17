@@ -25,7 +25,14 @@ import pytest
 
 
 ROOT = Path(__file__).parent.parent
-RUNTIME = ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = ROOT / "server" / "template" / "perfect_homework.html"
+_TUTOR_JS_PATH = ROOT / "server" / "template" / "static" / "js" / "tutor.js"
+RUNTIME = (_HTML_PATH.read_text(encoding="utf-8") + "\n" +
+           _JS_PATH.read_text(encoding="utf-8") + "\n" +
+           _CSS_PATH.read_text(encoding="utf-8") + "\n" +
+           _TUTOR_JS_PATH.read_text(encoding="utf-8"))
 
 WHITELIST = {"p", "ul", "ol", "li", "code", "pre", "strong", "em", "br",
              "div", "dl", "dt", "dd"}
@@ -260,7 +267,7 @@ def _all_tags(node: Node) -> set[str]:
 
 
 def _runtime() -> str:
-    return RUNTIME.read_text(encoding="utf-8")
+    return RUNTIME
 
 
 def test_runtime_defines_format_assistant_message():

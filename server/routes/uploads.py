@@ -14,9 +14,10 @@ import re
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 
 from server.config import BASE_DIR
+from server.db.homework_repo import get_homework
 
 router = APIRouter(tags=["uploads"])
 log = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ _READ_CAP = MAX_FILE_BYTES + 1024  # read a hair past the cap to detect oversize
 # not listed is rejected (no executables/scripts).
 _EXT_TYPE: dict[str, str] = {
     ".png": "image", ".jpg": "image", ".jpeg": "image", ".gif": "image",
-    ".webp": "image", ".svg": "image",
+    ".webp": "image",
     ".mp3": "audio", ".wav": "audio", ".ogg": "audio", ".m4a": "audio",
     ".mp4": "video", ".webm": "video", ".mov": "video",
     ".pdf": "file", ".txt": "file", ".csv": "file",
@@ -45,8 +46,16 @@ def _safe_ext(filename: str) -> str:
 
 
 @router.post("/uploads")
-async def upload_file(file: UploadFile = File(...)) -> dict:
+async def upload_file(
+    file: UploadFile = File(...),
+    hw_id: str = Query(..., description="Homework ID the upload is attached to"),
+) -> dict:
     """Accept one file, validate type + size, store it, return its URL."""
+    if not await get_homework(hw_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "homework_not_found", "message": f"No homework with id '{hw_id}'."},
+        )
     ext = _safe_ext(file.filename or "")
     kind = _EXT_TYPE.get(ext)
     if not kind:

@@ -39,13 +39,16 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parent.parent
-RUNTIME = ROOT / "server" / "template" / "perfect_homework.html"
+_JS_PATH = ROOT / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = ROOT / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = ROOT / "server" / "template" / "perfect_homework.html"
+RUNTIME = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 _CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 
 def _read() -> str:
-    return RUNTIME.read_text(encoding="utf-8")
+    return RUNTIME
 
 
 def _function_body(html: str, name: str) -> str:

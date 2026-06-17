@@ -189,12 +189,12 @@ export interface UploadResult {
   type: string;
 }
 
-export async function uploadFile(file: File): Promise<UploadResult> {
+export async function uploadFile(file: File, hwId: string): Promise<UploadResult> {
   const form = new FormData();
   form.append("file", file);
   let res: Response;
   try {
-    res = await fetch(`${BASE}/api/uploads`, { method: "POST", body: form });
+    res = await fetch(`${BASE}/api/uploads?hw_id=${encodeURIComponent(hwId)}`, { method: "POST", body: form });
   } catch (networkErr) {
     throw new BuilderApiError(
       `Network error during upload: ${(networkErr as Error).message}`,

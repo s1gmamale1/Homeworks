@@ -36,8 +36,14 @@ from server.routes.ai import _find_question_in_content
 
 
 def _read_template() -> str:
-    path = BASE_DIR / "server" / "template" / "perfect_homework.html"
-    return path.read_text(encoding="utf-8")
+    _html = BASE_DIR / "server" / "template" / "perfect_homework.html"
+    _js = BASE_DIR / "server" / "template" / "js" / "perfect_homework.js"
+    _css = BASE_DIR / "server" / "template" / "static" / "css" / "perfect_homework.css"
+    _tutor = BASE_DIR / "server" / "template" / "static" / "js" / "tutor.js"
+    return (_html.read_text(encoding="utf-8") + "\n" +
+            _js.read_text(encoding="utf-8") + "\n" +
+            _css.read_text(encoding="utf-8") + "\n" +
+            _tutor.read_text(encoding="utf-8"))
 
 
 def _db_path() -> str:

@@ -219,8 +219,10 @@ def test_injector_drops_non_dict_panel_entries():
 
 # ---- Invariant 4: runtime wiring (renderConsolidation dispatches by shape) -
 
-TEMPLATE_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
-TEMPLATE = TEMPLATE_PATH.read_text(encoding="utf-8")
+_JS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "js" / "perfect_homework.js"
+_CSS_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "static" / "css" / "perfect_homework.css"
+_HTML_PATH = Path(__file__).resolve().parent.parent / "server" / "template" / "perfect_homework.html"
+TEMPLATE = _HTML_PATH.read_text(encoding="utf-8") + "\n" + _JS_PATH.read_text(encoding="utf-8") + "\n" + _CSS_PATH.read_text(encoding="utf-8")
 
 
 def _slice_function(name: str) -> str:
