@@ -223,9 +223,12 @@ async def homework_page(hw_id: str, lang: str | None = Query(default=None)):
     # Everything else → the legacy injector path, byte-for-byte unchanged.
     content = hw.get("content_json") or {}
     if content.get("flow_version") == "v2" and _os.path.isfile(_SPA_DIST_INDEX):
+        # The SPA shell references content-hashed bundles + carries the CSP that
+        # the page locks in at load — must not be cached, or a rebuild/CSP change
+        # leaves students pinned to a stale bundle and the old policy.
         return HTMLResponse(
             content=_render_spa_shell(hw),
-            headers={"Cache-Control": "public, max-age=60"},
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
         )
     html = render_homework(hw)
     return HTMLResponse(

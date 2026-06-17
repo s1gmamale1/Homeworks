@@ -331,6 +331,24 @@ Searchable quote library used by the builder's quote-picker modal. Returns match
 
 ## Notebook
 
+### POST /api/uploads
+
+Generic media upload for the builder (Extra Materials → type=file, Listening → audio file). Validates extension + size, stores the file under `server/media/uploads`, and returns a stable URL served read-only from `/media`.
+
+**Multipart fields:**
+- `file` (file, required) — image / audio / video / pdf / office doc (max 25 MB). Extension allowlist; anything else → 400.
+
+**200** on success:
+```json
+{
+  "url": "/media/uploads/<uuid>.<ext>",
+  "name": "original-filename.mp3",
+  "type": "image | audio | video | file"
+}
+```
+
+**400** `unsupported_file_type` / `empty_file`; **413** `file_too_large`.
+
 ### POST /api/notebook/grade
 
 Accept multipart photo upload with session/homework/question IDs; grade the handwritten formula and return grading result or rejection reason.
@@ -2394,3 +2412,85 @@ HTML inspection surface for a teacher).
 
 **Response 200** — `text/html`: a single `<pre>` element containing the
 pretty-printed (HTML-escaped) affirmation JSON.
+
+---
+
+### POST /api/applications
+
+Submit a school application form. Public, no authentication required.
+
+Includes a honeypot field (`website`): submissions where `website` is non-empty
+are silently accepted with `id: 0` and discarded, so bots receive a 201 and move on.
+
+**Request body** (`application/json`)
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `full_name` | string | yes | 2–120 chars |
+| `email` | string (email) | yes | validated EmailStr |
+| `role` | enum | yes | `teacher`, `student`, `parent`, `admin`, `other` |
+| `school` | string? | no | max 160 chars |
+| `city` | string? | no | max 80 chars |
+| `grades` | string? | no | max 80 chars |
+| `subjects` | string? | no | max 160 chars |
+| `phone` | string? | no | digits, `+`, `-`, spaces, `()` only |
+| `message` | string? | no | max 2000 chars |
+| `website` | string? | no | honeypot — leave empty |
+
+**Response 201**
+
+```json
+{ "ok": true, "id": 42 }
+```
+
+`id` is `0` for honeypot-dropped submissions.
+
+**Response 422** — validation error (field too long, invalid phone format, etc.)
+
+---
+
+### GET /api/applications
+
+List submitted applications. Admin-only — requires the `X-Admin-Token` header.
+
+**Request headers**
+
+| Header | Required | Notes |
+|---|---|---|
+| `X-Admin-Token` | yes | compared constant-time against `APPLICATIONS_ADMIN_TOKEN` env var |
+
+**Query params**
+
+| Param | Type | Default | Notes |
+|---|---|---|---|
+| `limit` | int | 100 | 1–500 |
+| `offset` | int | 0 | pagination offset |
+| `status` | string? | — | filter by status field |
+
+**Response 200**
+
+```json
+{
+  "total": 12,
+  "items": [
+    {
+      "id": 1,
+      "full_name": "Ana Yusupova",
+      "email": "ana@school.uz",
+      "role": "teacher",
+      "school": "School #42",
+      "city": "Tashkent",
+      "grades": "5-9",
+      "subjects": "Math",
+      "phone": "+998901234567",
+      "message": "Interested in the platform.",
+      "ip_hash": "a1b2c3d4e5f6a7b8",
+      "user_agent": "Mozilla/5.0 ...",
+      "created_at": "2026-06-17T10:00:00Z",
+      "status": null
+    }
+  ]
+}
+```
+
+**Response 401** — missing or invalid `X-Admin-Token`.

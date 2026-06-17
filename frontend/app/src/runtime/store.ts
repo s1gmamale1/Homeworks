@@ -33,7 +33,13 @@ import { resolveGameOrder } from "./gameOrder";
 import type { AnswerTelemetry } from "./hooks/useAnswerTelemetry";
 import { play } from "./sfx";
 
-export type Screen = "hub" | "cbp" | "fc" | "practice" | "reflection";
+export type Screen =
+  | "hub"
+  | "cbp"
+  | "fc"
+  | "practice"
+  | "reflection"
+  | "extra_materials";
 
 // The three tutor phases the backend accepts (server ALLOWED_PHASES). Finer
 // screen identity rides in `subphase`. screenToTutorPhase() maps the current

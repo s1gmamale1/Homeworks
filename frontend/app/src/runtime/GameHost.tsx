@@ -46,6 +46,7 @@ export const GAME_LABELS: Record<string, string> = {
   puzzle_lock: "Puzzle Lock",
   adaptive_quiz: "Adaptive Quiz",
   story_mode: "Story Mode",
+  listening: "Listening",
   // Division-3 practice games (8)
   error_detection: "Error Detection",
   memory_matching: "Memory Matching",
@@ -71,6 +72,7 @@ const GAME_REGISTRY: Record<string, ComponentType<GameProps>> = {
   adaptive_quiz: lazy(() => import("./games/AdaptiveQuiz")),
   mystery_box: lazy(() => import("./games/MysteryBox")),
   puzzle_lock: lazy(() => import("./games/PuzzleLock")),
+  listening: lazy(() => import("./games/Listening")),
   // Division-3 practice games (8) — 4 vendored (Ibo) + 4 new stubs.
   error_detection: lazy(() => import("./games/ErrorDetection")),
   memory_matching: lazy(() => import("./games/MemoryMatching")),

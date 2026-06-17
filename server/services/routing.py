@@ -30,13 +30,18 @@ SUBJECT_GRADES = {
     "history":          [5, 6, 7, 8, 9, 10, 11],
 }
 
+# `listening` (graded audio) and `extra_materials` (ungraded links) are
+# available in EVERY pipeline: listening sits just after memory_sprint (after
+# reading where that exists), extra_materials sits just before reflection. Both
+# auto-skip at runtime when their content_json block is empty, so adding them to
+# a pipeline only exposes the builder editor — it never forces an empty phase.
 PHASE_PIPELINE = {
-    ("aniq-fanlar",    "easy"): ["preview", "flashcards", "memory_sprint", "game_breaks", "reflection"],
-    ("aniq-fanlar",    "hard"): ["preview", "flashcards", "memory_sprint", "game_breaks", "real_life", "consolidation", "final_challenge", "reflection"],
-    ("tabiy-fanlar",   "easy"): ["preview", "flashcards", "memory_sprint", "game_breaks", "reflection"],
-    ("tabiy-fanlar",   "hard"): ["preview", "flashcards", "memory_sprint", "game_breaks", "real_life", "consolidation", "final_challenge", "reflection"],
-    ("til-fanlar",     "hard"): ["preview", "flashcards", "memory_sprint", "reading", "game_breaks", "real_life", "consolidation", "final_challenge", "reflection"],
-    ("ijtimoiy-fanlar","hard"): ["preview", "flashcards", "memory_sprint", "game_breaks", "consolidation", "final_challenge", "reflection"],
+    ("aniq-fanlar",    "easy"): ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "extra_materials", "reflection"],
+    ("aniq-fanlar",    "hard"): ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "real_life", "consolidation", "final_challenge", "extra_materials", "reflection"],
+    ("tabiy-fanlar",   "easy"): ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "extra_materials", "reflection"],
+    ("tabiy-fanlar",   "hard"): ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "real_life", "consolidation", "final_challenge", "extra_materials", "reflection"],
+    ("til-fanlar",     "hard"): ["preview", "flashcards", "memory_sprint", "reading", "listening", "game_breaks", "real_life", "consolidation", "final_challenge", "extra_materials", "reflection"],
+    ("ijtimoiy-fanlar","hard"): ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "consolidation", "final_challenge", "extra_materials", "reflection"],
 }
 
 BOSS_HP = {
@@ -50,17 +55,20 @@ PHASE_NAMES = {
     "flashcards":      "Flesh-kartalar",
     "memory_sprint":   "Xotira Sprint",
     "reading":         "O'qish",
+    "listening":       "Tinglash",
     "game_breaks":     "O'yin tanaffus",
     "real_life":       "Hayotiy vazifa",
     "consolidation":   "Mustahkamlash",
     "final_challenge": "Yakuniy jang",
+    "extra_materials": "Qo'shimcha materiallar",
     "reflection":      "Xulosa",
 }
 
 PHASE_ICONS = {
     "preview": "📋", "flashcards": "🃏", "memory_sprint": "⚡",
-    "reading": "📖", "game_breaks": "🎮", "real_life": "🌍",
-    "consolidation": "🧠", "final_challenge": "👾", "reflection": "💭",
+    "reading": "📖", "listening": "🎧", "game_breaks": "🎮", "real_life": "🌍",
+    "consolidation": "🧠", "final_challenge": "👾",
+    "extra_materials": "📺", "reflection": "💭",
 }
 
 FAMILY_COLORS = {

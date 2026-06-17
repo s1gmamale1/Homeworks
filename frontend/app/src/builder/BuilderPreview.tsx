@@ -14,6 +14,8 @@ import AdaptiveQuiz from "../runtime/games/AdaptiveQuiz";
 import MemoryPalace from "../runtime/games/MemoryPalace";
 import Ttt from "../runtime/games/Ttt";
 import RealLifeChallenge from "../runtime/games/RealLifeChallenge";
+import Listening from "../runtime/games/Listening";
+import { ExtraMaterialsView } from "../shared/ExtraMaterialsView";
 import type { BuilderDraft } from "./types";
 import { toContentJson } from "./draft";
 import type { HydratePayload } from "../shared/types";
@@ -34,6 +36,8 @@ export type PreviewSurface =
   | "memory_palace"
   | "ttt"
   | "real_life_challenge"
+  | "listening"
+  | "extra_materials"
   | "boss"
   | "reflection";
 
@@ -48,6 +52,7 @@ const GAME_SURFACES: ReadonlySet<PreviewSurface> = new Set<PreviewSurface>([
   "memory_palace",
   "ttt",
   "real_life_challenge",
+  "listening",
 ]);
 
 // The runtime components read EVERYTHING from useRuntimeStore (payload +
@@ -166,6 +171,11 @@ export function BuilderPreview({
       {surface === "flashcards" && <Flashcards />}
       {surface === "memory" && <MemoryCheck />}
       {surface === "reflection" && <Reflection />}
+      {surface === "extra_materials" && (
+        <div className={s.gameWrap}>
+          <ExtraMaterialsView value={draft.extra_materials} />
+        </div>
+      )}
       {surface === "boss" && (
         // BossArena is a Practice Arc game — it just needs an onComplete no-op.
         <div className={s.bossWrap}>
@@ -211,6 +221,8 @@ function GameSurface({
         return JSON.stringify(draft.gb_ttt);
       case "real_life_challenge":
         return JSON.stringify(draft.real_life_challenge);
+      case "listening":
+        return JSON.stringify(draft.listening);
       default:
         return surface;
     }
@@ -233,6 +245,8 @@ function GameSurface({
       return <Ttt key={sig} onComplete={noop} />;
     case "real_life_challenge":
       return <RealLifeChallenge key={sig} onComplete={noop} />;
+    case "listening":
+      return <Listening key={sig} onComplete={noop} />;
     default:
       return null;
   }

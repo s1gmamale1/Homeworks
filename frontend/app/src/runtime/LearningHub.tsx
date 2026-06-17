@@ -126,6 +126,14 @@ export function LearningHub() {
   const startCbp = useRuntimeStore((st) => st.startCbp);
   const enterFlashcards = useRuntimeStore((st) => st.enterFlashcards);
   const enterPracticeArc = useRuntimeStore((st) => st.enterPracticeArc);
+  const goto = useRuntimeStore((st) => st.goto);
+
+  // Extra Materials sits FIRST on the hub (before Case-Study) when authored.
+  // Ungraded — it's a "watch/explore first" node, not part of the 3 cleared.
+  const extraItems =
+    (payload?.content_json as { extra_materials?: { items?: Array<{ url?: string }> } } | null)
+      ?.extra_materials?.items ?? [];
+  const hasExtra = extraItems.some((it) => (it?.url ?? "").trim() !== "");
 
   const cbp = cbpStatus(gate?.cbp);
   const mc = mcStatus(gate?.mc);
@@ -309,6 +317,24 @@ export function LearningHub() {
           </p>
         )}
       </header>
+
+      {/* ---- Extra Materials — FIRST station (ungraded). Sits above the graded
+              winding path so it never disturbs the 3-node connector geometry. ---- */}
+      {hasExtra && (
+        <button
+          type="button"
+          className={s.extraNode}
+          onClick={() => { play("tick"); goto("extra_materials"); }}
+          data-testid="hub-extra-materials"
+        >
+          <span className={s.extraNodeIcon} aria-hidden="true">▶</span>
+          <span className={s.extraNodeText}>
+            <span className={s.extraNodeKicker}>Watch &amp; explore first</span>
+            <strong className={s.extraNodeTitle}>Extra materials</strong>
+          </span>
+          <span className={s.extraNodeCta}>Open →</span>
+        </button>
+      )}
 
       {/* ---- The winding path: connector layer behind, nodes stacked above ---- */}
       <div className={s.path}>

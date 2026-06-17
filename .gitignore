@@ -100,3 +100,6 @@ frontend/app/*.tsbuildinfo
 
 # Playwright CLI snapshots (local)
 .playwright-cli/
+
+# Author-uploaded media (Extra Materials file uploads)
+server/media/

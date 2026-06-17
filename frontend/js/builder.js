@@ -25,28 +25,32 @@
   ];
 
   const PHASE_PIPELINE = {
-    "aniq-fanlar:easy": ["preview", "flashcards", "memory_sprint", "game_breaks", "reflection"],
+    "aniq-fanlar:easy": ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "extra_materials", "reflection"],
     "aniq-fanlar:hard": [
       "preview",
       "flashcards",
       "memory_sprint",
+      "listening",
       "game_breaks",
       "real_life",
       "real_life_challenge",
       "consolidation",
       "final_challenge",
+      "extra_materials",
       "reflection",
     ],
-    "tabiy-fanlar:easy": ["preview", "flashcards", "memory_sprint", "game_breaks", "reflection"],
+    "tabiy-fanlar:easy": ["preview", "flashcards", "memory_sprint", "listening", "game_breaks", "extra_materials", "reflection"],
     "tabiy-fanlar:hard": [
       "preview",
       "flashcards",
       "memory_sprint",
+      "listening",
       "game_breaks",
       "real_life",
       "real_life_challenge",
       "consolidation",
       "final_challenge",
+      "extra_materials",
       "reflection",
     ],
     "til-fanlar:hard": [
@@ -54,20 +58,24 @@
       "flashcards",
       "memory_sprint",
       "reading",
+      "listening",
       "game_breaks",
       "real_life",
       "real_life_challenge",
       "consolidation",
       "final_challenge",
+      "extra_materials",
       "reflection",
     ],
     "ijtimoiy-fanlar:hard": [
       "preview",
       "flashcards",
       "memory_sprint",
+      "listening",
       "game_breaks",
       "consolidation",
       "final_challenge",
+      "extra_materials",
       "reflection",
     ],
   };
@@ -77,11 +85,13 @@
     flashcards: "Flesh-kartalar",
     memory_sprint: "Xotira Sprint",
     reading: "O'qish",
+    listening: "Tinglash",
     game_breaks: "O'yin tanaffus",
     real_life: "Hayotiy vazifa",
     real_life_challenge: "Hayotiy chaqiruv",
     consolidation: "Mustahkamlash",
     final_challenge: "Yakuniy jang",
+    extra_materials: "Qo'shimcha materiallar",
     reflection: "Xulosa",
   };
 
@@ -90,11 +100,13 @@
     flashcards: "🃏",
     memory_sprint: "⚡",
     reading: "📖",
+    listening: "🎧",
     game_breaks: "🎮",
     real_life: "🌍",
     real_life_challenge: "🧭",
     consolidation: "🧠",
     final_challenge: "👾",
+    extra_materials: "📺",
     reflection: "💭",
   };
 
@@ -103,11 +115,13 @@
     flashcards: "flashcards",
     memory_sprint: "memorySprint",
     reading: "reading",
+    listening: "listening",
     game_breaks: "gameBreaks",
     real_life: "realLife",
     real_life_challenge: "realLifeChallenge",
     consolidation: "consolidation",
     final_challenge: "boss",
+    extra_materials: "extraMaterials",
     reflection: "reflection",
   };
 
@@ -567,6 +581,8 @@
     if (phase === "real_life_challenge") return clone(content.real_life_challenge);
     if (phase === "consolidation") return clone(content.consolidation);
     if (phase === "reading") return clone(content.reading);
+    if (phase === "listening") return clone(content.listening);
+    if (phase === "extra_materials") return clone(content.extra_materials);
     if (phase === "final_challenge") return clone(content.boss_questions);
     if (phase === "reflection") return clone(content.reflection);
 
@@ -603,6 +619,10 @@
       content.consolidation = nextData || null;
     } else if (phase === "reading") {
       content.reading = nextData || null;
+    } else if (phase === "listening") {
+      content.listening = nextData || null;
+    } else if (phase === "extra_materials") {
+      content.extra_materials = nextData || null;
     } else if (phase === "final_challenge") {
       content.boss_questions = Array.isArray(nextData) ? nextData : [];
     } else if (phase === "reflection") {

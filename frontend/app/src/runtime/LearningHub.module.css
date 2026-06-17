@@ -424,6 +424,49 @@
 .nodeFlash { background: var(--hub-blue); --node-edge: var(--hub-blue-edge); }
 .nodeDone { background: var(--hub-green); --node-edge: var(--hub-green-edge); }
 
+/* Extra Materials — a violet intro node above the graded path. Same 3D-lip
+   candy aesthetic as the path nodes, but a compact horizontal row. */
+.extraNode {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(340px, 86vw);
+  margin: 0 auto 26px;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 22px;
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  font-family: var(--font-hub-body);
+  background: #7c5cff;
+  --node-edge: #5b3fd6;
+  box-shadow: 0 6px 0 var(--node-edge), 0 12px 22px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 90ms var(--landing-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  animation: hubNodeIn 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.extraNode:hover { transform: translateY(-2px); }
+.extraNode:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--node-edge), 0 6px 14px rgba(0, 0, 0, 0.12); }
+.extraNodeIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 16px;
+}
+.extraNodeText { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.extraNodeKicker { font-size: 12px; opacity: 0.85; font-weight: 600; }
+.extraNodeTitle { font-size: 18px; font-weight: 800; line-height: 1.2; }
+.extraNodeCta { flex: none; font-size: 14px; font-weight: 700; opacity: 0.95; }
+
 /* path winding: gentle horizontal offset so the eye travels */
 .alignLeft { align-self: flex-start; transform: translateX(10px); }
 .alignRight { align-self: flex-end; transform: translateX(-10px); }

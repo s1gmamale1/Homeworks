@@ -54,6 +54,8 @@ _ROUTER_PREFIXES: dict[str, str] = {
     "runtime.py":       "/api",
     "reflection.py":    "/api",
     "integrity.py":     "/api",
+    "uploads.py":       "/api",
+    "applications.py":  "/api/applications",
 }
 
 _DECORATOR_RE = re.compile(

@@ -179,3 +179,38 @@ export const SUBJECT_LABELS: Record<string, string> = {
 // english + history are always-hard server-side; the form still sends a mode
 // but the server normalizes it.
 export const ALWAYS_HARD = new Set(["english", "history"]);
+
+// Multipart file upload for Extra Materials (type=file). Uses a bare fetch — the
+// `request` helper forces a JSON Content-Type, but multipart needs the browser
+// to set its own boundary header. Returns the stored URL the item points at.
+export interface UploadResult {
+  url: string;
+  name: string;
+  type: string;
+}
+
+export async function uploadFile(file: File): Promise<UploadResult> {
+  const form = new FormData();
+  form.append("file", file);
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/api/uploads`, { method: "POST", body: form });
+  } catch (networkErr) {
+    throw new BuilderApiError(
+      `Network error during upload: ${(networkErr as Error).message}`,
+      0
+    );
+  }
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = (await res.json()) as { detail?: { message?: string } | string };
+      if (typeof body?.detail === "string") detail = body.detail;
+      else if (body?.detail?.message) detail = body.detail.message;
+    } catch {
+      /* keep statusText */
+    }
+    throw new BuilderApiError(detail, res.status);
+  }
+  return (await res.json()) as UploadResult;
+}

@@ -1,0 +1,133 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.intro {
+  font-size: 14px;
+  color: var(--muted, #8a8a8a);
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.itemLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.embed {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(127, 127, 127, 0.2);
+}
+.embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Click-to-play facade: thumbnail background + centered play button. */
+.facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+}
+.playBtn {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(220, 0, 0, 0.92);
+  color: #fff;
+  font-size: 24px;
+  padding-left: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 150ms ease, background 150ms ease;
+}
+.facade:hover .playBtn {
+  transform: scale(1.08);
+  background: rgba(255, 0, 0, 0.98);
+}
+
+.image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: rgba(127, 127, 127, 0.08);
+  border: 1px solid rgba(127, 127, 127, 0.18);
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 184, 255, 0.3);
+  background: rgba(99, 184, 255, 0.08);
+  color: var(--accent, #2f6bff);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 200ms;
+}
+.link:hover {
+  background: rgba(99, 184, 255, 0.18);
+}
+
+.linkIcon {
+  font-size: 18px;
+}
+
+.fallbackLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent, #2f6bff);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.fallbackLink:hover {
+  text-decoration: underline;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--muted, #8a8a8a);
+}

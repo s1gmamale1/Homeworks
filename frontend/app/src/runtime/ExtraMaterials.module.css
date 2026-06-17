@@ -1,0 +1,24 @@
+/* Content sits ABOVE the fixed LivingBackdrop (z-index 0). */
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

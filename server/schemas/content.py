@@ -16,6 +16,8 @@ Phase types covered (matches STATE.md + fixtures):
 2. memory_sprint      — practice phase
 3. real_life          — practice phase (scenario + per-question answers)
 4. reading            — consolidation phase (passage + checkpoints)
+4b. listening         — graded phase (audio + gated transcript + checkpoints)
+4c. extra_materials   — ungraded supplementary links/videos
 5. boss_questions     — final phase (open-ended + answer_spec)
 6. game_breaks        — between-phase mini-games (gb_*)
 7. reflection         — closing phase
@@ -175,6 +177,50 @@ class ReadingCheckpoint(_Permissive):
 class ReadingPhase(_Permissive):
     text: Optional[str] = None
     checkpoints: List[ReadingCheckpoint] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Phase 4b — Listening (graded: audio + gated transcript + checkpoints).
+#
+# Mirrors ReadingPhase but reads from an audio source instead of a passage.
+# The "one rule" (see Listening & Video spec): the transcript stays hidden
+# until the student has played the audio — graded comprehension, not reading.
+# `audio_url` is a URL only; file upload + media migration are deferred.
+# --------------------------------------------------------------------------- #
+
+
+class ListeningPhase(_Permissive):
+    title: Optional[str] = None
+    # URL-only for v1 (e.g. an mp3/stream link). Upload + migration are deferred.
+    audio_url: Optional[str] = None
+    # Transcript is revealed only after the audio has been played (gated rule).
+    transcript: Optional[str] = None
+    # Same checkpoint shape as Reading so grading helpers are reused verbatim.
+    checkpoints: List[ReadingCheckpoint] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Phase — Extra Materials (UNGRADED: a list of supplementary links/videos).
+#
+# Ungraded supplementary resources shown near the end of the flow. Each item
+# is a labelled URL (video, article, file…). URL-only; nothing is uploaded or
+# graded — the student can always continue past it.
+# --------------------------------------------------------------------------- #
+
+
+class ExtraMaterialItem(_Permissive):
+    label: Optional[str] = None
+    url: Optional[str] = None
+    # How to render the item: "link" | "video" | "file". `kind` is the legacy
+    # name (read as a fallback); new content writes `type`.
+    type: Optional[str] = None
+    kind: Optional[str] = None
+
+
+class ExtraMaterialsPhase(_Permissive):
+    title: Optional[str] = None
+    intro: Optional[str] = None
+    items: List[ExtraMaterialItem] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #
@@ -1087,6 +1133,10 @@ class ContentJSON(_Permissive):
     real_life_challenge: Optional[RealLifeChallengeCase] = None
     # Phase 4
     reading: Optional[ReadingPhase] = None
+    # Phase 4b — Listening (graded: audio + gated transcript + checkpoints)
+    listening: Optional[ListeningPhase] = None
+    # Extra Materials (ungraded supplementary links/videos)
+    extra_materials: Optional[ExtraMaterialsPhase] = None
     # Phase 5
     boss_questions: Optional[List[BossQuestion]] = None
     boss_meta: Optional[BossMeta] = None

@@ -4,6 +4,7 @@ import { MemoryCheckEditor } from "./MemoryCheckEditor";
 import { BossEditor } from "./BossEditor";
 import { MetadataEditor } from "./MetadataEditor";
 import { ReflectionEditor } from "./ReflectionEditor";
+import { ExtraMaterialsEditor } from "./ExtraMaterialsEditor";
 import { PracticeArcSection } from "./PracticeArcSection";
 import { BuilderPreview } from "./BuilderPreview";
 import type { PreviewSurface } from "./BuilderPreview";
@@ -13,7 +14,14 @@ import type { Readiness } from "./builderApi";
 import type { BuilderDraft } from "./types";
 import s from "./BuilderApp.module.css";
 
-type Section = "meta" | "cbp" | "memory" | "practice" | "boss" | "reflection";
+type Section =
+  | "meta"
+  | "cbp"
+  | "memory"
+  | "practice"
+  | "boss"
+  | "extra_materials"
+  | "reflection";
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 // Each editor section maps to the preview surface it opens on. Practice opens
@@ -25,6 +33,7 @@ const SECTION_TO_SURFACE: Record<Section, PreviewSurface> = {
   memory: "memory",
   practice: "tile_match",
   boss: "boss",
+  extra_materials: "extra_materials",
   reflection: "reflection",
 };
 
@@ -104,6 +113,14 @@ const SECTION_ICONS: Record<Section, ReactNode> = {
       <line x1="8" y1="13" x2="13" y2="13" />
     </Icon>
   ),
+  // External link — extra materials
+  extra_materials: (
+    <Icon>
+      <path d="M14 4h6v6" />
+      <path d="M20 4l-8.5 8.5" />
+      <path d="M19 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h6" />
+    </Icon>
+  ),
 };
 
 const SECTIONS: { id: Section; label: string }[] = [
@@ -112,6 +129,7 @@ const SECTIONS: { id: Section; label: string }[] = [
   { id: "memory", label: "Memory Check" },
   { id: "practice", label: "Practice Arc" },
   { id: "boss", label: "Boss" },
+  { id: "extra_materials", label: "Extra Materials" },
   { id: "reflection", label: "Reflection" },
 ];
 
@@ -127,6 +145,8 @@ const PREVIEW_TABS: { id: PreviewSurface; label: string }[] = [
   { id: "memory_palace", label: "Memory Palace" },
   { id: "ttt", label: "Tic-Tac-Toe" },
   { id: "real_life_challenge", label: "Real-Life" },
+  { id: "listening", label: "Listening" },
+  { id: "extra_materials", label: "Extra Materials" },
   { id: "boss", label: "Boss" },
   { id: "reflection", label: "Reflection" },
 ];
@@ -187,7 +207,7 @@ export function BuilderApp() {
     if (id) {
       void openHomework(id);
     } else {
-      window.location.href = "/";
+      window.location.href = "/index.html";
     }
   }, [openHomework]);
 
@@ -249,7 +269,7 @@ export function BuilderApp() {
     <div className={s.builder} data-testid="builder-app">
       <aside className={s.sidebar} aria-label="Homework phases">
         <div className={s.sidebarHeader}>
-          <a className={s.backLink} href="/" aria-label="Back to dashboard">
+          <a className={s.backLink} href="/index.html" aria-label="Back to dashboard">
             <svg
               viewBox="0 0 24 24"
               width="16"
@@ -370,6 +390,14 @@ export function BuilderApp() {
                 }
                 onBossQuestionsChange={(boss_questions) =>
                   updateDraft({ ...draft, boss_questions })
+                }
+              />
+            )}
+            {section === "extra_materials" && (
+              <ExtraMaterialsEditor
+                value={draft.extra_materials}
+                onChange={(extra_materials) =>
+                  updateDraft({ ...draft, extra_materials })
                 }
               />
             )}

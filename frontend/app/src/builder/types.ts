@@ -355,6 +355,42 @@ export interface DraftReflection {
   prompts?: string[]; // optional override of the default 2 reflection prompts
 }
 
+// ---- listening (ListeningPhase) ----
+// server: ListeningPhase (content.py). Graded audio comprehension: an audio URL,
+// a transcript (revealed at runtime only after the audio plays — the "one
+// rule"), and reading-style checkpoints. URL-only; upload is deferred.
+export interface DraftListeningCheckpoint {
+  prompt?: string;
+  ans?: string;
+  fb?: string;
+}
+
+export interface DraftListening {
+  title?: string;
+  audio_url?: string;
+  transcript?: string;
+  checkpoints: DraftListeningCheckpoint[];
+}
+
+// ---- extra_materials (ExtraMaterialsPhase) ----
+// server: ExtraMaterialsPhase (content.py). Ungraded supplementary materials
+// shown near the end of the flow. Each item is a labelled URL with a `type`
+// that drives the input + renderer: a plain link, an embeddable video
+// (YouTube → iframe), or an uploaded file.
+export type ExtraMaterialType = "link" | "video" | "file";
+
+export interface DraftExtraMaterialItem {
+  label?: string;
+  url?: string;
+  type?: ExtraMaterialType;
+}
+
+export interface DraftExtraMaterials {
+  title?: string;
+  intro?: string;
+  items: DraftExtraMaterialItem[];
+}
+
 // ---- meta (Meta) ----
 // server: Meta (content.py ~431). Display metadata + editable difficulty/mode.
 // `difficulty` and `mode` are builder-editable; the server normalizes mode for
@@ -391,6 +427,8 @@ export interface BuilderDraft {
   gb_memory_palace: DraftMemoryPalaceGame;
   gb_memory_palace_config: DraftMemoryPalaceConfig;
   real_life_challenge: DraftRealLifeChallenge | null;
+  listening: DraftListening;
+  extra_materials: DraftExtraMaterials;
   reflection: DraftReflection;
 }
 
@@ -452,6 +490,16 @@ export interface RealLifeChallengeEditorProps {
 export interface ReflectionEditorProps {
   value: DraftReflection;
   onChange: (next: DraftReflection) => void;
+}
+
+export interface ListeningEditorProps {
+  value: DraftListening;
+  onChange: (next: DraftListening) => void;
+}
+
+export interface ExtraMaterialsEditorProps {
+  value: DraftExtraMaterials;
+  onChange: (next: DraftExtraMaterials) => void;
 }
 
 export interface MetadataEditorProps {

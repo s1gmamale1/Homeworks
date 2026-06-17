@@ -22,6 +22,7 @@ from server.routes.runtime import router as runtime_router
 from server.routes.reflection import router as reflection_router
 from server.routes.integrity import router as integrity_router
 from server.routes.applications import router as applications_router
+from server.routes.uploads import router as uploads_router, UPLOAD_DIR
 from server import db
 from server.config import BASE_DIR
 
@@ -48,6 +49,7 @@ def _cors_origins() -> list[str]:
     return [
         "http://127.0.0.1:8000",
         "http://localhost:8000",
+        "http://0.0.0.0:8000",
         "http://192.168.1.26:8000",
     ]
 
@@ -75,9 +77,14 @@ SECURITY_HEADERS: dict[str, str] = {
         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
         "img-src 'self' data: blob: http: https:; "
+        # Listening audio is authored as an external URL (URL-only; no upload),
+        # so audio/video must be allowed from https/data/blob, not just 'self'.
+        "media-src 'self' data: blob: https:; "
         "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; "
         "connect-src 'self'; "
         "object-src 'none'; "
+        # Extra Materials may embed a YouTube video as an iframe.
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
         "base-uri 'self'; "
         "form-action 'self'; "
         "frame-ancestors 'self'"
@@ -108,6 +115,10 @@ async def get_favicon():
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins(),
+    # Dev convenience: allow localhost / 127.0.0.1 / 0.0.0.0 / LAN on ANY port,
+    # so the builder works whether it's served on :8000, :8001, etc. Production
+    # origins are still pinned via the explicit allow_origins list above.
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -128,6 +139,12 @@ app.include_router(runtime_router, prefix="/api")
 app.include_router(reflection_router, prefix="/api")
 app.include_router(integrity_router, prefix="/api")
 app.include_router(applications_router, prefix="/api")
+app.include_router(uploads_router, prefix="/api")
+
+# Author-uploaded media (Extra Materials → type=file). Served read-only; the
+# upload endpoint validates type + size before anything lands here.
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/media", StaticFiles(directory=str(UPLOAD_DIR.parent)), name="media")
 
 _FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
@@ -176,6 +193,13 @@ app.mount(
     name="runtime",
 )
 
+# Homework static assets — CSS, katex_init.js, tutor.js extracted from perfect_homework.html.
+app.mount(
+    "/static/homework",
+    StaticFiles(directory=str(BASE_DIR / "server" / "template" / "static")),
+    name="homework_static",
+)
+
 # React SPA (v2 runtime + builder) — built bundle served as static assets.
 # Vite content-hashes its own filenames, so this is intentionally OUTSIDE the
 # __VERSION__ cache-bust system. Mounted before the "/" catch-all.
@@ -189,7 +213,13 @@ _SPA_INDEX = os.path.join(_SPA_DIST, "index.html")
 if os.path.isfile(_SPA_INDEX):
     async def _spa_shell():
         with open(_SPA_INDEX, "r", encoding="utf-8") as f:
-            return HTMLResponse(f.read())
+            # The shell HTML references content-hashed bundles; it must NOT be
+            # cached, or a rebuild leaves the browser pinned to a stale bundle +
+            # the old CSP (locked at page load). The hashed assets stay cacheable.
+            return HTMLResponse(
+                f.read(),
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+            )
     for _spa_route in ("/app/builder", "/app/builder/"):
         app.get(_spa_route)(_spa_shell)
 

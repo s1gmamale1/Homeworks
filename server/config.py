@@ -22,6 +22,7 @@ def get_db_path() -> Path:
 
 
 TEMPLATE_PATH: Path = BASE_DIR / "server" / "template" / "perfect_homework.html"
+JS_TEMPLATE_PATH: Path = BASE_DIR / "server" / "template" / "js" / "perfect_homework.js"
 PROMPTS_DIR: Path = BASE_DIR / "server" / "prompts"
 FIXTURES_DIR: Path = BASE_DIR / "fixtures"
 DATA_DIR: Path = BASE_DIR / "server" / "data"

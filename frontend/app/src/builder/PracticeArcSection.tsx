@@ -10,6 +10,7 @@ import { AdaptiveQuizEditor } from "./AdaptiveQuizEditor";
 import { MemoryPalaceEditor } from "./MemoryPalaceEditor";
 import { TttEditor } from "./TttEditor";
 import { RealLifeChallengeEditor } from "./RealLifeChallengeEditor";
+import { ListeningEditor } from "./ListeningEditor";
 import s from "./editors.module.css";
 import t from "./PracticeArcSection.module.css";
 
@@ -24,6 +25,7 @@ const ARC_GAME_KEYS = [
   "puzzle_lock",
   "adaptive_quiz",
   "memory_palace",
+  "listening",
   "story_mode",
   "ttt",
   "real_life_challenge",
@@ -232,6 +234,13 @@ function GameEditor({
           onChange={(real_life_challenge) =>
             updateDraft({ ...draft, real_life_challenge })
           }
+        />
+      );
+    case "listening":
+      return (
+        <ListeningEditor
+          value={draft.listening}
+          onChange={(listening) => updateDraft({ ...draft, listening })}
         />
       );
     default:

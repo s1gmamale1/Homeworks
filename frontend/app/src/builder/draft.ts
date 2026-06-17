@@ -12,6 +12,7 @@ import type {
   CheckpointKind,
   DraftCbpBlock,
   DraftCheckpoint,
+  DraftExtraMaterials,
   DraftFlashcard,
   DraftMemoryCheckItem,
   DraftBossQuestion,
@@ -85,6 +86,8 @@ export function emptyDraft(): BuilderDraft {
     gb_memory_palace: { palaces: [], concepts: [] },
     gb_memory_palace_config: {},
     real_life_challenge: null,
+    listening: { checkpoints: [] },
+    extra_materials: { items: [] },
     reflection: {},
   };
 }
@@ -380,6 +383,46 @@ export function toContentJson(draft: BuilderDraft): Record<string, unknown> {
             : undefined,
         })
       ),
+    });
+  }
+
+  // ---- listening (graded) ----
+  // Emit only when there's something authored (audio, transcript, or a
+  // checkpoint), so an empty Listening phase is omitted and auto-skipped.
+  const listeningCps = draft.listening.checkpoints
+    .map((cp) =>
+      compact({
+        prompt: cp.prompt,
+        ans: cp.ans,
+        fb: cp.fb,
+      })
+    )
+    .filter((cp) => Object.keys(cp).length > 0);
+  const listening = compact({
+    title: draft.listening.title,
+    audio_url: draft.listening.audio_url,
+    transcript: draft.listening.transcript,
+    checkpoints: listeningCps,
+  });
+  if (Object.keys(listening).length > 0) base.listening = listening;
+
+  // ---- extra_materials (ungraded) ----
+  // Each item needs a URL to be meaningful; drop the rest. Phase emitted only
+  // when at least one valid item exists.
+  const extraItems = draft.extra_materials.items
+    .filter((it) => (it.url ?? "").trim() !== "")
+    .map((it) =>
+      compact({
+        label: it.label,
+        url: it.url,
+        type: it.type,
+      })
+    );
+  if (extraItems.length > 0) {
+    base.extra_materials = compact({
+      title: draft.extra_materials.title,
+      intro: draft.extra_materials.intro,
+      items: extraItems,
     });
   }
 
@@ -861,6 +904,51 @@ export function fromContentJson(raw: unknown): BuilderDraft {
   } else {
     base.real_life_challenge = null;
   }
+
+  // ---- listening ----
+  const rawListening = asObj(c.listening);
+  base.listening = {
+    ...(optStr(rawListening.title) !== undefined ? { title: optStr(rawListening.title) } : {}),
+    ...(optStr(rawListening.audio_url) !== undefined
+      ? { audio_url: optStr(rawListening.audio_url) }
+      : {}),
+    ...(optStr(rawListening.transcript) !== undefined
+      ? { transcript: optStr(rawListening.transcript) }
+      : {}),
+    checkpoints: asArr(rawListening.checkpoints).map((rcp) => {
+      const cp = asObj(rcp);
+      // Server stores `q` canonically; the editor authors `prompt`. Accept both.
+      const ansRaw = cp.ans;
+      const ans = Array.isArray(ansRaw) ? asStr(ansRaw[0]) : asStr(ansRaw);
+      return {
+        ...(optStr(cp.prompt) ?? optStr(cp.q)) !== undefined
+          ? { prompt: optStr(cp.prompt) ?? optStr(cp.q) }
+          : {},
+        ...(ans !== "" ? { ans } : {}),
+        ...(optStr(cp.fb) !== undefined ? { fb: optStr(cp.fb) } : {}),
+      };
+    }),
+  };
+
+  // ---- extra_materials ----
+  const rawExtra = asObj(c.extra_materials);
+  base.extra_materials = {
+    ...(optStr(rawExtra.title) !== undefined ? { title: optStr(rawExtra.title) } : {}),
+    ...(optStr(rawExtra.intro) !== undefined ? { intro: optStr(rawExtra.intro) } : {}),
+    items: asArr(rawExtra.items).map((rit) => {
+      const it = asObj(rit);
+      // Accept the new `type` and the legacy `kind`; coerce to a known value.
+      const raw = asStr(it.type) || asStr(it.kind);
+      const type = (["link", "video", "file"].includes(raw)
+        ? raw
+        : "link") as DraftExtraMaterials["items"][number]["type"];
+      return {
+        ...(optStr(it.label) !== undefined ? { label: optStr(it.label) } : {}),
+        ...(optStr(it.url) !== undefined ? { url: optStr(it.url) } : {}),
+        type,
+      };
+    }),
+  };
 
   // ---- reflection ----
   const rawRefl = asObj(c.reflection);

@@ -6,6 +6,7 @@ import { Flashcards } from "./Flashcards";
 import { MemoryCheck } from "./MemoryCheck";
 import { PracticeArc } from "./PracticeArc";
 import { Reflection } from "./Reflection";
+import { ExtraMaterials } from "./ExtraMaterials";
 import { TutorWidget } from "./TutorWidget";
 import SoundToggle from "./SoundToggle";
 import { initGlobalPrime, play } from "./sfx";
@@ -63,5 +64,6 @@ function CurrentScreen({
   }
   if (screen === "practice") return <PracticeArc />;
   if (screen === "reflection") return <Reflection />;
+  if (screen === "extra_materials") return <ExtraMaterials />;
   return <LearningHub />;
 }

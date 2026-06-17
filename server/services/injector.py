@@ -9,7 +9,7 @@ import random
 import re
 from typing import Optional
 
-from ..config import TEMPLATE_PATH
+from ..config import TEMPLATE_PATH, JS_TEMPLATE_PATH
 from . import quotes as quotes_service
 
 
@@ -51,9 +51,12 @@ def boss_name_for(subject_id: Optional[str], explicit: Optional[str]) -> str:
             return _BOSS_NAME_DEFAULTS[sid]
     return "Boss"
 
-# Read template ONCE at module load (not per request)
+# Read templates ONCE at module load (not per request)
 with open(TEMPLATE_PATH, "r", encoding="utf-8") as _f:
     _TEMPLATE = _f.read()
+
+with open(JS_TEMPLATE_PATH, "r", encoding="utf-8") as _f:
+    _JS_TEMPLATE = _f.read()
 
 # Mapping: content_json key -> JS constant name in template
 _ARRAY_CONSTANTS = [
@@ -74,9 +77,11 @@ _ARRAY_CONSTANTS = [
 # Mapping: content_json key -> JS constant name in template, for OBJECT (non-array) constants.
 # Wave 2: reading/consolidation/reflection are objects, like RL_SCENARIO.
 _OBJECT_CONSTANTS = [
-    ("reading",       "READING"),
-    ("consolidation", "CONSOLIDATION"),
-    ("reflection",    "REFLECTION"),
+    ("reading",         "READING"),
+    ("listening",       "LISTENING"),
+    ("extra_materials", "EXTRA_MATERIALS"),
+    ("consolidation",   "CONSOLIDATION"),
+    ("reflection",      "REFLECTION"),
 ]
 
 
@@ -933,6 +938,7 @@ def inject(
     Returns: rendered HTML string.
     """
     html = _TEMPLATE
+    js = _JS_TEMPLATE
     meta = meta_override or content_json.get("meta") or {}
 
     # Boss name — author override (content_json.boss_name) wins over the
@@ -1383,11 +1389,11 @@ def inject(
             if hw_id:
                 _TTT_ANSWER_KEY[hw_id] = key_map
             replacement = f"const {const_name} = {_safe_js_json(wire)};"
-            html = _replace_js_const(html, const_name, replacement)
+            js = _replace_js_const(js, const_name, replacement)
             continue
 
         replacement = f"const {const_name} = {_safe_js_json(data)};"
-        html = _replace_js_const(html, const_name, replacement)
+        js = _replace_js_const(js, const_name, replacement)
 
     # 4. Replace RL_SCENARIO (object, not array). Fallback if missing to avoid template crash.
     rl = content_json.get("real_life")
@@ -1411,7 +1417,7 @@ def inject(
         if "questions" not in rl or "closure" not in rl:
             rl = _rl_adapt_to_template(rl)
         rl_json = f"const RL_SCENARIO = {_safe_js_json(rl)};"
-        html = _replace_js_const(html, "RL_SCENARIO", rl_json)
+        js = _replace_js_const(js, "RL_SCENARIO", rl_json)
 
     # 5. Replace OBJECT constants — reading / consolidation / reflection.
     # Authors edit these via dedicated editors; builder routes them straight into
@@ -1477,6 +1483,43 @@ def inject(
                     "type": str(media.get("type") or ""),
                     "html": str(media.get("html") or ""),
                 }
+        elif key == "listening":
+            # Graded listening: audio + gated transcript + checkpoints. Reuses
+            # the reading checkpoint normalizer so grading is identical. The
+            # transcript is shipped to the client but the runtime keeps it
+            # hidden until the audio has been played (the "one rule").
+            cps = obj.get("checkpoints") or []
+            if not isinstance(cps, list):
+                cps = []
+            normalized = {
+                "title":      str(obj.get("title") or ""),
+                "audio_url":  str(obj.get("audio_url") or ""),
+                "transcript": str(obj.get("transcript") or ""),
+                "checkpoints": [_normalize_reading_checkpoint(cp) for cp in cps],
+            }
+        elif key == "extra_materials":
+            # Ungraded supplementary links. URL-only; each item is a labelled
+            # link with an optional kind hint. Nothing is graded or uploaded.
+            raw_items = obj.get("items") or []
+            if not isinstance(raw_items, list):
+                raw_items = []
+            items_out = []
+            for it in raw_items:
+                if not isinstance(it, dict):
+                    continue
+                url = str(it.get("url") or "").strip()
+                if not url:
+                    continue
+                items_out.append({
+                    "label": str(it.get("label") or ""),
+                    "url":   url,
+                    "type":  str(it.get("type") or it.get("kind") or ""),
+                })
+            normalized = {
+                "title": str(obj.get("title") or ""),
+                "intro": str(obj.get("intro") or ""),
+                "items": items_out,
+            }
         elif key == "consolidation":
             bullets = obj.get("bullets") or []
             if not isinstance(bullets, list):
@@ -1533,19 +1576,19 @@ def inject(
             normalized = obj
 
         replacement = f"const {const_name} = {_safe_js_json(normalized)};"
-        html = _replace_js_const(html, const_name, replacement)
+        js = _replace_js_const(js, const_name, replacement)
 
     # Sentence Fill — strip answers/explanations/word_bank(free_recall) before
     # JSON-encoding into __GB_SENTENCE_FILL__.  This constant is handled
     # separately from _ARRAY_CONSTANTS because it needs custom field-stripping.
-    html = html.replace(
+    js = js.replace(
         "__GB_SENTENCE_FILL__",
         _serialize_sentence_fill(content_json.get("gb_sentence_fill")),
     )
 
     # Tile Match — side-disjoint serialization (answer-leak prevention).
     # Prefers gb_tile_match; falls back to legacy gb_memory_match shim.
-    html = html.replace(
+    js = js.replace(
         "__GB_TILE_MATCH__",
         _serialize_tile_match(
             content_json.get("gb_tile_match"),
@@ -1557,7 +1600,7 @@ def inject(
     # Side-disjoint serialization strips is_correct / consequence /
     # acceptable_keywords — client never sees answer keys.
     # NOTE: legacy RL_SCENARIO path above is UNTOUCHED; both globals coexist.
-    html = html.replace(
+    js = js.replace(
         "__RLC_CASE__",
         _serialize_real_life_challenge(content_json.get("real_life_challenge")),
     )
@@ -1567,7 +1610,7 @@ def inject(
     # Ships null when gb_memory_palace is absent or has no palaces so the
     # runtime can detect "not authored" and skip the panel.
     # grade + hw_tier come from runtime_context; tier defaults "basic" when absent.
-    html = html.replace(
+    js = js.replace(
         "__GB_MEMORY_PALACE__",
         _serialize_memory_palace(
             content_json.get("gb_memory_palace"),
@@ -1582,8 +1625,8 @@ def inject(
     # and the template-shape acceptable[] from the client JS global.
     # _BOSS_LEGACY_CLIENT_MATCH=False (default) closes the leak; True keeps acceptable[]
     # for transitional back-compat tests only.
-    html = _replace_js_const(
-        html,
+    js = _replace_js_const(
+        js,
         "BOSS_QUESTIONS",
         "const BOSS_QUESTIONS = " + _serialize_boss_questions(
             content_json.get("boss_questions"),
@@ -1592,10 +1635,13 @@ def inject(
     )
 
     # BOSS_META — null when boss_meta absent; populated otherwise.
-    html = html.replace(
+    js = js.replace(
         "__BOSS_META__",
         _serialize_boss_meta(content_json.get("boss_meta")),
     )
+
+    # Inline the assembled JS into the HTML placeholder.
+    html = html.replace('<!-- NETS_MAIN_JS -->', f'<script>\n{js}\n</script>', 1)
 
     # Always inject the AI tutor runtime hook before </body>.
     ctx_json = _safe_js_json(runtime_context)
@@ -1609,16 +1655,16 @@ def inject(
 
 
 def verify_template() -> dict:
-    """Check that all expected JS constants exist in the template. For startup validation."""
+    """Check that all expected JS constants exist in the JS template. For startup validation."""
     missing = []
     for (_, const_name) in _ARRAY_CONSTANTS:
-        if not re.search(rf"const {const_name}\s*=\s*\[", _TEMPLATE):
+        if not re.search(rf"const {const_name}\s*=\s*\[", _JS_TEMPLATE):
             missing.append(const_name)
-    if not re.search(r"const RL_SCENARIO\s*=\s*\{", _TEMPLATE):
+    if not re.search(r"const RL_SCENARIO\s*=\s*\{", _JS_TEMPLATE):
         missing.append("RL_SCENARIO")
-    if "__RLC_CASE__" not in _TEMPLATE:
+    if "__RLC_CASE__" not in _JS_TEMPLATE:
         missing.append("RLC_CASE")
     for (_, const_name) in _OBJECT_CONSTANTS:
-        if not re.search(rf"const {const_name}\s*=\s*\{{", _TEMPLATE):
+        if not re.search(rf"const {const_name}\s*=\s*\{{", _JS_TEMPLATE):
             missing.append(const_name)
     return {"ok": len(missing) == 0, "missing": missing}
