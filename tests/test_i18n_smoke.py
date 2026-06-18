@@ -9,8 +9,8 @@ import pytest
 
 
 def test_lang_switch_renders_on_dashboard(client):
-    """Dashboard (/) must render all three lang-pill data-lang attributes."""
-    r = client.get("/")
+    """Dashboard (/index.html) must render all three lang-pill data-lang attributes."""
+    r = client.get("/index.html")
     assert r.status_code == 200
     body = r.text
     assert 'data-lang="uz"' in body
@@ -40,7 +40,7 @@ def test_lang_switch_renders_on_library(client):
 
 def test_i18n_scripts_loaded_in_order(client):
     """strings.js must appear in source before i18n.js on the dashboard."""
-    r = client.get("/")
+    r = client.get("/index.html")
     assert r.status_code == 200
     body = r.text
     pos_strings = body.find("i18n/strings.js")

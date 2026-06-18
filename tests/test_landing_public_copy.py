@@ -5,9 +5,14 @@ The landing page used to ship internal/dev-facing strings ("Template asosidagi
 builder", "fixture", "/h", "3 o'quv bosqichi", "Live Tutor", "checkpoint",
 "lesson card", "swipe", "concept", "wording", "homework", "teacher flow",
 "guided learning", "Har bir homeworkga ozgina miya bering.") that confused
-teachers and students. These tests pin the natural public-facing replacements
-in place across all three languages (uz/ru/en) so a future PR cannot silently
+teachers and students. These tests pin the natural public-facing copy in
+place across all three languages (uz/ru/en) so a future PR cannot silently
 revert the copy back to internal jargon.
+
+The "required copy" snippets below track the shipped Class A Education
+positioning ("Teach Anything. Prove it." / "Built on your textbooks" /
+"AI tutor that guides — and never spies"). The forbidden-jargon guards are
+positioning-independent and stay locked regardless of marketing copy.
 
 Locked surfaces:
   - hero stats (3 cards) — value + label per language
@@ -158,37 +163,37 @@ def test_ru_en_blocks_do_not_ship_dev_jargon(landing_source: str, forbidden: str
 @pytest.mark.parametrize(
     "snippet",
     [
-        # Hero stats (uz) — natural phrasing, not literal English
-        '"1 ta link", "dars, mashq va yordam bitta sahifada"',
-        '"AI tutor", "javobni aytmay, tushunishga yo‘naltiradi"',
-        '"Oson", "o‘qituvchi ulashadi, o‘quvchi darhol boshlaydi"',
-        # Feature cards (uz) — exact spec
-        "Uy vazifasini tez yaratish",
-        "O‘qituvchi mavzu, sinf va tilni tanlaydi",
-        "Bosqichma-bosqich tushuntirish",
-        "O‘quvchi avval mavzuni tushunadi, keyin mashq qiladi",
-        "AI yordam va feedback",
-        "AI tutor o‘quvchining savolini tushunadi",
-        "Savol berish imkoniyati",
-        "Tutor javobni tayyor aytib bermaydi",
-        # Launch CTA (uz) — replaces "Har bir homeworkga ozgina miya bering"
-        "Uy vazifasini tushunarli darsga aylantiring",
-        "o‘quvchi tushunadigan, mashq qiladigan va feedback oladigan",
+        # Hero stats (uz) — Class A positioning
+        '"Sizning darsliklaringiz", "almashtirilmaydi, balki kuchaytiriladi — siz o‘qitayotgan o‘quv dasturi asosida"',
+        '"IELTS · SAT · AP mos", "o‘quvchilar bitirish uchun zarur sertifikatlarga bog‘langan natija yo‘nalishlari"',
+        '"2–3 kun", "maktabni ulashga — oylar emas"',
+        # Feature cards (uz) — title + body
+        "Darsliklaringiz asosida",
+        "AI har bir mavzuni o‘yinlashtirilgan, mahorat sari yo‘naltirilgan yo‘lga aylantiradi",
+        "Davlat talab qilayotgan natijalar",
+        "IELTS, SAT, TOEFL va AP’ga moslangan imtihon tayyorgarligi yo‘nalishlari",
+        "Yagona operator tizimi",
+        "Kundalik’ga mos, ichida AI bilan",
+        "O‘qituvchiga kamroq yuk",
+        "o‘qituvchilaringiz baholash va nazoratga kamroq vaqt sarflaydi",
+        # Launch CTA (uz)
+        "Class A Education’ni maktabingizga olib keling.",
+        "biz pilotni sozlaymiz: sizning darsliklaringiz, sizning o‘quvchilaringiz, bir necha haftada haqiqiy natijalar",
         # Hero text (uz)
-        "Homeworks o‘qituvchiga oddiy topshiriq o‘rniga interaktiv dars",
-        # Lesson panels (uz) — bosqichma-bosqich Uzbek labels
-        "1-bosqich · Tushuntirish",
-        "2-bosqich · Mashq",
-        "3-bosqich · Yordam",
+        "Class A Education maktabingizning o‘z darsliklarini o‘yinlashtirilgan, AI yo‘naltirgan mahorat sari yo‘lga aylantiradi",
+        # Lesson panels (uz) — mastery-journey labels
+        "Har bir mavzu varaqa emas, yo‘lga aylanadi.",
+        "XP, kvestlar va streaklar — haqiqiy tushunish uchun mukofot.",
+        "Yodlashni emas, mahoratni isbotlang.",
         # Workflow (uz)
-        "Mavzuni tanlash",
-        "Bosqichlarni sozlash",
-        "Havolani ulashish",
-        "Natijani ko‘rish",
-        # Phone (uz) — header should be Uzbek
-        'header: "Uy vazifasi"',
-        'checkpoint: "Tekshiruv"',
-        # Student/tutor labels in UZ block
+        "O‘quv dasturingizni moslaymiz",
+        "Yo‘nalishlarni sozlang",
+        "O‘quvchilar o‘ynab o‘rganadi",
+        "Natijalarni ko‘rasiz",
+        # Phone (uz)
+        'header: "Class A"',
+        'checkpoint: "Mahorat tekshiruvi"',
+        # Student label in UZ block
         'studentLabel: "O‘quvchi"',
     ],
 )
@@ -203,17 +208,17 @@ def test_uz_natural_public_copy_present(landing_source: str, snippet: str):
 @pytest.mark.parametrize(
     "snippet",
     [
-        '"1 ссылка", "урок, практика и помощь на одной странице"',
-        '"AI-тьютор", "ведёт ученика к пониманию, не выдавая готовый ответ"',
-        '"Просто", "учитель делится, ученик сразу начинает"',
-        "Быстрая сборка для учителя",
-        "Пошаговое объяснение",
-        "AI-помощь и обратная связь",
-        "Можно задавать вопросы",
-        "Превратите домашку в понятный урок",
-        "Шаг 1 · Объяснение",
-        "Шаг 2 · Практика",
-        "Шаг 3 · Помощь",
+        '"Ваши учебники", "не заменяем, а усиливаем — на основе программы, которую вы уже преподаёте"',
+        '"IELTS · SAT · AP", "треки результатов, привязанные к сертификатам, нужным ученику для выпуска"',
+        '"2–3 дня", "на подключение школы — а не месяцы"',
+        "На основе ваших учебников",
+        "Результаты, которых теперь требует государство",
+        "Единая операторская система",
+        "Меньше нагрузки на учителя",
+        "Приведите Class A Education в вашу школу.",
+        "Подключаем вашу программу",
+        "Ученики учатся в игре",
+        "Вы видите результаты",
     ],
 )
 def test_ru_natural_public_copy_present(landing_source: str, snippet: str):
@@ -227,17 +232,17 @@ def test_ru_natural_public_copy_present(landing_source: str, snippet: str):
 @pytest.mark.parametrize(
     "snippet",
     [
-        '"One link", "lesson, practice and help on one page"',
-        '"AI tutor", "guides the student to understand, without giving away the answer"',
-        '"Easy", "the teacher shares, the student starts right away"',
-        "Quick to build, for teachers",
-        "Step-by-step explanation",
-        "AI help and feedback",
-        "Students can ask questions",
-        "Turn homework into a lesson students actually understand",
-        "Step 1 · Explain",
-        "Step 2 · Practice",
-        "Step 3 · Help",
+        '"Your textbooks", "enhanced, never replaced — we build on the curriculum you already teach"',
+        '"IELTS · SAT · AP-aligned", "outcome tracks mapped to the certificates students need to graduate"',
+        '"2–3 days", "to onboard a school — not months"',
+        "Built on your textbooks",
+        "Outcomes the state now requires",
+        "One operator system",
+        "Less teacher labor",
+        "Bring Class A Education to your school.",
+        "We map your curriculum",
+        "Students learn, gamified",
+        "You see outcomes",
     ],
 )
 def test_en_natural_public_copy_present(landing_source: str, snippet: str):
@@ -258,6 +263,6 @@ def test_landing_html_serves_200(client):
 def test_landing_js_serves_200(client):
     r = client.get("/js/landing.js")
     assert r.status_code == 200
-    assert "1 ta link" in r.text
-    assert "Uy vazifasini tushunarli darsga aylantiring" in r.text
-    assert "Quick to build, for teachers" in r.text
+    assert "Sizning darsliklaringiz" in r.text
+    assert "Class A Education’ni maktabingizga olib keling." in r.text
+    assert "Built on your textbooks" in r.text

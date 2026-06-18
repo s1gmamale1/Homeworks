@@ -167,7 +167,7 @@ def test_russian_values_use_cyrillic(lang_tables):
 
 
 @pytest.mark.parametrize("path,page", [
-    ("/", "dashboard"),
+    ("/index.html", "dashboard"),
     ("/builder.html", "builder"),
     ("/library.html", "library"),
 ])
@@ -182,7 +182,7 @@ def test_page_renders_data_i18n_attributes(client, path, page):
     )
 
 
-@pytest.mark.parametrize("path", ["/", "/builder.html", "/library.html"])
+@pytest.mark.parametrize("path", ["/index.html", "/builder.html", "/library.html"])
 def test_dashboard_pages_declare_html_lang_en(client, path):
     """Static fallback should match what's actually written in the page —
     English. The lang pill flips to uz/ru via localStorage at runtime."""
