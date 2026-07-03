@@ -1,0 +1,324 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "3-mavzu. Parallelogrammning alomatlari",
+    "subject_display": "Geometriya",
+    "section": "3-mavzu",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Parallelogramm alomati", "def": "To'rtburchakning parallelogramm ekanligini aniqlash va isbotlash imkonini beruvchi geometrik shart. Alomatlar shaklning xossalaridan kelib chiqib, uni tanib olishga xizmat qiladi.", "cluster": "QOIDA" },
+    { "term": "Parallelogrammning 1-alomati (tomonlar bo'yicha)", "def": "Agar to'rtburchakning ikkita tomoni teng va parallel bo'lsa, u parallelogrammdir. Bu yerda gap bir juft qarama-qarshi tomon haqida: AB = CD va AB ∥ CD bo'lsa, ABCD — parallelogramm.", "cluster": "QOIDA" },
+    { "term": "1-alomatning chizmadagi belgilari", "def": "Chizmada bir juft tomon (AB va CD) uchun tenglikni bildiruvchi chiziqchalar va parallellikni bildiruvchi yo'naltirilgan strelkalar qo'yiladi — ya'ni ular ham teng, ham parallel.", "cluster": "MISOL" },
+    { "term": "Parallelogrammning 2-alomati", "def": "Agar to'rtburchakning qarama-qarshi tomonlari jufti-jufti bilan teng bo'lsa, u parallelogrammdir. Ikkala juft qarama-qarshi tomonlarning tengligi shart qilinadi.", "cluster": "QOIDA" },
+    { "term": "Parallelogrammning 3-alomati (diagonallar bo'yicha)", "def": "Agar to'rtburchakning diagonallari kesishish nuqtasida teng ikkiga bo'linsa, u parallelogrammdir. Masalan: AC va BD diagonallar O nuqtada kesishib, AO = OC va BO = OD bo'lishi.", "cluster": "QOIDA" },
+    { "term": "3-alomatning chizmadagi belgilari", "def": "Chizmada AC va BD diagonallari O nuqtada kesishadi; AO va OC kesmalarida bitta chiziqcha, BO va OD kesmalarida ikkita chiziqcha qo'yiladi — diagonallarning o'rtadan bo'linishi parallelogrammni isbotlaydi.", "cluster": "MISOL" },
+    { "term": "1-alomatni isbotlashda tayaniladigan xossalar", "def": "Uchburchaklar tengligining TBT alomati va ichki almashinuvchi burchaklarning tengligi. Diagonal o'tkazish orqali hosil bo'lgan ikki uchburchakning tengligi isbotlanadi.", "cluster": "METOD" },
+    { "term": "Xato tasavvur: bir juft tomon parallelligi", "def": "To'rtburchakning faqat bir juft tomoni parallel bo'lishi uni har doim ham parallelogramm qilmaydi — u trapetsiya bo'lishi mumkin. Parallellik bilan birga o'sha tomonlarning tengligi ham talab etiladi.", "cluster": "TAHLIL" },
+    { "term": "2-alomatni isbotlashdagi uchburchaklar alomati", "def": "TTT (uchta tomoni bo'yicha) alomati. Diagonal to'rtburchakni ikkita teng (uchta tomoni o'zaro teng bo'lgan) uchburchakka ajratadi.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Parallelogramm alomatlari",
+    "case_setup": {
+      "story": "Siz mebel ustaxonasida usta yordamchisi bo'lib ishlayapsiz. Bugun siz stol usti uchun mo'ljallangan to'rtburchak shaklidagi yog'och ramkani yig'ishingiz kerak. Ramkani yig'ish jarayonida siz ikkita qarama-qarshi yog'och bo'lakning (tomonning) uzunligini o'lchadingiz va ular bir-biriga mutlaqo teng ekanligini (masalan, 120 sm) aniqladingiz. So'ngra, maxsus asbob yordamida ushbu ikki tomonning bir-biriga parallel ravishda mahkamlanganligini tekshirib, bunga ishonch hosil qildingiz. Usta sizga: 'Qolgan ikki tomonni o'lchab o'tirma, bu shaklning qarama-qarshi tomonlari o'z-o'zidan parallel va teng bo'ladi', dedi. Siz ushbu xulosaning geometrik jihatdan qanchalik to'g'ri ekanligini tahlil qilishingiz kerak.",
+      "role": "Mebel ustaxonasi usta yordamchisi",
+      "task": "Bir juft tomonning tengligi va parallelligi shaklni parallelogramm qilishini geometrik alomatlar asosida tekshiring."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Ushbu vaziyatda to'rtburchakning turini aniqlash uchun qaysi geometrik tushunchaga murojaat qilinadi?",
+        "options": [
+          "To'rtburchakning ichki burchaklari yig'indisi xossasiga.",
+          "Shaklning parallelogramm ekanligini tasdiqlovchi alomatga.",
+          "Faqat parallel to'g'ri chiziqlarning uchinchi chiziq bilan kesishish xossasiga."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Darslikka ko'ra, to'rtburchakning parallelogramm ekanligini isbotlash uchun uning barcha elementlarini tekshirish shart emas. Buning uchun ma'lum bir yetarli shartlar — alomatlar mavjud. Agar to'rtburchak ushbu alomatlardan birontasiga javob bersa, u parallelogramm hisoblanadi.",
+        "feedback": "To'g'ri! Berilgan ma'lumotlar (ikki tomonning tengligi va parallelligi) shaklni parallelogramm deb atash uchun yetarli shartni shakllantiradi."
+      },
+      {
+        "kind": "decide",
+        "question": "Agar sizda faqat bir juft qarama-qarshi tomonning ham teng, ham parallel ekanligi haqida ma'lumot bo'lsa, ushbu shakl haqida qanday yakuniy qarorga kelish mumkin?",
+        "options": [
+          "Bu shakl aniq parallelogramm bo'ladi.",
+          "Bu shakl trapetsiya bo'lishi ham mumkin.",
+          "Bu ma'lumot shaklni aniqlash uchun yetarli emas."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 3 },
+        "learning_block": "Parallelogrammni aniqlashning uchta asosiy alomati bor: 1) Ikkita qarama-qarshi tomoni teng va parallel bo'lsa. 2) Qarama-qarshi tomonlari jufti-jufti bilan teng bo'lsa. 3) Diagonallari kesishish nuqtasida teng ikkiga bo'linsa. Ushbu shartlardan biri bajarilishi shaklning parallelogramm ekanligini kafolatlaydi.",
+        "feedback": "To'g'ri! Parallelogrammning 1-alomatiga ko'ra, agar to'rtburchakning ikkita tomoni teng va parallel bo'lsa, u parallelogrammdir."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun faqat bir juft tomonning tengligini bilish (parallellikni hisobga olmasdan) shaklni parallelogramm deyishga asos bo'la olmaydi?",
+        "options": [
+          "Chunki parallelogrammda diagonallar har doim teng bo'lishi shart.",
+          "Chunki bu holda shakl teng yonli trapetsiya bo'lib qolishi mumkin.",
+          "Chunki parallelogrammda barcha tomonlar doimo o'zaro teng bo'ladi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Faqat bir juft tomonning tengligi (parallelliksiz) shaklni noto'g'ri, qiyshiq ramkaga aylantirishi mumkin. Bunday shakl parallelogramm emas, balki teng yonli trapetsiya bo'lib qoladi va parallelogramm ta'rifiga zid keladi.",
+        "feedback": "Barakalla! Faqat bir juft tomonning tengligi shaklni noto'g'ri (qiyshiq) ramkaga aylantirishi mumkin, bu esa parallelogramm ta'rifiga zid keladi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gapdan iborat javob bering: (1) Stol ramkasi misolida parallelogrammning qaysi alomatini payqadingiz? (2) Nima uchun usta hamma tomonlarni o'lchashni shart emas deb hisobladi? (3) Agar siz parallellikni tekshirmasdan faqat tenglikka tayanganingizda, ramka qanday ko'rinishda bo'lishi xavfi bor edi?",
+      "min_chars": 80,
+      "concept_keywords": ["1-alomat", "bir juft tomon teng va parallel", "parallelogramm"],
+      "method_keywords": ["alomatni qo'llash", "hamma tomonni o'lchamaslik", "yetarli shart"],
+      "mistake_keywords": ["teng yonli trapetsiya", "parallelliksiz", "qiyshiq ramka"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz usta aytganidek, bir juft tomonning tengligi va parallelligini ta'minladingiz. Natijada ramka mukammal parallelogramm shakliga keldi. Qarama-qarshi tomonlar o'z-o'zidan parallel bo'ldi va stol usti qismi ramkaga aniq tushdi.",
+      "wrong_path": "Siz faqat ikkita tomonning 120 sm ekanligiga e'tibor berdingiz, lekin ularning parallelligini tekshirmadingiz va tomonlarni burchak ostida mahkamladingiz. Faqat bir juft tomon teng bo'lib, parallel bo'lmasa, shakl parallelogramm emas, balki teng yonli trapetsiya bo'lib qoladi va ramkaning burchaklari noto'g'ri chiqadi."
+    },
+    "feedback_summary": {
+      "student_understood": "Parallelogramm bo'lishi uchun minimal zarur shartlar (alomatlar) yetarli ekanligini bildingiz.",
+      "mistake_appeared": "Faqat tomonlar tengligining o'zi parallelliksiz yetarli emasligi — trapetsiya xavfi mavjud edi.",
+      "what_to_review": "Parallelogrammning uchta alomati va ularning isbotlanish ketma-ketligini qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha checkpoint savollariga javob bering",
+        "Decision Process Explanation (DPE) qismida mulohaza yuriting",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "'Parallelogramm alomati' tushunchasiga berilgan eng to'g'ri ta'rifni ko'rsating.", "options": ["Shaklning faqat burchaklariga tegishli bo'lgan o'ziga xos xususiyati.", "To'rtburchakning parallelogramm ekanligini aniqlash va isbotlash imkonini beruvchi shart.", "Parallelogramm deb ataluvchi shaklning chizish qoidalari to'plami.", "Parallelogrammning barcha xossalarini umumlashtiruvchi nazariy xulosa."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Parallelogrammning 1-alomatiga ko'ra: Agar to'rtburchakning ikkita tomoni teng va _____ bo'lsa, u parallelogrammdir.", "answer_spec": { "type": "text_fuzzy", "expected": "parallel", "accepted_answers": ["parallel", "parallellik", "parallel holda joylashgan"], "allow_ai_fallback": true }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Chizmada bir juft tomon (AB va CD) uchun tenglik chiziqchalari va parallellik strelkalari qo'yilgan. Bu ma'lumotlar parallelogrammning qaysi alomatini ifodalaydi?", "options": ["Qarama-qarshi tomonlarning jufti-jufti bilan parallelligi haqidagi ta'rif.", "Diagonallarning kesishish nuqtasida teng bo'linishi haqidagi 3-alomat.", "Bir juft qarama-qarshi tomonning ham teng, ham parallel bo'lishi haqidagi 1-alomat.", "Hamma tomonlarning o'zaro tengligi haqidagi romb xossasi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Parallelogrammning 2-alomati bajarilishi uchun to'rtburchakning tomonlari qanday shartni qanoatlantirishi kerak?", "options": ["Ixtiyoriy ikkita tomoni o'zaro teng bo'lishi kifoya.", "Faqat bitta juft qarama-qarshi tomoni teng bo'lishi shart.", "Qarama-qarshi tomonlari jufti-jufti bilan teng bo'lishi kerak.", "To'rtala tomoni ham bir-biriga teng bo'lishi shart."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Parallelogrammning 3-alomatiga ko'ra, agar to'rtburchakning diagonallari kesishish nuqtasida _____ bo'linsa, u parallelogramm bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "teng ikkiga", "accepted_answers": ["teng ikkiga", "ikkiga teng", "o'rtasidan", "tengdan"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "Chizmada AC va BD diagonallari O nuqtada kesishib, AO = OC va BO = OD bo'lgani belgilangan. Bu belgilar asosida qanday xulosa chiqarish mumkin?", "options": ["To'rtburchakning diagonallari o'zaro teng, shuning uchun bu to'g'ri to'rtburchak.", "Diagonallar kesishish nuqtasida teng ikkiga bo'lingan, demak bu parallelogramm.", "Diagonallar burchaklarni teng ikkiga bo'lgan, demak bu romb.", "Diagonallar perpendikulyar kesishgan, demak bu kvadrat."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "Parallelogrammning 1-alomatini isbotlashda qaysi geometrik tushunchalardan foydalaniladi?", "options": ["Uchburchaklar tengligining TBT alomati va ichki almashinuvchi burchaklar tengligi.", "Faqat burchaklarning yig'indisi 360° ga tenglik xossasi.", "Uchburchaklar tengligining TTT alomati va tashqi burchaklar xossasi.", "Pifagor teoremasi va o'xshashlik alomatlari."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "To'rtburchakning faqat bir juft tomoni parallel bo'lishi uning parallelogramm ekanligini isbotlash uchun _____ (yetarli / yetarli emas).", "answer_spec": { "type": "text_fuzzy", "expected": "yetarli emas", "accepted_answers": ["yetarli emas", "xato", "noto'g'ri", "kamlik qiladi"], "allow_ai_fallback": true }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Parallelogrammning 2-alomatini (qarama-qarshi tomonlar tengligi) isbotlashda qaysi uchburchaklar tengligi alomati hal qiluvchi rol o'ynaydi?", "options": ["TBT (Tomon-Burchak-Tomon).", "BTB (Burchak-Tomon-Burchak).", "TTT (Tomon-Tomon-Tomon).", "To'g'ri burchakli uchburchaklar tengligi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "fill_blank", "prompt": "Agar to'rtburchakning qarama-qarshi tomonlari _____ bilan teng bo'lsa, u parallelogrammdir.", "answer_spec": { "type": "text_fuzzy", "expected": "jufti-jufti", "accepted_answers": ["jufti-jufti", "juft-juft", "juft bo'lib"], "allow_ai_fallback": true }, "flashcard_ref": "card_4" },
+      { "type": "mcq", "prompt": "Qarorlar to'ri: quyidagi harakatlardan qaysi biri to'rtburchakning parallelogramm ekanligini isbotlash uchun YETARLI?", "options": ["Diagonallarning kesishish nuqtasida to'g'ri burchak (90°) hosil qilishini tekshirish.", "Bir juft qarama-qarshi tomonning ham parallel, ham o'zaro tengligini isbotlash.", "To'rtburchakning diagonallari o'zaro teng ekanligini o'lchash.", "Faqat bir juft qarama-qarshi tomonning o'zaro tengligini aniqlash."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "mcq", "prompt": "Gapni to'ldiring: 'To'rtburchakning diagonallari kesishish nuqtasida _____, bu uning parallelogramm ekanligini isbotlash uchun yetarli.'", "options": ["perpendikulyar bo'lsa", "o'zaro teng bo'lsa", "teng ikkiga bo'linsa", "shunchaki kesishsa"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_5" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_geo_03",
+    "expert_role": "structural_engineer",
+    "title": "Qurilish maydonchasida geometrik nazorat",
+    "intro": "Siz yirik turar-joy majmuasi qurilishida poydevor ishlarini nazorat qiluvchi loyiha muhandisisiz. Poydevor kotlovanining shakli parallelogramm talablariga muvofiqligini geometrik alomatlar asosida tasdiqlashingiz kerak. Lazerli o'lchagich AB = 15,4 m, unga qarama-qarshi CD = 15,4 m va AB ∥ CD ekanligini ko'rsatdi; chuqurligi 2,5 metr.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Mavjud ma'lumotlar asosida xulosa",
+        "prompt": "Sizda AB = CD = 15,4 m va AB ∥ CD ekanligi haqida aniq ko'rsatma bor. Ushbu holatda shaklning parallelogramm ekanligi haqida nima deya olasiz?",
+        "options": [
+          { "id": "a", "label": "Bu ma'lumotlar shaklni parallelogramm deb hisoblash uchun to'liq yetarli.", "is_correct": true, "consequence": "To'g'ri qaror, hamkasbim. 1-alomat aynan shu vaziyat uchun yaratilgan: bir juft tomonning ham teng, ham parallel bo'lishi shaklning parallelogramm ekanligini kafolatlaydi." },
+          { "id": "b", "label": "Faqat bir juft tomonning o'zi yetarli emas, BC va AD tomonlarini ham o'lchash shart.", "is_correct": false, "consequence": "Siz juda ehtiyotkorlik qilyapsiz, lekin 1-alomatga ko'ra ortiqcha o'lchovlarsiz ham xulosa qilish mumkin." },
+          { "id": "c", "label": "Bu shakl teng yonli trapetsiya bo'lishi ham mumkin, shuning uchun burchaklarni tekshirish kerak.", "is_correct": false, "consequence": "Teng yonli trapetsiyada parallel tomonlar teng bo'lmaydi. Bu yerda esa AB = CD va AB ∥ CD — bu 1-alomatni to'liq qanoatlantiradi." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Alternativ o'lchov (lazer nosozligi)",
+        "prompt": "Tasavvur qiling, lazerning parallellikni aniqlash funksiyasi buzildi. Endi sizda faqat tomonlar uzunligi bor: AB = 15,4 m, CD = 15,4 m, BC = 12,8 m, AD = 12,8 m. Faqat shu to'rtta uzunlikka tayanib, shaklni parallelogramm deb qabul qilasizmi?",
+        "options": [
+          { "id": "a", "label": "Ha, qarama-qarshi tomonlari jufti-jufti bilan teng bo'lgani uchun bu parallelogramm.", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Yo'q, kamida bitta burchak 90° ekanligini tekshirishimiz shart.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Yo'q, bu shakl deltoid (varrak shakli) bo'lishi ham mumkin.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Markaziy nuqtadan tekshiruv",
+        "prompt": "Kotlovan ichida materiallar ko'pligi sababli chetlarni o'lchash qiyinlashdi. Siz faqat diagonallarning kesishish nuqtasini (O) belgiladingiz: AO = 9 m, OC = 9 m, BO = 7 m, OD = 7 m. Bu natija poydevorning parallelogramm shaklidaligini tasdiqlaydimi?",
+        "options": [
+          { "id": "a", "label": "Yo'q, chunki AO va BO bir-biriga teng emas (9 ≠ 7).", "is_correct": false, "consequence": "AO = BO bo'lishi shart emas (bu faqat to'g'ri to'rtburchakda bo'ladi). Har bir diagonalning o'z yarmi o'ziga teng bo'lishi kifoya." },
+          { "id": "b", "label": "Ha, chunki diagonallar kesishish nuqtasida teng ikkiga bo'linyapti.", "is_correct": true, "consequence": "Mukammal. 3-alomat diagonallarning o'zaro tengligini emas, aynan kesishish nuqtasida o'rtadan bo'linishini (AO = OC, BO = OD) talab qiladi." },
+          { "id": "c", "label": "Yo'q, diagonallar o'zaro perpendikulyar ekanligini ham tekshirish kerak.", "is_correct": false, "consequence": "Perpendikulyarlik faqat romb yoki kvadratga xos. Oddiy parallelogramm uchun bu shart emas." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Poydevorni parallelogramm deb tasdiqlashda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Parallelogramm alomatlaridan biri (tomonlar tengligi-parallelligi yoki diagonallarning o'rtadan bo'linishi) bajarilishi", "is_correct": true },
+          { "id": "c2", "label": "Kotlovanning 2,5 metr chuqurligi", "is_correct": false },
+          { "id": "c3", "label": "O'lchash uchun lazerli asbobdan foydalanilgani", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun kotlovanning 2,5 metr chuqurligi haqidagi ma'lumot shaklni aniqlashda ahamiyatsiz (qizil chiziq) edi? Shaklni parallelogramm deb tasdiqlashda aynan qaysi alomatlardan foydalandingiz? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["chuqurlik ahamiyatsiz", "qizil chiziq", "1-alomat", "2-alomat", "3-alomat", "tekislikdagi elementlar", "diagonallar teng ikkiga bo'linishi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_geo_03",
+      "instructions": "Quyida to'rtburchakning parallelogramm ekanligini (2-alomat) isbotlash bosqichlari keltirilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "ABCD to'rtburchakda AB = CD va BC = DA ekanligi berilgan bo'lsin.", "is_broken": false },
+        { "id": "b2", "text": "To'rtburchakning AC diagonali o'tkaziladi va natijada △ABC hamda △CDA uchburchaklar hosil bo'ladi.", "is_broken": false },
+        { "id": "b3", "text": "Ushbu uchburchaklarda AB = CD (shartga ko'ra), BC = DA (shartga ko'ra) va AC — umumiy tomon, demak △ABC ≅ △CDA (TTT alomati).", "is_broken": false },
+        { "id": "b4", "text": "Teng uchburchaklarning mos elementlari sifatida ∠BAC = ∠CAD tengligi kelib chiqadi.", "is_broken": true },
+        { "id": "b5", "text": "Ichki almashinuvchi burchaklar tengligiga ko'ra AB ∥ CD va BC ∥ AD bo'ladi, demak ABCD — parallelogramm.", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "∠BAC = ∠ACD", "accepted_answers": ["∠BAC = ∠ACD", "BAC = ACD", "BAC va ACD burchaklar teng", "∠BAC va ∠ACD teng"], "allow_ai_fallback": true },
+      "hint": "Uchburchaklar tengligida qaysi burchaklar o'zaro mos kelishiga (ular qaysi teng tomonlar qarshisida yotganiga) va qaysi burchaklar parallellikni isbotlash uchun ichki almashinuvchi bo'lib xizmat qilishiga e'tibor bering.",
+      "why_prompt": "Nima uchun Block 4 dagi burchaklar tengligi AB ∥ CD ekanligini isbotlash uchun xizmat qila olmaydi? △ABC ≅ △CDA tengligidan BC tomon qarshisida yotgan ∠BAC burchak AD tomon qarshisida yotgan ∠ACD burchakka teng bo'lishi kerak; ∠CAD esa CD tomon qarshisida yotadi va ∠BAC ga mos emas, u ichki almashinuvchi burchaklar juftligini hosil qilmaydi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_geo_03",
+      "case_setup": "Kartalarni oching va har bir geometrik tasvir, ta'rif yoki isbotlash bosqichini unga mazmunan mos keladigan jufti bilan birlashtiring. Juftliklarni kartalar joylashuviga qarab emas, balki parallelogramm alomatlari haqidagi bilimlaringizga tayanib toping.",
+      "pairs": [
+        { "id": "p1", "left": "Chizmada bir juft tomon (AB va CD) uchun tenglik chiziqchalari va parallellik strelkalari qo'yilgan", "right": "Parallelogrammning 1-alomati" },
+        { "id": "p2", "left": "Chizmada diagonallar kesishish nuqtasida teng ikkiga bo'lingan (AO = OC, BO = OD)", "right": "Parallelogrammning 3-alomati" },
+        { "id": "p3", "left": "Agar to'rtburchakning qarama-qarshi tomonlari jufti-jufti bilan teng bo'lsa", "right": "Parallelogrammning 2-alomati" },
+        { "id": "p4", "left": "1-alomatni isbotlashda tayaniladigan burchaklar juftligi", "right": "Ichki almashinuvchi burchaklar" },
+        { "id": "p5", "left": "2-alomatni isbotlashda qo'llaniladigan uchburchaklar tengligi alomati", "right": "TTT (uchta tomoni bo'yicha) alomati" },
+        { "id": "p6", "left": "To'rtburchakning faqat bir juft tomoni parallel bo'lishi", "right": "Parallelogramm bo'lishi uchun yetarli emas" }
+      ],
+      "checkpoints": [
+        { "question": "Diagonallarning kesishish nuqtasida teng ikkiga bo'linishi qaysi alomatga juftlanadi?", "options": ["1-alomat", "2-alomat", "3-alomat"], "correct_index": 2 },
+        { "question": "2-alomatni isbotlashda qaysi uchburchaklar tengligi alomati qo'llaniladi?", "options": ["TBT alomati", "TTT alomati", "BTB alomati"], "correct_index": 1 },
+        { "question": "To'rtburchakning faqat bir juft tomoni parallel bo'lishi nimani anglatadi?", "options": ["Bu parallelogramm bo'lishi uchun yetarli", "Bu parallelogramm bo'lishi uchun yetarli emas (trapetsiya bo'lishi mumkin)"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Parallelogrammning 1-alomati aks etgan kartada nega aynan bir xil tomonlarning ham parallel, ham tengligi ko'rsatilgan? Agar talaba faqat yuzaki o'xshashlikka tayanib, bir juft tomoni parallel va boshqa bir juft tomoni teng bo'lgan shaklni parallelogramm deb hisoblasa, u qanday geometrik shakl bilan adashgan bo'ladi?",
+      "expected_components": ["teng yonli trapetsiya", "1-alomatning qat'iy sharti", "bir juft tomonning ham teng, ham parallel bo'lishi zarurligi"],
+      "consequence": { "correct_path": "Har bir tasvir va shartni to'g'ri alomat yoki isbot asosi bilan uladingiz.", "wrong_path": "Bir juft tomon parallelligi bilan boshqa juft tomon tengligini aralashtirsangiz, shaklni noto'g'ri parallelogramm deb hisoblab, teng yonli trapetsiya bilan adashishingiz mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_geo_03",
+      "case_setup": "Berilgan har bir geometrik shartni (P1–P3) uning darslikda keltirilgan tegishli isbotlash usuli (asosi, P4–P6) bilan bog'lang. Bo'laklarni faqat darslikdagi mantiqiy yo'nalishda — shartdan isbot asosiga qarab birlashtiring.",
+      "pieces": [
+        { "id": "P1", "label": "To'rtburchakning ikkita (bir juft) tomoni o'zaro teng va parallel.", "role": "shart" },
+        { "id": "P2", "label": "To'rtburchakning qarama-qarshi tomonlari jufti-jufti bilan o'zaro teng.", "role": "shart" },
+        { "id": "P3", "label": "To'rtburchak diagonallarining kesishish nuqtasida teng ikkiga bo'linishi.", "role": "shart" },
+        { "id": "P4", "label": "Isbot asosi: TBT alomati (ikki tomon va burchak) hamda ichki almashinuvchi burchaklar xossasi.", "role": "isbot_asosi" },
+        { "id": "P5", "label": "Isbot asosi: TTT alomati (uchta tomon) hamda parallel to'g'ri chiziqlar alomati.", "role": "isbot_asosi" },
+        { "id": "P6", "label": "Isbot asosi: TBT alomati, vertikal hamda ichki almashinuvchi burchaklar xossasi.", "role": "isbot_asosi" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (bir juft tomon teng va parallel) qaysi isbot asosiga ulanadi?", "options": ["P4 (TBT + ichki almashinuvchi burchaklar)", "P5 (TTT + parallel chiziqlar)"], "correct_index": 0 },
+        { "q": "P2 (qarama-qarshi tomonlar jufti-jufti teng) qaysi isbot asosiga ulanadi?", "options": ["P5 (TTT + parallel chiziqlar)", "P6 (TBT + vertikal burchaklar)"], "correct_index": 0 },
+        { "q": "P3 (diagonallar teng ikkiga bo'linadi) qaysi isbot asosiga ulanadi?", "options": ["P4 (TBT + ichki almashinuvchi burchaklar)", "P6 (TBT + vertikal burchaklar)"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun to'rtburchakning qarama-qarshi tomonlari jufti-jufti bilan tengligi (P2) aynan TTT alomati (P5) orqali isbotlanadi? Agar siz P2 bo'lagini yuzaki o'xshashlikka tayanib P4 (TBT) bilan bog'lasangiz, isbot jarayonida qaysi element yetishmasligi sababli mantiqiy xato yuzaga keladi?",
+      "expected_components": ["diagonal o'tkazilganda uchta tomon ma'lum", "burchaklar haqida dastlabki ma'lumot yo'q", "shuning uchun TBT qo'llab bo'lmaydi, TTT qo'llaniladi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Siz uyingiz uchun yangi temir darvoza yasayapsiz. Darvoza ramkasini tashkil etuvchi to'rtta metalldan ikkitasi (AB va CD) o'zaro teng (2 metr) va ular yerga nisbatan qat'iy vertikal, ya'ni bir-biriga parallel ravishda o'rnatildi. Boshqa ikki tomonga (AD va BC) hali tegilmadi.",
+      "why": "Nima uchun ushbu holatda darvoza ramkasini (ABCD) parallelogramm deb atashga to'laqonli asos bor? Qaysi alomat buni tasdiqlaydi?",
+      "how": "Ushbu alomatni qo'llash uchun sizda mavjud bo'lgan ma'lumotlarni qanday ketma-ketlikda bog'laysiz?",
+      "what": "Bu geometrik xulosa darvozaning qolgan ikki tomoni (AD va BC) haqida qanday amaliy ma'lumot beradi va agar AB va CD teng bo'lib, lekin parallel o'rnatilmaganda ramka shakli qanday o'zgarardi?",
+      "prompt": "Darvoza ramkasi qaysi alomatga ko'ra parallelogramm ekanini asoslang va parallellik bo'lmasa shakl qanday o'zgarishini tushuntiring.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Darvozaning faqat bitta juft qarama-qarshi tomoni (AB va CD) haqidagi ma'lumotlarga diqqat qiling: ular ham teng, ham parallel.", "1-alomatga ko'ra, parallelogramm bo'lishi uchun necha juft tomonning bir vaqtning o'zida ham teng, ham parallel bo'lishi kifoya?", "Agar tomonlar parallel bo'lmasa, ular bir-biri tomon og'ishi mumkin; bu holda qanday 'qiyshiq' shakl (masalan, trapetsiya) hosil bo'lishini o'ylab ko'ring."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "1-alomat: bir juft tomon (AB, CD) ham teng, ham parallel bo'lgani uchun parallelogramm; parallel bo'lmasa trapetsiya bo'lardi", "accepted_answers": ["1-alomat", "bir juft tomon teng va parallel", "parallel bo'lmasa trapetsiya bo'lardi", "AB va CD teng va parallel"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogramm-1-alomati", "geometrik-isbot-mantiqi", "parallellik bo'lmasa trapetsiya"],
+      "correct_feedback": "Barakalla! Siz 1-alomatni to'g'ri tanidingiz va bitta juft tomonning ham teng, ham parallel bo'lishi butun shaklni parallelogrammga aylantirishini to'g'ri asosladingiz.",
+      "partial_feedback": "Siz 1-alomatni esladingiz, lekin parallellik sharti bajarilmasa, shakl qanday o'zgarishi (trapetsiya varianti) haqidagi interpretatsiyani to'ldirishingiz kerak.",
+      "wrong_feedback": "Hali emas. Agar faqat tenglik bo'lib, parallellik bo'lmasa, darvoza qiyshiq chiqishi mumkinmi? 1-alomatning ikkala shartini (tenglik va parallellik) qaytadan ko'rib chiqing."
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Duradgor rasm ramkasini yasadi va uning qarama-qarshi tomonlarini o'lchadi: AB = CD = 50 sm va BC = AD = 30 sm. Biroq, u ramka burchaklarini o'lchashni unutdi. Shogirdi: 'Bu ramka aniq parallelogramm bo'ladi', deb ta'kidlamoqda.",
+      "why": "Nima uchun qarama-qarshi tomonlarning jufti-jufti bilan tengligi ushbu shaklni parallelogramm deb atash uchun yetarli?",
+      "how": "Agar biz ramkani diagonal (masalan, AC) bo'ylab xayolan bo'lsak, qaysi uchburchaklar tengligi alomati orqali bu shaklning parallelogrammligini isbotlash mumkin?",
+      "what": "Bu xulosa ramkaning qarama-qarshi tomonlari parallelligini kafolatlaydimi? Agar faqat AB = CD bo'lib, BC va AD har xil bo'lganda, shogirdning gapi nega noto'g'ri bo'lar edi?",
+      "prompt": "Ramka nega parallelogramm ekanini 2-alomat va TTT orqali asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Parallelogrammning 2-alomatida tomonlarning 'jufti-jufti bilan' tengligi haqida nima deyilganini eslang.", "Diagonal o'tkazilganda hosil bo'lgan ikkita uchburchakning tomonlariga qarang: uchala tomoni ham mos ravishda teng emasmi?", "Agar faqat bir juft tomon teng bo'lsa, shakl teng yonli trapetsiya bo'lib qolishi mumkinligini hisobga oling."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "2-alomat: qarama-qarshi tomonlar jufti-jufti teng; AC diagonali orqali △ABC ≅ △CDA (TTT), demak parallelogramm", "accepted_answers": ["2-alomat", "TTT alomati", "qarama-qarshi tomonlar jufti-jufti teng", "diagonal orqali uchburchaklar tengligi"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogramm-2-alomati", "uchburchaklar-tengligi-ttt", "diagonal orqali isbot"],
+      "correct_feedback": "Juda yaxshi! Siz TTT alomati orqali uchburchaklar tengligini va bu orqali 2-alomatning isbotini chuqur tushunganingizni ko'rsatdingiz.",
+      "partial_feedback": "Tomonlarning jufti-jufti bilan tengligini to'g'ri ko'rsatdingiz, lekin bu xususiyat qanday qilib parallellikni keltirib chiqarishini (burchaklar orqali) aniqroq tushuntiring.",
+      "wrong_feedback": "Hali emas. Faqat bitta juft tomon teng bo'lishi yetarlimi? Nima uchun ikkala juft ham teng bo'lishi shartligini 2-alomat asosida qayta tahlil qiling."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Bog'bon to'rtburchak shaklidagi maydonning markazini topmoqchi bo'lib, burchaklardan diagonallar o'tkazdi. U diagonallarning kesishish nuqtasidan (O) har bir burchakkacha bo'lgan masofani o'lchab, AO = 4 m, OC = 4 m, BO = 3 m, OD = 3 m ekanligini aniqladi.",
+      "why": "Nima uchun diagonallarning bunday bo'linishi (kesishish nuqtasida teng ikkiga bo'linishi) maydonning parallelogramm ekanligini isbotlaydi?",
+      "how": "Ushbu ma'lumotlardan foydalanib, AOB va COD uchburchaklarining tengligini va bu orqali tomonlar parallelligini qanday isbotlaysiz? (Vertikal burchaklarga e'tibor bering.)",
+      "what": "Agar bog'bon o'lchaganida AO = 4 m, OC = 4 m bo'lsa-yu, lekin BO = 3 m va OD = 5 m bo'lib chiqsa, maydonning shakli qanday o'zgarardi va u parallelogramm bo'la olarmidi?",
+      "prompt": "Diagonallarning teng ikkiga bo'linishi nega parallelogramm alomati ekanini vertikal burchaklar orqali asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["3-alomat diagonallarning o'zaro nisbati haqida nima deydi? Kesishish nuqtasi ular uchun qanday nuqta bo'lishi kerak?", "O nuqtadagi burchaklarga qarang; vertikal burchaklar o'zaro teng bo'lishidan foydalanib, TBT alomatini qo'llay olasizmi?", "Agar bir diagonal o'rtadan bo'linmasa, burchaklar va tomonlar parallelligi buzilishini ko'z oldingizga keltiring."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "3-alomat: diagonallar kesishish nuqtasida teng ikkiga bo'linadi (AO = OC, BO = OD); vertikal burchaklar va TBT orqali AOB ≅ COD, demak parallelogramm", "accepted_answers": ["3-alomat", "diagonallar teng ikkiga bo'linadi", "vertikal burchaklar va TBT", "AO = OC va BO = OD"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogramm-3-alomati", "vertikal-burchaklar-xossasi", "TBT alomati"],
+      "correct_feedback": "Ajoyib! Diagonallarning kesishish nuqtasida teng ikkiga bo'linishi parallelogrammning eng kuchli alomatlaridan biri ekanini to'g'ri isbotladingiz.",
+      "partial_feedback": "Diagonallar teng bo'linganini ko'rdingiz, lekin buning natijasida hosil bo'lgan ichki almashinuvchi burchaklar parallellikni qanday isbotlashini tushuntirishda biroz adashtingiz.",
+      "wrong_feedback": "Hali emas. Diagonallarning o'zaro tengligi shartmi yoki ularning kesishish nuqtasida teng bo'linishimi? 3-alomatning aniq ta'rifiga qayting."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Sizga ABCD to'rtburchak berilgan. Siz unda AB ∥ CD va AB = CD ekanligini bilasiz. Sizdan bu shaklning parallelogramm ekanligini isbotlash uchun o'tkazilgan AC diagonali yordamida hosil bo'lgan uchburchaklar tahlili talab qilinadi.",
+      "why": "Nima uchun AB ∥ CD sharti bizga ∠BAC va ∠ACD burchaklarning tengligini beradi? Bu yerda qaysi geometrik tushuncha ishlayapti?",
+      "how": "ABC va CDA uchburchaklari tengligini isbotlash uchun qaysi elementlar (tomonlar va burchaklar) yetarli va bu qaysi alomatga (TBT, BTB yoki TTT) mos keladi?",
+      "what": "Uchburchaklar tengligidan BC = AD ekanligi kelib chiqadi. Bu natija va dastlabki AB ∥ CD sharti birlashib, parallelogramm ta'rifiga qanday zamin yaratadi? Agar isbot oxirida BC va AD parallel bo'lmay qolsa, isbotda nima xato ketgan bo'ladi?",
+      "prompt": "AB ∥ CD va AB = CD sharti asosida ABCD ning parallelogramm ekanini TBT orqali to'liq isbotlang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Ikki parallel to'g'ri chiziqni uchinchi chiziq (diagonal) kesib o'tganda hosil bo'ladigan burchaklar turlarini eslang.", "Ikki uchburchakda AB = CD (berilgan), AC — umumiy tomon. Ular orasidagi burchak haqida nima deya olasiz?", "Isbotning yakuniy maqsadi — barcha qarama-qarshi tomonlarning parallel (yoki teng) ekanligini ko'rsatib, shaklni parallelogramm guruhiga kiritishdir."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "AB ∥ CD dan ∠BAC = ∠ACD (ichki almashinuvchi); AB = CD, AC umumiy tomon, demak △ABC ≅ △CDA (TBT), bundan BC = AD va shakl parallelogramm", "accepted_answers": ["ichki almashinuvchi burchaklar", "TBT alomati", "∠BAC = ∠ACD", "BC = AD kelib chiqadi", "parallelogramm"], "allow_ai_fallback": true },
+      "expected_concepts": ["geometrik-isbot-mantiqi", "ichki-almashinuvchi-burchaklar", "uchburchaklar-tengligi-tbt"],
+      "correct_feedback": "Mukammal isbot! Siz nafaqat alomatni bilasiz, balki uning ichki mantiqiy zanjirini (parallellik → burchak → uchburchaklar tengligi → qolgan tomonlar tengligi) to'liq tushunib yetibsiz.",
+      "partial_feedback": "Isbotning boshlanishi yaxshi, lekin uchburchaklar tengligidan keyingi bosqichni — qanday qilib bu butun shaklning parallelogramm ekanligini tasdiqlashini aniqroq bog'lang.",
+      "wrong_feedback": "Hali emas. Ichki almashinuvchi burchaklar qachon teng bo'ladi? Avval parallellikdan foydalanib burchaklarni toping, so'ngra uchburchaklar tengligiga o'ting."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz to'rtburchakning parallelogramm ekanligini isbotlash uchun zarur bo'lgan asosiy alomatlarni o'rgandingiz. Ushbu darsda tomonlarning tengligi, parallelligi hamda diagonallarning kesishish nuqtasida teng ikkiga bo'linishi kabi uchta muhim geometrik shartni tahlil qildingiz. Me'morchilik va mebelsozlik kabi amaliy sohalarda ushbu alomatlar yordamida ramkalarning aniqligini barcha burchaklarni o'lchamasdan turib tekshirish mumkin.",
+    "question": "Agar do'stingizga parallelogrammning alomatlarini o'rgatishingiz kerak bo'lsa, qaysi alomatni tushuntirish eng oson deb hisoblaysiz va nima uchun?",
+    "spaced_rep": "Ertaga parallelogrammning uchinchi alomati (diagonallarning teng ikkiga bo'linishi) va uchburchaklar tengligining TBT qoidasini yangi geometrik vaziyat va chizmalarda mashq qiling. Vertikal burchaklar va parallel to'g'ri chiziqlar xossalarini ham qayta ko'rib chiqing.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz parallelogrammning birinchi alomati (bir juft tomonning tengligi va parallelligi) hamda qarama-qarshi tomonlarning jufti-jufti bilan tengligi tushunchalarini yaxshi o'zlashtirdingiz. Diagonallarning kesishish nuqtasida teng ikkiga bo'linishi (3-alomat) va isbotlash jarayonida ichki almashinuvchi burchaklar xossasini to'g'ri qo'llashni mustahkamlash foydali bo'ladi.",
+      "strong_points": [
+        "Parallelogrammning 1-alomatini (bir juft tomonning tengligi va parallelligi) aniqlash",
+        "Qarama-qarshi tomonlarning jufti-jufti bilan tengligi (2-alomat) tushunchasi"
+      ],
+      "weak_points": [
+        "Diagonallarning kesishish nuqtasida teng ikkiga bo'linishi (3-alomat)",
+        "Isbotlash jarayonida ichki almashinuvchi burchaklar xossasini to'g'ri qo'llash"
+      ],
+      "next_steps": [
+        "Parallelogrammning uchinchi alomati va uchburchaklar tengligining TBT qoidasiga qayting",
+        "Vertikal burchaklar va parallel to'g'ri chiziqlar xossalarini qayta ko'rib chiqing"
+      ],
+      "weak_point_keywords": ["diagonal", "teng ikkiga bo'linish", "ichki almashinuvchi burchaklar", "3-alomat"],
+      "strong_point_keywords": ["1-alomat", "2-alomat", "tenglik va parallellik"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas, balki yangi geometrik vaziyatlar va chizmalar bilan."
+    }
+  }
+}

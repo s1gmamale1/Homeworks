@@ -1,0 +1,341 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "4-§. Pifagor teoremasi va uning tatbiqlari",
+    "subject_display": "Geometriya",
+    "section": "4-§",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Pifagor teoremasi ta'rifi", "def": "To'g'ri burchakli uchburchak gipotenuzasining kvadrati uning katetlari kvadratlari yig'indisiga teng.", "cluster": "QOIDA" },
+    { "term": "Pifagor teoremasi formulasi", "def": "c² = a² + b²; bu yerda c — eng uzun tomon (gipotenuza). Misol: 3² + 4² = 5².", "cluster": "QOIDA" },
+    { "term": "Gipotenuza", "def": "To'g'ri burchakli uchburchakning to'g'ri burchagi qarshisida yotgan eng uzun tomoni; formulada har doim c harfi bilan belgilanadi.", "cluster": "QOIDA" },
+    { "term": "Katetlar", "def": "To'g'ri burchakli uchburchakning to'g'ri burchagini hosil qiluvchi ikki tomoni.", "cluster": "QOIDA" },
+    { "term": "Kosinus orqali isbotlashning birinchi qadami", "def": "To'g'ri burchakli uchburchakning gipotenuzasiga balandlik tushirish — bu ikkita yangi to'g'ri burchakli uchburchak hosil qiladi.", "cluster": "METOD" },
+    { "term": "Balandlik orqali hosil bo'lgan tengliklar", "def": "AC² = AB · AD va BC² = AB · BD; bu yerda AB — gipotenuza, AD va BD — uning balandlik ajratgan qismlari.", "cluster": "METOD" },
+    { "term": "Yuzalar orqali isbotlash usuli", "def": "Tomoni (a + b) ga teng kvadratni uchburchaklar va kichik kvadratlarga ajratib, yuzalar tengligi orqali isbotlash.", "cluster": "METOD" },
+    { "term": "Pifagor teoremasini qo'llash sharti", "def": "Teorema faqat to'g'ri burchakli uchburchaklar uchun amal qiladi.", "cluster": "TAHLIL" },
+    { "term": "Noma'lum katetni topish tartibi", "def": "Gipotenuza kvadratidan ma'lum katet kvadrati ayiriladi va natijadan kvadrat ildiz olinadi. a = √(c² − b²).", "cluster": "MISOL" },
+    { "term": "Gipotenuzani hisoblash tartibi", "def": "Har ikkala katet kvadratga ko'tarilib qo'shiladi va natijadan kvadrat ildiz chiqariladi. Avval kvadratga ko'taring, keyin qo'shing.", "cluster": "MISOL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Pifagor Teoremasi",
+    "case_setup": {
+      "story": "Siz mebel ustaxonasida sifat nazorati bo'yicha maslahatchisiz. Duradgor usta katta to'rtburchak shaklidagi stol ramkasini yasadi va stolning burchagi aniq 90 gradus (to'g'ri burchak) bo'lganiga ishonch hosil qilmoqchi. Usta stolning ikki tutash tomonini o'lchadi: ular 60 sm va 80 sm. So'ngra, burchakning to'g'riligini tekshirish uchun ushbu ikki tomonning uchlarini tutashtiruvchi diagonal chiziqni o'lchadi va natija 105 sm chiqdi. Duradgor: \"Tomonlar yig'indisi 140 sm, diagonal esa 105 sm. Farq bor, demak hammasi joyida, burchak to'g'ri bo'lsa kerak\", deb o'ylamoqda. Biroq, usta burchakning haqiqatdan ham to'g'ri ekanligiga shubha qilib, Sizdan aniqlik kiritishingizni so'radi.",
+      "role": "Mebel ustaxonasida sifat nazorati bo'yicha maslahatchi",
+      "task": "Stol burchagi haqiqatan ham 90 gradusmi yoki yo'qmi — aniqlang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Ushbu vaziyatda stol burchagining 90 gradusga tengligini (ya'ni to'g'ri burchakli uchburchak ekanligini) aniqlash uchun qaysi geometrik qonuniyatdan foydalanish kerak?",
+        "options": [
+          "Uchburchak burchaklarining yig'indisi haqidagi teorema",
+          "Pifagor teoremasi",
+          "Uchburchak tengsizligi qoidasi",
+          "Sinuslar teoremasi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "To'g'ri burchakli uchburchakda tomonlar uzunliklari o'zaro qat'iy matematik bog'liqlikka ega. Agar uchburchakning bir burchagi 90 gradus bo'lsa, uning tomonlari maxsus qonuniyat asosida bir-biriga muvofiq kelishi shart.",
+        "feedback": "To'g'ri burchakli uchburchakda tomonlar uzunliklari o'rtasidagi bog'liqlikni aynan Pifagor teoremasi belgilaydi."
+      },
+      {
+        "kind": "decide",
+        "question": "Burchakning to'g'ri ekanligini tekshirish uchun usta qanday hisob-kitobni amalga oshirishi lozim?",
+        "options": [
+          "Ikkala tomon uzunligini qo'shib, diagonalga solishtirishi (60 + 80 = 105)",
+          "Tomonlar kvadratlarining yig'indisi diagonalning kvadratiga tengligini tekshirishi (60² + 80² = 105²)",
+          "Tomonlar ko'paytmasini diagonalga bo'lib ko'rishi (60 × 80 / 105)"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Pifagor teoremasining formulasi c² = a² + b² ko'rinishida bo'ladi, bu yerda a va b — katetlar (to'g'ri burchakni hosil qiluvchi tomonlar), c — gipotenuza (eng uzun tomon). Agar bu tenglik bajarilsa, burchak to'g'ri bo'ladi, aks holda burchak 90 gradusdan farq qiladi.",
+        "feedback": "Pifagor teoremasiga ko'ra, to'g'ri burchakli uchburchakda katetlar kvadratlarining yig'indisi gipotenuza kvadratiga teng bo'lishi kerak."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun ustaning \"60 + 80 = 140, bu 105 dan katta, demak burchak to'g'ri\" degan xulosasi noto'g'ri?",
+        "options": [
+          "Chunki diagonal har doim tomonlar yig'indisidan katta bo'lishi kerak.",
+          "Chunki shunchaki uzunliklarni qo'shish burchak qiymati haqida ma'lumot bermaydi, u faqat uchburchak yasash mumkinligini ko'rsatadi.",
+          "Chunki diagonal uzunligi har doim eng kichik tomonning ikki baravariga teng bo'lishi lozim."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 3 },
+        "learning_block": "Tomonlar yig'indisi (uchburchak tengsizligi) faqat uchburchak mavjudligini tasdiqlaydi, lekin aynan 90 gradusli burchakni aniqlash uchun faqat kvadratlar yig'indisini tekshirish kerak.",
+        "feedback": "Tomonlar yig'indisi (uchburchak tengsizligi) faqat uchburchak mavjudligini tasdiqlaydi, lekin aynan 90 gradusli burchakni aniqlash uchun faqat kvadratlar yig'indisini tekshirish kerak."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 jumlada javob bering: (1) Vaziyatda qaysi geometriya tushunchasini aniqladingiz? (2) Nima uchun diagonalni oddiy qo'shish emas, balki kvadratga ko'tarish usulini tanladingiz? (3) Agar faqat uzunliklarni qo'shish bilan cheklanilganda, qanday noto'g'ri xulosaga kelish mumkin edi?",
+      "min_chars": 80,
+      "concept_keywords": ["Pifagor teoremasi", "to'g'ri burchak", "gipotenuza", "katet"],
+      "method_keywords": ["kvadratlar yig'indisi", "kvadratga ko'tarish", "tekshirish"],
+      "mistake_keywords": ["oddiy qo'shish", "chiziqli bog'liqlik", "burchakni noto'g'ri tasdiqlash"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz hisob-kitob qilasiz: 60² + 80² = 3600 + 6400 = 10 000. Diagonalning kvadrati esa: 105² = 11 025. Natijalar teng emas (10 000 ≠ 11 025). Siz ustaga stol burchagi to'g'ri emasligini va ramkani to'g'rilash kerakligini aytasiz. Stol mukammal darajada tekis chiqadi.",
+      "wrong_path": "Usta shunchaki 60 + 80 > 105 ekaniga tayanib, ishni davom ettiradi. U burchakni tekshirmaydi. Tomonlar yig'indisini solishtirish burchakning 90 gradus ekanligini kafolatlamaydi; natijada stol burchagi qiyshiq bo'lib qoladi va ustiga oyna yoki qopqoq o'rnatilganda oraliq masofalar mos kelmaydi."
+    },
+    "feedback_summary": {
+      "student_understood": "To'g'ri burchakli uchburchak tomonlari orasidagi bog'liqlikni (Pifagor teoremasi) va uni amaliyotda qo'llashni o'rgandingiz.",
+      "mistake_appeared": "Shunchaki uzunliklarni qo'shish (chiziqli bog'liqlik) burchakning darajasini aniqlash uchun yetarli emasligi ma'lum bo'ldi.",
+      "what_to_review": "Darslikdagi \"Pifagor teoremasi\" va unga teskari teorema qismini qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta nazorat nuqtasiga javob bering",
+        "DPE bo'limida kamida 2–4 jumla yozing",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Pifagor teoremasiga ko'ra, to'g'ri burchakli uchburchak gipotenuzasining kvadrati uning katetlari _____ yig'indisiga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "kvadratlari", "accepted_answers": ["kvadratlari", "kvadratlarining", "kvadratlari yig'indisiga"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "To'g'ri burchakli uchburchakning gipotenuzasi deb qaysi tomonga aytiladi?", "options": ["To'g'ri burchak qarshisida yotgan eng uzun tomon", "To'g'ri burchakni tashkil etuvchi eng qisqa tomon", "Ixtiyoriy burchak qarshisidagi eng uzun tomon", "Gipotenuzaga tushirilgan balandlikning o'zi"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "choose_explanation", "prompt": "Pifagor teoremasini qaysi turdagi uchburchaklar uchun qo'llash mumkin?", "options": ["Faqat to'g'ri burchakli uchburchaklar uchun.", "Barcha turdagi uchburchaklar, jumladan o'tkir burchakli uchburchaklar uchun ham.", "Faqat tomonlari teng bo'lgan teng tomonli uchburchaklar uchun.", "Faqat o'tmas burchakli uchburchaklarning eng uzun tomonini topish uchun."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Pifagor teoremasining matematik formulasi qanday ifodalanadi?", "options": ["c² = a² + b²", "c = a + b", "c² = a² − b²", "c = a² + b²"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "fill_blank", "prompt": "Kosinus orqali Pifagor teoremasini isbotlashda birinchi qadam sifatida to'g'ri burchakli uchburchakning gipotenuzasiga _____ tushiriladi.", "answer_spec": { "type": "text_fuzzy", "expected": "balandlik", "accepted_answers": ["balandlik", "perpendikulyar"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "Yuzalar orqali isbotlash usulida qanday geometrik yondashuvdan foydalaniladi?", "options": ["Tomoni (a + b) ga teng bo'lgan kvadratni kichikroq uchburchaklar va kvadratlarga ajratish.", "Tomoni faqat c ga teng bo'lgan aylanani sektorlarga bo'lish.", "Uchburchakning faqat ichki burchaklari yig'indisini hisoblash.", "Tomoni (a · b) ga teng bo'lgan to'g'ri to'rtburchak hosil qilish."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "To'g'ri burchakli uchburchakda katetlar deb nimaga aytiladi?", "options": ["To'g'ri burchakni hosil qiluvchi ikki tomon", "To'g'ri burchak qarshisida yotgan eng uzun tomon", "Uchburchakning barcha o'tkir burchaklari qarshisidagi tomonlar", "Gipotenuzani ikkiga bo'luvchi chiziqlar"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Noma'lum katetni topish uchun gipotenuza kvadratidan ma'lum katet kvadrati _____ va natijadan kvadrat ildiz olinadi.", "answer_spec": { "type": "text_fuzzy", "expected": "ayiriladi", "accepted_answers": ["ayiriladi", "ayriladi", "ayirish kerak"], "allow_ai_fallback": true }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Balandlik orqali isbotlashda AC² (katet kvadrati) uchun qaysi bog'liqlik to'g'ri?", "options": ["AB · AD", "AB + AD", "AD · BD", "AB² − AD²"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "choose_explanation", "prompt": "Gipotenuzani hisoblash tartibi qaysi javobda eng aniq ko'rsatilgan?", "options": ["Har ikkala katet kvadratga ko'tarilib qo'shiladi va natijadan kvadrat ildiz chiqariladi.", "Katetlar yig'indisi kvadratga ko'tariladi va natijadan ildiz olinadi.", "Katetlar kvadratlari ayirmasidan kvadrat ildiz chiqariladi.", "Katetlar ko'paytmasi ikki barobar oshirilib, ildiz olinadi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_geo_04",
+    "expert_role": "structural_engineer",
+    "title": "Tom Fermasi Konstruksiyasi",
+    "intro": "Siz — loyiha muhandisi-konstruktorisiz, yirik qurilish ob'ektida tom yopish konstruksiyalarining mustahkamligi va aniqligi uchun mas'ulsiz. Yangi omborxona tomi uchburchak fermalardan iborat: vertikal ustun balandligi 9 metr, gorizontal asosi 12 metr. Ikki nuqtani tutashtiruvchi qiya to'sinning uzunligini aniq o'lchang va karkasning burchagi aniq 90 gradus ekanligini Pifagor teoremasi yordamida tasdiqlang. (Po'lat to'sin og'irligi har metr uchun 45 kg.)",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. To'sinning aniq uzunligini hisoblash",
+        "prompt": "Loyiha uchun zarur bo'lgan po'lat to'sinning (gipotenuza) uzunligini belgilang. Katetlar 9 m va 12 m.",
+        "options": [
+          { "id": "a", "label": "21 metr — to'sin uzunligi ikki tomonning yig'indisiga teng bo'lishi kerak.", "is_correct": false, "consequence": "Hali emas: gipotenuza har doim katetlar yig'indisidan kichik bo'ladi, tomonlarni shunchaki qo'shish xato." },
+          { "id": "b", "label": "15 metr — Pifagor teoremasiga ko'ra, gipotenuza kvadratlarning yig'indisidan ildiz olganiga teng.", "is_correct": true, "consequence": "Juda yaxshi: 9² + 12² = 81 + 144 = 225, undan √225 = 15 chiqadi. Muhandislikda aniqlik birinchi o'rinda." },
+          { "id": "c", "label": "10.5 metr — to'g'ri burchakli uchburchakda gipotenuza katetlar yig'indisining yarmi bo'ladi.", "is_correct": false, "consequence": "Bu noto'g'ri qoida — gipotenuza katetlar yig'indisining yarmi emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Keyingi qadamni tanlash",
+        "prompt": "15 metrli to'sin uzunligini tasdiqlash uchun avval qaysi amalni bajarish kerak?",
+        "options": [
+          { "id": "a", "label": "Katetlar kvadratlarini hisoblab qo'shish (9² + 12² = 225), so'ng kvadrat ildiz chiqarish.", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Darhol 9 va 12 ni qo'shib, 21 ni javob deb yozish.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "To'sin og'irligini (45 kg/m) hisoblab, uzunlikka bog'lash.", "is_correct": false, "info_cost": { "time": "chalg'ituvchi ma'lumot" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Burchakning to'g'riligini amalda tekshirish",
+        "prompt": "Ishchilar burchakni o'rnatishdi. Siz tekshirish uchun ustun bo'ylab 3 metr, asos bo'ylab 4 metr o'lchadingiz. Diagonal (qiya chiziq) necha metr bo'lsa, burchak aniq 90 gradus bo'ladi?",
+        "options": [
+          { "id": "a", "label": "7 metr — burchak qanday bo'lishidan qat'i nazar, masofalar yig'indisi saqlanishi kerak.", "is_correct": false, "consequence": "Hali emas: bu kvadratik bog'liqlikni oddiy chiziqli qo'shish bilan adashtirish." },
+          { "id": "b", "label": "5 metr — bu o'lchamlar Pifagor sonlari bo'lib, burchak 90 gradus ekanligini tasdiqlaydi.", "is_correct": true, "consequence": "To'ppa-to'g'ri: 3² + 4² = 5² tengligi bajarilishi burchakning to'g'ri ekanligiga kafolat beradi (Misr uchburchagi)." },
+          { "id": "c", "label": "6 metr — qurilishda ozgina farq (zahira) bo'lishi normal holat.", "is_correct": false, "consequence": "Burchakning to'g'riligini tekshirishda zahira yo'l qo'yilmaydi; aniq tenglik kerak." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Yuzalar orqali isbotni eng aniq tushuntiradigan asosiy g'oya qaysi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Tomoni (a+b) bo'lgan kvadratni 4 ta uchburchak va tomoni c bo'lgan kvadratga ajratish.", "is_correct": true },
+          { "id": "c2", "label": "Uchburchakning uchala tomonini qo'shib, o'rta arifmetik qiymatni topish.", "is_correct": false },
+          { "id": "c3", "label": "Gipotenuza eng katta tomon bo'lgani uchun uning kvadratini hisoblamasdan isbotlash.", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun to'sin og'irligi (har metr uchun 45 kg) bu masalada chalg'ituvchi ma'lumot (red herring) edi? Geometrik uzunlik va burchakni aniqlashda materialning massasi qanday rol o'ynaydi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["chalg'ituvchi", "red herring", "massa", "geometrik uzunlik", "Pifagor teoremasi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_geo_04_cosine",
+      "instructions": "Pifagor teoremasini kosinuslar orqali isbotlash 5 blokda berilgan. To'g'ri burchakli △ABC (∠C = 90°) va gipotenuzaga tushirilgan CD balandlik ko'rib chiqiladi. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "1-blok (Berilganlar): To'g'ri burchakli △ABC (∠C = 90°) va uning gipotenuzasiga tushirilgan CD balandlik.", "is_broken": false },
+        { "id": "b2", "text": "2-blok (Katta uchburchak): △ABC uchburchagida ∠A burchagining kosinusi: cos A = BC / AB.", "is_broken": true },
+        { "id": "b3", "text": "3-blok (Kichik uchburchak): △ACD to'g'ri burchakli uchburchagida kosinus ta'rifi bo'yicha: cos A = AD / AC.", "is_broken": false },
+        { "id": "b4", "text": "4-blok (Tenglashtirish): Ikkala uchburchak uchun kosinus qiymatlarini tenglaymiz: AC / AB = AD / AC.", "is_broken": false },
+        { "id": "b5", "text": "5-blok (Natija): Proporsiya hadlarini ko'paytirib: AC² = AB · AD.", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "cos A = AC / AB", "accepted_answers": ["cos A = AC / AB", "AC / AB", "cos A = AC : AB", "Kosinus A teng AC bo'lingan AB"], "allow_ai_fallback": true },
+      "hint": "△ABC uchburchagiga diqqat bilan qarang: ∠A burchagini hosil qilishda qaysi katet bevosita ishtirok etyapti? Kosinus ta'rifida aynan shu \"yopishgan\" katet ishlatilishi kerak.",
+      "why_prompt": "Nega 2-blokdagi formulada BC kesmasining ishlatilishi xato hisoblanadi va u isbotning keyingi qadamlariga qanday ta'sir qiladi? Kosinus ta'rifiga ko'ra yopishgan katet olingani uchun AC bo'lishi kerak; BC ishlatilsa, 4-blokdagi proporsiya va yakuniy Pifagor teoremasi kelib chiqmaydi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_geo_04",
+      "case_setup": "Pifagor teoremasi atamalari va amallarini ma'no jihatdan to'g'ri juftlang — kartaning o'rni yoki shakliy o'xshashligiga emas, balki geometrik ma'nosiga ko'ra.",
+      "pairs": [
+        { "id": "p1", "left": "Gipotenuza", "right": "To'g'ri burchak qarshisida yotgan eng uzun tomon" },
+        { "id": "p2", "left": "Katetlar", "right": "To'g'ri burchakni tashkil etuvchi ikki tomon" },
+        { "id": "p3", "left": "Pifagor teoremasi formulasi", "right": "c² = a² + b²" },
+        { "id": "p4", "left": "Katetni hisoblash tartibi", "right": "Gipotenuza kvadratidan ma'lum katet kvadratini ayirish va ildiz chiqarish" },
+        { "id": "p5", "left": "Gipotenuzani hisoblash tartibi", "right": "Katetlar kvadratlarini qo'shish va natijadan kvadrat ildiz chiqarish" },
+        { "id": "p6", "left": "Kosinus orqali isbotlashning birinchi qadami", "right": "To'g'ri burchak uchidan gipotenuzaga balandlik tushirish" },
+        { "id": "p7", "left": "Yuzalar orqali isbotlash usuli", "right": "Tomoni (a + b) ga teng kvadratni uchburchak va kichik kvadratlarga ajratish" }
+      ],
+      "checkpoints": [
+        { "question": "Gipotenuzani hisoblashda katetlar kvadratlari bilan qaysi amal bajariladi?", "options": ["Ayiriladi", "Qo'shiladi", "Bo'linadi"], "correct_index": 1 },
+        { "question": "Katetni hisoblashda qaysi amal bajariladi?", "options": ["Qo'shish", "Ayirish", "Ko'paytirish"], "correct_index": 1 },
+        { "question": "\"Gipotenuzani hisoblash\" va \"Katetni hisoblash\" amallari bir xil amalmi?", "options": ["Ha — ikkalasida ham qo'shish", "Yo'q — birida qo'shish, birida ayirish"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "\"Gipotenuzani hisoblash\" va \"Katetni hisoblash\" amallarini birlashtiruvchi va farqlovchi asosiy matematik mantiq nimada? Faqat yuzaki o'xshashlikka tayanib javob qidirgan o'quvchi ushbu ikki amalni tanlashda qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["gipotenuzada kvadratlar qo'shiladi", "katetda kvadratlar ayiriladi", "ikkalasida ham kvadrat ildiz olinadi"],
+      "consequence": { "correct_path": "Har bir atamani to'g'ri geometrik ma'nosiga uladingiz.", "wrong_path": "So'zlarning yuzaki o'xshashligiga aldanib gipotenuza va katet hisoblash amallarini (qo'shish ↔ ayirish) adashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_geo_04",
+      "case_setup": "Berilgan tushuncha va amallarni mantiqiy juftlari bilan birlashtiring. Har bir bog'lanish darsda keltirilgan isbotlash usullari va ta'riflarga qat'iy mos kelishi shart: qadam ↔ natija, tushuncha ↔ ta'rif. Bog'lanish yo'nalishi muhim.",
+      "pieces": [
+        { "id": "P1", "label": "Tomoni (a + b) ga teng kvadrat yasash va uni to'rtta to'g'ri burchakli uchburchak hamda kvadratlarga ajratish.", "role": "step" },
+        { "id": "P2", "label": "Yuzalarning tengligi qoidasidan foydalanib c² = a² + b² formulasini isbotlash.", "role": "result" },
+        { "id": "P3", "label": "Gipotenuza.", "role": "term" },
+        { "id": "P4", "label": "To'g'ri burchakli uchburchakning to'g'ri burchagi qarshisida yotgan eng uzun tomoni.", "role": "definition" },
+        { "id": "P5", "label": "To'g'ri burchakli uchburchakning gipotenuzasiga balandlik tushirish.", "role": "step" },
+        { "id": "P6", "label": "O'tkir burchak kosinusi orqali AC² = AB · AD va BC² = AB · BD tengliklarini keltirib chiqarish.", "role": "result" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (kvadratni ajratish) qaysi natijaga ulanadi?", "options": ["P2 (yuzalar orqali isbot)", "P6 (kosinus tengliklari)"], "correct_index": 0 },
+        { "q": "P3 (Gipotenuza) bilan P4 o'rtasidagi bog'lanish turi qanday?", "options": ["Tushuncha ↔ ta'rif", "Qadam ↔ natija"], "correct_index": 0 },
+        { "q": "P5 (gipotenuzaga balandlik tushirish) qaysi natijaga ulanadi?", "options": ["P2 (yuzalar isboti)", "P6 (kosinus tengliklari)"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Qaysi geometrik isbotlash usulida gipotenuzaga tushirilgan balandlik asosiy qadam bo'lishini va nima uchun bo'laklarni shunchaki \"kvadrat\" yoki \"uchburchak\" so'zlari o'xshashligi bo'yicha birlashtirish xato ekanligini tushuntiring. Bog'lanish yo'nalishi nima uchun muhim?",
+      "expected_components": ["kosinus orqali isbotda balandlik asosiy qadam", "amallar ketma-ketligi: avval yasash keyin xulosa", "yuzalar usuli va kosinus usulini aralashtirmaslik"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "O't o'chiruvchilar 13 metrli narvonni devorga suyab qo'yishdi. Narvonning pastki uchi devordan 5 metr uzoqlikda joylashgan. Ular narvon devorning qancha balandligiga yetib borishini aniqlashlari kerak.",
+      "why": "Nima uchun ushbu vaziyatda masofalarni hisoblash uchun aynan Pifagor teoremasidan foydalanish mumkin?",
+      "how": "Narvonning devordagi balandligini topish uchun Pifagor formulasini qanday ko'rinishda tuzasiz va hisoblash bosqichlarini qanday bajarasiz?",
+      "what": "Agar narvonning pastki uchi devordan yanada uzoqlashtirilsa (masalan, 8 metrga), narvon yetadigan balandlik qanday o'zgaradi va bu narvonning turg'unligiga qanday ta'sir qilishi mumkin?",
+      "prompt": "Narvon devorning qancha balandligiga yetib boradi (metrlarda)?",
+      "tags": "[Bloom: apply | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Narvon, devor va yer o'zaro qanday geometrik shaklni hosil qilmoqda?", "13 metrli narvon bu shaklning gipotenuzasimi yoki katetimi?", "Agar gipotenuza o'zgarmas qolsa-yu, bir katet ortsa, ikkinchi katet bilan nima sodir bo'ladi?"],
+      "answer_spec": { "type": "numeric", "expected": 12, "canonical_display": "12 metr", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["pifagor-formulasi", "noma-lum-katetni-topish", "√(13² − 5²) = 12"],
+      "correct_feedback": "Barakalla! Siz vaziyatni to'g'ri modellashtirdingiz va katetni topish uchun ayirish amali zarurligini aniq ko'rsatdingiz. √(13² − 5²) = √(169 − 25) = √144 = 12 metr.",
+      "partial_feedback": "Hisoblash yo'li to'g'ri, lekin nima uchun aynan shu formula qo'llanilishi (to'g'ri burchak sharti) haqidagi izohingizni to'ldiring.",
+      "wrong_feedback": "Hali emas. Narvonning uzunligi eng uzun tomon ekanini hisobga olib, uni formulaning qaysi qismiga qo'yish kerakligini qayta o'ylab ko'ring-chi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Duradgor tomoni (a+b) bo'lgan katta kvadrat shaklidagi yog'och taxtani to'rtta bir xil to'g'ri burchakli uchburchak (katetlari a va b) va bitta kichik kvadratga (tomoni c) ajratdi.",
+      "why": "Nima uchun katta kvadratning yuzasini uning bo'laklari (uchburchaklar va kichik kvadrat) yuzalari yig'indisiga tenglashtirish Pifagor teoremasini isbotlashga xizmat qiladi?",
+      "how": "Katta kvadrat yuzasi formulasini (a+b)² va bo'laklar yuzasi yig'indisini (4 · ½ab + c²) o'zaro tenglashtirib, Pifagor formulasini qanday keltirib chiqarasiz?",
+      "what": "Agar ichkaridagi shakl kvadrat emas, balki ixtiyoriy romb bo'lib qolsa, bu isbot o'z kuchini saqlab qoladimi? Bu holatda c² va a² + b² o'rtasidagi bog'liqlik qanday o'zgarishi mumkin?",
+      "prompt": "Yuzalarni tenglashtirib c² = a² + b² formulasini keltirib chiqaring va isbotni izohlang.",
+      "tags": "[Bloom: analyze | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Butun shaklning yuzasi uning qismlari yuzalari yig'indisiga teng bo'lishi haqidagi qoidani eslang.", "Qavslarni ochishda (a+b)² = a² + 2ab + b² formulasidan foydalanib, qaysi hadlar qisqarib ketishiga e'tibor bering.", "Ichki shaklning burchaklari 90° bo'lishi isbot uchun qanchalik muhim?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "c² = a² + b²", "accepted_answers": ["c² = a² + b²", "a² + b² = c²", "c2 = a2 + b2"], "allow_ai_fallback": true },
+      "expected_concepts": ["yuza-orqali-isbot", "geometrik-mantiq", "(a+b)² = 4·½ab + c²"],
+      "correct_feedback": "Juda yaxshi! Algebraik ifodalarni geometrik shakllar bilan bog'lash orqali teoremaning mazmunini to'liq ochib berdingiz.",
+      "partial_feedback": "Tenglamani tuzishda adashmadingiz, biroq ichki shaklning kvadrat bo'lishi sharti isbotga qanday ta'sir qilishi qismini aniqroq tushuntiring.",
+      "wrong_feedback": "Hali emas. Katta kvadratning umumiy yuzasini qanday qismlarga bo'lish mumkinligini va ularni qo'shganda nima hosil bo'lishini tasvirlab bera olasizmi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Bog'bon to'g'ri burchakli uchburchak shaklidagi gulzorning to'g'ri burchagidan gipotenuzaga perpendikulyar yo'lak (balandlik h) o'tkazdi. Bu yo'lak gipotenuzani AD va BD kesmalarga ajratdi.",
+      "why": "Kosinuslar ta'rifi yoki uchburchaklar o'xshashligiga tayanib, nima uchun AC² = AB · AD tengligi o'rinli ekanini tushuntiring.",
+      "how": "Ushbu tenglikni va unga o'xshash BC² = AB · BD tengligini o'zaro qo'shish orqali qanday qilib a² + b² = c² formulasiga yetib borasiz?",
+      "what": "Agar bizga balandlik emas, balki gipotenuzani teng ikkiga bo'luvchi mediana berilgan bo'lsa, ushbu isbot usulini qo'llash mumkinmi? Natija qanday o'zgaradi?",
+      "prompt": "AC² = AB · AD va BC² = AB · BD tengliklaridan a² + b² = c² ni keltirib chiqaring.",
+      "tags": "[Bloom: evaluate | PISA: L2 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["Katta uchburchak ABC va kichik uchburchak ADC uchun umumiy burchak kosinusini yozib ko'ring.", "Ikkita tenglikni qo'shganda AB (gipotenuza) qavsdan tashqariga chiqarilsa, qavs ichida nima qoladi?", "Mediana tushirilganda har doim ham to'g'ri burchakli uchburchaklar hosil bo'ladimi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "AB · (AD + BD) = AB² = c²", "accepted_answers": ["AB·(AD+BD) = AB²", "AD + BD = AB", "a² + b² = c²", "AB(AD+BD)=AB²=c²"], "allow_ai_fallback": true },
+      "expected_concepts": ["kosinus-orqali-isbot", "metrik-munosabatlar", "AD + BD = AB"],
+      "correct_feedback": "Mukammal! Metrik munosabatlar va gipotenuza qismlari yig'indisi haqidagi tushunchangiz yuqori darajada.",
+      "partial_feedback": "Isbotning birinchi qismini yaxshi bajardingiz, lekin tengliklarni qo'shish jarayonida gipotenuzaning to'liq uzunligi qanday hosil bo'lishini ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas. Kichik va katta uchburchaklarning burchaklari o'zaro bog'liqligini eslang; burchak kosinusi qaysi tomonlar nisbatiga teng edi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Quruvchi yer maydonini o'lchadi: tomonlari 9 metr va 12 metr, burchaklarni tutashtiruvchi diagonal esa 16 metr chiqdi. Quruvchi: \"Bu burchak aniq to'g'ri burchak\", deb da'vo qilmoqda.",
+      "why": "Pifagor teoremasiga teskari teorema bu vaziyatda quruvchining fikri to'g'ri yoki noto'g'ri ekanini qanday isbotlaydi?",
+      "how": "Berilgan o'lchamlarni (9, 12, 16) formula yordamida qanday tekshirasiz? Hisob-kitobingizni ko'rsating.",
+      "what": "Agar diagonal 16 metr emas, 15 metr bo'lganida xulosa qanday o'zgargan bo'lardi? 16 metrli diagonal burchakning 90° dan katta yoki kichikligini qanday belgilaydi?",
+      "prompt": "Quruvchining da'vosi to'g'rimi? 9, 12, 16 o'lchamlarni tekshirib, burchak haqida xulosa chiqaring.",
+      "tags": "[Bloom: analyze | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["To'g'ri burchakli uchburchakda katetlar kvadratlarining yig'indisi gipotenuza kvadratiga teng bo'lishi shartmi?", "9² + 12² yig'indisi bilan 16² sonini alohida-alohida hisoblab ko'ring.", "Agar eng uzun tomon kutilganidan kattaroq bo'lsa, bu burchakning \"ochilib\" ketganini (o'tmas burchak) anglatmaydimi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "burchak to'g'ri emas, o'tmas", "accepted_answers": ["noto'g'ri", "o'tmas burchak", "burchak to'g'ri emas", "90 dan katta"], "allow_ai_fallback": true },
+      "expected_concepts": ["teskari-teorema", "burchakni-aniqlash", "9² + 12² = 225 ≠ 256 = 16²"],
+      "correct_feedback": "To'g'ri! Sonli tekshiruv va burchak turini aniqlash bo'yicha tahlilingiz juda aniq. 9² + 12² = 225, 16² = 256; 225 < 256, demak burchak 90° dan katta (o'tmas).",
+      "partial_feedback": "Hisob-kitobingiz to'g'ri, lekin diagonal 16 metr bo'lganda burchak 90 dan qaysi tomonga o'zgarishini izohlamadingiz.",
+      "wrong_feedback": "Hali emas. Shunchaki 9 + 12 yig'indisini 16 bilan solishtirmang; Pifagor teoremasi qaysi darajadagi amallarni talab qiladi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Binoga kirish uchun pandus (qiya yo'lak) qurish kerak. Pandusning balandligi (katet) 1.5 metr, uning yerga tegib turgan qismi (ikkinchi katet) esa 2 metr bo'lishi rejalashtirilgan.",
+      "why": "Pandusning ustki (qiya) qismi uzunligini topishda nima uchun Pifagor teoremasini qo'llash eng qulay usul hisoblanadi?",
+      "how": "Berilgan katetlar orqali pandusning uzunligini (c) topish bosqichlarini yozing. Ildiz chiqarish amalini qanday bajarasiz?",
+      "what": "Agar pandusning balandligini o'zgartirmasdan, uning qiyaligini kamaytirish (ya'ni pandusni uzunroq qilish) kerak bo'lsa, uning yerga tegib turgan qismi (kateti) qanday o'zgarishi kerak?",
+      "prompt": "Pandusning qiya qismi (gipotenuza) uzunligini toping (metrlarda).",
+      "tags": "[Bloom: apply | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Pandusning balandligi va yerga tegib turgan qismi o'zaro qanday burchak hosil qiladi?", "1.5² va 2² yig'indisidan keyin qaysi matematik amalni bajarishni unutmaslik kerak?", "Qiyalik qanchalik \"yotiq\" bo'lsa, uning asosi (kateti) shunchalik uzun bo'lishi kerakmi yoki qisqa?"],
+      "answer_spec": { "type": "numeric", "expected": 2.5, "canonical_display": "2.5 metr", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["gipotenuzani-hisoblash", "pifagor-formulasi", "√(1.5² + 2²) = 2.5"],
+      "correct_feedback": "Juda soz! Amaliy misolda gipotenuzani hisoblashni va uning o'zgarish mantiqini to'g'ri tushunibsiz. √(1.5² + 2²) = √(2.25 + 4) = √6.25 = 2.5 metr.",
+      "partial_feedback": "Hisoblashda natija to'g'ri, lekin pandusning qiyaligi va uning asosi o'rtasidagi bog'liqlik haqidagi savolga batafsilroq javob bering.",
+      "wrong_feedback": "Hali emas. Gipotenuzani topish uchun katetlarni shunchaki qo'shish yetarli emasligini eslang; ular bilan avval qanday amal bajariladi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz Pifagor teoremasi va uning to'g'ri burchakli uchburchaklar uchun fundamental ahamiyatini o'rgandingiz. Ushbu qonuniyat gipotenuza kvadratining katetlar kvadratlari yig'indisiga tengligini (c² = a² + b²) ifodalaydi hamda buni yuzalar va kosinuslar orqali isbotlash yo'llarini ko'rsatadi. Mazkur tushuncha qurilishda, masalan, bino burchaklarining aniq 90 gradus ekanligini tekshirishda muhim amaliy ahamiyatga ega.",
+    "question": "Stol burchagining to'g'riligini tekshirishda nima uchun tomonlarni oddiy qo'shish emas, balki aynan kvadratlar yig'indisini hisoblash usulini tanladingiz?",
+    "spaced_rep": "Ertaga narvon yoki pandus kabi yangi amaliy misolda gipotenuza va noma'lum katetni Pifagor formulasi orqali hisoblashni, hamda teskari teorema bilan burchak turini aniqlashni mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz amaliy vaziyatlarda (narvon yoki pandus misolida) gipotenuza va katetlarni hisoblash usullarini to'g'ri qo'llashni va Pifagor formulasini modellashtirishni yaxshi o'zlashtirdingiz. Teoremani yuzalar yordamida isbotlashdagi geometrik mantiqni va teskari teorema orqali burchak turini aniqlashni mustahkamlash foydali.",
+      "strong_points": [
+        "Amaliy vaziyatlarda gipotenuza va katetlarni hisoblash usullarini to'g'ri qo'llash",
+        "Pifagor formulasini (c² = a² + b²) amaliy masalalarda modellashtirish"
+      ],
+      "weak_points": [
+        "Teoremani yuzalar yordamida isbotlashdagi geometrik mantiqni tushuntirish",
+        "Teskari teorema orqali burchakning turini (o'tmas yoki o'tkir) aniqlashda chuqurroq tahlil"
+      ],
+      "next_steps": [
+        "Darslikdagi yuzalar orqali isbotlash va metrik munosabatlar qismini qayta ko'zdan kechiring",
+        "So'ngra amaliy topshiriqlarga qaytib, yangi vaziyatlarda mashq qiling"
+      ],
+      "weak_point_keywords": ["yuza orqali isbot", "teskari teorema", "geometrik mantiq"],
+      "strong_point_keywords": ["gipotenuza", "katet", "modellashtirish"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas — yangi vaziyatlar taqdim etiladi."
+    }
+  }
+}

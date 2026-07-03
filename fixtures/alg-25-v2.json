@@ -1,0 +1,350 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§25. Viyet teoremasi",
+    "subject_display": "Algebra",
+    "section": "§25",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Keltirilgan kvadrat tenglama", "def": "Bosh koeffitsienti 1 ga teng bo'lgan x² + px + q = 0 ko'rinishdagi tenglama.", "cluster": "QOIDA" },
+    { "term": "ax² + bx + c = 0 ni keltirilgan ko'rinishga keltirish", "def": "Har bir hadni a (a ≠ 0) ga bo'lish: x² + (b/a)x + (c/a) = 0; p = b/a, q = c/a.", "cluster": "METOD" },
+    { "term": "Keltirilgan tenglama ildizlari formulasi", "def": "x₁,₂ = −p/2 ± √((p/2)² − q); kvadratni to'ldirish usulidan olinadi.", "cluster": "QOIDA" },
+    { "term": "Viyet teoremasi: x₁ + x₂", "def": "x₁ + x₂ = −p — ildizlar yig'indisi ikkinchi koeffitsiyentning qarama-qarshi ishorali qiymati.", "cluster": "QOIDA" },
+    { "term": "Viyet teoremasi: x₁ · x₂", "def": "x₁ · x₂ = q — ildizlar ko'paytmasi ozod hadga teng.", "cluster": "QOIDA" },
+    { "term": "Viyet teoremasiga teskari teorema", "def": "Agar x₁ + x₂ = −p va x₁ · x₂ = q bo'lsa, x₁ va x₂ — x² + px + q = 0 ning ildizlaridir.", "cluster": "QOIDA" },
+    { "term": "Tanlash usuli", "def": "Yig'indisi −p va ko'paytmasi q bo'lgan sonlar juftini ko'zdan kechirib ildizlarni topish. x² − 5x + 6 = 0 → 2 va 3.", "cluster": "METOD" },
+    { "term": "Kvadrat uchhadni ko'paytuvchilarga ajratish", "def": "ax² + bx + c = a(x − x₁)(x − x₂), x₁, x₂ — ildizlar. Masalan x² − x − 12 = (x + 3)(x − 4).", "cluster": "METOD" },
+    { "term": "q < 0 bo'lganda ildizlar ishorasi", "def": "Ildizlar turli ishorali — manfiy ko'paytma faqat qarama-qarshi ishorali ikki sondan hosil bo'ladi.", "cluster": "TAHLIL" },
+    { "term": "q > 0 bo'lganda ildizlar ishorasi", "def": "Ildizlar bir xil ishorali; aniq ishorani −p = x₁ + x₂ ning ishorasi belgilaydi.", "cluster": "TAHLIL" },
+    { "term": "Viyet teoremasi teng ildizlarda", "def": "x₁ = x₂ bo'lganda ham x₁ + x₂ = −p va x₁ · x₂ = q munosabatlari bajariladi.", "cluster": "QOIDA" },
+    { "term": "Ildizlardan tenglama tuzish", "def": "p = −(x₁ + x₂), q = x₁ · x₂ → x² + px + q = 0. x₁=3, x₂=−4 → x² + x − 12 = 0.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Keltirilgan Kvadrat Tenglama",
+    "case_setup": {
+      "story": "Sardor (x² + 5x + 6) / (x² − x − 6) algebraik kasrini soddalashtirish vazifasini bajardi. U yozdi: surat uchun 2 va 3 → (x − 2)(x − 3); maxraj uchun 3 va −2 → (x − 3)(x + 2); (x − 3) ni qisqartirib, javob (x − 2) / (x + 2). Kamola tekshirishni taklif qildi: x = 1 ni ikkala ifodaga qo'ying. Asl kasr (x = 1): 12 / (−6) = −2; Sardorning javobi (x = 1): −1/3 ≈ −0,33. Ikki natija mos kelmayapti.",
+      "role": "Matematika to'garag'ida Sardorning ish qog'ozini tekshirayotgan maslahatchi o'quvchi",
+      "task": "Sardor qaysi qadamida xato qilganini aniqlang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Sardor algebraik kasrni soddalashtirish uchun qaysi matematik usulga tayanyapti?",
+        "options": [
+          "Umumiy ko'paytuvchini qavs tashqarisiga chiqarish",
+          "Ko'phadlarni ildizlari orqali chiziqli ko'paytuvchilarga ajratish",
+          "To'liq kvadrat formulasini qo'llash: (a ± b)²"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Agar x₁ va x₂ — ax² + bx + c = 0 tenglamaning ildizlari bo'lsa, ax² + bx + c = a(x − x₁)(x − x₂) ayniyati barcha x uchun to'g'ri. Ildizning ishorasi qavs ichidagi ishoraga to'g'ridan-to'g'ri ta'sir qiladi: ildiz +2 bo'lsa omil (x − 2), ildiz −2 bo'lsa (x + 2). Ildizni bir birlikka noto'g'ri aniqlash ham ko'paytuvchini boshqa ko'phadga aylantiradi.",
+        "feedback": "Sardor har bir ikkinchi darajali ko'phad uchun ikkita son (ildiz) topib, (x − x₁)(x − x₂) ko'rinishiga keltirmoqda, so'ng umumiy ko'paytuvchini qisqartirmoqchi. Xato aynan ildizlarni topish qadamidadir."
+      },
+      {
+        "kind": "decide",
+        "question": "Sardor surat x² + 5x + 6 uchun ko'paytmasi 6, yig'indisi 5 bo'lgan sonlarni qidirib, 2 va 3 ni tanladi. Qaysi shart buzilgan?",
+        "options": [
+          "Ko'paytma shart bajarilmagan: 2 · 3 = 6 bo'lishi mumkin emas",
+          "Yig'indi shart bajarilmagan: ildizlar yig'indisi ikkinchi koeffitsiyentning qarama-qarshi ishorali qiymatiga teng bo'lishi kerak edi, Sardor esa uning o'zini oldi",
+          "Surat va maxraj ildizlari almashtirilib qo'yilgan"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Keltirilgan kvadrat tenglama x² + px + q = 0 ning ildizlari uchun doimo: x₁ + x₂ = −p (ikkinchi koeffitsiyentning qarama-qarshi ishorali qiymati), x₁ · x₂ = q (ozod had). Tanlash usuli: ko'paytmasi q va yig'indisi −p bo'lgan juft qidiriladi. x² + 5x + 6 uchun −p = −5, q = 6 → (−2) + (−3) = −5 ✓ va (−2)·(−3) = 6 ✓ → to'g'ri ildizlar −2 va −3.",
+        "feedback": "Ko'paytma shart (= 6) to'g'ri: 2 · 3 = 6. Ammo ildizlar yig'indisi koeffitsiyent 5 ning qarama-qarshisi, ya'ni −5 bo'lishi kerak edi. Sardor −5 o'rniga +5 ga teng yig'indi qidirdi — shu bir ishoraning farqi noto'g'ri juftni tanlashga olib keldi."
+      },
+      {
+        "kind": "justify",
+        "question": "Sardor \"2 · 3 = 6 va 2 + 3 = 5\" deb hisobladi — ikkala shart bajarilgandek tuyuldi. Nima uchun shunga qaramay xato qildi?",
+        "options": [
+          "Ko'paytma shart aslida bajarilmagan: 2 · 3 ≠ 6",
+          "Yig'indi shartida ishora e'tibordan soqit qilingan: yig'indi +5 emas, −5 bo'lishi kerak edi; to'g'ri juft −2 va −3 dir",
+          "Ildizlarni ko'paytuvchilarga emas, yig'indigacha bo'lgan formuladan topish kerak edi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Viyet teoremasida ildizlar yig'indisi = −p = −5. Yig'indi shart bajarilmaganining o'zi butun ajratishni yaroqsiz qiladi: (x − 2)(x − 3) ni ochsak x² − 5x + 6 chiqadi — bu berilgan x² + 5x + 6 dan farqli ko'phad.",
+        "feedback": "Sardor x₁ + x₂ = −p shartini \"p = +5\" deb tushunib, ijobiy ildizlar qidirdi. Ko'paytma sharti (6) qoniqarli bo'lsa ham, ishorasi noto'g'ri yig'indi tanlashning o'zi ajratishni butunlay noto'g'ri qildi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Sardorning ishiga qarab 2–4 jumlada javob bering: (1) bu vazifada qaysi matematik tushuncha asosiy rol o'ynayapti va u nega algebraik kasrni soddalashtirish bilan bog'liq? (2) ildizlarni to'g'ri tanlash uchun qaysi ikki shartga tayandingiz va nima uchun faqat bitta shartni bajarish yetarli emas? (3) Sardorning ishoradagi xatosi — yig'indi uchun −p o'rniga p ni olishi — yakuniy kasrni qanday qilib butunlay noto'g'ri natijaga olib keldi?",
+      "min_chars": 80,
+      "concept_keywords": ["Viyet teoremasi", "ko'paytuvchilarga ajratish", "(x − x₁)(x − x₂)", "ildizlar"],
+      "method_keywords": ["yig'indi = −p", "ko'paytma = q", "ikkala shart", "tanlash usuli", "tekshirish"],
+      "mistake_keywords": ["ishora", "−p o'rniga p", "+5 o'rniga −5", "manfiy ishora"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Surat x² + 5x + 6: p = 5, q = 6 → yig'indi = −p = −5, ko'paytma = 6 → x₁ = −2, x₂ = −3 → (x + 2)(x + 3). Maxraj x² − x − 6: p = −1, q = −6 → yig'indi = 1, ko'paytma = −6 → x₁ = 3, x₂ = −2 → (x − 3)(x + 2). Qisqartirish: (x + 2)(x + 3) / ((x − 3)(x + 2)) = (x + 3) / (x − 3). Tekshirish (x = 1): 4 / (−2) = −2 ✓ — asl kasr bilan to'liq mos keldi.",
+      "wrong_path": "Sardor yig'indi shartida \"= +5\" deb qabul qildi → 2 va 3 ni tanladi. Surat (x − 2)(x − 3), maxraj (x − 3)(x + 2); (x − 3) ni qisqartirib (x − 2) / (x + 2). Tekshirish (x = 1): −1/3 ≠ −2 — mos kelmadi. (x − 2)(x − 3) ni ochsak x² − 5x + 6 hosil bo'ladi — berilgan x² + 5x + 6 emas; ishoralar teskari, demak qisqartirish noto'g'ri asosda bajarilgan."
+    },
+    "feedback_summary": {
+      "student_understood": "Kvadrat uchhadni ildizlari orqali (x − x₁)(x − x₂) shaklida ajratish va umumiy ko'paytuvchini qisqartirish mantig'ini tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — yig'indi shartida ishorani e'tiborsiz qoldirib, −p o'rniga p = +5 ni olish.",
+      "what_to_review": "Viyet teoremasida yig'indi = −p (minus bilan!), ko'paytma = q ekanligini va ajratishdan keyin ko'phadni qayta ochib tekshirish odatini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 nazorat nuqtasiga javob bering (har birida B)",
+        "DPE bo'limida kamida 2–4 jumla yozing — tushuncha, shart asoslanishi, xato oqibati",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "x² + px + q = 0 ko'rinishdagi tenglama keltirilgan kvadrat tenglama deb ataladi, chunki uning bosh koeffitsienti _____ ga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "1", "accepted_answers": ["1", "birga teng", "koeffitsiyent 1 ga teng"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "x² + px + q = 0 tenglamaning ildizlarini topish formulasi qaysi?", "options": ["x₁,₂ = p/2 ± √((p/2)² − q)", "x₁,₂ = −p/2 ± √((p/2)² + q)", "x₁,₂ = −p/2 ± √((p/2)² − q)", "x₁,₂ = −p ± √(p² − q)"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "fill_blank", "prompt": "Viyet teoremasiga ko'ra, x² + px + q = 0 tenglamaning ildizlari yig'indisi x₁ + x₂ = _____.", "answer_spec": { "type": "text_fuzzy", "expected": "−p", "accepted_answers": ["−p", "-p", "minus p", "p ning qarama-qarshi ishorali qiymati"], "allow_ai_fallback": true }, "flashcard_ref": "card_4" },
+      { "type": "mcq", "prompt": "Viyet teoremasiga ko'ra, x² + px + q = 0 tenglamaning ildizlari ko'paytmasi x₁ · x₂ nimaga teng?", "options": ["−p", "p", "−q", "q"], "answer_spec": { "type": "option_index", "expected": 3, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "Viyet teoremasiga teskari teoremani to'g'ri va to'liq ifodalovchi variant qaysi?", "options": ["Agar x₁ + x₂ = −p bo'lsa (ko'paytma shartidan qat'i nazar), x₁ va x₂ — x² + px + q = 0 ning ildizlari.", "Agar x₁ + x₂ = −p va x₁ · x₂ = q bo'lsa, x₁ va x₂ — x² + px + q = 0 ning ildizlaridir.", "Agar x₁ + x₂ = p va x₁ · x₂ = q bo'lsa, x₁ va x₂ — x² + px + q = 0 ning ildizlaridir.", "Agar x₁ + x₂ = −p va x₁ · x₂ = −q bo'lsa, x₁ va x₂ — x² + px + q = 0 ning ildizlaridir."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "x² − 5x + 6 = 0 da ildizlarni tanlash usuli bilan topish uchun yig'indisi 5 va ko'paytmasi 6 bo'lgan juftni izlash kerak. Bu usulning nazariy asosini _____ teskari teoremasi tashkil etadi.", "answer_spec": { "type": "text_fuzzy", "expected": "Viyet teoremasiga", "accepted_answers": ["Viyet teoremasiga", "Viyet", "Viyet teoremasiga teskari teorema", "Viyet teoremasi teskari yo'nalishi"], "allow_ai_fallback": true }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "ax² + bx + c tenglamaning ildizlari x₁ va x₂ bo'lsa, kvadrat uchhadni chiziqli ko'paytuvchilarga ajratish ayniyati qaysi?", "options": ["ax² + bx + c = (x − x₁)(x − x₂)", "ax² + bx + c = a(x + x₁)(x + x₂)", "ax² + bx + c = a(x − x₁)(x − x₂)", "ax² + bx + c = a(x − x₁) + a(x − x₂)"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "choose_explanation", "prompt": "x² + px + q = 0 tenglamada q < 0 bo'lgan holda ildizlar ishorasini to'g'ri izohlagan variant qaysi?", "options": ["Ildizlar ikkalasi ham manfiy, chunki ozod had q manfiy qiymatli.", "Ildizlar turli ishorali, chunki manfiy son faqat qarama-qarshi ishorali ikki sonning ko'paytmasi bo'la oladi.", "Ildizlar ikkalasi ham musbat, chunki ko'paytma hech qachon manfiy bo'la olmaydi.", "q ning ishorasidan ildizlar ishorasini aniqlab bo'lmaydi; faqat ildizlar formulasi qo'llaniladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "x₁ = x₂ bo'lgan holda (teng ildizlar) Viyet teoremasi haqida qaysi ifoda to'g'ri?", "options": ["Viyet teoremasi faqat har xil ildizlar uchun amal qiladi; teng ildizlarda u o'rinli emas.", "Teng ildizlarda yig'indi munosabati o'rinli, ammo ko'paytma munosabati amal qilmaydi.", "Teng ildizlarda x₁ + x₂ = −p va x₁ · x₂ = q munosabatlarining ikkalasi ham bajariladi.", "Teng ildizlarda faqat ko'paytma munosabati o'rinli; yig'indi munosabati amal qilmaydi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_11" },
+      { "type": "choose_explanation", "prompt": "x₁ = 2 va x₂ = −5 berilgan. p va q koeffitsiyentlarini hamda natijaviy keltirilgan kvadrat tenglamani to'g'ri ko'rsatgan variant qaysi?", "options": ["p = x₁ + x₂ = −3 va q = x₁ · x₂ = −10 → x² − 3x − 10 = 0.", "p = −(x₁ + x₂) = 3 va q = x₁ · x₂ = −10 → x² + 3x − 10 = 0.", "p = x₁ · x₂ = −10 va q = x₁ + x₂ = −3 → x² − 10x − 3 = 0.", "p = −(x₁ + x₂) = 3 va q = −(x₁ · x₂) = 10 → x² + 3x + 10 = 0."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_12" },
+      { "type": "mcq", "prompt": "x² + 8x + 15 = 0 tenglamasida Viyet teoremasiga ko'ra ildizlar yig'indisi nechaga teng?", "options": ["−8", "8", "15", "−15"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "x² − 5x + 6 = 0 (p = −5, q = 6) tenglamaning ildizlari Viyet teoremasi bo'yicha tanlash usulida _____ ga teng (ikkala ildizni yozing).", "answer_spec": { "type": "text_fuzzy", "expected": "2 va 3", "accepted_answers": ["2 va 3", "3 va 2", "2, 3"], "allow_ai_fallback": true }, "flashcard_ref": "card_7" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_alg_25",
+    "expert_role": "business_consultant",
+    "title": "Reaktor Samaradorlik Formulasini Soddalashtirish",
+    "intro": "Siz kimyoviy korxonada ishlab chiqarish jarayonini optimallashtirish bo'yicha matematik tahlilchisiz. Reaktor unumdorligi monitoringi tizimida ishlatiladigan K(n) = (n² + n − 6) / (n² − 5n + 6) algebraik kasrini soddalashtirilgan ko'rinimga keltiring; n — bir smenada bajarilgan reaktor tsikllari soni. (Eslatma: reaktor 2019-yilda qayta jihozlangani va bir smenada 12 tsikl chegarasi soddalashtirishga ta'sir qilmaydi.)",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Suratning ildizlarini aniqlash",
+        "prompt": "n² + n − 6 ko'phadini Viyet teoremasiga ko'ra ko'paytuvchilarga ajratish uchun ildizlarini toping (p = 1, q = −6). Viyet shartlarini to'liq qanoatlantiradigan ildizlar juftini tanlang.",
+        "options": [
+          { "id": "a", "label": "n₁ = 2, n₂ = 3 (yig'indi = 5; ko'paytma = 6)", "is_correct": false, "consequence": "Yig'indi −p = −1 bo'lishi kerak edi; 5 ≠ −1 va ko'paytma 6 ≠ −6 — ikkala shart ham buzilgan." },
+          { "id": "b", "label": "n₁ = −2, n₂ = 3 (yig'indi = 1; ko'paytma = −6)", "is_correct": false, "consequence": "Ko'paytma to'g'ri (−6), lekin yig'indi 1 ≠ −1 — ishora teskari, Viyet sharti bajarilmaydi." },
+          { "id": "c", "label": "n₁ = 2, n₂ = −3 (yig'indi = −1; ko'paytma = −6)", "is_correct": true, "consequence": "To'g'ri: yig'indi = −p = −1 ✓ va ko'paytma = q = −6 ✓. Surat (n − 2)(n + 3)." },
+          { "id": "d", "label": "n₁ = 1, n₂ = −6 (yig'indi = −5; ko'paytma = −6)", "is_correct": false, "consequence": "Ko'paytma to'g'ri, lekin yig'indi −5 ≠ −1 — bitta shartning bajarilishi yetarli emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Maxrajni ajratish usulini tanlash",
+        "prompt": "Endi maxraj n² − 5n + 6 ni chiziqli ko'paytuvchilarga ajrating (p = −5, q = 6). To'g'ri ajratishni tanlang.",
+        "options": [
+          { "id": "a", "label": "(n − 2)(n − 3)", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "(n + 2)(n + 3)", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "(n + 2)(n − 3)", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "d", "label": "(n − 5)(n + 1)", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Kasrni soddalashtirish va ta'rif sohasi",
+        "prompt": "Surat (n − 2)(n + 3), maxraj (n − 2)(n − 3) shaklida yozildi. K(n) ni soddalashtiring va qo'llanilish chegaralarini to'g'ri ko'rsatgan variantni tanlang.",
+        "options": [
+          { "id": "a", "label": "K(n) = (n + 3) / (n − 3), faqat n ≠ 3", "is_correct": false, "consequence": "Soddalashtirish to'g'ri, lekin n = 2 cheklovi o'tkazib yuborilgan — asl kasr maxraji n = 2 da ham nolga teng." },
+          { "id": "b", "label": "K(n) = (n + 3) / (n − 3), n ≠ 2 va n ≠ 3", "is_correct": true, "consequence": "To'g'ri: umumiy ko'paytuvchi (n − 2) qisqartiriladi; n = 2 da asl kasr, n = 3 da soddalashtirilgan kasr aniqlanmaydi." },
+          { "id": "c", "label": "K(n) = (n − 3) / (n + 3), n ≠ 2 va n ≠ 3", "is_correct": false, "consequence": "Surat va maxraj almashtirib qo'yilgan — qaysi ko'paytuvchilar qoladi, qayta tekshiring." },
+          { "id": "d", "label": "K(n) = (n + 3) / (n + 3) = 1, n ≠ 2 va n ≠ 3", "is_correct": false, "consequence": "Noto'g'ri ko'paytuvchi qisqartirilgan: (n + 3) ikkala tomonda yo'q, faqat (n − 2) umumiy." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Suratdagi ildizlarni to'g'ri tanlashda hal qiluvchi bo'lgan asosiy tushuncha qaysi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Viyet teoremasi: yig'indi = −p va ko'paytma = q ikkala sharti birga", "is_correct": true },
+          { "id": "c2", "label": "Diskriminant musbat bo'lishi sharti", "is_correct": false },
+          { "id": "c3", "label": "To'liq kvadrat formulasi (a ± b)²", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun suratdagi eng tipik xato — yig'indi shartida −p o'rniga p ni olish — butun ajratishni yaroqsiz qiladi, va nima uchun soddalashtirishdan keyin n ≠ 2 hamda n ≠ 3 cheklovlarining ikkalasi ham ko'rsatilishi shart? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["yig'indi = −p", "ishora", "ikkala shart", "umumiy ko'paytuvchi", "ta'rif sohasi", "maxraj nolga teng"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_alg_25_x2_3x_10",
+      "instructions": "x² + 3x − 10 = 0 tenglamani tanlash usuli bilan yechish va ko'paytuvchilarga ajratish 7 qadamda berilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Tenglama keltirilgan ko'rinishda: bosh koeffitsiyent 1; p = 3, q = −10.", "is_broken": false },
+        { "id": "b2", "text": "Viyet teoremasiga ko'ra: x₁ + x₂ = −p = −3.", "is_broken": false },
+        { "id": "b3", "text": "Viyet teoremasiga ko'ra: x₁ · x₂ = q = −10.", "is_broken": false },
+        { "id": "b4", "text": "Yig'indisi −3 va ko'paytmasi −10 bo'lgan juft: 2 va (−5), chunki 2 + (−5) = −3 ✓ va 2 · (−5) = −10 ✓.", "is_broken": false },
+        { "id": "b5", "text": "Ildizlar: x₁ = 2, x₂ = −5.", "is_broken": false },
+        { "id": "b6", "text": "Ko'paytuvchilarga ajratish: x² + 3x − 10 = (x − 2)(x − 5).", "is_broken": true },
+        { "id": "b7", "text": "Tekshirish: x = 2 → 4 + 6 − 10 = 0 ✓; x = −5 → 25 − 15 − 10 = 0 ✓.", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "(x − 2)(x + 5)", "accepted_answers": ["(x − 2)(x + 5)", "(x + 5)(x − 2)", "(x-2)(x+5)", "(x+5)(x-2)"], "allow_ai_fallback": true },
+      "hint": "Qadam 6 dagi ikkinchi ko'paytuvchiga Qadam 5 dan topilgan x₂ = −5 ni qo'ying: (x − x₂) ifodasida x₂ o'rniga −5 ni yozing va natijani solishtiring.",
+      "why_prompt": "Bu blok nega noto'g'ri edi? Ajratish ayniyatida (x − xᵢ) formulasida xᵢ = −5 qo'yilganda (x − (−5)) = (x + 5) hosil bo'ladi — manfiy sonni minusdan ayirish qo'shishga aylanadi; (x − 5) emas, (x + 5) bo'lishi kerak."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_alg_25",
+      "case_setup": "Keltirilgan kvadrat tenglama atamalari, Viyet munosabatlari va tatbiqlarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Keltirilgan kvadrat tenglama", "right": "Bosh koeffitsienti 1 ga teng bo'lgan x² + px + q = 0 ko'rinishdagi tenglama" },
+        { "id": "p2", "left": "x² + px + q = 0 tenglamada x₁ + x₂", "right": "−p" },
+        { "id": "p3", "left": "x² + px + q = 0 tenglamada x₁ · x₂", "right": "q" },
+        { "id": "p4", "left": "q < 0 bo'lganda ildizlarning o'zaro munosabati", "right": "Ildizlar turli ishorali" },
+        { "id": "p5", "left": "q > 0 bo'lganda ildizlarning o'zaro munosabati", "right": "Ildizlar bir xil ishorali" },
+        { "id": "p6", "left": "Tanlash usulining nazariy asosi", "right": "Viyet teoremasiga teskari teorema" },
+        { "id": "p7", "left": "a(x − x₁)(x − x₂) ayniyatining amaliy qo'llanilishi", "right": "Algebraik kasrning surati va maxrajini ajratib qisqartirish" },
+        { "id": "p8", "left": "Ildizlari x₁, x₂ bo'lgan tenglamaning p koeffitsienti", "right": "−(x₁ + x₂)" }
+      ],
+      "checkpoints": [
+        { "question": "x² + px + q = 0 da x₁ + x₂ qaysi qiymatga juftlanadi?", "options": ["p", "−p", "q"], "correct_index": 1 },
+        { "question": "x² + px + q = 0 da x₁ · x₂ qaysi qiymatga juftlanadi?", "options": ["q", "−q", "−p"], "correct_index": 0 },
+        { "question": "Yig'indi (−p) va ko'paytma (q) bir teoremaning ikki munosabatimi?", "options": ["Ha — ikkalasi ham Viyet teoremasiga tegishli", "Yo'q — har biri alohida teorema"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Juft (2) va juft (3) ni tanlab izohlang: nima uchun yig'indi −p ga, ko'paytma esa q ga teng — ya'ni (x − x₁)(x − x₂) ni yoyish jarayonida birinchisida ishorani o'zgartirish, ikkinchisida saqlash nima sababdan talab qilinadi, va faqat \"biri p bilan, biri q bilan bog'liq\" degan sirtqi belgi bo'yicha juft tanlagan o'quvchi qanday xatoga yo'l qo'yadi?",
+      "expected_components": ["Viyet teoremasi", "(x − x₁)(x − x₂) yoyilmasi: x ildizli had va ozod had", "−(x₁ + x₂) = p — ishorani o'zgartirish sababi", "x₁ · x₂ = q — ishorani saqlash sababi"],
+      "consequence": { "correct_path": "Har bir tushunchani to'g'ri munosabatiga uladingiz.", "wrong_path": "\"p bilan / q bilan bog'liq\" sirtqi belgisiga aldanib, yig'indi va ko'paytmaning ishora qoidalarini almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_alg_25",
+      "case_setup": "Har bir bo'lakni §25 darsining matematik mantig'iga tayanib yagona juftiga ulang va yo'nalishni to'g'ri belgilang: dalil → da'vo, sabab → oqibat, qadam → natija.",
+      "pieces": [
+        { "id": "P1", "label": "x₁ va x₂ — x² + px + q = 0 tenglamaning ildizlari ekanligi aniqlangan", "role": "evidence" },
+        { "id": "P2", "label": "x₁ + x₂ = −p va x₁ · x₂ = q", "role": "claim" },
+        { "id": "P3", "label": "x² + px + q = 0 tenglamada q < 0", "role": "cause" },
+        { "id": "P4", "label": "Tenglamaning ildizlari turli ishorali (biri musbat, biri manfiy)", "role": "effect" },
+        { "id": "P5", "label": "Yig'indisi −p va ko'paytmasi q bo'lgan juft izlab, shartni qanoatlantiruvchi juft topildi", "role": "step" },
+        { "id": "P6", "label": "Topilgan sonlar x² + px + q = 0 tenglamaning ildizlaridir", "role": "result" }
+      ],
+      "checkpoints": [
+        { "q": "P3 (q < 0) qaysi natijaga (effect) ulanadi?", "options": ["P2 (Viyet munosabatlari)", "P4 (turli ishorali ildizlar)"], "correct_index": 1 },
+        { "q": "P1 → P2 ulanishi qaysi munosabat turi?", "options": ["dalil → da'vo (evidence → claim)", "sabab → oqibat (cause → effect)"], "correct_index": 0 },
+        { "q": "P5 → P6 ulanishini P1 → P2 bilan almashtirib bo'ladimi?", "options": ["Yo'q — biri ildizlar→shartlar (Viyet), biri shartlar→ildizlar (teskari teorema)", "Ha — yo'nalish farqi yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Qaysi teorema P1 → P2 aloqasining asosini tashkil etadi, qaysi teorema esa P5 → P6 ni qo'llab-quvvatlaydi va nima uchun bu ikki yo'nalish bir-biriga teskari bo'la olmaydi? Bundan tashqari, P3 ni P2 bilan ulashtirgan o'quvchi qanday mantiqiy xatoga yo'l qo'yadi va bu xato qaysi formula yordamida tekshiriladi?",
+      "expected_components": ["Viyet teoremasi (ildizlar → shartlar)", "Viyet teoremasiga teskari teorema (shartlar → ildizlar)", "tanlash usuli", "yo'nalish: ildizlar → shartlar / shartlar → ildizlar"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Aziz x² + 7x + 12 = 0 ni tanlash usuli bilan yechmoqchi: \"Ko'paytmasi 12 va yig'indisi 7 bo'lgan sonlar: 3 va 4. Demak x₁ = 3, x₂ = 4.\" Siz x = 3 ni qo'yasiz: 9 + 21 + 12 = 42 ≠ 0 — javob noto'g'ri.",
+      "why": "Nima uchun x² + 7x + 12 = 0 da ildizlar yig'indisi 7 bo'la olmaydi? Viyet teoremasida ildizlar yig'indisi p koeffitsiyentining o'zi bilan qanday farq qiladi va bu farq qaerdan kelib chiqadi?",
+      "how": "To'g'ri yig'indi va ko'paytma shartlarini (−p va q orqali) yozing, so'ng tanlash usulini qo'llab ildizlarni toping.",
+      "what": "Topilgan ildizlarni Azizning 3 va 4 bilan solishtiring va ikkalasini tenglamaga qo'yib tekshiring. Bu tekshiruv Aziz o'tkazib yuborgan bir ishoraning ahamiyati haqida nima aytadi?",
+      "prompt": "x² + 7x + 12 = 0 ning to'g'ri ildizlarini toping va Aziz qaysi ishorada yanglishganini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["x² + 7x + 12 = 0 da p = 7; x₁ + x₂ = −p formulasiga ko'ra yig'indi p ning o'zi bilan bir xilmi?", "Yig'indi = −7 va ko'paytma = 12 bo'lgan juft: ko'paytmasi musbat ikki son qanday ishorali bo'ladi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "−3 va −4", "accepted_answers": ["−3 va −4", "-3 va -4", "−4 va −3", "-3, -4"], "allow_ai_fallback": true },
+      "expected_concepts": ["x₁ + x₂ = −p = −7", "ildizlar −3 va −4", "yig'indi ishorasini e'tiborsiz qoldirish"],
+      "correct_feedback": "Yig'indi = −p = −7 (manfiy ishorasi bilan) ekanligini aniq asoslab, ildizlar −3 va −4 ekanligini topdingiz va Azizning ishorani e'tiborsiz qoldirganini tekshiruv orqali isbotladingiz.",
+      "partial_feedback": "Ildizlarni to'g'ri topdingiz, lekin \"Nima uchun\" qismida x₁ + x₂ = −p formulasidagi ishorani nima uchun o'zgartirish zarurligini to'liq asoslamadingiz.",
+      "wrong_feedback": "Hali emas. Viyet teoremasida ildizlar yig'indisi ikkinchi koeffitsiyentning o'zi emas, qarama-qarshi ishorali qiymati. x² + 7x + 12 = 0 da p = 7 bo'lsa, yig'indi qanday bo'lishi kerak?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "O'qituvchi x₁ = −3, x₂ = 5 ildizli keltirilgan kvadrat tenglama tuzishni so'radi. Sinfdoshingiz p = x₁ + x₂ = 2 deb, x² + 2x − 15 = 0 tenglamasini yozdi.",
+      "why": "Nima uchun p ni x₁ + x₂ = 2 deb olish noto'g'ri? Viyet teoremasiga teskari teoremada p ni ildizlar yig'indisidan qanday hosil qilish kerak va bu qoida qaerdan kelib chiqadi?",
+      "how": "p va q koeffitsiyentlarini x₁ = −3, x₂ = 5 ildizlari orqali to'g'ri formulalar bilan hisoblang va keltirilgan kvadrat tenglamani yozing.",
+      "what": "Tuzilgan tenglamaga x = −3 va x = 5 ni alohida qo'yib, nol chiqishini tekshiring; sinfdosh tenglamasiga ham qo'ying. Tekshiruv natijalari teskari teorema haqida nima ko'rsatadi?",
+      "prompt": "x₁ = −3, x₂ = 5 ildizlaridan to'g'ri keltirilgan kvadrat tenglamani tuzing va sinfdoshingiz xatosini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["p uchun formula x₁ + x₂ = −p munosabatidan chiqariladi: p = −(x₁ + x₂).", "x₁ + x₂ = −3 + 5 = 2 → p = −(2) = −2; q = x₁ · x₂ = −15."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "x² − 2x − 15 = 0", "accepted_answers": ["x² − 2x − 15 = 0", "x^2 - 2x - 15 = 0", "x²−2x−15=0", "x² − 2x − 15"], "allow_ai_fallback": true },
+      "expected_concepts": ["p = −(x₁ + x₂) = −2", "q = x₁ · x₂ = −15", "x² − 2x − 15 = 0"],
+      "correct_feedback": "p = −(x₁ + x₂) = −2, q = x₁ · x₂ = −15 ekanligini asoslab, x² − 2x − 15 = 0 ni tuzdingiz va ikkala ildiz bilan tekshiruv o'tkazib sinfdoshingizning xatosini ko'rsatdingiz.",
+      "partial_feedback": "Tenglamani to'g'ri tuzdingiz, lekin \"Nima degan ma'no\" qismida tekshiruv natijalari teskari teoremani qanday tasdiqlaganini yoki p = 2 nima uchun noto'g'ri ekanligini tushuntirmadingiz.",
+      "wrong_feedback": "Hali emas. p ni topishda x₁ + x₂ = −p munosabatini qaytadan ko'ring. Agar x₁ + x₂ = 2 bo'lsa, p aynan 2 mi yoki boshqa qiymatmi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Sinfdoshingiz: \"x² − 4x − 21 = 0 da ildizlar ishorasini formuladan foydalanmasdan aniqlab bo'lmaydi,\" deydi. Siz esa Viyet munosabatlari yetarli deb o'ylaysiz.",
+      "why": "Nima uchun bu tenglamada ildizlar ishorasini aniqlash uchun ildizlar formulasiga murojaat shart emas? q va −p qiymatlari ildizlar ishorasi haqida qancha ma'lumot beradi?",
+      "how": "x² − 4x − 21 = 0 uchun p va q ni aniqlang; avval q ishorasidan ildizlar bir xilmi yo turli ishorali ekanligini asoslang, keyin −p = x₁ + x₂ dan qaysi ildiz absolut qiymat jihatidan kattaroq ekanligini aniqlang.",
+      "what": "Ikki xulosa birlashganda ildizlar haqida qanday to'liq tasvir chiqadi? Bu usul ildizlar formulasidan qachon amaliy jihatdan qulay?",
+      "prompt": "x² − 4x − 21 = 0 ildizlarining ishorasini (formulasiz) aniqlang: bir xilmi yoki turli ishorali, qaysi biri kattaroq?",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["x₁ · x₂ = q = −21. Ikki sonning ko'paytmasi manfiy bo'lishi ishoralar haqida nima deydi?", "Ildizlar turli ishorali; x₁ + x₂ = −p = 4 > 0 — musbat ildizmi yoki manfiy ildizmi kattaroq?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "turli ishorali, musbat ildiz kattaroq", "accepted_answers": ["turli ishorali, musbat ildiz kattaroq", "turli ishorali", "biri musbat biri manfiy, musbat kattaroq", "7 va −3"], "allow_ai_fallback": true },
+      "expected_concepts": ["q = −21 < 0 → turli ishorali", "−p = 4 > 0 → musbat ildiz kattaroq", "Viyet munosabatlari formula o'rnida"],
+      "correct_feedback": "q = −21 < 0 dan ildizlar turli ishorali, −p = 4 > 0 dan esa musbat ildiz absolut qiymat jihatidan kattaroq ekanligini zanjir shaklida asosladingiz — formulasiz to'liq xulosa chiqardingiz.",
+      "partial_feedback": "q ishorasiga to'g'ri baho berib turli ishoralikni aniqladingiz, lekin −p dan qaysi ildiz kattaroq ekanligini aniqlash qadamini bajarmadingiz.",
+      "wrong_feedback": "Hali emas. x₁ · x₂ = q = −21. Ko'paytmasi manfiy bo'lgan ikki sonning ishoralari bir xilmi yoki turlichami — shu savoldan boshlang."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Dilorom x² + 3x − 10 = 0 ni tanlash usuli bilan yechdi: \"Yig'indisi 3 va ko'paytmasi −10 bo'lgan sonlar: 5 va −2. Demak x₁ = 5, x₂ = −2.\" So'ng (x − 5)(x + 2) = 0 deb yozdi.",
+      "why": "Nima uchun Diloromning \"yig'indisi 3\" sharti Viyet teoremasiga zid? x² + 3x − 10 = 0 uchun yig'indi va ko'paytma shartlari qanday ifodalanadi va ikkala shart bir vaqtda bajarilishi nega muhim?",
+      "how": "To'g'ri yig'indi va ko'paytma shartlarini yozing, ildizlarni toping va tenglamani to'g'ri chiziqli ko'paytuvchilarga ajrating.",
+      "what": "Diloromning x₁ = 5, x₂ = −2 javobini tenglamaga qo'yib tekshiring — qanoatlantiradimi? Natija uning mulohaza yo'li va keyingi soddalashtirishlar uchun nima oqibat bildiradi?",
+      "prompt": "x² + 3x − 10 = 0 ning to'g'ri ildizlarini toping, ko'paytuvchilarga ajrating va Diloromning xatosini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["x² + 3x − 10 = 0 da p = 3; x₁ + x₂ = −p — demak yig'indi +3 emas, qanday bo'lishi kerak?", "Yig'indi = −3 va ko'paytma = −10 shartlarini birga bajaruvchi juft: biri musbat, biri manfiy."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(x + 5)(x − 2)", "accepted_answers": ["(x + 5)(x − 2)", "(x − 2)(x + 5)", "(x+5)(x-2)", "x₁ = −5, x₂ = 2", "−5 va 2"], "allow_ai_fallback": true },
+      "expected_concepts": ["yig'indi = −p = −3", "ildizlar −5 va 2", "(x + 5)(x − 2)"],
+      "correct_feedback": "Yig'indi = −p = −3 (manfiy) ekanligini asoslab, to'g'ri ildizlar −5 va 2 ekanligini topdingiz; (x + 5)(x − 2) ko'rinishida ajrattingiz va Diloromning 5 va −2 juftini tekshiruv orqali noto'g'ri deb isbotladingiz.",
+      "partial_feedback": "Viyet yig'indi shartida ishorani to'g'ri aniqlashga harakat qildingiz, lekin Diloromning javobini tenglamaga qo'yib tekshirib, ko'paytuvchilar ajratishi nega noto'g'ri ekanligini asoslamadingiz.",
+      "wrong_feedback": "Hali emas. x² + 3x − 10 = 0 da p qancha? x₁ + x₂ = −p. Shu qiymatlarni hisoblab, \"yig'indisi 3\" sharti qaysi koeffitsiyentga mos kelishini ko'ring."
+    },
+    {
+      "id": "bq_4",
+      "scenario": "(x² + x − 6) / (x² − 5x + 6) kasrini soddalashtirish talab etildi. Hamid surat va maxrajni ko'zdan kechirib, umumiy ko'paytuvchi yo'q deb, kasrni soddalashtirib bo'lmaydi dedi.",
+      "why": "Nima uchun Hamidning \"ko'zdan kechirish\" usuli muvaffaqiyatsiz — ko'paytuvchilar to'g'ridan-to'g'ri ko'rinmaydi? Kasrni soddalashtirish uchun qaysi nazariy asos surat va maxrajni alohida tahlil qilishni talab qiladi?",
+      "how": "Surat x² + x − 6 va maxraj x² − 5x + 6 uchun Viyet teoremasiga teskari teorema (tanlash usuli) bilan ildizlarni alohida toping, har birini a(x − x₁)(x − x₂) shaklida yozing va umumiy ko'paytuvchini qisqartirib yakuniy kasrni keltiring.",
+      "what": "Soddalashtirilgan va asl kasrni x = 4 da hisoblang — mos keladimi? Aniqlanish sohasiga qanday cheklovlar zarur, nima uchun ularsiz xato bo'ladi va Hamidning usuli nega bu kasrlarda ishlamaydi?",
+      "prompt": "(x² + x − 6) / (x² − 5x + 6) ni soddalashtiring va aniqlanish sohasi cheklovlarini ko'rsating.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["Surat x² + x − 6: p = 1, q = −6 → yig'indi = −1, ko'paytma = −6 → ildizlar 2 va −3 → (x − 2)(x + 3).", "Maxraj x² − 5x + 6: −p = 5, q = 6 → ildizlar 2 va 3 → (x − 2)(x − 3). Umumiy ko'paytuvchi (x − 2); maxraj qaysi x larda nolga aylanadi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(x + 3) / (x − 3), x ≠ 2 va x ≠ 3", "accepted_answers": ["(x + 3) / (x − 3), x ≠ 2 va x ≠ 3", "(x+3)/(x-3), x≠2, x≠3", "(x + 3)/(x − 3)", "(x+3)/(x-3)"], "allow_ai_fallback": true },
+      "expected_concepts": ["surat (x − 2)(x + 3)", "maxraj (x − 2)(x − 3)", "(x − 2) qisqartiriladi → (x + 3)/(x − 3)", "x ≠ 2 va x ≠ 3"],
+      "correct_feedback": "Surat ildizlari 2 va −3, maxraj ildizlari 2 va 3 ekanligini asoslab, (x − 2)(x + 3) va (x − 2)(x − 3) ko'rinishida ajrattingiz; (x − 2) ni qisqartirib (x + 3)/(x − 3) ga keldingiz va x ≠ 2, x ≠ 3 cheklovlarini ko'rsatib x = 4 tekshiruvi bilan tasdiqladingiz.",
+      "partial_feedback": "Kasrni to'g'ri soddalashtirishga yetib keldingiz, lekin aniqlanish sohasidagi cheklovlarni (x ≠ 2 va x ≠ 3) ko'rsatmadingiz yoki Hamidning usuli nega yetarli emasligini asoslamadingiz.",
+      "wrong_feedback": "Hali emas. Avval surat va maxrajni ko'paytuvchilar mahsuliga keltiring — har bir uchhadni tenglama deb qarab ildizlarini toping. Boshlang: x² + x − 6 = 0 da Viyet bo'yicha yig'indi va ko'paytma qancha?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun Siz keltirilgan kvadrat tenglama (x² + px + q = 0), Viyet teoremasini (x₁ + x₂ = −p, x₁ · x₂ = q) va teskari teoremasini o'rgandingiz. Asosiy formula x₁,₂ = −p/2 ± √((p/2)² − q) ildizlarni to'g'ridan-to'g'ri hisoblaydi, Viyet munosabatlari esa formulasiz ishoralar va qiymatlarni aniqlashga yordam beradi.",
+    "question": "Do'stingizga nima uchun Viyet teoremasida yig'indi = −p (minus bilan!), ko'paytma = q ekanligini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga Viyet teoremasida ishora qoidasini (yig'indi = −p) va berilgan ildizlardan tenglama tuzishni (p = −(x₁ + x₂)) yangi misollarda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Kvadrat uchhadni ildizlari orqali ko'paytuvchilarga ajratish va q ishorasidan ildizlar ishorasini aniqlash ko'nikmalarini yaxshi o'zlashtirdingiz. Viyet yig'indi shartidagi ishora (−p) va ildizlardan tenglama tuzishni mustahkamlash foydali.",
+      "strong_points": [
+        "Surat va maxrajni ko'paytuvchilarga ajratish: har bir uchhadni tenglama deb qarab (x − x₁)(x − x₂) shaklida yozish",
+        "q ishorasidan ildizlar ishorasini aniqlash (q < 0 → turli ishorali)"
+      ],
+      "weak_points": [
+        "Viyet teoremasida yig'indi = −p qoidasidagi ishora: p ning o'zi emas, qarama-qarshi ishorali qiymati",
+        "Berilgan ildizlardan tenglama tuzishda p = −(x₁ + x₂) formulasini to'g'ri qo'llash"
+      ],
+      "next_steps": [
+        "Viyet teoremasida ishora qoidasini yangi raqamlarda mashq qiling",
+        "Ildizlardan tenglama tuzishda p = −(x₁ + x₂) va q = x₁ · x₂ ni yozma asoslang"
+      ],
+      "weak_point_keywords": ["ishora", "yig'indi = −p", "p = −(x₁ + x₂)"],
+      "strong_point_keywords": ["ko'paytuvchi", "ajratish", "q ishorasi"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi raqamlar va vaziyatlar bilan."
+    }
+  }
+}

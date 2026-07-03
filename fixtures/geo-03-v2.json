@@ -1,0 +1,343 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "3-§. O'tkir burchakning trigonometrik funksiyalari",
+    "subject_display": "Geometriya",
+    "section": "3-§",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Sinus (sinα)", "def": "To'g'ri burchakli uchburchakda o'tkir burchak qarshisidagi katetning gipotenuzaga nisbati. sinα = a / c.", "cluster": "QOIDA" },
+    { "term": "Kosinus (cosα)", "def": "To'g'ri burchakli uchburchakda o'tkir burchakka yopishgan katetning gipotenuzaga nisbati. cosα = b / c.", "cluster": "QOIDA" },
+    { "term": "Tangens (tgα)", "def": "To'g'ri burchakli uchburchakda o'tkir burchak qarshisidagi katetning yopishgan katetga nisbati. tgα = a / b.", "cluster": "QOIDA" },
+    { "term": "Kotangens (ctgα)", "def": "To'g'ri burchakli uchburchakda o'tkir burchakka yopishgan katetning qarshisidagi katetga nisbati. ctgα = b / a.", "cluster": "QOIDA" },
+    { "term": "Sinus va kosinus chegarasi", "def": "O'tkir burchakning sinusi va kosinusi har doim 1 dan kichik bo'ladi, chunki gipotenuza katetdan uzun.", "cluster": "TAHLIL" },
+    { "term": "tgα · ctgα = 1", "def": "Tangens va kotangens o'zaro teskari funksiyalar; ularning ko'paytmasi 1 ga teng.", "cluster": "METOD" },
+    { "term": "tgα = sinα / cosα", "def": "Tangensning sinus va kosinus orqali ifodasi — asosiy trigonometrik ayniyatlardan biri.", "cluster": "METOD" },
+    { "term": "a = c · sinα", "def": "Burchak qarshisidagi katetni topish: gipotenuza burchak sinusiga ko'paytiriladi.", "cluster": "MISOL" },
+    { "term": "b = c · cosα", "def": "Burchakka yopishgan katetni topish: gipotenuza burchak kosinusiga ko'paytiriladi.", "cluster": "MISOL" },
+    { "term": "Funksiya qiymati nimaga bog'liq?", "def": "Faqat o'tkir burchakning kattaligiga bog'liq; uchburchak tomonlarining uzunligiga bog'liq emas.", "cluster": "TAHLIL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: O'tkir burchakning trigonometrik funksiyalari",
+    "case_setup": {
+      "story": "Siz arxitektura byurosida stajyor lavozimida ishlayapsiz. Shahar markazidagi shifoxona kirish qismida yangi pandus (nogironlar aravachasi uchun qiya yo'lak) loyihalashtirilmoqda. Muhandis sizga quyidagi ma'lumotlarni taqdim etdi: pandusning yer bo'ylab egallagan gorizontal masofasi aniq 4 metr bo'lishi kerak va xavfsizlik qoidalariga ko'ra, qiyalik burchagi gorizontal tekislikka nisbatan 15° ni tashkil etishi lozim. Agar uzunlik noto'g'ri hisoblansa, yo'lak yo juda kalta bo'lib qoladi, yo keraksiz xarajatga sabab bo'ladi.",
+      "role": "Arxitektura byurosida stajyor — qurilish brigadasi uchun o'lchamlarni hisoblovchi",
+      "task": "Qurilish brigadasi sotib olishi kerak bo'lgan qiya yo'lak qoplamasining (gipotenuza) aniq uzunligini hisoblab bering."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Vaziyatda berilgan ma'lumotlar (gorizontal masofa va qiyalik burchagi) hamda izlanayotgan qiymat (qiya yo'lak uzunligi) orasidagi bog'liqlikni qaysi geometrik tushuncha orqali ifodalash mumkin?",
+        "options": [
+          "To'g'ri burchakli uchburchakda o'tkir burchakning trigonometrik funksiyalari",
+          "Ixtiyoriy uchburchakning perimetri va yuzi formulalari",
+          "Pifagor teoremasi yordamida faqat tomonlarni hisoblash",
+          "Parallel chiziqlar va kesuvchi hosil qilgan burchaklar xossalari"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 },
+        "learning_block": "To'g'ri burchakli uchburchakda o'tkir α burchakning trigonometrik funksiyalari (sinus, kosinus, tangens, kotangens) burchak kattaligi va uchburchak tomonlarining nisbatlari orasidagi qat'iy bog'liqlikni ifodalaydi. Bu qiymatlar faqat burchak kattaligiga bog'liq bo'lib, shaklning o'lchamiga bog'liq emas.",
+        "feedback": "Pandus, yer va devor to'g'ri burchakli uchburchak hosil qiladi. Burchak va tomonlar orasidagi bog'liqlikni aynan trigonometrik funksiyalar (sinus, kosinus, tangens) aniqlab beradi."
+      },
+      {
+        "kind": "decide",
+        "question": "Berilgan gorizontal masofa (4 m — yopishgan katet) va burchak (15°) yordamida qiya yo'lak uzunligini (gipotenuzani) topish uchun qaysi munosabatdan foydalanish eng to'g'ri bo'ladi?",
+        "options": [
+          "c = b / sinα",
+          "c = b · cosα",
+          "c = b / cosα",
+          "c = b · tgα"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "To'g'ri burchakli uchburchakda o'tkir burchakka yopishgan katetning gipotenuzaga nisbati shu burchakning kosinusi deb ataladi (cosα = b/c). Shunga ko'ra, gipotenuzani topish uchun yopishgan katetni kosinus qiymatiga bo'lish kerak.",
+        "feedback": "Darslikka ko'ra, gipotenuza (c) burchakka yopishgan katetni (b) shu burchak kosinusiga bo'linganiga teng (c = b / cosα)."
+      },
+      {
+        "kind": "justify",
+        "question": "Agar siz hisob-kitobda adashib kosinus o'rniga sinus funksiyasini qo'llasangiz (c = b / sinα), nima uchun natija xato bo'ladi?",
+        "options": [
+          "Sinus faqat gipotenuzani katetga ko'paytirishda ishlatiladi.",
+          "Sinus yopishgan katetni emas, qarshisidagi katetni (balandlikni) hisobga oladi.",
+          "Sinus qiymati har doim 1 dan katta bo'lgani uchun masofa kamayib ketadi.",
+          "Sinus faqat 90° dan katta burchaklar uchun aniqlangan."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Sinus burchak qarshisidagi katet bilan bog'liq (sinα = a/c), kosinus esa yopishgan katet bilan (cosα = b/c). Berilgan masala uchun yopishgan katet (gorizontal masofa) ma'lum bo'lgani uchun aynan kosinus to'g'ri keladi.",
+        "feedback": "Sinus burchak qarshisidagi katet bilan bog'liq. Bizda esa burchakka yopishgan gorizontal masofa (katet) berilgan, shuning uchun sinusni qo'llash noto'g'ri natija beradi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi uchta savolga 2–4 ta gapdan iborat javob bering: (1) Vaziyatda qaysi Geometriya tushunchasini/tuzilmasini aniqladingiz? (2) Nima uchun boshqa usullardan ko'ra aynan shu usulni (c = b / cosα) tanladingiz? (3) Keng tarqalgan xato (sinusni qo'llash) qanday noto'g'ri talqinga olib kelgan bo'lardi?",
+      "min_chars": 80,
+      "concept_keywords": ["to'g'ri burchakli uchburchak", "yopishgan katet", "gipotenuza", "kosinus"],
+      "method_keywords": ["c = b / cosα", "kosinusga bo'lish", "tanlash"],
+      "mistake_keywords": ["sinus", "qarshisidagi katet", "almashtirish"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz c = 4 / cos15° formulasini tanladingiz. cos15° ≈ 0.966 ekanligini hisobga olsak, yo'lak uzunligi taxminan 4.14 metr chiqadi. Qurilish brigadasi kerakli miqdordagi materialni sotib oladi va pandus loyiha bo'yicha aniq gorizontal masofa va burchakni saqlagan holda quriladi.",
+      "wrong_path": "Siz adashib sinus funksiyasidan (c = 4 / sin15°) foydalandingiz. sin15° ≈ 0.259 bo'lgani uchun, hisob-kitob natijasi 15.4 metrni tashkil etdi. Sinus funksiyasi burchak qarshisidagi katet (pandus balandligi) va gipotenuza bog'liqligini ifodalagani uchun, uni yopishgan katet (gorizontal masofa) bilan ishlatish geometrik jihatdan mutlaqo noto'g'ri natijaga olib keladi."
+    },
+    "feedback_summary": {
+      "student_understood": "To'g'ri burchakli uchburchakda tomonlar (katet, gipotenuza) va o'tkir burchak orasidagi trigonometrik munosabatlar.",
+      "mistake_appeared": "Yopishgan katet bilan ishlashda sinus va kosinus funksiyalarini almashtirib yuborish ehtimoli.",
+      "what_to_review": "Darslikdagi \"To'g'ri burchakli uchburchak tomonlari va burchaklari orasidagi bog'lanishlar\" bo'limidagi 6 ta asosiy qoidani qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint to'g'ri bajarildi",
+        "DPE mulohazasi yozildi",
+        "Simulyatsiya natijasi o'rganildi"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "To'g'ri burchakli uchburchakda o'tkir burchak qarshisidagi katetning gipotenuzaga nisbati shu burchakning _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "sinusi", "accepted_answers": ["sinus", "sinusi", "sinusα"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "To'g'ri burchakli uchburchakda burchakka yopishgan katetning gipotenuzaga nisbati qanday nomlanadi?", "options": ["Sinus (sinα)", "Kosinus (cosα)", "Tangens (tgα)", "Kotangens (ctgα)"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Nima uchun o'tkir burchakning sinus va kosinus qiymatlari har doim 1 dan kichik bo'ladi?", "options": ["Chunki to'g'ri burchakli uchburchakda katetlar yig'indisi gipotenuzadan har doim katta bo'ladi.", "Chunki to'g'ri burchakli uchburchakda gipotenuza har doim istalgan katetdan uzunroq bo'ladi.", "Chunki o'tkir burchak 90 darajadan kichik bo'lgani uchun uning funksiyalari ham cheklangan.", "Chunki sinus va kosinus teskari funksiyalar bo'lib, ularning ko'paytmasi 1 ga teng."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "fill_blank", "prompt": "To'g'ri burchakli uchburchakda o'tkir burchak qarshisidagi katetning yopishgan katetga nisbati _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "tangensi", "accepted_answers": ["tangens", "tangensi", "tg", "tgα"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Tangens va kotangens funksiyalari orasidagi to'g'ri bog'liqlikni ko'rsating.", "options": ["tgα + ctgα = 1", "tgα / ctgα = 1", "tgα · ctgα = 1", "tgα · ctgα = 0"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "choose_explanation", "prompt": "Trigonometrik funksiyalarning (sin, cos, tg, ctg) qiymatlari nimaga bog'liq?", "options": ["Faqat uchburchak tomonlarining uzunligiga bog'liq.", "Faqat o'tkir burchakning kattaligiga bog'liq.", "Ham burchakka, ham uchburchakning yuzasiga bog'liq.", "Uchburchakning fazodagi holatiga va burilish burchagiga bog'liq."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "fill_blank", "prompt": "Tangensni sinus va kosinus orqali ifodalash formulasi: tgα = _____ / cosα.", "answer_spec": { "type": "text_fuzzy", "expected": "sinα", "accepted_answers": ["sinus", "sin", "sinα", "burchak sinusi"], "allow_ai_fallback": true }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "To'g'ri burchakli uchburchakda burchak qarshisidagi katetni (a) topish uchun qaysi formuladan foydalaniladi?", "options": ["a = c · cosα", "a = c · sinα", "a = c / sinα", "a = b / tgα"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "choose_explanation", "prompt": "Kotangens (ctgα) tushunchasiga berilgan eng aniq ta'rifni tanlang.", "options": ["O'tkir burchakka yopishgan katetning gipotenuzaga nisbati.", "O'tkir burchakka yopishgan katetning qarshisidagi katetga nisbati.", "O'tkir burchak qarshisidagi katetning yopishgan katetga nisbati.", "Gipotenuzaning burchakka yopishgan katetga nisbati."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Gipotenuza va burchak kosinusi ma'lum bo'lsa, burchakka _____ katetni topish uchun b = c · cosα formulasi qo'llaniladi.", "answer_spec": { "type": "text_fuzzy", "expected": "yopishgan", "accepted_answers": ["yopishgan", "yondosh", "tegib turgan"], "allow_ai_fallback": true }, "flashcard_ref": "card_9" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_geo_03",
+    "expert_role": "structural_engineer",
+    "title": "Aloqa Minorasi Arqonini Hisoblash",
+    "intro": "Siz — aloqa tarmoqlari bo'yicha katta muhandissiz: tog'li hududlarda mobil aloqa minoralarini o'rnatasiz. Yangi minoraning balandligi roppa-rosa 24 metr; u yer yuzasiga perpendikulyar o'rnatilgan. Po'lat arqon minoraning uchidan yerga tortiladi va minora bilan arqon orasidagi burchak 60° bo'lishi shart. Shamol tezligi 15 m/s — bu konstruksiya geometriyasiga ta'sir qilmaydi. Arqonning (gipotenuzaning) aniq uzunligini toping.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Tomonni aniqlash",
+        "prompt": "Minoraning balandligi (24 m) burchakka nisbatan qanday joylashganini va qaysi trigonometrik funksiya gipotenuzani topishga yordam berishini aniqlang.",
+        "options": [
+          { "id": "a", "label": "Minora balandligi burchakka yopishgan katetdir, shuning uchun kosinus funksiyasidan foydalanaman.", "is_correct": true, "consequence": "Barakalla, hamkasb! Burchak minoraning tepasida joylashgani uchun 24 metrli balandlik aynan yopishgan katet bo'ladi. Kosinus nisbati (b/c) bizga gipotenuzani topish imkonini beradi." },
+          { "id": "b", "label": "Minora balandligi burchak qarshisidagi katetdir, shuning uchun sinus funksiyasidan foydalanaman.", "is_correct": false, "consequence": "Harakat yaxshi, lekin burchakning joylashuviga e'tibor bering. Minora va arqon orasidagi burchak berilgan, bu balandlikni yopishgan katetga aylantiradi." },
+          { "id": "c", "label": "Faqat tangens funksiyasi orqali gipotenuzani hisoblash mumkin.", "is_correct": false, "consequence": "Hali emas. Burchak qayerda hosil bo'layotganiga e'tibor bering: u minoraning tepasida. Bu vaziyatda 24 metrli tomon burchakka nisbatan qarshisidami yoki yopishganmi?" }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Formulani tanlash",
+        "prompt": "Berilgan qiymatlar (b = 24 m, α = 60°) asosida gipotenuza c ni hisoblash uchun to'g'ri formulani tanlang.",
+        "options": [
+          { "id": "a", "label": "c = 24 / cos60°", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "c = 24 · cos60°", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "c = 24 / sin60°", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Natijani hisoblash",
+        "prompt": "Olingan natijani tekshiring va yakuniy xulosani bering: po'lat arqonning uzunligi qancha bo'lishi kerak? (cos60° = 0.5)",
+        "options": [
+          { "id": "a", "label": "12 metr", "is_correct": false, "consequence": "Hali emas. Agar c = 24 / 0.5 bo'lsa, natija qanday chiqishi kerak? Kasrga bo'lish sonni kattalashtirishini unutmang." },
+          { "id": "b", "label": "48 metr", "is_correct": true, "consequence": "Ajoyib! 48 metrli arqon minorani loyihadagi 60° burchak ostida mahkam ushlab turadi. Sizning aniq hisobingiz xavfsizlikni ta'minladi." },
+          { "id": "c", "label": "27.7 metr", "is_correct": false, "consequence": "Hisob-kitobda kichik xato borga o'xshaydi. 24 ni 0.5 ga bo'lish natijasini qayta tekshiring." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Gipotenuzani topishda hal qiluvchi bo'lgan asosiy tushunchani tanlang.",
+        "concept_chips": [
+          { "id": "c1", "label": "Yopishgan katet va gipotenuza nisbati kosinus; gipotenuza = yopishgan katet / kosinus", "is_correct": true },
+          { "id": "c2", "label": "Qarshisidagi katet va gipotenuza nisbati sinus", "is_correct": false },
+          { "id": "c3", "label": "Pifagor teoremasi: c² = a² + b²", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun gipotenuzani topishda kosinusga bo'lish kerak (ko'paytirish emas), va shamol tezligi (15 m/s) nima uchun bu hisobga ta'sir qilmaydi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["yopishgan katet", "kosinus", "gipotenuza katetdan katta", "bo'lish", "shamol ortiqcha ma'lumot"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_geo_03_trig",
+      "instructions": "To'g'ri burchakli uchburchak elementlari va trigonometrik nisbatlari 6 blokda berilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Diagramma: to'g'ri burchakli uchburchak. Gorizontal katet 'b', tik katet 'a', gipotenuza 'c'; 'b' va 'c' orasidagi o'tkir burchak α; to'g'ri burchak 'a' va 'b' orasida.", "is_broken": false },
+        { "id": "b2", "text": "Gipotenuza: c tomoni.", "is_broken": false },
+        { "id": "b3", "text": "α burchakka yopishgan katet: b tomoni.", "is_broken": false },
+        { "id": "b4", "text": "α burchak qarshisidagi katet: a tomoni.", "is_broken": false },
+        { "id": "b5", "text": "Kosinus munosabati: cosα = b / c.", "is_broken": false },
+        { "id": "b6", "text": "Tangens munosabati: tgα = b / a.", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "tgα = a / b", "accepted_answers": ["a/b", "tg alpha = a/b", "tgα = a/b", "qarshisidagi katetni yopishganiga bo'lish", "a taqsim b"], "allow_ai_fallback": true },
+      "hint": "Tangens funksiyasining ta'rifini eslang: suratda burchak qarshisidagi katet bo'lishi kerakmi yoki yopishgan katetmi?",
+      "why_prompt": "Ushbu blok nima sababdan xato va tangens uchun aslida qaysi nisbat to'g'ri bo'ladi? Tangens — burchak qarshisidagi katetning yopishgan katetga nisbatidir (a/b), blokda esa yopishgan katetning qarshisidagiga nisbati (b/a) berilgan, bu aslida kotangensning ta'rifidir."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_geo_03_trig",
+      "case_setup": "Trigonometrik atamalar, formulalar va ularning vazifalarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat geometrik tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Sinus (sinα)", "right": "O'tkir burchak qarshisidagi katetning gipotenuzaga nisbati" },
+        { "id": "p2", "left": "Kosinus (cosα)", "right": "O'tkir burchakka yopishgan katetning gipotenuzaga nisbati" },
+        { "id": "p3", "left": "tgα · ctgα = 1", "right": "Tangens va kotangens o'zaro teskari funksiyalar ekanligini ifodalovchi ayniyat" },
+        { "id": "p4", "left": "a = c · sinα", "right": "Gipotenuza va sinus ko'paytmasi orqali burchak qarshisidagi katetni topish qoidasi" },
+        { "id": "p5", "left": "b = c · cosα", "right": "Gipotenuza va kosinus ko'paytmasi orqali burchakka yopishgan katetni topish qoidasi" },
+        { "id": "p6", "left": "Sinus va kosinus qiymatlari", "right": "Gipotenuza katetdan uzun bo'lgani uchun har doim 1 dan kichik bo'ladigan miqdorlar" }
+      ],
+      "checkpoints": [
+        { "question": "Sinus (sinα) qaysi nisbatga juftlanadi?", "options": ["Yopishgan katet / gipotenuza", "Qarshisidagi katet / gipotenuza", "Qarshisidagi katet / yopishgan katet"], "correct_index": 1 },
+        { "question": "b = c · cosα formulasi qaysi katetni topadi?", "options": ["Yopishgan katetni", "Qarshisidagi katetni", "Gipotenuzani"], "correct_index": 0 },
+        { "question": "Sinus va kosinus qiymatlari nima uchun 1 dan kichik?", "options": ["Gipotenuza katetdan uzun", "Burchak 90° dan kichik", "Tomonlar teng"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Siz tanlagan biror juftlik misolida ularning nima sababdan bir-biriga bog'liqligini tushuntiring. Faqatgina formuladagi harflarning o'xshashligiga qarab taxmin qilgan o'quvchi, ayniqsa katetlarni aniqlashda (sinus va kosinus o'rtasida) qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["qarshi katet / yopishgan katet farqi", "gipotenuza eng uzun tomon", "nisbat tushunchasi"],
+      "consequence": { "correct_path": "Har bir atamani to'g'ri geometrik ma'nosiga ulodingiz.", "wrong_path": "Faqat harflar o'xshashligiga qarab sinus va kosinusni (qarshi/yopishgan katet) almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_geo_03_trig",
+      "case_setup": "Berilgan tushuncha, formula va amallarni darslikdagi qoidalar asosida o'zaro juftlab, mantiqiy zanjir hosil qiling. Har bir element faqat o'zining geometrik ma'nosiga mos keladigan sherigi bilan ko'rsatilgan yo'nalishda bog'lanadi: concept ↔ definition, step ↔ result, formula ↔ variable.",
+      "pieces": [
+        { "id": "P1", "label": "O'tkir burchak kosinusi (cosα)", "role": "concept" },
+        { "id": "P2", "label": "Yopishgan katetning gipotenuzaga nisbati (b/c)", "role": "definition" },
+        { "id": "P3", "label": "Noma'lum gipotenuza uzunligini hisoblash (c)", "role": "step" },
+        { "id": "P4", "label": "b / cosα amali", "role": "result" },
+        { "id": "P5", "label": "Burchak qarshisidagi katetni (a) topish formulasi", "role": "formula" },
+        { "id": "P6", "label": "c · sinα ifodasi", "role": "variable" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (cosα) qaysi bo'lakka ulanadi?", "options": ["P2 (b/c nisbati)", "P4 (b / cosα amali)"], "correct_index": 0 },
+        { "q": "P3 → P4 bog'lanishi qaysi turdagi?", "options": ["concept ↔ definition", "step ↔ result"], "correct_index": 1 },
+        { "q": "Burchak qarshisidagi katetni (P5) topish ifodasi qaysi?", "options": ["c · sinα (P6)", "b / cosα (P4)"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "P3 va P4 bo'laklarini birlashtirishda qaysi asosiy qoidaga tayandingiz va nima uchun ushbu bog'lanishda yo'nalish muhim? Agar siz gipotenuzani topish uchun bo'lish amali (P4) o'rniga ko'paytirishni (b · cosα) tanlaganingizda, geometrik nuqtai nazardan qanday xato yuz bergan bo'lardi?",
+      "expected_components": ["gipotenuza katetdan katta bo'lishi", "yopishgan katet va kosinus bog'liqligi", "c = b / cosα formulasi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Siz daryoning narigi tomonidagi daraxtning balandligini o'lchamoqchisiz. Sizda daryo bo'yidagi masofa (yopishgan katet b) va daraxt uchiga qarash burchagi (α) bor. Do'stingiz daraxt balandligini topish uchun sinus funksiyasini ishlatishni taklif qildi.",
+      "why": "Ushbu vaziyatda daraxt balandligini (qarshisidagi katetni) topish uchun sinus funksiyasini to'g'ridan-to'g'ri ishlatish qulay emas, balki tangens ma'qulroq?",
+      "how": "Berilgan masofa (b) va burchak (α) yordamida daraxt balandligini (a) hisoblash formulasini qanday tuzasiz?",
+      "what": "Agar daraxtgacha bo'lgan masofa o'zgarmas qolsa-yu, lekin qarash burchagi ortsa, daraxtning balandligi haqida qanday xulosa chiqarish mumkin va agar burchak 45° bo'lsa, balandlik va masofa o'rtasidagi bog'liqlik qanday o'zgaradi?",
+      "prompt": "Daraxt balandligini (qarshisidagi katet) topish uchun nima uchun tangens ishlatiladi, formulasini tuzing va burchak ortishining natijaga ta'sirini izohlang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Sinus funksiyasining ta'rifida qaysi tomon (gipotenuza yoki katet) maxrajda turishini va u bizga ma'lummi yoki yo'qligini o'ylab ko'ring.", "Daraxt balandligi (qarshisidagi katet) va daryo bo'yidagi masofa (yopishgan katet) o'rtasidagi nisbat qaysi funksiyani beradi?", "Burchak ortishi bilan qarshisidagi katetning uzunligi qanday o'zgarishini tasavvur qiling."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "a = b · tgα", "accepted_answers": ["a = b · tgα", "a = b*tg(alpha)", "tangens", "a = b tgα"], "allow_ai_fallback": true },
+      "expected_concepts": ["trig-funksiya-tanlovi", "tangens-ta'rifi", "gipotenuza noma'lum"],
+      "correct_feedback": "Juda yaxshi! Siz berilgan va izlanayotgan tomonlar orasidagi bog'liqlikni (tangensni) aniq ajratib oldingiz va burchak o'zgarishining natijaga ta'sirini to'g'ri tahlil qildingiz.",
+      "partial_feedback": "Siz formulani to'g'ri tuzdingiz, lekin nima uchun aynan tangens tanlanganini yoki burchak o'zgarishining ta'sirini to'liq tushuntirib bermadingiz. Zanjirning shu qismiga qayting.",
+      "wrong_feedback": "Hali emas. Agar bizda gipotenuza (qiya masofa) ma'lum bo'lmasa, sinusni qanday ishlata olamiz? Berilgan tomonlarga qaytadan nazar soling."
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Muhandis chizayotgan loyihada to'g'ri burchakli uchburchakning o'tkir burchagi uchun cosα = 1.25 degan natijaga keldi. U ushbu qiymat asosida gipotenuzani hisoblamoqchi.",
+      "why": "Geometriya qoidalariga ko'ra, nima sababdan loyihadagi bu natija (cosα = 1.25) mutlaqo xato hisoblanadi?",
+      "how": "Kosinusning ta'rifi (yopishgan katet va gipotenuza nisbati) orqali bu xatolikni matematik isbotlab bering?",
+      "what": "Agar bu qiymat to'g'ri deb qabul qilinsa, uchburchakning tomonlari (katet va gipotenuza) o'rtasidagi munosabat qanday mantiqsiz holatga kelib qoladi va haqiqiy to'g'ri burchakli uchburchakda kosinus qiymati qaysi oraliqda bo'lishi shart?",
+      "prompt": "cosα = 1.25 nima uchun imkonsiz ekanligini isbotlang va o'tkir burchak kosinusi qaysi oraliqda bo'lishini ko'rsating.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["To'g'ri burchakli uchburchakda eng uzun tomon qaysi biri?", "Kasrning (katet / gipotenuza) surati maxrajidan katta bo'lishi mumkinmi?", "Agar kasrning natijasi 1 dan katta bo'lsa, bu katet va gipotenuza haqida nima deydi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "kosinus 1 dan kichik bo'ladi", "accepted_answers": ["0 < cosα < 1", "1 dan kichik", "kosinus 1 dan katta bo'lolmaydi", "gipotenuza eng uzun"], "allow_ai_fallback": true },
+      "expected_concepts": ["kosinus-chegarasi", "gipotenuza-xossasi", "0 < cosα < 1"],
+      "correct_feedback": "Ofarin! Gipotenuzaning eng uzun tomon ekanligi va kosinus qiymati doim 1 dan kichik bo'lishi haqidagi fundamental qoidani mukammal qo'lladingiz.",
+      "partial_feedback": "Siz qiymat noto'g'ri ekanini bildingiz, lekin buni gipotenuza va katet uzunligi nisbati orqali batafsil tushuntirib bermadingiz.",
+      "wrong_feedback": "Hali emas. To'g'ri burchakli uchburchakda gipotenuza va katetlardan birini solishtirib ko'ring-chi, qaysi biri doim katta bo'ladi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "O't o'chiruvchilar narvoni devorga 70° burchak ostida qo'yildi. Narvonning uzunligi (gipotenuza) 15 metrga teng. Sizdan narvonning devordagi balandligini topish so'raldi.",
+      "why": "Balandlikni (qarshisidagi katetni) hisoblashda aynan a = c · sinα formulasi qo'llaniladi?",
+      "how": "Berilgan qiymatlarni (15 m va 70°) formulaga qanday joylashtirasiz va hisoblash tartibi qanday bo'ladi?",
+      "what": "Hisoblangan balandlik narvonning umumiy uzunligidan (15 m) katta chiqishi mumkinmi? Agar narvon devordan uzoqlashtirilsa (burchak kamaysa), balandlik qanday o'zgaradi?",
+      "prompt": "a = c · sinα formulasi bilan narvon balandligini (qarshisidagi katet) toping va burchak kamayishining ta'sirini izohlang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Izlanayotgan balandlik burchakka nisbatan qaysi katet hisoblanadi (yopishganmi yoki qarshisidagi)?", "Gipotenuza va qarshisidagi katet o'rtasidagi bog'liqlik qaysi trigonometrik funksiyaga tegishli?", "Burchak kichraygan sari, sinus qiymati va mos ravishda qarshisidagi katet uzunligi qanday o'zgaradi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "a = 15 · sin70°", "accepted_answers": ["a = 15 · sin70°", "15 sin70", "a = c sinα", "15*sin(70)"], "allow_ai_fallback": true },
+      "expected_concepts": ["qarshisidagi-katet-topish", "sinus-tadbiqi", "balandlik < gipotenuza"],
+      "correct_feedback": "Juda yaxshi! Sinus funksiyasini balandlik bilan to'g'ri bog'ladingiz va burchak o'zgarishining amaliy natijasini to'g'ri bashorat qildingiz.",
+      "partial_feedback": "Hisoblash jarayoni to'g'ri, lekin nima uchun aynan sinus tanlangani haqidagi mantiqiy zanjirda uzilish bor.",
+      "wrong_feedback": "Hali emas. Devordagi balandlik — bu burchakka yopishgan katetmi yoki qarshisidagimi? Shunga qarab funksiyani qayta tanlang."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Ikkita arxitektor bir xil 30° qiyalikdagi ikkita turli binoni loyihalamoqda. Birinchi binoning asosi 10 metr, ikkinchisiniki esa 100 metr. Birinchi arxitektor cos30° ≈ 0.866 deb hisoblamoqda.",
+      "why": "Nima sababdan ikkinchi binoning o'lchami 10 barobar katta bo'lsa ham, uning burchak kosinusi qiymati baribir 0.866 ga teng bo'lib qolaveradi?",
+      "how": "Tomonlar nisbati o'zgarmasligini isbotlash uchun \"trigonometrik funksiya qiymati faqat burchakka bog'liq\" degan qoidani qanday tushuntirasiz?",
+      "what": "Agar binolarning burchaklari turlicha bo'lsa (30° va 40°), lekin asoslari bir xil bo'lsa, ularning gipotenuzalari (qiya tomlari) teng bo'lishi mumkinmi?",
+      "prompt": "Nima uchun o'lcham 10 barobar katta bo'lsa ham cos30° = 0.866 o'zgarmaydi — o'xshashlik va nisbat orqali asoslang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["Trigonometrik funksiya bu — aniq uzunlikmi yoki ikki uzunlikning nisbatimi?", "Uchburchakning tomonlari proporsional ravishda oshsa, ularning bo'linmasi (nisbati) o'zgaradimi?", "Kosinus qiymati burchak kattalashgan sari qanday o'zgarishini eslang."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "funksiya faqat burchakka bog'liq", "accepted_answers": ["faqat burchakka bog'liq", "nisbat o'zgarmaydi", "o'xshash uchburchaklar", "tomonlar nisbati saqlanadi"], "allow_ai_fallback": true },
+      "expected_concepts": ["funksiya-burchakka-bog'liqligi", "o'xshashlik-va-trigonometriya", "nisbat o'zgarmasligi"],
+      "correct_feedback": "Mukammal! Siz trigonometriya shunchaki o'lchash emas, balki tomonlar orasidagi nisbatlar qonuniyati ekanligini chuqur tushunibsiz.",
+      "partial_feedback": "Nisbatlar o'zgarmasligini aytdingiz, lekin burchak o'zgarishi gipotenuzaga qanday ta'sir qilishini tushuntirishda biroz qiynaldingiz.",
+      "wrong_feedback": "Hali emas. Agar burchak o'zgarmasa, tomonlar nisbati o'zgarishi mumkinmi? Darslikdagi asosiy xossaga qayting."
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Sizga to'g'ri burchakli uchburchak berilgan va siz uning tangensini tgα = 4/3 deb hisobladingiz. Endi sizga shu burchakning kotangensini topish topshirig'i berildi, lekin sizda burchakning o'zi haqida ma'lumot yo'q.",
+      "why": "Tangens va kotangens funksiyalari o'rtasidagi bog'liqlik qoidasiga ko'ra, nima sababdan burchakning necha gradusligini bilmasdan ham kotangensni topish mumkin?",
+      "how": "tgα · ctgα = 1 ayniyatidan foydalanib, ctgα qiymatini qanday hisoblab chiqarasiz?",
+      "what": "Olingan kotangens qiymati (3/4) burchakka yopishgan va qarshisidagi katetlar haqida nima deydi va agar tangens qiymati 1 ga teng bo'lib qolsa, bu uchburchakning turi haqida nima deydi?",
+      "prompt": "tgα = 4/3 bo'lsa, ctgα ni toping va tgα = 1 holatida uchburchak qanday bo'lishini izohlang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Tangens va kotangensning katetlar nisbati orqali ta'rifini eslang. Ular bir-biridan nima bilan farq qiladi?", "Agar bitta son ikkinchisiga teskari bo'lsa, ularni ko'paytirganda nima hosil bo'ladi?", "Tangens 1 ga teng bo'lishi uchun katetlar o'zaro qanday bo'lishi kerak?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "ctgα = 3/4", "accepted_answers": ["3/4", "ctgα = 3/4", "0.75", "3 taqsim 4"], "allow_ai_fallback": true },
+      "expected_concepts": ["tg-ctg-bog'liqligi", "asosiy-trigonometrik-ayniyat", "tgα · ctgα = 1"],
+      "correct_feedback": "Barakalla! Funksiyalar orasidagi teskari bog'liqlikni va ularning geometrik ma'nosini (katetlar tengligi) juda aniq tushuntirib berdingiz.",
+      "partial_feedback": "Hisoblashni to'g'ri bajardingiz, lekin tangens 1 ga teng bo'lgan holatdagi uchburchak turini aniqlashda biroz adashtingiz.",
+      "wrong_feedback": "Hali emas. Tangens \"qarshi/yopishgan\" bo'lsa, kotangens nima edi? Ularning o'rnini almashtirib ko'ring."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz to'g'ri burchakli uchburchakda o'tkir burchakning trigonometrik funksiyalari va ularning tomonlar orasidagi bog'lanishlarini o'rgandingiz. Sinus, kosinus va tangens yordamida noma'lum tomonlarni hisoblashning oltita asosiy qoidasini ko'rib chiqdingiz. Bu bilimlar pandus qiyaligini loyihalash yoki binoning balandligini masofadan turib aniqlash kabi muhandislik vazifalarini hal qilishda qo'l keladi.",
+    "question": "Agar do'stingizga kosinus qiymati nega hech qachon 1 dan katta bo'la olmasligini tushuntirishingiz kerak bo'lsa, qanday geometrik dalil va tomonlar nisbatini misol qilib keltirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga yopishgan katet berilganda kosinusdan, qarshisidagi katet so'ralganda esa tangensdan foydalanish tartibini yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz gipotenuzaning eng uzun tomon ekanligi va kosinus qiymatining 1 dan katta bo'la olmasligi haqidagi qoidani mukammal tushundingiz; narvon balandligini hisoblashda sinus funksiyasini amaliy vaziyatga to'g'ri bog'lay oldingiz. Yopishgan va qarshisidagi katetni farqlash hamda tangens-kotangens bog'liqligini mustahkamlash foydali.",
+      "strong_points": [
+        "Gipotenuza eng uzun tomon va kosinus qiymati 1 dan katta bo'la olmasligini tushunish",
+        "Narvon balandligini hisoblashda sinus funksiyasini amaliy vaziyatga to'g'ri bog'lash"
+      ],
+      "weak_points": [
+        "Burchakka yopishgan katet va qarshisidagi katetni farqlash (kosinus va sinusni tanlash)",
+        "Tangens va kotangens o'rtasidagi teskari bog'liqlik qoidasi"
+      ],
+      "next_steps": [
+        "Yopishgan katet berilganda kosinusni, qarshisidagi katet so'ralganda tangensni tanlashni mashq qiling",
+        "tgα · ctgα = 1 ayniyatini yangi misollarda qo'llang"
+      ],
+      "weak_point_keywords": ["yopishgan katet", "qarshisidagi katet", "kotangens"],
+      "strong_point_keywords": ["gipotenuza", "kosinus", "sinus"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan; \"Boss Arena\" mashqlariga qayting."
+    }
+  }
+}

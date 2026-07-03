@@ -1,0 +1,348 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "1-§. Asosiy to'rtburchaklar va ularning xossalari",
+    "subject_display": "Geometriya",
+    "section": "1-§",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Qavariq ko'pburchak", "def": "Har qanday tomoni orqali o'tgan to'g'ri chiziqqa nisbatan bitta yarim tekislikda yotuvchi ko'pburchak.", "cluster": "QOIDA" },
+    { "term": "Qavariq n-burchakning ichki burchaklari yig'indisi", "def": "180°(n − 2). To'rtburchak uchun: 180°(4 − 2) = 360°.", "cluster": "QOIDA" },
+    { "term": "Qavariq n-burchakning tashqi burchaklari yig'indisi", "def": "360°. Har bir uchidan bittadan olingan tashqi burchaklar yig'indisi shakl turidan qat'i nazar doimiy.", "cluster": "QOIDA" },
+    { "term": "Parallelogramm", "def": "Qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak. Bundan qarama-qarshi tomonlari tengligi ham kelib chiqadi.", "cluster": "QOIDA" },
+    { "term": "Parallelogramm diagonallarining xossasi", "def": "Diagonallari kesishadi va kesishish nuqtasida teng ikkiga bo'linadi. Diagonal 10 sm bo'lsa → 5 va 5 sm.", "cluster": "METOD" },
+    { "term": "To'g'ri to'rtburchakning diagonal xossasi", "def": "Diagonallari o'zaro tengdir. Aynan shu xossa uni oddiy parallelogrammdan ajratib turadi.", "cluster": "METOD" },
+    { "term": "Romb diagonallari", "def": "O'zaro perpendikular hamda burchaklarni teng ikkiga bo'ladi (bissektrisa). Kesishish burchagi 90°.", "cluster": "METOD" },
+    { "term": "Trapetsiya", "def": "Faqat ikkita tomoni parallel, qolgan ikkitasi parallel bo'lmagan to'rtburchak. Parallel tomonlar — asoslar.", "cluster": "QOIDA" },
+    { "term": "Kvadratning ta'rifi", "def": "Hamma burchaklari to'g'ri bo'lgan romb yoki hamma tomonlari teng bo'lgan to'g'ri to'rtburchak.", "cluster": "MISOL" },
+    { "term": "Trapetsiyaning yon tomoni burchaklari", "def": "Faqat bitta yon tomoniga yopishgan burchaklari yig'indisi 180° ga teng (ichki bir tomonli burchaklar).", "cluster": "TAHLIL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: To'rtburchaklar xossalari",
+    "case_setup": {
+      "story": "Siz mebel dizayni studiyasida tahlilchisiz. Buyurtmachi dekorativ devor paneli uchun maxsus to'rtburchak shaklidagi detal buyurtma qildi. Chizmachilik dasturida detalning faqat ikkita qarama-qarshi tomoni (AB va CD) haqida ma'lumot saqlanib qolgan: ularning ikkalasi ham 60 sm uzunlikda va bir-biriga parallel chiziqlarda yotadi. Qolgan ikki tomon va burchaklar haqida aniq ma'lumot yo'q, lekin siz panelning karkasiga sig'ishini ta'minlash uchun ushbu shaklning umumiy tabiatini va burchaklari orasidagi bog'liqlikni aniqlashingiz kerak. Agar burchaklar noto'g'ri hisoblansa, detal karkasga tushmaydi yoki qimirlab qoladi.",
+      "role": "Mebel dizayni studiyasining tahlilchisi",
+      "task": "Detalning geometrik turini aniqlang va burchaklari orasidagi bog'liqlikni belgilang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Berilgan ma'lumotlarga ko'ra (ikki qarama-qarshi tomoni parallel va teng), bu to'rtburchak qaysi geometrik shaklning alomati ostiga tushadi?",
+        "options": [
+          "Trapetsiya",
+          "Parallelogramm",
+          "Muntazam ko'pburchak",
+          "To'g'ri burchakli trapetsiya"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Darslikka ko'ra, parallelogramm — bu qarama-qarshi tomonlari jufti-jufti bilan parallel bo'lgan to'rtburchakdir. Agar to'rtburchakning ikkita tomoni teng va parallel bo'lsa, u holda bu to'rtburchak parallelogramm bo'ladi va parallelogrammning barcha xossalariga ega bo'ladi.",
+        "feedback": "To'rtburchakning ikkita qarama-qarshi tomoni ham teng, ham parallel bo'lishi — bu parallelogrammning yetarli alomatidir."
+      },
+      {
+        "kind": "decide",
+        "question": "Detalning burchaklarini hisoblashda parallelogrammning qaysi xossasi sizga bir tomonga yopishgan (qo'shni) burchaklar qiymatini topishga yordam beradi?",
+        "options": [
+          "Qo'shni burchaklar har doim o'zaro teng bo'ladi.",
+          "Qarama-qarshi burchaklar yig'indisi 180° ga teng.",
+          "Bir tomoniga yopishgan burchaklari yig'indisi 180° ga teng.",
+          "Barcha ichki burchaklar yig'indisi 180° ga teng."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Parallelogrammning muhim xossalaridan biri — uning qarama-qarshi tomonlari va burchaklari tengligidir. Shuningdek, diagonallari kesishish nuqtasida teng ikkiga bo'linadi. Agar parallelogrammning diagonallari teng bo'lsa, u to'g'ri to'rtburchakka aylanadi, ammo ixtiyoriy parallelogrammda diagonallar har doim ham teng bo'lavermaydi.",
+        "feedback": "Parallelogrammning xossasiga ko'ra, uning bir tomoniga yopishgan burchaklari ichki bir tomonli burchaklar bo'lgani uchun ularning yig'indisi 180° ga teng."
+      },
+      {
+        "kind": "justify",
+        "question": "Ish jarayonida hamkasbingiz: \"Bu shakl parallelogramm ekan, demak uning diagonallari uzunligini ham o'zaro teng deb chizishimiz mumkin\", deb aytdi. Nima uchun bu fikrga qo'shilmaslik kerak?",
+        "options": [
+          "Chunki parallelogrammning diagonallari hech qachon kesishmaydi.",
+          "Chunki diagonallar faqat burchaklar 90° bo'lgandagina (to'g'ri to'rtburchakda) teng bo'ladi.",
+          "Chunki parallelogrammda diagonallar burchaklarni doimo teng ikkiga bo'ladi.",
+          "Chunki diagonallar faqat trapetsiyada teng bo'lishi mumkin."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Diagonallarning tengligi parallelogrammning umumiy xossasi emas; bu faqat to'g'ri to'rtburchak va kvadratga xos bo'lgan alohida xususiyatdir.",
+        "feedback": "Diagonallarning tengligi parallelogrammning umumiy xossasi emas; bu faqat to'g'ri to'rtburchak va kvadratga xos bo'lgan alohida xususiyatdir."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gapdan iborat javob bering: (1) Vaziyatda qaysi Geometriya tushunchasini (shakl turini) aniqladingiz? (2) Burchaklarni hisoblashda nima uchun aynan tanlangan xossani (metodni) qo'lladingiz? (3) Diagonallar haqidagi noto'g'ri tushuncha loyihada qanday xatoga olib kelishi mumkin edi?",
+      "min_chars": 80,
+      "concept_keywords": ["parallelogramm", "qarama-qarshi tomonlar parallel", "to'rtburchak"],
+      "method_keywords": ["bir tomonli burchaklar", "180°", "qo'shni burchaklar"],
+      "mistake_keywords": ["diagonallar teng", "to'g'ri to'rtburchak", "aralashtirish"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz shaklni parallelogramm deb qabul qildingiz. Bir burchak 60° ekanini bilib, ikkinchisini 120° (180° − 60°) deb hisobladingiz. Detal karkasga mukammal joylashdi, chunki qarama-qarshi tomonlar parallel bo'lib qoldi.",
+      "wrong_path": "Hamkasbingizning maslahatiga kirib, diagonallarni teng qilib chizdingiz va barcha burchaklarni majburan 90° deb oldingiz. Detal karkasga sig'madi yoki qiyshiq bo'lib qoldi. Ixtiyoriy parallelogrammning diagonallari teng bo'lishini taxmin qilish, uni asossiz ravishda to'g'ri to'rtburchak deb hisoblashga olib keladi va haqiqiy burchak ko'rsatkichlarini buzadi."
+    },
+    "feedback_summary": {
+      "student_understood": "Parallelogramm alomatlari va uning burchaklari orasidagi bog'liqlikni (180° qoidasi) to'g'ri aniqladingiz.",
+      "mistake_appeared": "Parallelogramm va to'g'ri to'rtburchakning diagonallari o'rtasidagi farqni aralashtirib yuborish ehtimoli mavjud edi.",
+      "what_to_review": "To'g'ri to'rtburchak va rombning o'ziga xos diagonal xossalarini darslikning 3 va 4-bandlaridan qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha checkpoint savollariga javob bering",
+        "Decision Process Explanation (DPE) qismida mulohaza yuriting",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Har qanday tomoni orqali o'tgan to'g'ri chiziqqa nisbatan bitta yarim tekislikda yotuvchi ko'pburchak _____ ko'pburchak deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "qavariq", "accepted_answers": ["qavariq", "qavariq shakldagi", "qavariq ko'pburchak"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "Ixtiyoriy qavariq n-burchakning ichki burchaklari yig'indisini topish formulasini ko'rsating:", "options": ["360°", "180°(n − 2)", "180°·n", "180°(n + 2)"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Quyidagi ta'riflardan qaysi biri parallelogramm tushunchasini eng aniq ifodalaydi?", "options": ["Qarama-qarshi tomonlari o'zaro teng bo'lgan har qanday to'rtburchak parallelogrammdir.", "Faqat ikkita tomoni parallel bo'lgan va qolgan ikkitasi parallel bo'lmagan to'rtburchakdir.", "Qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak parallelogramm deyiladi.", "Diagonallari kesishish nuqtasida teng ikkiga bo'linadigan ixtiyoriy shakl parallelogrammdir."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Ixtiyoriy qavariq ko'pburchakning har bir uchidan bittadan olingan tashqi burchaklari yig'indisi har doim _____ gradusga teng bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "360", "accepted_answers": ["360", "360 gradus", "360 gradusga"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Parallelogrammning diagonallari haqidagi tasdiqlardan qaysi biri to'g'ri?", "options": ["Diagonallari o'zaro perpendikular joylashadi.", "Diagonallari har doim o'zaro teng bo'ladi.", "Diagonallari kesishish nuqtasida teng ikkiga bo'linadi.", "Diagonallari uning burchaklarini teng ikkiga bo'ladi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "To'g'ri to'rtburchakni oddiy parallelogrammdan ajratib turuvchi o'ziga xos diagonal xossasi qaysi?", "options": ["To'g'ri to'rtburchakda diagonallar kesishish nuqtasida ikkiga bo'linadi.", "To'g'ri to'rtburchakda diagonallar o'zaro tengdir.", "To'g'ri to'rtburchakda diagonallar burchaklarni teng ikkiga bo'ladi.", "To'g'ri to'rtburchakda diagonallar o'zaro perpendikular bo'ladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Rombning diagonallari o'zaro _____ hamda uning burchaklarini teng ikkiga bo'ladi (bissektrisa bo'ladi).", "answer_spec": { "type": "text_fuzzy", "expected": "perpendikular", "accepted_answers": ["perpendikular", "perpendikulyar", "tik burchak ostida kesishadi"], "allow_ai_fallback": true }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "Trapetsiya deb qanday to'rtburchakka aytiladi?", "options": ["Barcha tomonlari juft-jufti bilan parallel bo'lgan to'rtburchakka.", "Faqat ikkita tomoni o'zaro parallel, qolgan ikkitasi esa parallel bo'lmagan to'rtburchakka.", "Qarama-qarshi tomonlari o'zaro teng bo'lgan to'rtburchakka.", "Kamida bitta burchagi to'g'ri burchakdan iborat bo'lgan to'rtburchakka."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "choose_explanation", "prompt": "Nima uchun kvadratni \"ham romb, ham to'g'ri to'rtburchak\" deb atash mumkin?", "options": ["Chunki kvadratning diagonallari kesishadi va kesishish nuqtasida teng ikkiga bo'linadi.", "Chunki kvadratning qarama-qarshi tomonlari o'zaro parallel va o'zaro tengdir.", "Chunki u romb kabi barcha tomonlari teng va to'g'ri to'rtburchak kabi barcha burchaklari to'g'ri bo'lgan shakldir.", "Chunki kvadrat trapetsiyaning barcha xossalarini o'zida mujassam etgan eng mukammal shakldir."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "fill_blank", "prompt": "Trapetsiyaning faqat bitta _____ tomoniga yopishgan burchaklari yig'indisi har doim 180° ga teng bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "yon", "accepted_answers": ["yon", "yon tomoni", "parallel bo'lmagan"], "allow_ai_fallback": true }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "Quyidagi tasdiqlardan qaysi biri to'g'ri qo'llanilgan qoida? (TicTacToe — Qarorlar tori)", "options": ["Ixtiyoriy parallelogrammning diagonallari o'zaro perpendikular joylashadi.", "Qavariq beshburchakning ichki burchaklari yig'indisi 540° ga teng.", "Har qanday trapetsiyaning diagonallari uzunligi o'zaro tengdir.", "Agar to'rtburchakning diagonallari kesishish nuqtasida teng ikkiga bo'linsa, u albatta to'g'ri to'rtburchakdir."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "TicTacToe: \"Parallelogrammning qarama-qarshi burchaklari yig'indisi har doim 180° ga teng\" tasdig'i nega xato?", "options": ["Parallelogrammda qarama-qarshi burchaklar o'zaro teng; 180° ga teng bo'ladigani — bir tomoniga yopishgan (qo'shni) burchaklar yig'indisi.", "Parallelogrammda barcha burchaklar har doim 90° ga teng.", "Parallelogrammning ichki burchaklari yig'indisi 180° ga teng.", "Tasdiq to'g'ri, hech qanday xato yo'q."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "Sentence Filling: Parallelogrammning barcha umumiy xossalaridan tashqari, aynan nima uning to'g'ri to'rtburchak ekanligini belgilovchi o'ziga xos alomati hisoblanadi?", "options": ["diagonallari o'zaro teng bo'lishi", "qarama-qarshi tomonlari parallel bo'lishi", "diagonallari o'zaro perpendikular bo'lishi", "barcha tomonlari o'zaro teng bo'lishi"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_geo_01",
+    "expert_role": "structural_engineer",
+    "title": "Arxeologik obidalarni tiklash: koshin shaklini aniqlash",
+    "intro": "Siz qadimiy obidalarni qayta tiklash markazining yetakchi muhandis-geometrisiz. Saroy polidagi yetishmayotgan koshin (plitka) o'rnini o'rganib, uning aniq geometrik turini aniqlang va yangi koshin buyurtma qiling. O'lchovlar: barcha tomonlari teng (AB = BC = CD = DA = 40 sm), diagonallari o'zaro perpendikulyar. Xona shimolga qaragan, devor balandligi 4,5 metr.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Shaklni tasniflash",
+        "prompt": "Ushbu shaklni minimal ma'lumotlar (barcha tomonlarining tengligi) asosida qanday tasniflash mumkin?",
+        "options": [
+          { "id": "a", "label": "Trapetsiya", "is_correct": false, "consequence": "Trapetsiyada faqat ikkita tomon parallel, barcha tomonlar teng emas." },
+          { "id": "b", "label": "Parallelogramm", "is_correct": false, "consequence": "Umumiy turini to'g'ri sezdingiz, lekin barcha tomonlar tengligi aniqroq nomlash imkonini beradi." },
+          { "id": "c", "label": "Romb", "is_correct": true, "consequence": "To'g'ri: hamma tomonlari teng bo'lgan parallelogramm romb deb ataladi." },
+          { "id": "d", "label": "To'g'ri to'rtburchak", "is_correct": false, "consequence": "To'g'ri to'rtburchakda burchaklar 90°, lekin bu yerda burchaklar haqida ma'lumot yo'q." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Diagonallarning perpendikulyarligini izohlash",
+        "prompt": "Diagonallarning o'zaro perpendikulyarligi haqidagi ma'lumot bizga nima beradi?",
+        "options": [
+          { "id": "a", "label": "Bu faqat rombga xos xossa ekanligini tasdiqlaydi.", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Bu shaklning aniq kvadrat ekanligini isbotlaydi.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Bu shaklning burchaklari 90° ekanligini anglatadi.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Buyurtmaga shaklni yozish",
+        "prompt": "Usta diagonallarni o'lchab, biri 48 sm, ikkinchisi 64 sm ekanini aytdi. Buyurtmaga qaysi shaklni yozasiz?",
+        "options": [
+          { "id": "a", "label": "Kvadrat", "is_correct": false, "consequence": "Kvadrat bo'lishi uchun diagonallar teng bo'lishi shart; 48 ≠ 64." },
+          { "id": "b", "label": "Romb", "is_correct": true, "consequence": "To'g'ri: 48 ≠ 64 bo'lgani uchun kvadrat emas, oddiy romb. Koshin polga aniq tushadi." },
+          { "id": "c", "label": "To'g'ri to'rtburchak", "is_correct": false, "consequence": "To'g'ri to'rtburchakda barcha tomonlar teng bo'lmaydi va diagonallar perpendikular emas." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Shaklni kvadrat emas, romb deb belgilashda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Diagonallarning teng emasligi (48 ≠ 64) — kvadratda diagonallar teng bo'lishi shart", "is_correct": true },
+          { "id": "c2", "label": "Xona balandligi 4,5 metr ekanligi", "is_correct": false },
+          { "id": "c3", "label": "Xonaning shimolga qaraganligi", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun barcha tomonlari teng va diagonallari perpendikulyar bo'lgan shakl kvadrat emas, balki romb hisoblanadi? Xonaning balandligi (4,5 metr) ma'lumoti nega ahamiyatsiz edi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["diagonallar teng emas", "kvadrat emas", "romb", "perpendikulyar", "balandlik ahamiyatsiz", "qizil seld"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_geo_rhombus_01",
+      "instructions": "Rombning xossalari 6 ta blokda sanab o'tilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Tomonlar: AB = BC = CD = DA (barcha tomonlari o'zaro teng).", "is_broken": false },
+        { "id": "b2", "text": "Parallellik: AB ∥ CD va BC ∥ AD (qarama-qarshi tomonlari parallel).", "is_broken": false },
+        { "id": "b3", "text": "Kesishish: Diagonallar kesishish nuqtasida teng ikkiga bo'linadi (AO = OC, BO = OD).", "is_broken": false },
+        { "id": "b4", "text": "Perpendikularlik: Diagonallar o'zaro perpendikular (AC ⊥ BD).", "is_broken": false },
+        { "id": "b5", "text": "Bissektrisalik: Diagonallar romb burchaklarini teng ikkiga bo'ladi.", "is_broken": false },
+        { "id": "b6", "text": "Diagonal uzunligi: Diagonallari har doim o'zaro teng (AC = BD).", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "Rombning diagonallari o'zaro teng emas (AC ≠ BD)", "accepted_answers": ["Rombning diagonallari o'zaro teng emas", "Diagonallari teng bo'lmaydi", "AC va BD diagonallar uzunligi turlicha", "Diagonallar faqat kvadratda teng bo'ladi", "AC ≠ BD"], "allow_ai_fallback": true },
+      "hint": "Romb — bu parallelogrammning bir turi. Diagonallarning tengligi parallelogrammning barcha turlariga xosmi yoki faqat ma'lum bir turigami (masalan, to'g'ri to'rtburchakka)?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? Romb va to'g'ri to'rtburchakning diagonal xossalarini qanday farqlash mumkin? Diagonallar tengligi to'g'ri to'rtburchakning xossasi, rombda esa diagonallar perpendikular bo'ladi, lekin (agar u kvadrat bo'lmasa) uzunliklari turlicha bo'ladi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_geo_01",
+      "case_setup": "Kartalarni oching va har bir geometrik tushunchani unga mos keladigan ta'rif, formula yoki xossa bilan juftlang. Juftliklarni kartalar joylashuvi bo'yicha emas, balki ularning mazmunan bog'liqligi asosida toping.",
+      "pairs": [
+        { "id": "p1", "left": "Qavariq n-burchakning ichki burchaklari yig'indisi", "right": "180°(n − 2)" },
+        { "id": "p2", "left": "Parallelogramm diagonallari", "right": "Kesishish nuqtasida teng ikkiga bo'linadi" },
+        { "id": "p3", "left": "To'g'ri to'rtburchakning o'ziga xos xossasi", "right": "Diagonallarining o'zaro tengligi" },
+        { "id": "p4", "left": "Rombning diagonallari", "right": "O'zaro perpendikular va burchaklarni teng ikkiga bo'ladi" },
+        { "id": "p5", "left": "Trapetsiyaning ta'rifi", "right": "Faqat ikkita tomoni parallel bo'lgan to'rtburchak" },
+        { "id": "p6", "left": "Trapetsiyaning yon tomoniga yopishgan burchaklari", "right": "Yig'indisi doimo 180° ga teng" },
+        { "id": "p7", "left": "Muntazam n-burchakning bitta tashqi burchagi", "right": "360°/n" }
+      ],
+      "checkpoints": [
+        { "question": "To'g'ri to'rtburchakning o'ziga xos xossasi qaysi natijaga juftlanadi?", "options": ["Diagonallari o'zaro perpendikular", "Diagonallarining o'zaro tengligi", "Faqat ikkita tomoni parallel"], "correct_index": 1 },
+        { "question": "Rombning diagonallari qaysi xossaga ega?", "options": ["O'zaro teng", "O'zaro perpendikular va burchaklarni teng ikkiga bo'ladi", "Kesishmaydi"], "correct_index": 1 },
+        { "question": "Romb va to'g'ri to'rtburchak diagonallari bir xil xossaga egami?", "options": ["Ha", "Yo'q — rombda perpendikular, to'g'ri to'rtburchakda teng"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Romb va to'g'ri to'rtburchak diagonallarining xossalarini o'zaro almashtirib yubormaslik uchun ularni qanday farqlash kerak? Faqat sirtqi o'xshashlikka yoki taxminga tayanib juftlik tanlagan o'quvchi qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["romb uchun perpendikularlik va bissektrisalik", "to'g'ri to'rtburchak uchun diagonallar tengligi", "sirtqi o'xshashlik xatosi"],
+      "consequence": { "correct_path": "Har bir tushunchani to'g'ri xossa bilan uladingiz.", "wrong_path": "Romb va to'g'ri to'rtburchak diagonal xossalarini almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_geo_01",
+      "case_setup": "Berilgan tushuncha parchalarini darslikdagi mantiqiy bog'liqliklar (shart → xulosa, formula ↔ o'zgaruvchi) asosida to'g'ri yo'nalishda juftlang.",
+      "pieces": [
+        { "id": "P1", "label": "To'rtburchakning diagonallari kesishish nuqtasida teng ikkiga bo'linadi.", "role": "cause" },
+        { "id": "P2", "label": "Mazkur shakl parallelogramm ekanligi isbotlanadi.", "role": "effect" },
+        { "id": "P3", "label": "Parallelogrammning diagonallari o'zaro teng uzunlikka ega.", "role": "cause" },
+        { "id": "P4", "label": "Ushbu shakl to'g'ri to'rtburchak deb e'tirof etiladi.", "role": "effect" },
+        { "id": "P5", "label": "n (ko'pburchakning tomonlari yoki burchaklari soni).", "role": "cause" },
+        { "id": "P6", "label": "180°(n − 2) (qavariq ko'pburchak ichki burchaklari yig'indisi).", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (diagonallar teng ikkiga bo'linadi) qaysi natijaga ulanadi?", "options": ["P2 (parallelogramm)", "P4 (to'g'ri to'rtburchak)"], "correct_index": 0 },
+        { "q": "P3 (diagonallar teng) qaysi natijaga ulanadi?", "options": ["P2 (parallelogramm)", "P4 (to'g'ri to'rtburchak)"], "correct_index": 1 },
+        { "q": "P3 ni P2 bilan (so'z o'xshashligi sababli) bog'lash nega xato?", "options": ["Diagonallar tengligi parallelogramm emas, aynan to'g'ri to'rtburchak alomatidir", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Qaysi geometrik alomatlarni aniqlaganingizni va bog'lanish yo'nalishi (shartdan natijaga) nima uchun muhimligini tushuntiring. Agar P3 bo'lagini P2 bilan (so'z o'xshashligi sababli) bog'lasangiz, qanday mantiqiy xato yuzaga keladi?",
+      "expected_components": ["parallelogramm alomati", "to'g'ri to'rtburchak alomati", "shart va xulosa iyerarxiyasi", "formula tarkibi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Me'mor bog' uchun olti burchakli (n = 6) muntazam shiypon loyihasini chizmoqda. U shiyponning barcha ichki burchaklari yig'indisini hisoblashi va har bir burchak qanchadan bo'lishini aniqlashi kerak, aks holda konstruksiya birikmay qoladi.",
+      "why": "Nima uchun ixtiyoriy oltiburchakning ichki burchaklari yig'indisini topishda 180°(n − 2) formulasi qo'llaniladi?",
+      "how": "Ushbu formuladan foydalanib, shiyponning jami burchaklar yig'indisini va agar u muntazam bo'lsa, har bir burchagi necha gradusligini qanday hisoblaysiz?",
+      "what": "Olingan natija shiyponning qavariqligi haqida nima deydi va agar bitta burchak 180° dan katta bo'lsa, konstruksiyada qanday o'zgarish sodir bo'lar edi?",
+      "prompt": "Muntazam oltiburchakning ichki burchaklari yig'indisini va har bir burchagini hisoblang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Ko'pburchakni bitta uchidan chiquvchi diagonallar orqali nechta uchburchakka ajratish mumkin?", "Barcha burchaklar yig'indisini burchaklar soniga bo'lish orqali nimani aniqlash mumkin?", "Agar shakl \"ichkariga qayrilgan\" (botiq) bo'lsa, uning burchaklari haqida nima deyish mumkin?"],
+      "answer_spec": { "type": "numeric", "expected": 720, "canonical_display": "720° (har bir burchak 120°)", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["polygon-interior-angles-sum", "regular-polygon-property", "180°(6−2) = 720°", "720°/6 = 120°"],
+      "correct_feedback": "Barakalla! Siz formulaning kelib chiqishini uchburchaklarga bo'lish orqali to'g'ri asosladingiz va hisob-kitobni aniq bajardingiz: 180°(6 − 2) = 720°, har bir burchak 720°/6 = 120°.",
+      "partial_feedback": "Hisob-kitobingiz to'g'ri, lekin nima uchun aynan n − 2 koeffitsiyenti olinishini (uchburchaklar soni bilan bog'liqligini) to'liqroq tushuntiring.",
+      "wrong_feedback": "Hali emas. To'rtburchakning ichki burchaklari yig'indisi necha gradus edi va oltiburchakda u qanchaga ortadi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Duradgor rom ko'rinishidagi deraza ramasi yasadi. U qarama-qarshi tomonlarni o'zaro teng va parallel qilib o'rnatdi (AB = CD, BC = AD va AB ∥ CD). Biroq, diagonallarni o'lchaganda biri 120 sm, ikkinchisi 150 sm ekanini ko'rdi. Buyurtmachi esa deraza to'g'ri to'rtburchak shaklida bo'lishini talab qilgan edi.",
+      "why": "Duradgor yasagan shakl nima uchun hozircha to'g'ri to'rtburchak emas, balki faqat parallelogramm hisoblanadi?",
+      "how": "Rama to'g'ri to'rtburchak bo'lishi uchun duradgor diagonallar uzunligi ustida qanday amalni bajarishi kerak?",
+      "what": "Agar diagonallar tenglashtirilsa, burchaklarning qiymati qanday o'zgaradi va bu ramani qaysi yangi xossaga ega qiladi?",
+      "prompt": "Shakl nega hali to'g'ri to'rtburchak emasligini asoslang va uni to'g'ri to'rtburchakka aylantirish shartini ko'rsating.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Parallelogramm diagonallari teng bo'lishi shartmi?", "To'g'ri to'rtburchakning diagonallari haqidagi asosiy alomatni eslang: ular o'zaro qanday munosabatda bo'lishi kerak?", "Diagonallarning tengligi burchaklarning 90° bo'lishiga qanday ta'sir qiladi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "diagonallar teng emas, ularni tenglashtirish kerak", "accepted_answers": ["diagonallar teng emas", "diagonallarni tenglashtirish", "diagonallar teng bo'lishi kerak", "120 ≠ 150"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogram-definition", "rectangle-diagonal-property", "120 ≠ 150 → hali to'g'ri to'rtburchak emas"],
+      "correct_feedback": "Juda yaxshi! Siz diagonallar tengligi to'g'ri to'rtburchak uchun zaruriy alomat ekanini to'g'ri tahlil qildingiz. 120 ≠ 150 bo'lgani uchun hozir bu faqat parallelogramm.",
+      "partial_feedback": "Shaklning parallelogramm ekanini isbotladingiz, lekin uni to'g'ri to'rtburchakka aylantirish uchun diagonallar orasidagi munosabatni aniqroq ko'rsating.",
+      "wrong_feedback": "Hali emas. Parallelogramm va to'g'ri to'rtburchakning diagonallari o'rtasidagi farq nimada?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Muhandis ko'prik tayanchini trapetsiya shaklida loyihalashtirdi. Uning asoslari parallel, lekin yon tomonlari teng emas. Muhandis pastki asosdagi burchaklarni 70° va 80° deb belgiladi.",
+      "why": "Nima uchun ushbu shaklda faqat bitta yon tomonga yopishgan burchaklar yig'indisini 180° deb olish mumkin, lekin bitta asosga yopishgan burchaklar yig'indisini bunday deb bo'lmaydi?",
+      "how": "Berilgan ma'lumotlarga ko'ra, trapetsiyaning yuqori asosidagi burchaklarini qanday tartibda hisoblab topasiz?",
+      "what": "Agar bu trapetsiya \"teng yonli\" bo'lib qolsa, burchaklar va diagonallar orasidagi munosabatda qanday o'zgarish yuz berar edi?",
+      "prompt": "Trapetsiyaning yuqori asosidagi burchaklarini toping va nima uchun aynan yon tomon burchaklari yig'indisi 180° ekanini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Parallel to'g'ri chiziqlarni uchinchi chiziq (kesuvchi) kesib o'tganda qaysi burchaklar yig'indisi 180° bo'ladi?", "Pastki 70° li burchakka qaysi burchak \"ichki bir tomonli\" hisoblanadi?", "Teng yonli trapetsiyada asosdagi burchaklar o'zaro qanday munosabatda bo'ladi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "yuqori burchaklar 110° va 100°", "accepted_answers": ["110° va 100°", "110 va 100", "100° va 110°", "yon tomon burchaklari yig'indisi 180°"], "allow_ai_fallback": true },
+      "expected_concepts": ["trapezoid-definition", "trapezoid-angle-property", "isosceles-trapezoid-property", "180° − 70° = 110°", "180° − 80° = 100°"],
+      "correct_feedback": "Ofarin! Parallel chiziqlar va kesuvchi xossasini trapetsiyaga mukammal tatbiq etdingiz: yon tomon burchaklari 180° − 70° = 110° va 180° − 80° = 100°.",
+      "partial_feedback": "Yuqori burchaklarni topdingiz, lekin nima uchun qarama-qarshi burchaklar yig'indisi har doim ham 180° bo'lavermasligini asoslab bering.",
+      "wrong_feedback": "Hali emas. Trapetsiyaning parallel tomonlari qaysilar va burchaklar yig'indisi qaysi tomonda 180° ga teng bo'ladi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Zargar tilla plastinkadan barcha tomonlari 2 sm bo'lgan shakl kesib oldi. U shaklning diagonallarini o'lchadi va ular o'zaro perpendikular ekanini, lekin uzunliklari har xil ekanini aniqladi.",
+      "why": "Nima uchun diagonallarning perpendikularligi bu shaklning romb ekanligini tasdiqlaydi, lekin uning kvadrat emasligini ko'rsatadi?",
+      "how": "Agar zargar bu shaklni kvadratga aylantirmoqchi bo'lsa, diagonallar ustida qanday o'zgarish qilishi kerak (ularning kesishish nuqtasi va uzunligi bo'yicha)?",
+      "what": "Diagonallar tenglashgan holatda burchaklar bissektrisalarining (diagonallarning) vazifasi saqlanib qoladimi yoki o'zgaradimi?",
+      "prompt": "Shakl nega romb, lekin kvadrat emasligini asoslang va uni kvadratga aylantirish shartini ko'rsating.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Romb va kvadratning diagonallari kesishish burchagi bo'yicha o'xshashmi?", "Kvadrat bo'lishi uchun rombga yana qanday qo'shimcha shart (diagonal bo'yicha) kerak?", "Agar burchaklar 90° bo'lmasa-yu, lekin hamma tomonlar teng bo'lsa, bu shakl qanday nomlanadi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "romb; kvadrat bo'lishi uchun diagonallar teng bo'lishi kerak", "accepted_answers": ["romb", "diagonallarni tenglashtirish kerak", "diagonallar teng bo'lishi kerak", "kvadrat emas chunki diagonallar teng emas"], "allow_ai_fallback": true },
+      "expected_concepts": ["rhombus-diagonal-property", "square-definition", "square-property", "perpendikular diagonal — romb", "diagonallar teng — kvadrat sharti"],
+      "correct_feedback": "Mukammal! Romb va kvadrat orasidagi nozik farqni (diagonallar tengligi) va ularning umumiy xossalarini (perpendikularlik) juda aniq tushuntirdingiz.",
+      "partial_feedback": "Rombning xossalarini to'g'ri aytdingiz, lekin kvadratga o'tish shartini (diagonallar tengligi) biroz e'tibordan chetda qoldirdingiz.",
+      "wrong_feedback": "Hali emas. Qaysi shakllarning diagonallari o'zaro perpendikular bo'ladi va ularning qaysi birida diagonallar teng?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Grafik dizayner kompaniya logotipi uchun yulduzsimon besh burchakli shakl chizdi. U ushbu shaklning ichki burchaklari yig'indisini 180°(5 − 2) = 540° deb hisoblamoqchi bo'ldi, biroq ustozi bu formula bu yerda ishlamasligini aytdi.",
+      "why": "Nima uchun 180°(n − 2) formulasi ushbu yulduzsimon shakl uchun to'g'ridan-to'g'ri qo'llanilmaydi? (Qavariqlik ta'rifi orqali tushuntiring.)",
+      "how": "Shaklning qavariq yoki botiqligini bitta tomon orqali o'tuvchi to'g'ri chiziq yordamida qanday tekshirish mumkin?",
+      "what": "Agar shakl botiq bo'lsa, uning kamida bitta burchagi haqida nima deyish mumkin va bu umumiy burchaklar yig'indisiga qanday ta'sir qiladi?",
+      "prompt": "Yulduzsimon (botiq) beshburchak uchun nega 540° formulasi to'g'ridan-to'g'ri qo'llanilmasligini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["Qavariq ko'pburchak ta'rifida \"yarim tekislik\" tushunchasi qanday ishtirok etadi?", "Shaklning biror tomonini davom ettirsangiz, u shaklni kesib o'tadimi?", "Botiq ko'pburchakda burchaklardan biri 180° dan katta bo'lishi mumkinmi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "shakl botiq (qavariq emas), shuning uchun formula to'g'ridan-to'g'ri qo'llanilmaydi", "accepted_answers": ["botiq", "qavariq emas", "yulduzsimon shakl botiq", "bitta burchagi 180° dan katta", "formula faqat qavariq ko'pburchaklar uchun"], "allow_ai_fallback": true },
+      "expected_concepts": ["convex-polygon-definition", "polygon-interior-angles-sum", "botiq ko'pburchak", "burchak 180° dan katta"],
+      "correct_feedback": "Yuqori darajadagi tahlil! Qavariqlik sharti va formulaning qo'llanish chegarasini juda yaxshi anglagansiz: yulduzsimon shakl botiq, shuning uchun 180°(n − 2) unga to'g'ridan-to'g'ri qo'llanilmaydi.",
+      "partial_feedback": "Shaklning botiqligini aniqladingiz, lekin qavariqlikning \"yarim tekislik\" haqidagi rasmiy ta'rifini esga oling.",
+      "wrong_feedback": "Hali emas. Qavariq va botiq ko'pburchaklarning farqi nimada? Birorta tomoni orqali to'g'ri chiziq o'tkazib ko'ring."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz asosiy to'rtburchaklar — parallelogramm, to'g'ri to'rtburchak, romb va trapetsiyaning o'ziga xos xossalarini o'rgandingiz. Qavariq ko'pburchaklarning ichki burchaklari yig'indisi 180°(n − 2) formulasi orqali aniqlanishini va har bir shaklning diagonallari turlicha xususiyatga ega ekanini tahlil qildingiz. Bu qoidalar mebel dizayni va ko'priksozlik kabi real loyihalarda konstruksiyalar mustahkamligini ta'minlash uchun xizmat qiladi.",
+    "question": "Keyingi safar ixtiyoriy parallelogramm va to'g'ri to'rtburchakni diagonal uzunliklariga qarab ajratishda qaysi xatodan qochgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga romb va to'g'ri to'rtburchak diagonallarining farqini (perpendikularlik vs tenglik) va qavariq/botiq ko'pburchak farqini yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz parallelogrammning bir tomoniga yopishgan burchaklari yig'indisi 180° ekanini va tomonlari parallelligi alomatlarini tahlil qilishda yuqori natija ko'rsatdingiz. To'g'ri to'rtburchak va romb diagonallarining farqlari hamda ko'pburchaklarning qavariqlik shartlarini mustahkamlash foydali.",
+      "strong_points": [
+        "Parallelogrammning bir tomoniga yopishgan burchaklari yig'indisi 180° ekanini tahlil qilish",
+        "Parallelogramm tomonlari parallelligi alomatlarini aniqlash"
+      ],
+      "weak_points": [
+        "To'g'ri to'rtburchak va romb diagonallarining farqlari (tenglik va perpendikularlik)",
+        "Ko'pburchaklarning qavariqlik shartlarini aniqlash"
+      ],
+      "next_steps": [
+        "Darslikning diagonallar xossasiga oid 3- va 4-bandlarini qayta ko'rib chiqing",
+        "Botiq va qavariq ko'pburchaklarning farqi haqidagi qismini takrorlang"
+      ],
+      "weak_point_keywords": ["diagonal", "perpendikular", "qavariqlik", "botiq"],
+      "strong_point_keywords": ["parallelogramm", "burchaklar yig'indisi", "parallellik"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas, balki yangi masalalar bilan."
+    }
+  }
+}

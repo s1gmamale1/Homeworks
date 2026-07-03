@@ -1,0 +1,345 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "2-§. Fales teoremasi va uning tatbiqlari",
+    "subject_display": "Geometriya",
+    "section": "2-§",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Fales teoremasi", "def": "Burchak tomonlarini kesuvchi parallel to'g'ri chiziqlar bir tomonda teng kesmalar ajratsa, ikkinchi tomonda ham teng kesmalar ajratadi.", "cluster": "QOIDA" },
+    { "term": "Kesmani teng bo'laklarga bo'lish usuli", "def": "Kesma uchidan yordamchi nur o'tkazib, unda teng kesmalar ajratish va parallel chiziqlar chizish orqali bajariladi.", "cluster": "METOD" },
+    { "term": "Uchburchakning o'rta chizig'i", "def": "Uchburchakning ikki tomoni o'rtalarini tutashtiruvchi kesma.", "cluster": "QOIDA" },
+    { "term": "Uchburchak o'rta chizig'ining parallellik xossasi", "def": "Uchburchakning o'rta chizig'i uning uchinchi tomoniga parallel bo'ladi.", "cluster": "QOIDA" },
+    { "term": "Uchburchak o'rta chizig'ining uzunligi", "def": "Uchburchakning o'rta chizig'i uchinchi tomonning yarmiga teng. Masalan, uchinchi tomon 10 sm bo'lsa, o'rta chiziq 5 sm.", "cluster": "MISOL" },
+    { "term": "Trapetsiyaning o'rta chizig'i", "def": "Trapetsiyaning yon tomonlari o'rtalarini tutashtiruvchi kesma.", "cluster": "QOIDA" },
+    { "term": "Trapetsiya o'rta chizig'ining parallelligi", "def": "Trapetsiyaning o'rta chizig'i uning asoslariga (ham pastki, ham yuqori) parallel bo'ladi.", "cluster": "QOIDA" },
+    { "term": "Trapetsiya o'rta chizig'ining formulasi", "def": "Trapetsiyaning o'rta chizig'i asoslari yig'indisining yarmiga teng: m = (a + b) / 2.", "cluster": "METOD" },
+    { "term": "Parallel bo'lmagan chiziqlar va Fales teoremasi", "def": "Kesuvchi chiziqlar parallel bo'lmasa, bir tomondagi teng kesmalar ikkinchi tomonda teng kesmalar hosil qilmaydi.", "cluster": "TAHLIL" },
+    { "term": "Fales teoremasining ixtiyoriy chiziqlarga tatbiqi", "def": "Fales teoremasi burchak tomonlaridan tashqari, ixtiyoriy ikki to'g'ri chiziq uchun ham o'rinli.", "cluster": "TAHLIL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Fales Teoremasi",
+    "case_setup": {
+      "story": "Siz qurilish loyihasi tahlilchisi rolidasiz. Bir usta trapezsimon shakldagi devorga dekorativ gorizontal yog'och to'sinlarni o'rnatishi kerak. Devorning chap yon tomoni bo'ylab usta har 80 santimetrda aniq belgilar qo'yib chiqdi (nuqtalar orasidagi masofa teng). Endi u ushbu nuqtalardan o'ng tomonga qarab, devorning asoslariga parallel chiziqlar o'tkazishi kerak. Usta sizdan maslahat so'ramoqda: u o'ng tomondagi devorda ham nuqtalar orasidagi masofani qaytadan o'lchashi kerakmi? Shuningdek, u devorning qoq o'rtasidan o'tadigan asosiy to'sinning uzunligi qancha bo'lishini (agar devorning yuqori asosi 3 metr va pastki asosi 5 metr bo'lsa) tezda hisoblab berishingizni kutmoqda.",
+      "role": "Qurilish loyihasi tahlilchisi",
+      "task": "Geometrik qonuniyatlarga tayanib, hisob-kitoblarning to'g'riligini ta'minlang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Agar parallel to'g'ri chiziqlar burchakning (yoki trapetsiya yon tomonlarining) bir tomonida o'zaro teng kesmalar ajratsa, ular ikkinchi tomonda ham teng kesmalar ajratishini qaysi geometrik tasdiq kafolatlaydi?",
+        "options": [
+          "Pifagor teoremasi",
+          "Fales teoremasi",
+          "Uchburchaklar o'xshashligining birinchi alomati",
+          "Kosinuslar teoremasi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Fales teoremasi geometriyada parallel chiziqlarning xossasini tushuntiradi: agar burchakning bir tomonida parallel to'g'ri chiziqlar teng kesmalar ajratsa, u holda bu to'g'ri chiziqlar burchakning ikkinchi tomonida ham o'zaro teng kesmalar ajratadi. Bu qoida nafaqat burchaklar, balki ixtiyoriy ikki to'g'ri chiziq (masalan, trapetsiyaning yon tomonlari) uchun ham o'rinlidir.",
+        "feedback": "Fales teoremasiga ko'ra, bir tomonda ajratilgan teng kesmalar parallel chiziqlar yordamida ikkinchi tomonda ham teng kesmalarni hosil qiladi."
+      },
+      {
+        "kind": "decide",
+        "question": "Agar usta devorning qoq o'rtasidan (yon tomonlar o'rtasini tutashtiruvchi) to'sin o'rnatsa, uning uzunligini topish uchun qaysi usulni qo'llaysiz?",
+        "options": [
+          "Pastki asosdan yuqori asosni ayirish orqali",
+          "Asoslar ko'paytmasidan ildiz chiqarish orqali",
+          "Ikkala asosni qo'shib, ikkiga bo'lish orqali",
+          "Faqat pastki asosning yarmidan foydalanish orqali"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Trapetsiyaning o'rta chizig'i — uning yon tomonlarining o'rtalarini tutashtiruvchi kesmadir. U asoslarga parallel bo'ladi va uning uzunligi asoslar yig'indisining yarmiga teng bo'ladi. Xuddi shunday mantiq uchburchakda ham ishlaydi: uchburchakning o'rta chizig'i uchinchi tomonga parallel va uning yarmiga tengdir. Bu xossalar Fales teoremasining bevosita natijasidir.",
+        "feedback": "Trapetsiyaning o'rta chizig'i uning asoslari yig'indisining yarmiga tengdir (m = (a + b) / 2)."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun usta o'ng tomondagi kesmalarni o'zi xohlaganicha (masalan, chap tomondagidan boshqacha masofada) belgilay olmaydi?",
+        "options": [
+          "Chunki o'ng tomondagi yon tomon har doim chap tomondagiga teng bo'ladi.",
+          "Chunki parallel to'sinlar geometrik mutanosiblikni saqlashi shart, aks holda to'sinlar asoslarga parallel bo'lmay qoladi.",
+          "Chunki trapetsiyaning hamma tomonlari o'zaro teng bo'lishi kerak.",
+          "Chunki o'rta chiziq har doim eng qisqa tomonga teng bo'ladi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Agar usta o'ng tomonda masofani o'zgartirsa, to'sinlar gorizontal (parallel) bo'lmaydi va Fales teoremasi buziladi. Ushbu xatoga yo'l qo'yish konstruksiyaning qiyshiq bo'lishiga olib keladi.",
+        "feedback": "Agar usta o'ng tomonda masofani o'zgartirsa, to'sinlar gorizontal (parallel) bo'lmaydi va Fales teoremasi buziladi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 jumlada javob bering: (1) Vaziyatda qaysi geometriya tushunchasini aniqladingiz? (2) Nima uchun aynan o'rta chiziq formulasini tanladingiz? (3) Agar asoslarni shunchaki ayirib qo'yganingizda, qanday xato yuz bergan bo'lar edi?",
+      "min_chars": 80,
+      "concept_keywords": ["Fales teoremasi", "o'rta chiziq", "parallel", "teng kesmalar"],
+      "method_keywords": ["asoslar yig'indisi", "ikkiga bo'lish", "(a + b) / 2"],
+      "mistake_keywords": ["ayirish", "asoslar ayirmasi", "qiyshiq"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz Fales teoremasini qo'llab, ustaga o'ng tomonda ham kesmalar o'zaro teng bo'lishini aytdingiz. O'rta to'sin uzunligini hisoblash uchun asoslarni qo'shib (3 + 5 = 8), ikkiga bo'ldingiz (8 / 2 = 4). Natijada 4 metrli to'sin aniq o'rtaga tushdi, barcha to'sinlar bir-biriga parallel bo'ldi va devor estetik jihatdan mukammal chiqdi.",
+      "wrong_path": "Agar siz o'rta chiziq xossasini unutib, uni asoslar ayirmasi (5 − 3 = 2) deb hisoblaganingizda, to'sin uzunligi 2 metr bo'lar edi. 2 metrli to'sin devorning o'rtasiga yetib bormaydi va yon tomonlarga tegmay qoladi, chunki o'rta chiziq har doim kichik asosdan uzun, katta asosdan qisqa bo'lishi kerak."
+    },
+    "feedback_summary": {
+      "student_understood": "Parallel chiziqlar tomonidan ajratilgan kesmalar orasidagi bog'liqlikni va o'rta chiziqning geometrik ma'nosini to'g'ri anglab yetdingiz.",
+      "mistake_appeared": "O'rta chiziqni hisoblashda arifmetik amalni (ayirish yoki qo'shish) tanlashda adashish ehtimoli bor edi.",
+      "what_to_review": "Darslikdagi trapetsiya va uchburchakning o'rta chizig'i xossalariga doir isbotlarni ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint to'g'ri yechilishi kerak",
+        "DPE qismida o'rta chiziq va Fales teoremasi tushunchalari tilga olingan bo'lishi lozim",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "Fales teoremasining bajarilishi uchun burchak tomonlarini kesuvchi to'g'ri chiziqlar qanday holatda bo'lishi shart?", "options": ["To'g'ri chiziqlar o'zaro parallel bo'lishi kerak.", "To'g'ri chiziqlar o'zaro perpendikulyar bo'lishi kerak.", "To'g'ri chiziqlar burchak uchida kesishishi kerak.", "To'g'ri chiziqlar burchak bissektrisasi bo'lishi kerak."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Uchburchakning ikki tomoni o'rtalarini tutashtiruvchi kesma uchburchakning _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "o'rta chizig'i", "accepted_answers": ["o'rta chizig'i", "o'rta chiziq", "o'rtachizig'i"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "choose_explanation", "prompt": "Nima uchun uchburchakning o'rta chizig'i uning uchinchi tomonidan qisqa bo'ladi?", "options": ["Chunki o'rta chiziq uchburchakni ikkita teng yuzali qismga ajratgani uchun har doim asosning yarmiga teng bo'ladi.", "Chunki o'rta chiziq ta'rifiga ko'ra uchinchi tomonga parallel bo'lib, uning uzunligi shu tomon uzunligining yarmiga tengdir.", "Chunki o'rta chiziq faqat teng yonli uchburchaklardagina uchinchi tomonning yarmiga teng bo'lish xossasiga ega.", "Chunki o'rta chiziq uchinchi tomonni teng ikkiga bo'lgani uchun uning o'zi ham qisqarib qoladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "Trapetsiyaning o'rta chizig'i qaysi elementlarning o'rtalarini tutashtiradi?", "options": ["Trapetsiyaning asoslarini.", "Trapetsiyaning diagonallarini.", "Trapetsiyaning yon tomonlarini.", "Trapetsiyaning qarama-qarshi uchlarini."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Trapetsiyaning o'rta chizig'i uning asoslari _____ yarmiga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "yig'indisining", "accepted_answers": ["yig'indisining", "yig'indisi", "yig'indisiga"], "allow_ai_fallback": true }, "flashcard_ref": "card_8" },
+      { "type": "choose_explanation", "prompt": "Agar burchak tomonlarini kesuvchi to'g'ri chiziqlar parallel bo'lmasa, Fales teoremasi natijasi nima uchun o'zgarmaydi degan fikr xato?", "options": ["Chunki parallel bo'lmagan chiziqlar ham burchak tomonlarida baribir teng kesmalar hosil qiladi.", "Chunki Fales teoremasining asosiy isboti parallel chiziqlar hosil qilgan o'xshashlikka yoki parallellik xossasiga tayanadi.", "Chunki chiziqlar parallel bo'lmasa, ular baribir burchakning bir tomonida kesishadi.", "Chunki Fales teoremasi faqat to'g'ri burchaklar uchun amal qiladi, parallellik muhim emas."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Kesmani teng bo'laklarga bo'lish amaliy usulida nima birinchi bo'lib bajariladi?", "options": ["Kesma uchidan ixtiyoriy burchak ostida yordamchi nur o'tkaziladi.", "Kesmaning o'rtasi chizg'ich yordamida o'lchab topiladi.", "Kesmaga perpendikulyar chiziq chiziladi.", "Kesma uchlaridan ikkita aylana chiziladi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "fill_blank", "prompt": "Fales teoremasi nafaqat burchak tomonlari uchun, balki ixtiyoriy _____ to'g'ri chiziq uchun ham o'rinlidir.", "answer_spec": { "type": "text_fuzzy", "expected": "ikkita", "accepted_answers": ["ikkita", "ikki", "har qanday ikki"], "allow_ai_fallback": true }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "Uchburchakning o'rta chizig'i uning uchinchi tomoniga nisbatan qanday joylashadi?", "options": ["Uchinchi tomonga parallel bo'ladi.", "Uchinchi tomon bilan 45 darajali burchak hosil qiladi.", "Uchinchi tomonga perpendikulyar bo'ladi.", "Uchinchi tomon bilan kesishadi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "Trapetsiyaning o'rta chizig'i nima uchun uning ikkala asosiga ham parallel deb hisoblanadi?", "options": ["Chunki trapetsiyaning asoslari o'zi o'zaro parallel, o'rta chiziq esa ulardan biriga parallel bo'lishi isbotlangan.", "Chunki trapetsiya har doim teng yonli bo'ladi va o'rta chiziq markazdan o'tadi.", "Chunki o'rta chiziq asoslarni birlashtiruvchi perpendikulyar kesma hisoblanadi.", "Chunki trapetsiyaning barcha tomonlari o'zaro parallel bo'lishi shart."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_geo_02",
+    "expert_role": "structural_engineer",
+    "title": "Trapetsimon Tom Konstruksiyasi",
+    "intro": "Siz — konstruksiya muhandisisiz. Bino tomi trapetsiya shaklida: yuqori asosi 4 metr, pastki asosi 10 metr. Usta yon tomonlar o'rtasidan o'tuvchi gorizontal mustahkamlovchi to'sin o'rnatmoqchi va uning aniq uzunligini bilishi kerak. Yon tomonlarning o'rtasini x deb belgilang va Fales teoremasiga tayaning.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. To'sin turini aniqlash",
+        "prompt": "Yon tomonlarning o'rtasini tutashtiruvchi to'sin trapetsiyaning qaysi elementi hisoblanadi?",
+        "options": [
+          { "id": "a", "label": "Trapetsiyaning diagonali", "is_correct": false, "consequence": "Diagonal qarama-qarshi uchlarni tutashtiradi, yon tomonlar o'rtasini emas." },
+          { "id": "b", "label": "Trapetsiyaning o'rta chizig'i", "is_correct": true, "consequence": "To'g'ri: yon tomonlar o'rtalarini tutashtiruvchi kesma — o'rta chiziq." },
+          { "id": "c", "label": "Trapetsiyaning balandligi", "is_correct": false, "consequence": "Balandlik asoslar orasidagi perpendikulyar masofa, gorizontal to'sin emas." },
+          { "id": "d", "label": "Trapetsiyaning bissektrisasi", "is_correct": false, "consequence": "Bissektrisa burchakni teng ikkiga bo'ladi, bu yerda gap o'rta chiziq haqida." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Keyingi qadamni tanlash",
+        "prompt": "O'rta chiziq uzunligini topish uchun avval qaysi ma'lumotni qo'llaysiz?",
+        "options": [
+          { "id": "a", "label": "Asoslar yig'indisini olib, formulani m = (a + b) / 2 tarzida qo'llash", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Asoslar ayirmasini olib, ikkiga bo'lish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Faqat pastki asosning yarmini olish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. To'sin uzunligini tanlash",
+        "prompt": "Yuqori asos 4 m, pastki asos 10 m. m = (a + b) / 2 = (4 + 10) / 2. O'rta to'sinning to'g'ri uzunligi qaysi?",
+        "options": [
+          { "id": "a", "label": "3 m (asoslar ayirmasining yarmi)", "is_correct": false, "consequence": "Bu ayirmaning yarmi; o'rta chiziq yig'indisining yarmi bilan topiladi." },
+          { "id": "b", "label": "7 m (asoslar yig'indisining yarmi)", "is_correct": true, "consequence": "To'g'ri: (4 + 10) / 2 = 7 m, kichik asosdan uzun, katta asosdan qisqa." },
+          { "id": "c", "label": "14 m (asoslar yig'indisi)", "is_correct": false, "consequence": "Bu yig'indining o'zi; ikkiga bo'lishni unutdingiz." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "O'rta chiziq uzunligini hisoblashda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Trapetsiya o'rta chizig'i = asoslar yig'indisining yarmi", "is_correct": true },
+          { "id": "c2", "label": "Pifagor teoremasi", "is_correct": false },
+          { "id": "c3", "label": "Uchburchaklar o'xshashligi", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun o'rta chiziq uzunligi asoslar ayirmasi emas, balki yig'indisining yarmi bilan topiladi? Agar ayirma ishlatilsa, to'sinda qanday muammo yuzaga keladi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["asoslar yig'indisi", "yarmi", "Fales teoremasi", "parallel", "ayirma xato"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_geo_trapetsiya_02",
+      "instructions": "Trapetsiyaning o'rta chizig'i hisoblanishi 6 bosqichda berilgan (yuqori asos 6 m, pastki asos 12 m). Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Asoslar: a = 6 m, b = 12 m", "is_broken": false },
+        { "id": "b2", "text": "O'rta chiziq formulasi: m = (a + b) / 2", "is_broken": false },
+        { "id": "b3", "text": "m = (12 − 6) / 2", "is_broken": true },
+        { "id": "b4", "text": "m = 18 / 2 (to'g'ri amal bo'lganda)", "is_broken": false },
+        { "id": "b5", "text": "Asoslar yig'indisi: 6 + 12 = 18", "is_broken": false },
+        { "id": "b6", "text": "m = 9 m", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "m = (6 + 12) / 2", "accepted_answers": ["m = (6 + 12) / 2", "(6 + 12) / 2", "m = (a + b) / 2", "18 / 2"], "allow_ai_fallback": true },
+      "hint": "O'rta chiziq formulasida asoslar orasida qaysi amal turishi kerak — qo'shish yoki ayirish?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? Trapetsiya o'rta chizig'i asoslar AYIRMASI emas, asoslar YIG'INDISINING yarmiga teng: (6 + 12) / 2 = 9, (12 − 6) / 2 = 3 emas."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_geo_02",
+      "case_setup": "Fales teoremasi va o'rta chiziq atamalari, xossalari va natijalarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Fales teoremasi", "right": "Parallel chiziqlar bir tomonda teng kesmalar ajratsa, ikkinchi tomonda ham teng kesmalar ajratadi" },
+        { "id": "p2", "left": "Uchburchakning o'rta chizig'i", "right": "Ikki tomon o'rtalarini tutashtiruvchi kesma; uchinchi tomonning yarmiga teng" },
+        { "id": "p3", "left": "Trapetsiyaning o'rta chizig'i", "right": "Yon tomonlar o'rtalarini tutashtiruvchi kesma; m = (a + b) / 2" },
+        { "id": "p4", "left": "Uchburchak o'rta chizig'ining yo'nalishi", "right": "Uchinchi tomonga parallel" },
+        { "id": "p5", "left": "Trapetsiya o'rta chizig'ining yo'nalishi", "right": "Ikkala asosga parallel" },
+        { "id": "p6", "left": "Parallel bo'lmagan chiziqlar", "right": "Teng kesmalar ajratmaydi — Fales teoremasi buziladi" },
+        { "id": "p7", "left": "Kesmani teng bo'laklarga bo'lish", "right": "Yordamchi nur o'tkazib, teng kesmalar va parallel chiziqlar chizish" }
+      ],
+      "checkpoints": [
+        { "question": "Trapetsiyaning o'rta chizig'i qaysi formulaga juftlanadi?", "options": ["m = (a − b) / 2", "m = (a + b) / 2", "m = a · b"], "correct_index": 1 },
+        { "question": "Uchburchakning o'rta chizig'i uchinchi tomonga nisbatan qanday?", "options": ["parallel va yarmiga teng", "perpendikulyar", "teng"], "correct_index": 0 },
+        { "question": "Fales teoremasi parallel bo'lmagan chiziqlar uchun ham ishlaydimi?", "options": ["Ha", "Yo'q — parallellik shart"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Trapetsiya o'rta chizig'i nima uchun asoslar yig'indisining yarmi (ayirmasi emas) ekanligini tushuntiring: bu xossa Fales teoremasi bilan qanday bog'liq va o'quvchi qaysi holatda yanglishishi mumkin?",
+      "expected_components": ["asoslar yig'indisining yarmi", "Fales teoremasidan kelib chiqadi", "ayirma bilan adashtirish xato"],
+      "consequence": { "correct_path": "Har bir atamani to'g'ri xossaga uladingiz.", "wrong_path": "Yig'indi va ayirma formulalarini aralashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_geo_02",
+      "case_setup": "Har bir geometrik shart bo'lagini (sabab) u keltirib chiqaradigan natija bo'lagi bilan to'g'ri yo'nalishda juftlang. Sabab ↔ natija.",
+      "pieces": [
+        { "id": "P1", "label": "Shart: Parallel chiziqlar bir tomonda teng kesmalar ajratadi", "role": "cause" },
+        { "id": "P2", "label": "Natija: Ikkinchi tomonda ham teng kesmalar hosil bo'ladi (Fales teoremasi)", "role": "effect" },
+        { "id": "P3", "label": "Shart: Uchburchakning ikki tomoni o'rtalari tutashtiriladi", "role": "cause" },
+        { "id": "P4", "label": "Natija: O'rta chiziq uchinchi tomonga parallel va uning yarmiga teng", "role": "effect" },
+        { "id": "P5", "label": "Shart: Trapetsiyaning yon tomonlari o'rtalari tutashtiriladi", "role": "cause" },
+        { "id": "P6", "label": "Natija: O'rta chiziq asoslarga parallel va m = (a + b) / 2", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P5 (trapetsiya yon tomonlari o'rtasi) qaysi natijaga ulanadi?", "options": ["P4 (uchburchak o'rta chizig'i)", "P6 (trapetsiya o'rta chizig'i)"], "correct_index": 1 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Sabab ↔ natija", "O'xshash ma'no"], "correct_index": 0 },
+        { "q": "P3 (uchburchak) ni P6 ga ulash nega xato?", "options": ["Uchburchak o'rta chizig'i (a + b) / 2 emas, uchinchi tomonning yarmi", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun P5 (trapetsiya yon tomonlari) P4 ga emas, aynan P6 ga ulanadi? Uchburchak va trapetsiya o'rta chiziqlari xossalarida qanday farq bor — o'quvchi nima uchun aldanishi mumkin?",
+      "expected_components": ["trapetsiya o'rta chizig'i (a + b) / 2", "uchburchak o'rta chizig'i uchinchi tomonning yarmi", "ikkalasi ham Fales teoremasidan kelib chiqadi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "O'qituvchi doskaga trapetsiyani chizdi: yuqori asosi 8 sm, pastki asosi 14 sm. Anvar o'rta chiziqni \"(14 − 8) / 2 = 3 sm\" deb topdi. O'qituvchi javobni qabul qilmadi.",
+      "why": "Nima sababdan trapetsiya o'rta chizig'i asoslar ayirmasi orqali emas, yig'indisi orqali topiladi?",
+      "how": "Trapetsiya o'rta chizig'i formulasini m = (a + b) / 2 ko'rinishida qo'llab, a = 8 va b = 14 ni qo'ying.",
+      "what": "Anvar qaysi amalni (qo'shish o'rniga) noto'g'ri ishlatdi?",
+      "prompt": "8 va 14 asosli trapetsiyaning o'rta chizig'i necha santimetr va Anvar qayerda yanglishdi?",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["O'rta chiziq formulasida asoslar qo'shiladimi yoki ayiriladimi?", "(8 + 14) / 2 qancha bo'ladi?"],
+      "answer_spec": { "type": "numeric", "expected": 11, "canonical_display": "m = 11 sm", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["m = (a + b) / 2", "asoslar yig'indisi", "ayirma bilan adashtirish"],
+      "correct_feedback": "To'g'ri. m = (8 + 14) / 2 = 11 sm. Anvar yig'indi o'rniga ayirmani ishlatib (14 − 8) / 2 = 3 deb adashdi.",
+      "partial_feedback": "11 sm ni topdingiz, lekin Anvar yig'indi o'rniga ayirmani ishlatganini ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas — o'rta chiziq formulasida asoslar orasida qaysi amal turadi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "O'quvchi ABC uchburchagida AB va BC tomonlari o'rtalarini tutashtirdi. AC tomoni 16 sm. U o'rta chiziqni 16 sm deb yozdi.",
+      "why": "Nima sababdan uchburchak o'rta chizig'i uchinchi tomonga teng emas — \"parallel\" va \"teng\" tushunchalari farqini izohlang.",
+      "how": "Uchburchak o'rta chizig'i xossasini qo'llang: u uchinchi tomonga parallel va uning yarmiga teng.",
+      "what": "AC = 16 sm bo'lsa, o'rta chiziq qancha bo'ladi?",
+      "prompt": "AC = 16 sm bo'lgan uchburchakning o'rta chizig'ini toping va nima uchun 16 emasligini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["O'rta chiziq uchinchi tomonning qaysi qismiga teng?", "16 ning yarmi qancha?"],
+      "answer_spec": { "type": "numeric", "expected": 8, "canonical_display": "8 sm", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["o'rta chiziq = uchinchi tomonning yarmi", "parallel ≠ teng"],
+      "correct_feedback": "To'g'ri. O'rta chiziq uchinchi tomonning yarmiga teng: 16 / 2 = 8 sm. U AC ga parallel, lekin teng emas.",
+      "partial_feedback": "8 sm ni topdingiz, lekin nima uchun o'rta chiziq AC ga teng emasligini asoslamadingiz.",
+      "wrong_feedback": "Hali emas — o'rta chiziq uchinchi tomonga parallel, ammo uning qaysi qismiga teng?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Musobaqada burchak tomonlarini kesuvchi to'g'ri chiziqlar berildi. Sherzod \"chiziqlar parallel bo'lmasa ham teng kesmalar hosil bo'ladi\", Bobur \"parallel bo'lishi shart\", Davron \"perpendikulyar bo'lishi shart\" dedi.",
+      "why": "Nima uchun Fales teoremasida chiziqlarning parallelligi hal qiluvchi shart?",
+      "how": "Fales teoremasi ta'rifini eslang: teorema parallel chiziqlar ajratgan teng kesmalarga tayanadi.",
+      "what": "Uch o'quvchining fikrini tahlil qiling: kim haq, qaysi xato bor?",
+      "prompt": "Fales teoremasi bajarilishi uchun kesuvchi chiziqlar qanday bo'lishi shart va kim haq?",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Teoremaning asosiy sharti — chiziqlarning o'zaro joylashuvi.", "Perpendikulyarlik faqat 90 darajaga tegishli, teorema esa ixtiyoriy burchak uchun."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "parallel", "accepted_answers": ["parallel", "parallel bo'lishi", "Bobur haq"], "allow_ai_fallback": true },
+      "expected_concepts": ["chiziqlar parallel bo'lishi shart", "Bobur haq", "perpendikulyarlik shart emas"],
+      "correct_feedback": "To'g'ri — Bobur haq. Chiziqlar o'zaro PARALLEL bo'lishi shart. Sherzod parallellik sharti yo'q deb adashdi; Davron perpendikulyarlikni xato talab qildi.",
+      "partial_feedback": "Parallellik shartini topdingiz, lekin nima uchun perpendikulyarlik (Davron) xato ekanini asoslamadingiz.",
+      "wrong_feedback": "Hali emas — teorema isboti chiziqlarning qaysi xossasiga tayanadi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "O'quvchi: \"Kesmani teng 5 bo'lakka bo'lish uchun shunchaki chizg'ich bilan o'lchab, 5 ga bo'lib qo'yaman\" dedi va Fales usulini ortiqcha deb hisobladi.",
+      "why": "Nima sababdan kesmani teng bo'laklarga bo'lishda Fales usuli (yordamchi nur) ishonchli geometrik usul hisoblanadi?",
+      "how": "Fales usulining birinchi qadamini eslang: kesma uchidan ixtiyoriy burchak ostida yordamchi nur o'tkaziladi va unda teng kesmalar ajratiladi.",
+      "what": "Fales usulida birinchi bo'lib qaysi amal bajariladi?",
+      "prompt": "Kesmani teng bo'laklarga bo'lishning Fales usulida birinchi qadam nima va nima uchun bu usul ishonchli?",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Usul yordamchi chiziqdan boshlanadi.", "Bu nur kesma uchidan ixtiyoriy burchak ostida o'tkaziladi."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "yordamchi nur o'tkaziladi", "accepted_answers": ["yordamchi nur", "yordamchi nur o'tkaziladi", "ixtiyoriy burchak ostida nur"], "allow_ai_fallback": true },
+      "expected_concepts": ["yordamchi nur birinchi qadam", "teng kesmalar ajratiladi", "parallel chiziqlar Fales teoremasi"],
+      "correct_feedback": "To'g'ri. Birinchi qadam — kesma uchidan ixtiyoriy burchak ostida yordamchi nur o'tkazish, so'ng unda teng kesmalar ajratiladi. Bu Fales teoremasiga asoslanadi va o'lchashdan aniqroq.",
+      "partial_feedback": "Yordamchi nurni topdingiz, lekin usul nima uchun ishonchli ekanini (Fales teoremasi) asoslamadingiz.",
+      "wrong_feedback": "Hali emas — usul oddiy o'lchash emas; u qaysi yordamchi chiziqdan boshlanadi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Trapetsiyaning o'rta chizig'i 9 m ekani ma'lum, yuqori asosi 6 m. Usta pastki asos uzunligini bilishi kerak. O'quvchi pastki asosni 12 m deb topdi.",
+      "why": "Nima sababdan o'rta chiziq va bitta asos ma'lum bo'lsa, ikkinchi asosni topish mumkin?",
+      "how": "m = (a + b) / 2 formulasini b ga nisbatan yeching: b = 2m − a.",
+      "what": "m = 9, a = 6 bo'lsa, pastki asos b qancha bo'ladi?",
+      "prompt": "O'rta chiziq 9 m, yuqori asos 6 m bo'lgan trapetsiyaning pastki asosini toping.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["m = (a + b) / 2 → a + b = 2m.", "a + b = 18, a = 6 bo'lsa b qancha?"],
+      "answer_spec": { "type": "numeric", "expected": 12, "canonical_display": "b = 12 m", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["m = (a + b) / 2", "a + b = 2m = 18", "b = 18 − 6 = 12"],
+      "correct_feedback": "To'g'ri. m = (a + b) / 2 → a + b = 18 → b = 18 − 6 = 12 m. Tekshiruv: (6 + 12) / 2 = 9 ✓.",
+      "partial_feedback": "12 m ni topdingiz, lekin formuladan b = 2m − a ni qanday keltirib chiqarganingizni ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas — m = (a + b) / 2 da ikkala tarafni 2 ga ko'paytiring, so'ng a ni ayiring."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz Fales teoremasini (parallel chiziqlar bir tomonda teng kesmalar ajratsa, ikkinchi tomonda ham teng kesmalar ajratadi) va uning tatbiqlarini o'rgandingiz. Asosiy natijalar: uchburchak o'rta chizig'i uchinchi tomonga parallel va uning yarmiga teng; trapetsiya o'rta chizig'i asoslarga parallel va m = (a + b) / 2.",
+    "question": "Do'stingizga \"nima uchun parallel bo'lmagan chiziqlar bilan Fales teoremasi ishlamaydi\"ligini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga trapetsiya o'rta chizig'ini m = (a + b) / 2 bilan hisoblashni va kesmani Fales usulida teng bo'laklarga bo'lishni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz Fales teoremasini va o'rta chiziq xossalarini yaxshi o'zlashtirdingiz. Trapetsiya o'rta chizig'ida yig'indi formulasini ayirma bilan aralashtirmaslikni va parallellik shartini mustahkamlash foydali.",
+      "strong_points": [
+        "Fales teoremasini parallel chiziqlar va teng kesmalar orqali aniqlash",
+        "Trapetsiya o'rta chizig'i formulasini qo'llash: m = (a + b) / 2"
+      ],
+      "weak_points": [
+        "O'rta chiziqda yig'indi va ayirma formulalarini aralashtirish",
+        "Uchburchak o'rta chizig'ida \"parallel\" va \"teng\" tushunchalarini farqlash"
+      ],
+      "next_steps": [
+        "Trapetsiya o'rta chizig'ini turli asos qiymatlari bilan hisoblashni mashq qiling",
+        "Kesmani Fales usulida teng bo'laklarga bo'lishni yozma asoslang"
+      ],
+      "weak_point_keywords": ["ayirma", "yig'indi", "parallel teng farqi"],
+      "strong_point_keywords": ["Fales teoremasi", "o'rta chiziq", "parallel"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan."
+    }
+  }
+}

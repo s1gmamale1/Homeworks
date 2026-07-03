@@ -1,0 +1,360 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§3. Kasrlarni umumiy maxrajga keltirish",
+    "subject_display": "Algebra",
+    "section": "§3",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Algebraik kasrlar uchun umumiy maxraj", "def": "Berilgan kasrlar maxrajlarining eng kichik umumiy karralisi (EKUK) bo'lgan ifoda. U barcha berilgan maxrajlarga qoldiqsiz bo'linishi shart. Masalan: 1/a va 1/b uchun umumiy maxraj ab.", "cluster": "QOIDA" },
+    { "term": "Kasrning asosiy xossasi (umumiy maxrajga keltirishda)", "def": "Kasrning surati va maxrajini noldan farqli bir xil ifodaga ko'paytirish. Bu amal bajarilganda kasrning qiymati o'zgarmaydi: a/b = (a·c)/(b·c).", "cluster": "QOIDA" },
+    { "term": "Umumiy maxrajning sonli koeffitsiyenti", "def": "Berilgan barcha maxrajlardagi sonli koeffitsiyentlarning eng kichik umumiy karralisi (EKUK). Masalan: 1/(2a) va 1/(3a) uchun sonli koeffitsiyent 6 bo'ladi.", "cluster": "METOD" },
+    { "term": "Umumiy maxrajning harfiy qismi", "def": "Har bir harfiy ko'paytuvchining eng katta ko'rsatkichli darajalarini o'z ichiga olgan ko'paytma. Masalan: a va a² uchun umumiy maxraj a² bo'ladi.", "cluster": "METOD" },
+    { "term": "Qo'shimcha ko'paytuvchi", "def": "Umumiy maxrajni berilgan kasrning maxrajiga bo'lish natijasida hosil bo'lgan ifoda. Bu ifoda kasrning surat va maxrajiga ko'paytiriladi.", "cluster": "QOIDA" },
+    { "term": "Umumiy maxrajga keltirishning birinchi bosqichi", "def": "Har bir kasr maxrajini ko'paytuvchilarga ajratish va umumiy maxrajni aniqlash. Maxrajlar sodda ko'paytuvchilarga ajratilsa, EKUK topish osonlashadi.", "cluster": "METOD" },
+    { "term": "1/a va 1/b ni umumiy maxraj ab ga keltirish", "def": "Kasrlar b/(ab) va a/(ab) ko'rinishiga keladi; qo'shimcha ko'paytuvchilar mos ravishda b va a. Har bir kasrning maxraji bir xil ko'rinishga keltiriladi.", "cluster": "MISOL" },
+    { "term": "Faqat maxrajni ko'paytirish xatosi", "def": "Xato. Kasrning qiymati o'zgarmasligi uchun ham surat, ham maxraj bir xil ifodaga ko'paytirilishi shart. Faqat maxrajni ko'paytirib, suratni qoldirish kasr qiymatini xato o'zgartiradi.", "cluster": "QOIDA" },
+    { "term": "1/(x-y) va 1/(y-x) uchun umumiy maxraj", "def": "x-y ifodasining o'zi umumiy maxraj bo'lishi mumkin. Ikkinchi kasr maxrajidan minus belgisini chiqarish orqali maxrajlar bir xil holga keltiriladi, chunki y-x = -(x-y).", "cluster": "MISOL" },
+    { "term": "Ko'phad ko'rinishidagi maxrajlar", "def": "Dastlab ko'phadlarni guruhlash yoki qisqa ko'paytirish formulalari yordamida ko'paytuvchilarga ajratish lozim. Masalan: a²-b² ni (a-b)(a+b) ko'rinishida yozish.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Kasrlarni Umumiy Maxrajga Keltirish",
+    "case_setup": {
+      "story": "Siz muhandislik loyihasi ustida ishlayotgan kichik tahlilchi roldasiz. Kompyuter dasturiga kiritilishi kerak bo'lgan hisob-kitoblar jadvalida ikkita turli algebraik ifoda mavjud: 5/(6x²y) va 7/(4xy²). Dastur ushbu ifodalar ustida keyingi amallarni bajarishi uchun ular bir xil 'o'lchov birligiga', ya'ni bir xil quyi qismga (maxrajga) ega bo'lishi kerak. Hozircha ushbu ifodalarning maxrajlari bir-biridan ham son koeffitsiyenti, ham harfiy darajalari bilan farq qilmoqda. Sizning vazifangiz — ushbu ikki ifodani qiymatini o'zgartirmasdan, ularni bir xil ko'rinishdagi maxrajga ega bo'lgan shaklga o'tkazish rejasini tayyorlashdir.",
+      "role": "Muhandislik loyihasi kichik tahlilchisi",
+      "task": "Ikki algebraik kasrni qiymatini o'zgartirmasdan bir xil umumiy maxrajga keltirish rejasini tayyorlang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Vaziyatni tahlil qiling: ushbu ikki algebraik kasrni bir xil quyi ko'rinishga keltirish uchun qaysi asosiy qoidadan foydalanish kerak?",
+        "options": [
+          "Kasrlarni umumiy maxrajga keltirish qoidasi.",
+          "Kasrlarni o'zaro ko'paytirish qoidasi.",
+          "Kasrlarning suratlarini o'zaro tenglashtirish qoidasi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 3 },
+        "learning_block": "Algebraik kasrlarni umumiy maxrajga keltirishda kasrlar maxrajlarining eng kichik umumiy karralisi (EKUK) umumiy maxraj qilib olinadi. Buning uchun maxrajlardagi sonlarning EKUKi va har bir harfiy ifodaning eng katta ko'rsatkichli darajasi olinib, umumiy maxraj shakllantiriladi.",
+        "feedback": "Har xil maxrajli algebraik kasrlar bilan ishlash uchun ularni bir xil maxrajga, ya'ni umumiy maxrajga keltirish zarur."
+      },
+      {
+        "kind": "decide",
+        "question": "Qaror qabul qiling: 5/(6x²y) va 7/(4xy²) kasrlari uchun eng kichik umumiy maxraj sifatida qaysi ifodani tanlash eng to'g'ri bo'ladi?",
+        "options": [
+          "24x³y³ (maxrajlarni o'zaro ko'paytirish orqali).",
+          "12x²y² (sonli va harfiy qismlarning EKUKi orqali).",
+          "10xy (darajalarning eng kichigini olish orqali)."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Umumiy maxrajning sonli qismi maxrajlardagi sonlarning EKUKi, harfiy qismi esa har bir o'zgaruvchining eng katta darajasidan tuziladi. 6 va 4 sonlari uchun EKUK 12; x² va x dan katta daraja x², y va y² dan esa y² olinadi.",
+        "feedback": "6 va 4 sonlari uchun EKUK 12 ga teng; x² va x dan katta daraja x², y va y² dan esa y² olinadi. Shunda eng kichik umumiy maxraj 12x²y² bo'ladi."
+      },
+      {
+        "kind": "justify",
+        "question": "Xatodan qoching: nima uchun qo'shimcha ko'paytuvchini faqat maxrajga ko'paytirish kifoya emas?",
+        "options": [
+          "Chunki bunda kasrning qiymati o'zgarib ketadi va tenglik buziladi.",
+          "Chunki faqat maxrajni ko'paytirish texnik jihatdan imkonsiz.",
+          "Chunki suratni o'zgartirish faqat ixtiyoriy tanlov hisoblanadi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 3 },
+        "learning_block": "Umumiy maxraj topilgach, har bir kasr uchun qo'shimcha ko'paytuvchi aniqlanadi: umumiy maxraj kasrning asl maxrajiga bo'linadi va natija kasrning ham suratiga, ham maxrajiga ko'paytiriladi. Faqat maxrajga ko'paytirish kasrning asosiy xossasini buzadi.",
+        "feedback": "Kasrning asosiy xossasiga ko'ra, uning qiymati o'zgarmasligi uchun surat va maxraj bir xil songa yoki ifodaga ko'paytirilishi shart."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Ushbu holatga qarab, o'z so'zingiz bilan kamida 2-4 jumla yozib, quyidagi uch savolga javob bering: (1) Bu vaziyatda qaysi algebraik tushunchani aniqladingiz? (2) Nima uchun aynan EKUK usulini boshqa usullardan (masalan, maxrajlarni shunchaki ko'paytirishdan) afzal ko'rdingiz? (3) Suratlarni ko'paytirishni unutish qanday xatolikka olib kelgan bo'lardi?",
+      "min_chars": 80,
+      "concept_keywords": ["umumiy maxraj", "EKUK", "kasrning asosiy xossasi"],
+      "method_keywords": ["EKUK topish", "qo'shimcha ko'paytuvchi", "surat va maxrajni ko'paytirish"],
+      "mistake_keywords": ["maxrajlarni ko'paytirish", "suratni unutish", "tenglikning buzilishi"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "To'g'ri yo'l: Siz 12x²y² maxrajini tanladingiz. Birinchi kasr uchun qo'shimcha ko'paytuvchi 2y (12x²y² : 6x²y), ikkinchi kasr uchun esa 3x (12x²y² : 4xy²) bo'ldi. Natijada kasrlar 10y/(12x²y²) va 21x/(12x²y²) ko'rinishiga keldi. Hisob-kitoblar aniq va eng sodda shaklda bajarildi.",
+      "wrong_path": "Noto'g'ri yo'l: Siz maxrajlarni shunchaki o'zaro ko'paytirib, 24x³y³ maxrajini oldingiz. Bu bilan kasrlar 20xy²/(24x³y³) va 42x²y/(24x³y³) ko'rinishiga keldi. Bu yo'l muvaffaqiyatsiz bo'ldi, chunki maxrajlarni shunchaki ko'paytirish ifodani asossiz ravishda murakkablashtiradi va eng kichik umumiy maxraj qoidasiga muvofiq kelmaydi, bu esa keyingi tahlillarda ortiqcha hisob-kitoblarni talab qiladi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik kasrlarning maxrajlari uchun EKUK topish va kasrning asosiy xossasini qo'llashni tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — umumiy maxraj sifatida eng kichik ifodani emas, balki maxrajlarning ko'paytmasini tanlash yoki suratni ko'paytirishni unutish.",
+      "what_to_review": "Algebraik ifodalarning EKUKini topish tartibi va kasrlarni umumiy maxrajga keltirish algoritmini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha uchta nazorat nuqtasiga to'g'ri javob bering",
+        "DPE bo'limida uchala savolni (tushuncha, usul, xato) qamrab oluvchi 2-4 jumla yozing",
+        "Final simulation natijasini ko'rib chiqing — DPE javobi avtomatik o'tkazilmaydi, u tahlil asosida baholanadi"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Bir nechta algebraik kasrlar uchun umumiy maxraj sifatida ularning barcha maxrajlarining _____ bo'lgan ifoda tanlanadi.", "answer_spec": { "type": "text_fuzzy", "expected": "eng kichik umumiy karralisi", "accepted_answers": ["eng kichik umumiy karralisi", "EKUK", "eng kichik umumiy karrali"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "Kasrni umumiy maxrajga keltirish jarayonida 'kasrning asosiy xossasi'dan qanday foydalaniladi?", "options": ["Kasrning faqat maxrajini qo'shimcha ko'paytuvchiga ko'paytirish orqali.", "Kasrning surat va maxrajini noldan farqli bir xil ifodaga ko'paytirish orqali.", "Kasrning suratiga va maxrajiga bir xil ifodani qo'shish orqali.", "Kasrning suratini qo'shimcha ko'paytuvchiga ko'paytirib, maxrajni o'z holicha qoldirish orqali."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Nima uchun kasrni umumiy maxrajga keltirishda uning suratini ham qo'shimcha ko'paytuvchiga ko'paytirish shart deb hisoblanadi?", "options": ["Chunki kasrning surati hamisha maxrajiga bog'liq holda o'zgarib turishi kerak.", "Chunki faqat maxraj ko'paytirilsa, kasrning asl qiymati o'zgarib ketadi; suratni ham ko'paytirish bu o'zgarishni muvozanatlashtiradi.", "Chunki suratni ko'paytirmaslik kasrning qisqarmas holatda qolishiga to'sqinlik qiladi.", "Chunki qo'shimcha ko'paytuvchi qoidasiga ko'ra, u faqat suratlarni o'zgartirish uchun mo'ljallangan."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "fill_blank", "prompt": "Bir nechta algebraik kasrlarning umumiy maxrajidagi sonli koeffitsiyent maxrajlardagi barcha sonlarning _____ sifatida topiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "eng kichik umumiy karralisi", "accepted_answers": ["eng kichik umumiy karralisi", "EKUK", "eng kichik umumiy karrali"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Umumiy maxrajning harfiy qismini shakllantirishda qaysi qoidaga amal qilinadi?", "options": ["Faqat barcha maxrajlarda bir vaqtda qatnashgan o'zgaruvchilar olinadi.", "Har bir harfiy ko'paytuvchining maxrajlarda uchraydigan eng katta ko'rsatkichli darajasi olinadi.", "Har bir harfiy ko'paytuvchining eng kichik ko'rsatkichli darajasi tanlab olinadi.", "Faqat birinchi kasrning maxrajidagi barcha harfiy ifodalar o'zgarishsiz olinadi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "Algebraik kasrlarni umumiy maxrajga keltirishda maxrajlarni ko'paytuvchilarga ajratish bosqichi nima uchun birinchi navbatda bajarilishi kerak?", "options": ["Chunki ko'paytuvchilarga ajratmasdan turib kasrlarni qo'shib bo'lmaydi.", "Chunki maxrajlar ko'paytuvchilarga ajratilganda, ularning har biridagi umumiy va farqli qismlarni ko'rib, EKUKni aniqlash osonlashadi.", "Chunki bu amal suratdagi ko'phadlarni qisqartirish uchun majburiy hisoblanadi.", "Chunki qoida bo'yicha har qanday algebraik ifoda doimo ko'paytuvchilarga ega bo'lishi shart."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Umumiy maxrajni berilgan kasrning o'z maxrajiga bo'lish natijasida hosil bo'lgan va suratga ko'paytiriladigan ifoda _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "qo'shimcha ko'paytuvchi", "accepted_answers": ["qo'shimcha ko'paytuvchi", "qo'shimcha ko'paytiruvchi"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "Maxrajlar ko'phad ko'rinishida bo'lganda, ularni umumiy maxrajga keltirish uchun dastlab qanday amallarni bajarish tavsiya etiladi?", "options": ["Maxrajdagi barcha hadlarni kvadratga ko'tarish.", "Guruhlash usuli yoki qisqa ko'paytirish formulalari yordamida maxrajlarni ko'paytuvchilarga ajratish.", "Har bir maxrajning faqat birinchi hadini umumiy maxraj sifatida olish.", "Suratlarni maxrajlarga bo'lib, butun qismlarni ajratish."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "choose_explanation", "prompt": "Agar kasr maxrajlarida (x-y) va (y-x) kabi ifodalar bo'lsa, ularni umumiy maxrajga keltirishning eng qulay usuli qaysi?", "options": ["Bu ifodalar bir-biriga mutlaqo aloqasiz, shuning uchun ularni shunchaki ko'paytirish kerak.", "Ikkinchi kasr maxrajidan minus belgisini qavsdan tashqariga chiqarish orqali maxrajlarni bir xil (x-y) ko'rinishiga keltirish.", "Har ikkala maxrajni ham kvadratga ko'tarib, (x-y)² ko'rinishiga keltirish.", "Faqat suratlarning o'rnini almashtirish orqali maxrajlarni tenglashtirish."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "1/a va 1/b kasrlari umumiy maxrajga keltirilganda, hosil bo'lgan kasrlarning suratlari qanday bo'ladi?", "options": ["Har ikkala kasr surati 1 bo'lib qoladi.", "Birinchi kasr surati b, ikkinchisiniki a bo'ladi.", "Birinchi kasr surati a, ikkinchisiniki b bo'ladi.", "Har ikkala kasr surati ab bo'ladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_7" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_alg_03",
+    "expert_role": "business_consultant",
+    "title": "Logistika Formulalarini Umumiy Maxrajga Keltirish",
+    "intro": "Siz — logistika tizimlari tahlilchisisiz. Logistika markazining avtomatlashtirilgan tizimi yuklarni yetkazish vaqtini ikkita modeldan hisoblaydi: birinchi model T1 = 5/(12a²b), ikkinchi model T2 = 3/(8ab²). Tizim ushbu ifodalar ustida amallar bajarishi uchun ularning maxrajlari bir xil bo'lishi kerak. Eslatma: tizimning elektr quvvati sarfi soatiga 100 kVt ni tashkil etadi — bu ko'rsatkich hisob-kitoblar aniqligiga ta'sir qilmaydi.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Eng kichik umumiy maxrajni aniqlash",
+        "prompt": "Berilgan 12a²b va 8ab² maxrajlari uchun eng kichik umumiy maxraj (EKUK) sifatida qaysi ifodani tanlaysiz?",
+        "options": [
+          { "id": "a", "label": "96a³b³ (maxrajlarni o'zaro ko'paytirish orqali)", "is_correct": false, "consequence": "Maxrajlarni shunchaki ko'paytirish barcha maxrajlarga bo'linadigan, lekin eng kichik bo'lmagan ifodani beradi va hisob-kitoblarni murakkablashtiradi." },
+          { "id": "b", "label": "24a²b² (sonlarning EKUKi va harfiy qismlarning yuqori darajalari orqali)", "is_correct": true, "consequence": "To'g'ri: 12 va 8 uchun EKUK 24; a² va a dan a², b va b² dan b² olinadi. Eng kichik umumiy maxraj 24a²b²." },
+          { "id": "c", "label": "4ab (sonlarning EKUBi va harfiy qismlarning kichik darajalari orqali)", "is_correct": false, "consequence": "Bu ifoda berilgan maxrajlarga bo'linmaydi — u eng katta umumiy bo'luvchi mantiqiga tayanadi, umumiy maxrajga emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Qo'shimcha ko'paytuvchini topish",
+        "prompt": "Birinchi kasr 5/(12a²b) uchun qo'shimcha ko'paytuvchini qanday aniqlaysiz?",
+        "options": [
+          { "id": "a", "label": "24a²b² ni 12a²b ga bo'lib, 2b ni olish", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Asl maxraj 12a²b ning o'zini qoldirish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Ikkinchi kasr maxrajidan kelib chiqib 3a ni olish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Kasrning yangi ko'rinishini shakllantirish",
+        "prompt": "Kasrning asosiy xossasini qo'llagan holda, birinchi kasr T1 ning umumiy maxrajga keltirilgan yakuniy ko'rinishini tanlang.",
+        "options": [
+          { "id": "a", "label": "5/(24a²b²) (faqat maxrajni ko'paytirish orqali)", "is_correct": false, "consequence": "Faqat maxrajni ko'paytirish kasr qiymatini o'zgartirib yuboradi — bu kasrning asosiy xossasini buzadi." },
+          { "id": "b", "label": "10b/(12a²b) (faqat suratni ko'paytirish orqali)", "is_correct": false, "consequence": "Faqat suratni ko'paytirish ham kasr qiymatini o'zgartiradi va maxraj umumiy ko'rinishga kelmaydi." },
+          { "id": "c", "label": "10b/(24a²b²) (ham surat, ham maxrajni 2b ga ko'paytirish orqali)", "is_correct": true, "consequence": "To'g'ri: surat va maxraj bir xil 2b ga ko'paytirilganda kasr qiymati saqlanadi va maxraj 24a²b² bo'ladi." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Ikkala modelni to'g'ri umumiy maxrajga keltirishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Sonlar EKUKi va harflarning eng katta darajasidan umumiy maxraj tuzish, so'ng surat va maxrajni qo'shimcha ko'paytuvchiga ko'paytirish", "is_correct": true },
+          { "id": "c2", "label": "Maxrajlarni har doim shunchaki o'zaro ko'paytirish eng qulay yo'l", "is_correct": false },
+          { "id": "c3", "label": "Tizimning 100 kVt elektr quvvati sarfi ma'lumotidan foydalanish", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun umumiy maxraj sifatida maxrajlarning ko'paytmasini emas, aynan EKUKni tanlash afzal, va nima uchun kasrni yangi maxrajga keltirganda surat ham, maxraj ham bir xil ifodaga ko'paytirilishi shart? 2-4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["EKUK", "eng kichik umumiy maxraj", "kasrning asosiy xossasi", "qo'shimcha ko'paytuvchi", "qiymat o'zgarmasligi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_alg_03",
+      "instructions": "Bir o'quvchi 3/(8x²y) va 5/(6xy²) algebraik kasrlarini umumiy maxrajga keltirishni bosqichma-bosqich bajargan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Boshlang'ich topshiriq: 3/(8x²y) va 5/(6xy²) kasrlarini umumiy maxrajga keltirish.", "is_broken": false },
+        { "id": "b2", "text": "Umumiy maxrajni aniqlash: 8x²y va 6xy² maxrajlari uchun eng kichik umumiy maxraj 24x²y².", "is_broken": false },
+        { "id": "b3", "text": "Birinchi kasr uchun qo'shimcha ko'paytuvchini topish: 24x²y² : 8x²y = 3y.", "is_broken": false },
+        { "id": "b4", "text": "Ikkinchi kasr uchun qo'shimcha ko'paytuvchini topish: 24x²y² : 6xy² = 4x.", "is_broken": false },
+        { "id": "b5", "text": "Birinchi kasrni yangi maxrajga keltirish: (3·3y)/(8x²y·3y) = 9y/(24x²y²).", "is_broken": false },
+        { "id": "b6", "text": "Ikkinchi kasrni yangi maxrajga keltirish: (5·4x)/(6xy²·4x) = 5/(24x²y²).", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "20x/(24x²y²)", "accepted_answers": ["20x/(24x²y²)", "20x/24x²y²", "20x / (24x²y²)", "(20x)/(24x²y²)"], "allow_ai_fallback": true },
+      "hint": "Kasrning asosiy xossasiga ko'ra, agar maxraj qandaydir ifodaga ko'paytirilsa, kasr qiymati o'zgarmasligi uchun uning surati bilan ham aynan nima sodir bo'lishi kerakligiga e'tibor bering.",
+      "why_prompt": "Bu blok nima uchun noto'g'ri edi? Kasrning surati ham maxraj kabi qo'shimcha ko'paytuvchi 4x ga ko'paytirilishi shart edi (5·4x = 20x), aks holda kasrning qiymati o'zgarib ketadi. To'g'ri natija 20x/(24x²y²) bo'lishi kerak."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_alg_03",
+      "case_setup": "Algebraik kasrlarni umumiy maxrajga keltirish atamalari va ta'riflarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat qoida va tushunchalarning mantiqiy bog'liqligiga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Kasrlar uchun umumiy maxraj", "right": "Barcha maxrajlarning eng kichik umumiy karralisi (EKUK)" },
+        { "id": "p2", "left": "Qo'shimcha ko'paytuvchi", "right": "Umumiy maxrajni berilgan kasr maxrajiga bo'lish natijasi" },
+        { "id": "p3", "left": "Kasrning asosiy xossasi", "right": "Surat va maxrajni noldan farqli bir xil ifodaga ko'paytirish" },
+        { "id": "p4", "left": "Umumiy maxrajning harfiy qismi", "right": "O'zgaruvchilarning eng katta ko'rsatkichli darajalari ko'paytmasi" },
+        { "id": "p5", "left": "Murakkab ko'phadli maxrajlar", "right": "Dastlab guruhlash yoki formulalar yordamida ko'paytuvchilarga ajratish" },
+        { "id": "p6", "left": "Sonli koeffitsiyentlar uchun umumiy maxraj", "right": "Maxrajlardagi sonlarning eng kichik umumiy karralisi" }
+      ],
+      "checkpoints": [
+        { "question": "Qo'shimcha ko'paytuvchi qanday aniqlanadi?", "options": ["Umumiy maxrajni kasr maxrajiga bo'lish orqali", "Maxrajlarni o'zaro ko'paytirish orqali", "Suratlarni qo'shish orqali"], "correct_index": 0 },
+        { "question": "Umumiy maxrajning harfiy qismi uchun qaysi daraja olinadi?", "options": ["Eng kichik daraja", "Eng katta daraja", "Darajalarning yig'indisi"], "correct_index": 1 },
+        { "question": "Faqat maxrajni ko'paytirib, suratni o'z holicha qoldirsak nima bo'ladi?", "options": ["Kasr qiymati o'zgaradi", "Kasr qiymati o'zgarmaydi"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "'Qo'shimcha ko'paytuvchi' tushunchasi nima uchun aynan 'kasrning asosiy xossasi' bilan uzviy bog'liq ekanini tushuntiring. Agar o'quvchi faqat maxrajni umumiy maxrajga keltirib, suratni o'z holicha qoldirsa, natijada qanday xato yuzaga keladi?",
+      "expected_components": ["kasr qiymatining o'zgarishi", "matematik tenglikning buzilishi", "surat va maxrajni bir xil ifodaga ko'paytirish zaruriyati"],
+      "consequence": { "correct_path": "Har bir atamani to'g'ri ta'rifiga uladingiz va kasrning asosiy xossasini to'g'ri tushundingiz.", "wrong_path": "Faqat maxrajni ko'paytirib, suratni qoldirish kasr qiymatini o'zgartiradi va tenglikni buzadi." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_alg_03",
+      "case_setup": "Algebraik kasrlarni umumiy maxrajga keltirish algoritmining har bir qadamini (sabab) uning mantiqiy natijasi (natija) bilan to'g'ri yo'nalishda juftlang. Bog'lanish turi: qadam ↔ natija.",
+      "pieces": [
+        { "id": "P1", "label": "Maxrajlardagi sonli koeffitsiyentlar va harfiy qismlar uchun EKUK topish", "role": "cause" },
+        { "id": "P2", "label": "Barcha kasrlar uchun yagona va eng kichik umumiy maxrajni shakllantirish", "role": "effect" },
+        { "id": "P3", "label": "Umumiy maxrajni har bir kasrning maxrajiga alohida bo'lish", "role": "cause" },
+        { "id": "P4", "label": "Har bir kasr uchun qo'shimcha ko'paytuvchini aniqlash", "role": "effect" },
+        { "id": "P5", "label": "Kasrning ham suratini, ham maxrajini qo'shimcha ko'paytuvchiga ko'paytirish", "role": "cause" },
+        { "id": "P6", "label": "Kasr qiymatini o'zgartirmasdan uni umumiy maxrajli ko'rinishga keltirish", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P3 (umumiy maxrajni maxrajga bo'lish) qaysi natijaga ulanadi?", "options": ["P4 (qo'shimcha ko'paytuvchini aniqlash)", "P2 (umumiy maxrajni shakllantirish)"], "correct_index": 0 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Qadam ↔ natija", "Tasodifiy o'xshashlik"], "correct_index": 0 },
+        { "q": "P5 qadamida nima uchun surat ham ko'paytiriladi?", "options": ["Kasr qiymati o'zgarmasligi uchun", "Faqat maxrajni ko'paytirish yetarli"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun P5 qadamida qo'shimcha ko'paytuvchini ham suratga, ham maxrajga ko'paytirish shart deb hisoblaysiz? Agar P5 → P6 zanjirida faqat maxrajni ko'paytirish bilan cheklansangiz, kasrning qiymati va algebraik tenglik qanday o'zgaradi? Javobingizda 'kasrning asosiy xossasi' tushunchasidan foydalaning.",
+      "expected_components": ["kasrning asosiy xossasi", "qiymat o'zgarmasligi", "surat va maxrajni bir xil ifodaga ko'paytirish", "tenglikning buzilishi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Yuk tashish kompaniyasi ikkita turli yo'nalishdagi xarajatlarni hisoblash uchun 7/(10a) va 3/(15b) algebraik ifodalaridan foydalanadi. Hisob-kitoblarni birlashtirish uchun ularni umumiy maxrajga keltirish talab etiladi.",
+      "why": "Ushbu kasrlar uchun umumiy maxrajni topishda nima uchun shunchaki 10·15 = 150 sonini emas, balki EKUKni (30) tanlash afzalroq hisoblanadi?",
+      "how": "30ab umumiy maxrajini hosil qilish uchun har bir kasrning qo'shimcha ko'paytuvchisini qanday aniqlaysiz va suratlarni qanday o'zgartirasiz?",
+      "what": "Maxrajlar tenglashgandan so'ng, kasrlarning 'ulushi' qanday o'zgaradi va agar maxrajda b harfi bo'lmaganida, umumiy maxraj qanday ko'rinishga kelar edi?",
+      "prompt": "7/(10a) va 3/(15b) kasrlarini 30ab umumiy maxrajiga keltiring va yakuniy ko'rinishlarini yozing.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Kichikroq sonlar bilan ishlash hisoblashni osonlashtiradimi yoki qiyinlashtiradimi?",
+        "Umumiy maxrajni (30ab) har bir kasrning eski maxrajiga bo'lib ko'ring, natija nima bo'ladi?",
+        "Agar harfiy qismlar bir xil bo'lsa, umumiy maxrajda o'zgaruvchilar ko'paytiriladimi yoki bittasi qoladimi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "21b/(30ab) va 6a/(30ab)", "accepted_answers": ["21b/(30ab) va 6a/(30ab)", "21b/(30ab), 6a/(30ab)", "21b/30ab va 6a/30ab"], "allow_ai_fallback": true },
+      "expected_concepts": ["10 va 15 uchun EKUK 30", "qo'shimcha ko'paytuvchilar 3b va 2a", "natija 21b/(30ab) va 6a/(30ab)"],
+      "correct_feedback": "Ofarin! EKUKni tanlash orqali ortiqcha hisob-kitoblardan qochdingiz va kasrning asosiy xossasini to'g'ri qo'lladingiz.",
+      "partial_feedback": "Jarayon to'g'ri, lekin qo'shimcha ko'paytuvchini topishda yoki suratni o'zgartirishda biroz noaniqlik bor. Qaytadan tekshiring.",
+      "wrong_feedback": "Hali emas. Agar biz maxrajni 3 marta oshirsak-u, suratni o'z holicha qoldirsak, kasrning qiymati qanday o'zgaradi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Muhandis 5/(4x²) ifodasi ustida ishlayotganida, uni maxraji 12x³ bo'lgan shaklga keltirishi kerak. U maxrajni 3x ga ko'paytirdi va jarayonni yakunlangan deb hisobladi.",
+      "why": "Nima uchun muhandisning bu harakati matematik nuqtai nazardan xato va 'kasrning asosiy xossasi' qanday buzildi?",
+      "how": "Kasrning qiymati o'zgarmasligi uchun suratda qanday amal bajarilishi kerakligini qadamma-qadam ko'rsatib bering.",
+      "what": "To'g'ri bajarilgan amaldan so'ng hosil bo'lgan kasrning qiymati asl kasr qiymatidan farq qiladimi? Agar x=0 bo'lsa, bu amallarni bajarish mumkin bo'larmidi?",
+      "prompt": "5/(4x²) kasrini 12x³ maxrajiga to'g'ri keltiring va yakuniy ko'rinishini yozing.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Kasrning faqat maxrajini ko'paytirish uning qiymatini necha marta o'zgartirib yuboradi?",
+        "Maxrajga berilgan 'sovg'ani' (ko'paytuvchini) suratga ham berish kerakmi?",
+        "Algebraik kasrlarda maxraj nolga teng bo'lishi mumkin emasligi haqidagi cheklovni eslang."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "15x/(12x³)", "accepted_answers": ["15x/(12x³)", "15x/12x³", "(15x)/(12x³)"], "allow_ai_fallback": true },
+      "expected_concepts": ["qo'shimcha ko'paytuvchi 3x", "suratni ham 3x ga ko'paytirish", "kasrning asosiy xossasi", "natija 15x/(12x³)"],
+      "correct_feedback": "Juda yaxshi! Siz kasrning surat va maxrajini bir xil ifodaga ko'paytirish orqali tenglikni saqlab qoldingiz.",
+      "partial_feedback": "Kasrning qiymati o'zgarmasligini tushundingiz, lekin matematik ifodalashda (suratni ko'paytirishda) xatolikka yo'l qo'ydingiz.",
+      "wrong_feedback": "Hali emas. Tasavvur qiling, sizda yarimta non (1/2) bor. Agar faqat maxrajni oshirib uni 1/4 qilsangiz, u baribir yarimta non bo'lib qoladimi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Dasturchi ikkita ma'lumotlar bazasini birlashtirish uchun 1/(a³b) va 1/(ab²) ifodalarini umumiy maxrajga keltirishi kerak. U umumiy maxraj sifatida a⁴b³ ifodasini tanlamoqchi.",
+      "why": "Nima uchun harfiy ifodalarning EKUKini topishda daraja ko'rsatkichlarining eng kattasi tanlanadi?",
+      "how": "Ushbu ikki kasr uchun eng kichik umumiy maxrajni qanday shakllantirasiz va har bir kasr uchun qo'shimcha ko'paytuvchi nima bo'ladi?",
+      "what": "Dasturchi tanlagan a⁴b³ maxraji xato hisoblanadimi yoki shunchaki 'eng kichik' emasmi? Agar biz a ning eng kichik darajasini (a) maxraj qilib olsak, nima uchun birinchi kasrni unga keltirib bo'lmaydi?",
+      "prompt": "1/(a³b) va 1/(ab²) kasrlari uchun eng kichik umumiy maxrajni toping.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "a³ ifodasi a ga bo'linadimi yoki aksinchami? Karralilik qoidasini eslang.",
+        "Har bir o'zgaruvchi (a va b) uchun eng yuqori darajani qidiring.",
+        "'Umumiy maxraj' barcha berilgan maxrajlarga qoldiqsiz bo'linishi shartligini unutmang."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "a³b²", "accepted_answers": ["a³b²", "a^3b^2", "a^3 b^2"], "allow_ai_fallback": true },
+      "expected_concepts": ["harfiy qism uchun eng katta daraja", "EKUK a³b²", "a⁴b³ eng kichik emas", "qo'shimcha ko'paytuvchilar b va a²"],
+      "correct_feedback": "Barakalla! Darajalar bilan ishlashda eng yuqori ko'rsatkichni tanlash — eng kichik umumiy maxrajni topishning kalitidir.",
+      "partial_feedback": "Umumiy maxrajni to'g'ri topdingiz, lekin nima uchun aynan katta daraja olinishini tushuntirishda mantiqiy uzilish bor.",
+      "wrong_feedback": "Hali emas. Agar maxrajda a bo'lsa, u qanday qilib a³ ga ega bo'lgan kasrga qoldiqsiz bo'lina oladi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Fizika masalasida kuchlarni hisoblashda 3/(x-5) va 2/(5-x) ifodalari paydo bo'ldi. Talaba ularni umumiy maxrajga keltirish uchun maxrajlarni o'zaro ko'paytirish, ya'ni (x-5)(5-x) kerak deb o'ylamoqda.",
+      "why": "Nima uchun bu yerda maxrajlarni shunchaki ko'paytirish ishni murakkablashtiradi va bu maxrajlar aslida bir-biriga qanday bog'langan?",
+      "how": "Atigi bitta ishorani o'zgartirish orqali ikkala kasrni ham (x-5) maxrajiga qanday keltirish mumkin? Jarayonni tushuntiring.",
+      "what": "Ikkinchi kasrning surati ushbu o'zgarishdan keyin qanday ko'rinishga keladi va agar maxrajlar (x-5) va (x+5) bo'lganida, bu 'ishora almashtirish' usuli yordam bergan bo'larmidi?",
+      "prompt": "2/(5-x) kasrini (x-5) maxrajiga keltiring va yangi ko'rinishini yozing.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "(5-x) ifodasidan (-1) ni qavsdan tashqariga chiqarsangiz, qavs ichida nima qoladi?",
+        "Maxrajdagi minus ishorasi kasrning oldiga yoki suratiga o'tishi mumkinligini eslang.",
+        "Ishtirokchilarning o'rni almashishi (ayirishda) va ularning yig'indisi (qo'shishda) o'rtasidagi farqni o'ylab ko'ring."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "-2/(x-5)", "accepted_answers": ["-2/(x-5)", "−2/(x−5)", "-2/(x - 5)"], "allow_ai_fallback": true },
+      "expected_concepts": ["5-x = -(x-5)", "ishora o'zgarishi", "natija -2/(x-5)", "qarama-qarshi ifodalar"],
+      "correct_feedback": "Ofarin! Qarama-qarshi ifodalarni tanish va minus ishorasi bilan ishlash algebraik mahoratingiz yuqori ekanini ko'rsatadi.",
+      "partial_feedback": "Ishorani o'zgartirish kerakligini bildingiz, lekin bu suratga qanday ta'sir qilishini (ishora o'zgarishini) e'tibordan chetda qoldirdingiz.",
+      "wrong_feedback": "Hali emas. (x-5) va (5-x) bir-biriga juda 'yaqin' qarindoshlar: (5-x) = -(x-5). Ularni begona qilib ko'paytirish shartmi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Laboratoriya hisobotida a/(6x²) va b/(4x) kasrlarini umumiy maxrajga keltirish kerak. Ikki nafar assistent turli variantlarni taklif qildi: 1-assistent umumiy maxraj 24x³ bo'lsin dedi, 2-assistent esa 12x² bo'lsa yaxshiroq dedi.",
+      "why": "Qaysi assistentning taklifi matematik jihatdan 'eng kichik umumiy maxraj' qoidasiga mos keladi va nima uchun?",
+      "how": "Tanlangan eng to'g'ri maxraj (12x²) asosida har bir kasr uchun qo'shimcha ko'paytuvchilarni qanday hisoblab topasiz?",
+      "what": "Agar 1-assistentning yo'li bilan ketilsa, natijada hosil bo'lgan kasrni baribir qisqartirishga to'g'ri keladimi? Bu ish samaradorligiga qanday ta'sir qiladi?",
+      "prompt": "a/(6x²) va b/(4x) kasrlari uchun eng kichik umumiy maxrajni toping va asoslang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": [
+        "6 va 4 sonlariga bo'linadigan eng kichik son 24 mi yoki 12?",
+        "Bo'lish amalini bajaring: (12x²) : (6x²) va (12x²) : (4x).",
+        "Ortiqcha darajalar va koeffitsiyentlar bilan ishlash keyingi bosqichda (qo'shishda) ishni ko'paytiradimi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "12x²", "accepted_answers": ["12x²", "12x^2", "12 x²"], "allow_ai_fallback": true },
+      "expected_concepts": ["6 va 4 uchun EKUK 12", "eng kichik umumiy maxraj 12x²", "qo'shimcha ko'paytuvchilar 2 va 3x", "24x³ eng kichik emas"],
+      "correct_feedback": "Mukammal tahlil! Eng kichik umumiy maxrajni tanlash — hisob-kitoblar aniqligi va tezligining asosi ekanini isbotladingiz.",
+      "partial_feedback": "To'g'ri assistentni tanladingiz, lekin qo'shimcha ko'paytuvchilarni topishda algebraik qismlarni (x darajalarini) unutib qoldirdingiz.",
+      "wrong_feedback": "Hali emas. 24x³ maxraji barcha maxrajlarga bo'linadi, lekin u 'eng kichik'mi? Kichikroq va qulayroq yo'l yo'qmi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik kasrlarni umumiy maxrajga keltirish mavzusini o'rgandingiz. Dars davomida kasrlar maxrajlari uchun eng kichik umumiy karralini (EKUK) topish va kasrning asosiy xossasidan foydalangan holda suratlarni o'zgartirish qoidalarini ko'rib chiqdingiz. Ushbu tushunchalar muhandislik loyihalarida yoki logistika hisob-kitoblarida turli ko'rinishdagi ma'lumotlarni yagona ko'rinishga keltirishda muhim ahamiyatga ega.",
+    "question": "Nima uchun umumiy maxraj sifatida shunchaki maxrajlarning ko'paytmasini emas, balki aynan EKUKni tanlash hisob-kitoblar samaradorligini oshiradi deb hisoblaysiz?",
+    "spaced_rep": "Ertaga EKUK topish va qo'shimcha ko'paytuvchini aniqlash bosqichlarini, ayniqsa kasrning surat va maxrajini bir xil ifodaga ko'paytirish jarayonini yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz sonli koeffitsiyentlar va harfiy qismlar uchun eng kichik umumiy maxrajni topishni hamda daraja ko'rsatkichlarini solishtirishni yaxshi o'zlashtirdingiz. Umumiy maxrajga o'tishda suratni qo'shimcha ko'paytuvchiga ko'paytirishni va qarama-qarshi maxrajlarda ishoralar bilan ishlashni mustahkamlash foydali.",
+      "strong_points": [
+        "Algebraik kasrlarning sonli koeffitsiyentlari va harfiy qismlari uchun eng kichik umumiy maxrajni to'g'ri aniqlash",
+        "Daraja ko'rsatkichlarini solishtirish va eng katta darajani tanlash"
+      ],
+      "weak_points": [
+        "Umumiy maxrajga o'tishda kasrning suratini qo'shimcha ko'paytuvchiga ko'paytirishni yoddan ko'tarish",
+        "Qarama-qarshi maxrajli ifodalarda (masalan, x-y va y-x) ishoralar bilan ishlashda xatolikka yo'l qo'yish"
+      ],
+      "next_steps": [
+        "Kasrning surat va maxrajini bir xil ifodaga ko'paytirish jarayonini diqqat bilan mashq qiling",
+        "Ishora o'zgarishi qoidasini qo'llab qarama-qarshi maxrajli kasrlarni umumiy maxrajga keltiring"
+      ],
+      "weak_point_keywords": ["suratni ko'paytirish", "ishora o'zgarishi", "qo'shimcha ko'paytuvchi"],
+      "strong_point_keywords": ["EKUK", "eng katta daraja", "umumiy maxraj"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar qo'llaniladi, lekin xuddi shu savollar emas, balki yangi topshiriqlar beriladi."
+    }
+  }
+}

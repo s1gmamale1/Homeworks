@@ -1,0 +1,346 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§11. Sonli tengsizliklar",
+    "subject_display": "Algebra",
+    "section": "§11",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "a > b tengsizlik ta'rifi", "def": "Agar a − b > 0 bo'lsa, a soni b sondan katta deyiladi. Masalan, 7 > 5, chunki 7 − 5 = 2 > 0.", "cluster": "QOIDA" },
+    { "term": "a < b tengsizlik ta'rifi", "def": "Agar a − b < 0 bo'lsa, a soni b sondan kichik deyiladi. Masalan, 0,79 < 4/5, chunki 0,79 − 0,80 = −0,01 < 0.", "cluster": "QOIDA" },
+    { "term": "Ikki sonni taqqoslash usuli", "def": "Ayirmasini hisoblash va ishorasini aniqlash yetarli — musbat, manfiy yoki nol. 4/5 − 3/4 = 1/20 > 0, demak 4/5 > 3/4.", "cluster": "METOD" },
+    { "term": "Uchlik qonun", "def": "Har qanday a va b uchun faqat bittasi to'g'ri: a > b, a = b yoki a < b. Bir vaqtda ikkita munosabat to'g'ri bo'la olmaydi.", "cluster": "QOIDA" },
+    { "term": "a > b ning son o'qidagi geometrik ma'nosi", "def": "a nuqta son o'qida b nuqtadan o'ngda yotadi. O'ngdagi son har doim kattaroq.", "cluster": "QOIDA" },
+    { "term": "Sonli tengsizliklarni isbotlash usuli", "def": "a − b ayirmasining ishorasini aniqlash: musbat → a > b; manfiy → a < b. Har qanday tengsizlik isbotini shu sxemaga keltirish mumkin.", "cluster": "METOD" },
+    { "term": "a² + b² va 2ab munosabati (a ≠ b)", "def": "a² + b² > 2ab, chunki a² + b² − 2ab = (a − b)² > 0. a = b da (a − b)² = 0 — tenglik bo'ladi.", "cluster": "MISOL" },
+    { "term": "a + 1/a va 2 munosabati (a > 0, a ≠ 1)", "def": "a + 1/a > 2, chunki a + 1/a − 2 = (a − 1)²/a > 0. a = 1 da natija 2 ga teng — tengsizlik emas.", "cluster": "MISOL" },
+    { "term": "Ketma-ket kasrlar qoidasi (n < m)", "def": "n/m < (n+1)/(m+1), chunki ayirma n/m − (n+1)/(m+1) = (n − m)/[m(m+1)] < 0. Masalan, 3/4 < 4/5.", "cluster": "MISOL" },
+    { "term": "Kasrlarni ko'rinishiga qarab solishtirish — xato", "def": "Raqamlar kattaligiga qarab taxmin qilish noto'g'ri; ayirma usuli qo'llanilishi shart. 0,79 va 4/5: vizual taxmin aldaydi, lekin 0,79 − 0,80 = −0,01 < 0.", "cluster": "TAHLIL" }
+  ],
+  "case_based_preview": {
+    "title": "Sonli Tengsizliklar: Qaror Holati",
+    "case_setup": {
+      "story": "Kimyo laboratoriyasida Nodira ikkita tajribada eritma hajmlarini o'lchab, quyidagi qiyoslash natijalarini hisobotga yozdi: 1-qiyoslash — 4/5 litr va 3/4 litr — \"birinchisi ko'proq\"; 2-qiyoslash — 0,79 litr va 4/5 litr — \"birinchisi ko'proq\". Laboratoriya rahbari hisobotni ko'rib, ikkita natijadan biri noto'g'ri ekanini ta'kidladi — qaysi biri yoki nima uchun ekanini aytmadi.",
+      "role": "Laboratoriya tekshiruvchisi",
+      "task": "Nodiraning har ikki qiyosini ko'rib chiqib, xatoni aniqlab, to'g'ri natijani isbotlab bering."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Nodiraning qiyoslarini tekshirishda qaysi matematik tushuncha ishga tushadi?",
+        "options": [
+          "Kasrlarni bir xil maxrajga keltirish qoidasi",
+          "Ixtiyoriy ikkita son uchun aynan uchta munosabatdan bittasi to'g'ri bo'lishi kerakligi",
+          "O'nli kasrlarni yaxlit songa aylantirish usuli",
+          "Suratlar teng bo'lsa, sonlar ham teng bo'ladi, degan qoida"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "§11 darsida aniqlanishicha, ixtiyoriy ikkita a va b son uchun quyidagi uchta munosabatdan faqat bittasi to'g'ri bo'ladi: a > b, a = b, yoki a < b. Boshqa variant mavjud emas. Demak, Nodiraning har bir qiyosi uchun aniq bir to'g'ri javob bor — va tekshiruvchi uni isbotlab ko'rsatishi kerak, taxmin emas.",
+        "feedback": "Har qanday ikkita son uchun aynan bitta munosabat o'rinli: biri kattaroq, ular teng, yoki biri kichikroq — uchinchi variant yo'q. Bu \"uchlik\" tamoyil Nodiraning har bir qiyosini tekshirishda asosiy yo'naltiruvchi vazifasini bajaradi: har bir holat uchun qat'iy bir javob bo'lishi shart."
+      },
+      {
+        "kind": "decide",
+        "question": "Qiyoslashda qat'iy, isbotga asoslangan javob olish uchun qaysi amalni bajarish eng ishonchli?",
+        "options": [
+          "Ikkala sonning surat raqamlarini yoki butun qismlarini ko'z bilan solishtirish",
+          "Ikkala sonni o'nli kasr shaklida yozib, ko'rinishiga qarab hukm chiqarish",
+          "Ikkala son o'rtasidagi farqni hisoblash va uning ishorasini aniqlash",
+          "Ikkala sonni bir xil maxrajga keltirib, faqat suratlarini taqqoslash"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "§11 darsiga ko'ra: a − b farqning ishorasi a va b o'rtasidagi munosabatni to'g'ridan-to'g'ri ko'rsatadi — farq musbat bo'lsa a > b, farq manfiy bo'lsa a < b, farq nol bo'lsa a = b. Masalan, 4/5 − 3/4 = 16/20 − 15/20 = 1/20 > 0, demak 4/5 > 3/4. Hisoblash natijasi — isbotning o'zi.",
+        "feedback": "Farqning ishorasi (musbat yoki manfiy) qiyoslash natijasini bir qadamda hal qiladi. D ham ba'zida to'g'ri natija berishi mumkin, lekin C usuli kasrlar, o'nli sonlar va aralash ifodalar uchun bir xil ishlaydi — qo'shimcha almashtirish talab qilmaydi."
+      },
+      {
+        "kind": "justify",
+        "question": "Nodira 2-qiyoslashda 0,79 > 4/5 deb yozdi. Bu noto'g'ri xulosaning asosiy sababi nima?",
+        "options": [
+          "U 4/5 ni 0,75 deb noto'g'ri o'girgan",
+          "U farqni hisoblash o'rniga raqamlarning ko'rinishiga qarab hukm qilgan: \"79 ko'p ko'rinadi, demak katta\"",
+          "U manfiy va musbat ishoralarni o'rin almashtirib yuborgan",
+          "U ikkala sonni yaxlit songa yaxlitlab, aniqlikni yo'qotgan"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Nodira 0,79 − 4/5 = 0,79 − 0,80 = −0,01 ekanini hisoblamadi. \"79\" va \"4\" raqamlari har xil kontekstdagi sonlar qismlari — ularni to'g'ridan-to'g'ri solishtirish noto'g'ri, chunki 0,79 va 4/5 = 0,80 har xil \"o'lchov birligi\"da yozilgan ikki son.",
+        "feedback": "0,79 − 0,80 = −0,01 < 0, demak 0,79 < 4/5. Farqning manfiy ishorasi Nodiraning \"birinchisi ko'proq\" xulosasi xato ekanini aniq ko'rsatadi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Nodiraning 0,79 litr va 4/5 litr qiyoslashiga qaytib, quyidagi uchta savolga 2–4 gap bilan javob bering: (1) Bu vaziyatda qaysi matematik tushuncha yoki tuzilma asosiy rol o'ynadi? (2) Siz nima uchun boshqa variantlar (ko'rinishga qarab hukm chiqarish) o'rniga aynan shu usulni tanladingiz? (3) Nodiraning xatosi qanday noto'g'ri xulosaga olib keldi va nima uchun bu xato matematik jihatdan noto'g'ri?",
+      "min_chars": 80,
+      "concept_keywords": ["ayirma", "ishora", "uchlik qonun", "0,80", "manfiy"],
+      "method_keywords": ["o'nli kasr", "umumiy maxraj", "farqni hisoblash"],
+      "mistake_keywords": ["ko'rinish", "79 > 4", "vizual taxmin"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz 2-qiyoslashda hisobladingiz: 0,79 − 4/5 = 0,79 − 0,80 = −0,01. Farq manfiy — demak 0,79 < 4/5. Nodiraning \"birinchisi ko'proq\" xulosasi noto'g'ri edi. Hisobotga to'g'ri natija yoziladi: 0,79 < 4/5. 1-qiyoslash uchun: 4/5 − 3/4 = 1/20 > 0, demak 4/5 > 3/4 — bu to'g'ri, Nodiraning birinchi xulosasi tasdiqlandi.",
+      "wrong_path": "Agar siz Nodiraning yondashuvini davom ettirib, \"79 > 4, shuning uchun 0,79 > 4/5\" deb hukm qilsangiz, ikkala qiyoslash ham \"birinchisi ko'proq\" deb qoladi. Laboratoriya hisobotida hajmlar noto'g'ri ko'rsatilgan bo'ladi va keyingi hisob-kitoblar noto'g'ri ma'lumotga tayanadi. 0,79 va 4/5 = 0,80 o'rtasidagi farq −0,01 (manfiy), ya'ni 0,79 kichikroq; \"79 > 4\" esa har xil formatdagi sonlarning qismlarini noto'g'ri solishtirish bo'lib, farqning haqiqiy ishorasini ko'rsatmaydi."
+    },
+    "feedback_summary": {
+      "student_understood": "Har bir qiyoslash uchun uchlik tamoyil bo'yicha qat'iy bir javob bo'lishini va farqning ishorasi (musbat/manfiy/nol) qiyoslash natijasini hal qilishini tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — farqni hisoblash o'rniga raqamlar ko'rinishiga qarab hukm chiqarish: \"79 ko'p ko'rinadi, demak katta\".",
+      "what_to_review": "Sonlarni bir formaga (o'nli kasr yoki umumiy maxraj) keltirib, a − b ayirmasini hisoblash va ishorasini aniqlash odatini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Uchala nazorat nuqtasiga javob bering",
+        "Qaror jarayoni bo'limida 2–4 gap yozing — uchala savolga javob bering",
+        "Yakuniy simulyatsiya ikkala yo'lni ko'rsatganini o'qib tasdiqlang"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Agar a − b ayirma _____ bo'lsa, a soni b sondan katta deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "musbat", "accepted_answers": ["musbat", "musbat son", "> 0", "noldan katta"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "Uchlik qonun quyidagilardan qaysinisini ta'riflaydi?", "options": ["Har qanday a va b uchun a > b, a = b va a < b munosabatlaridan aynan bittasi to'g'ri bo'ladi.", "Har qanday a va b uchun uchta munosabatdan kamida ikkitasi to'g'ri bo'ladi.", "Har qanday a va b uchun uchta munosabatdan bittasi ham to'g'ri bo'lmasligi mumkin.", "Faqat a va b natural son bo'lganda uchta munosabatdan bittasi to'g'ri."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Son o'qida a > b bo'lsa, a nuqtasi b nuqtasidan _____ yotadi.", "answer_spec": { "type": "text_fuzzy", "expected": "o'ngda", "accepted_answers": ["o'ngda", "o'ng tomonda", "o'ngroqda"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "a ≠ b bo'lganda a² + b² > 2ab tengsizligi nima uchun to'g'ri?", "options": ["Chunki a² va b² har doim manfiy bo'lmagan, shuning uchun ularning yig'indisi 2ab dan katta bo'lishi shart.", "Chunki a² + b² − 2ab = (a − b)², va a ≠ b bo'lganda (a − b)² > 0.", "Chunki a ≠ b bo'lganda a² va b² turli qiymatlarga ega, shuning uchun ularning yig'indisi albatta katta.", "Chunki a² + b² − 2ab = (a + b)², bu ifoda har doim noldan katta."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "Ikki sonni taqqoslash uchun qaysi usul qo'llaniladi?", "options": ["Ularning ko'paytmasini hisoblab, musbat yoki manfiyligini aniqlash.", "Ularning ayirmasini hisoblab, ishorasini aniqlash.", "Sonlarni son o'qida belgilab, qaysi raqam ko'proq simvoldan iboratligini ko'rish.", "Sonlarni kvadratlab, kvadratlarini solishtirish."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "fill_blank", "prompt": "Agar a − b ayirma _____ bo'lsa, a soni b sondan kichik deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "manfiy", "accepted_answers": ["manfiy", "manfiy son", "< 0", "noldan kichik"], "allow_ai_fallback": true }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "a > 0 va a ≠ 1 shartida a + 1/a > 2 bo'lishini qaysi tushuntirish to'g'ri asoslaydi?", "options": ["a > 0 bo'lgani uchun 1/a ham musbat, shuning uchun ularning yig'indisi har doim 2 dan katta bo'ladi.", "a + 1/a − 2 = (a − 1)²/a, a > 0 va a ≠ 1 bo'lganda (a − 1)² > 0 va a > 0, shuning uchun bu ifoda musbat.", "a + 1/a − 2 = (a + 1)²/a, bu ifoda har doim noldan katta.", "a ≠ 1 bo'lganda 1/a ≠ 1, shuning uchun a + 1/a > a + 1 > 2."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Sonli tengsizliklarni isbotlashning asosiy usuli qaysi?", "options": ["Ikkala sonni ma'lum bir to'plamga tegishliligini tekshirish.", "Tengsizlikni kvadratlab, musbat ifoda hosil qilish.", "a − b ayirmasining ishorasini aniqlash: musbat bo'lsa a > b, manfiy bo'lsa a < b.", "Sonlarni muqobil ko'rinishga (masalan, foizga) o'tkazib vizual solishtirish."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "choose_explanation", "prompt": "n < m bo'lganda n/m < (n+1)/(m+1) ekanini qaysi tushuntirish to'g'ri isbotlaydi?", "options": ["(n+1)/(m+1) da surat bir birga oshgani uchun kasr katta ko'rinadi, shuning uchun u o'sadi.", "n/m − (n+1)/(m+1) = (n − m)/[m(m+1)], va n < m bo'lganda n − m < 0, shuning uchun ayirma manfiy, ya'ni n/m < (n+1)/(m+1).", "n/m − (n+1)/(m+1) = (n − m)/[m(m − 1)], n < m bo'lganda bu manfiy.", "n < m bo'lganda har ikkala kasr ham 1 dan kichik, shuning uchun ikkinchi kasr katta bo'lishi shart."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Kasrlarni solishtirish vaqtidagi xato usul qaysi?", "options": ["Ikkala kasrning ayirmasini hisoblab, ishorasini tekshirish.", "Kasrni ko'rinishiga yoki raqamlar kattaligiga qarab baholab, taxmin qilish.", "Kasrlarni umumiy maxrajga keltirib solishtirish.", "Kasrlarni decimal ko'rinishga o'tkazib solishtirish."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "Ixtiyoriy ikkita a va b son uchun a > b, a = b va a < b munosabatlaridan ____ to'g'ri bo'ladi. Bo'sh joyni to'g'ri ibora bilan to'ldiring.", "options": ["kamida bittasi", "faqat bittasi", "ko'pi bilan bittasi", "har uchtalasi"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "mcq", "prompt": "Quyidagi katakchalardan qaysi birida ayirma ishorasi asosida xulosa TO'G'RI chiqarilgan?", "options": ["3/7 va 2/5: 3/7 − 2/5 = 1/35 > 0, demak 3/7 < 2/5.", "−3 va −7: |−3| = 3, |−7| = 7, 3 < 7, demak −3 < −7.", "n < m: n/m − (n+1)/(m+1) = (n − m)/[m(m+1)] < 0, demak n/m < (n+1)/(m+1).", "a = 1 uchun: (a − 1)²/a = 0, demak a + 1/a > 2."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_alg_11",
+    "expert_role": "business_consultant",
+    "title": "Haqiqiy Hayot Sinovi: Sonli Tengsizliklar",
+    "intro": "Siz \"Saodat Farmatsevtika\" AJ zavodida ishlovchi kimyoviy sifat nazorati muhandisisiz. Ertangi partiya uchun kontsentratsiyasi 7/9 g/mL dan qat'iy yuqori bo'lgan eritma zarur (standart #TS-2024). Bugun ikki namuna keldi: \"Tez Kimyo\" MChJ — 11/14 g/mL (09:15), \"Bio-Resurs\" AJ — 0,776 g/mL (14:40). Standartga mosligini matematik isbotlar bilan tasdiqlang.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-Qaror: \"Tez Kimyo\" MChJni Baholash",
+        "prompt": "11/14 g/mL kontsentratsiya 7/9 g/mL standartdan qat'iy yuqorimi? Qaysi yondashuv ishonchli isbot beradi?",
+        "options": [
+          { "id": "a", "label": "11 > 7 va 14 > 9 — kattaroq surat va maxrajga ega bo'lgani uchun 11/14 > 7/9 deb xulosalayman.", "is_correct": false, "consequence": "Suratlar va maxrajlarni alohida solishtirish har doim to'g'ri natija bermaydi — bu usul ishonchsiz." },
+          { "id": "b", "label": "11/14 − 7/9 = 99/126 − 98/126 = 1/126 > 0 — ayirma musbat, demak 11/14 > 7/9. Standart qondiriladi.", "is_correct": true, "consequence": "To'g'ri: ayirma 1/126 > 0 — bu standart qondirilganini aniq isbotlaydi. \"Tez Kimyo\" qabul qilinadi." },
+          { "id": "c", "label": "11/14 ≈ 0,786 va 7/9 ≈ 0,78 — farq atigi 0,006, amalda teng deyish mumkin.", "is_correct": false, "consequence": "O'nli yaxlitlash rasmiy hujjat uchun isbot emas; farmatsevtikada 0,006 farq ham muhim." },
+          { "id": "d", "label": "Maxrajlar teng emas (14 ≠ 9), umumiy maxrajga keltirmasdan sonlarni solishtirib bo'lmaydi.", "is_correct": false, "consequence": "Solishtirish mumkin — umumiy maxrajga keltirib ayirma ishorasini aniqlash kerak." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-Qaror: \"Bio-Resurs\" AJni Baholash",
+        "prompt": "0,776 g/mL kontsentratsiyani 7/9 g/mL standart bilan taqqoslash uchun avval qaysi qadam kerak?",
+        "options": [
+          { "id": "a", "label": "7/9 ni to'liq o'nli kasrga aylantirish (7/9 = 0,7777…), so'ng 0,776 dan ayirib ishorasini aniqlash", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "776 > 7 bo'lgani uchun darhol 0,776 > 7/9 deb xulosa qilish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Formatlari har xil, solishtirib bo'lmaydi deb chetga qo'yish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-Qaror: \"Bio-Resurs\" bo'yicha yakuniy xulosa",
+        "prompt": "7/9 = 0,7777… va 0,776 − 0,7777… ≈ −0,0017. Bu natijaga ko'ra qaysi qarorni hujjatga yozasiz?",
+        "options": [
+          { "id": "a", "label": "Ayirma manfiy (≈ −0,0017 < 0), demak 0,776 < 7/9 — standart qondirilmaydi, \"Bio-Resurs\" AJ rad etiladi.", "is_correct": true, "consequence": "To'g'ri: manfiy ayirma 0,776 < 7/9 ekanini isbotlaydi; 0,0017 chetlanish qabul qilinmaydi." },
+          { "id": "b", "label": "0,776 ≈ 0,78 va 7/9 ≈ 0,78 — deyarli teng, standart qondiriladi.", "is_correct": false, "consequence": "Yaxlitlash 0,001 darajasidagi muhim farqni yashiradi — bu xulosa noto'g'ri." },
+          { "id": "c", "label": "Ikkala yetkazib beruvchini ham qabul qilamiz.", "is_correct": false, "consequence": "Faqat standartni qondirgan namuna qabul qilinadi; 0,776 < 7/9 bo'lgani uchun bu rad etiladi." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-Qaror: Samaradorlik xossasini isbotlash",
+        "prompt": "Texnolog topshirig'i: a > 0, a ≠ 1 da S = a + 1/a doimo 2 dan katta. Qaysi yondashuv to'liq matematik isbot beradi?",
+        "concept_chips": [
+          { "id": "c1", "label": "a + 1/a − 2 = (a − 1)²/a; a > 0 → maxraj musbat, a ≠ 1 → (a − 1)² > 0, demak ifoda musbat — S > 2.", "is_correct": true },
+          { "id": "c2", "label": "a > 0 va 1/a > 0 — ikki musbat sonning yig'indisi 2 dan katta bo'lishi shubhasiz.", "is_correct": false },
+          { "id": "c3", "label": "a = 2, a = 0,5, a = 3 da tekshirildi — uch qiymatda to'g'ri, demak doimo to'g'ri.", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-Qaror: Fikringizni asoslang",
+        "prompt": "(a − 1)²/a ifodasidagi har bir omil qanday ishoraga ega va bu umumiy xulosaga qanday olib keladi? Nima uchun \"uch misolda to'g'ri chiqdi\" isbot emas, va a ≠ 1 sharti nima uchun zarur? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["(a − 1)²", "maxraj musbat", "a > 0", "a ≠ 1", "tenglik", "isbot"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_alg_11_fraction_proof",
+      "instructions": "n < m bo'lganda n/m < (n+1)/(m+1) (n, m — natural sonlar) tengsizligini isbotlash ketma-ketligi 7 blokda berilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri ko'rinishini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Ayirma usulini qo'llaymiz: n/m − (n+1)/(m+1) ifodaning ishorasini aniqlaymiz.", "is_broken": false },
+        { "id": "b2", "text": "Umumiy m(m+1) maxrajga keltiramiz: n/m − (n+1)/(m+1) = [n(m+1) − m(n+1)] / [m(m+1)]", "is_broken": false },
+        { "id": "b3", "text": "Suratchani ochamiz: n(m+1) − m(n+1) = nm + n − mn − m", "is_broken": false },
+        { "id": "b4", "text": "O'xshash hadlarni yig'amiz: nm + n − mn − m = n + m", "is_broken": true },
+        { "id": "b5", "text": "Shartdan: n < m bo'lgani uchun n − m < 0.", "is_broken": false },
+        { "id": "b6", "text": "Maxraj musbat: m va m+1 natural sonlar, shuning uchun m(m+1) > 0.", "is_broken": false },
+        { "id": "b7", "text": "Xulosa: n − m < 0 va m(m+1) > 0 bo'lgani uchun (n − m)/[m(m+1)] < 0, ya'ni n/m < (n+1)/(m+1). ∎", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "n − m", "accepted_answers": ["n − m", "n - m", "n minus m", "−(m − n)", "n dan m ayrilgan"], "allow_ai_fallback": true },
+      "hint": "Blok 5 va Blok 7 da suratchaning yakuniy ifodasi uchun qaysi ko'rinish ishlatilganiga e'tibor bering — isbotning qaysi qadami o'sha ifodani hisoblashi kerak edi?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? n(m+1) − m(n+1) ni ochganda −m(n+1) = −mn − m bo'ladi — manfiy belgi mn va m ga ham ko'chadi; nm − mn = 0 ga qisqaradi va n + (−m) = n − m qoladi. \"n + m\" javobida m oldidagi manfiy belgi tushirib qoldirilgan — bu suratchaning ishorasini musbatga aylantirib, tengsizlik yo'nalishini o'zgartirgan bo'lardi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_alg_11",
+      "case_setup": "Sonli tengsizliklar ta'riflari, geometrik ma'no va isbotlarni ma'no jihatdan to'g'ri juftlang — kartaning joylashuviga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "a − b > 0 (ayirma musbat)", "right": "a > b — a soni b sondan katta" },
+        { "id": "p2", "left": "a − b < 0 (ayirma manfiy)", "right": "a < b — a soni b sondan kichik" },
+        { "id": "p3", "left": "Ikki sonni taqqoslashning asosiy usuli", "right": "Ayirmasini hisoblash va ishorasini aniqlash" },
+        { "id": "p4", "left": "a > b munosabatining son o'qidagi geometrik ma'nosi", "right": "a nuqta b nuqtadan o'ngda yotadi" },
+        { "id": "p5", "left": "Uchlik qonun", "right": "Ixtiyoriy a va b uchun a > b, a = b, a < b dan aynan bittasi to'g'ri" },
+        { "id": "p6", "left": "a ≠ b bo'lganda a² + b² − 2ab ifodasi", "right": "(a − b)² > 0, ya'ni a² + b² > 2ab" },
+        { "id": "p7", "left": "a > 0, a ≠ 1 shartida a + 1/a − 2 ifodasi", "right": "(a − 1)²/a > 0, ya'ni a + 1/a > 2" }
+      ],
+      "checkpoints": [
+        { "question": "a − b > 0 (ayirma musbat) qaysi munosabatga juftlanadi?", "options": ["a < b", "a > b", "a = b"], "correct_index": 1 },
+        { "question": "a > b munosabatining son o'qidagi geometrik ma'nosi qaysi?", "options": ["a nuqta b dan o'ngda yotadi", "a nuqta b dan chapda yotadi", "a va b bir nuqtada"], "correct_index": 0 },
+        { "question": "a² + b² − 2ab ifodasi (a ≠ b) qanday to'liq kvadratga teng?", "options": ["(a + b)²", "(a − b)²", "(a − 1)²/a"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "6-juftlik va 7-juftlikdagi isbotlar bir xil sxemaga — ayirmani to'liq kvadrat shaklida yozib musbatligini ko'rsatish — asoslangani holda nima uchun 6-juftlikda faqat a ≠ b, 7-juftlikda esa a > 0 va a ≠ 1 ikki alohida shart talab qilinadi? Shartlarni aralashtirsa, qaysi xulosa noto'g'ri chiqadi?",
+      "expected_components": ["(a − b)² maxraji yo'q, o'z-o'zicha musbat", "(a − 1)²/a maxraji a > 0 ni alohida talab qiladi", "a = 1 da (a − 1)² = 0 — tenglik, tengsizlik emas"],
+      "consequence": { "correct_path": "Har bir kartani ma'no jihatdan to'g'ri juftiga uladingiz.", "wrong_path": "Ko'rinishdagi o'xshashlikka aldanib (a − b)² shartlarini (a − 1)²/a shartlari bilan aralashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_alg_11",
+      "case_setup": "a² + b² > 2ab isbotidagi bo'laklarni §11 darsi qo'llab-quvvatlagan algebraik aloqalar asosida to'g'ri yo'nalishda zanjirga yig'ing: P1 (Shart: a ≠ b) → P3 (Qadam: (a − b)² > 0) → P4 (Qadam: a² + b² − 2ab > 0) → P2 (Xulosa: a² + b² > 2ab). Ko'rinishdagi o'xshashlik yetarli emas.",
+      "pieces": [
+        { "id": "P1", "label": "Shart: a ≠ b", "role": "cause" },
+        { "id": "P3", "label": "Qadam: (a − b)² > 0", "role": "effect" },
+        { "id": "P4", "label": "Qadam: a² + b² − 2ab > 0", "role": "effect" },
+        { "id": "P2", "label": "Xulosa: a² + b² > 2ab", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (Shart: a ≠ b) to'g'ridan-to'g'ri qaysi bo'lakka ulanadi?", "options": ["P2 (Xulosa)", "P3 ((a − b)² > 0)"], "correct_index": 1 },
+        { "q": "P3 dan P4 ga o'tishda qaysi algebraik tenglik ishlatiladi?", "options": ["a² + b² − 2ab = (a − b)²", "a² + b² − 2ab = (a + b)²"], "correct_index": 0 },
+        { "q": "P1 dan to'g'ridan-to'g'ri P2 ga o'tish nega xato?", "options": ["Oraliq qadamlar (P3, P4) isbotni asoslab beradi", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "P1 dan P2 ga to'g'ridan-to'g'ri o'tib \"a ≠ b sababli a² + b² > 2ab\" deyish nima uchun isbotlanmagan xulosa? Zanjirda qaysi algebraik identiklik (a² + b² − 2ab = (a − b)²) va qaysi tengsizlik ta'rifi (c − d > 0 bo'lsa c > d) asosiy rol o'ynaydi, va nima uchun yo'nalish aynan P3 → P4 tartibda bo'lishi kerak?",
+      "expected_components": ["a² + b² − 2ab = (a − b)² algebraik tenglik", "tengsizlik ta'rifi: c − d > 0 → c > d", "isbotning asoslantirilgan ketma-ketligi P1→P3→P4→P2"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Qurilish kompaniyasida ikki bo'yoq eritmasi konsentratsiyasi o'lchanadi: A-eritma 0,76 (ulush), B-eritma 4/5. Usta \"76 raqami 4 dan katta, shuning uchun A-eritma kuchliroq\" deb xulosa qildi va loyihaga A-eritmani tanladi.",
+      "why": "Nima uchun \"76 > 4\" qiyosiga asoslanib hukm chiqarish matematik jihatdan noto'g'ri? Bu yondashuv qaysi asosiy tushunchani e'tiborsiz qoldiradi?",
+      "how": "0,76 va 4/5 ni ayirma usuli yordamida taqqoslang. Hisob-kitobingizni to'liq bosqichlarda ko'rsating.",
+      "what": "Ayirmaning ishorasi manfiy chiqdi. Bu natija loyiha uchun nima degani — usta to'g'ri eritmani tanladimi va nima uchun?",
+      "prompt": "0,76 va 4/5 ni ayirma usuli bilan taqqoslang: qaysi eritma kuchliroq va usta to'g'ri tanladimi?",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["\"76\" va \"4\" raqamlari 0,76 va 4/5 ning qaysi qismlari — ikkalasi bir xil o'lchov birligidami?", "Avval 4/5 ni o'nli kasrga o'tkazing (4/5 = 0,80), so'ng 0,76 dan ayiring. Ishorasi qanday?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "0,76 < 4/5", "accepted_answers": ["0,76 < 4/5", "0.76 < 4/5", "4/5 katta", "B kuchliroq", "−0,04 < 0"], "allow_ai_fallback": true },
+      "expected_concepts": ["ko'rinish-xatosi", "ayirma-usuli", "a-kichik-b-ta'rifi"],
+      "correct_feedback": "Siz \"76 > 4\" tuzog'iga tushmasdan, 4/5 = 0,80 ekanini hisoblab, 0,76 − 0,80 = −0,04 < 0 xulosasiga keldingiz: 0,76 < 4/5, ya'ni usta xato eritma tanladi. Ayirma usulining kuchi aynan shu — ko'rinish aldamaydi.",
+      "partial_feedback": "Hisob-kitob to'g'ri, lekin \"Why\" qismida xatoning mohiyatini izohlash qoldi: \"76\" va \"4\" bir xil birlikda emas — biri yuzlik o'rin raqami, ikkinchisi kasr surati; ularni to'g'ridan-to'g'ri solishtirib bo'lmaydi.",
+      "wrong_feedback": "\"76 > 4\" qiyosida 0,76 va 4/5 ning qaysi qismlari olingan? Avval 4/5 ni o'nli kasrga o'tkazib, 0,76 dan ayirsangiz, natija qanday chiqadi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Matematik olimpiadada Sardor va Zilola bir xil 100 ballik imtihon yechdi. Sardorning bali a, Zilolaning bali b. Hakam \"uchlik qonunga ko'ra faqat bitta natija mumkin\" dedi. Tomoshabin \"balki ikkita munosabat bir vaqtda to'g'ridir?\" deb hayron bo'ldi.",
+      "why": "Nima uchun ixtiyoriy a va b uchun a > b, a = b va a < b dan aynan bittasi to'g'ri bo'lishi shart? Tomoshabinning \"ikkitasi bir vaqtda to'g'ri\" taxmini qaysi mantiqiy qarama-qarshilikka olib keladi?",
+      "how": "a = 87, b = 84 bo'lganda ayirma usulini qo'llab, qaysi munosabat o'rinli ekanini aniqlang. Har uchta holni tekshirish kerakmi yoki bitta hisob-kitob yetarlimi?",
+      "what": "a − b = 3 > 0 natijasi son o'qida Sardor va Zilolaning ball nuqtalarining joylashuvini qanday ko'rsatadi?",
+      "prompt": "a = 87, b = 84 da qaysi munosabat o'rinli va tomoshabin nega yanglishdi?",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Agar a > b va a = b bir vaqtda to'g'ri bo'lsa, a − b bir vaqtda musbat va nol bo'lishi kerak. Bu mumkinmi?", "87 − 84 ni hisoblang. a − b > 0 bo'lsa xulosa qanday? Qolgan ikkitasini alohida tekshirish zarurmi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "a > b", "accepted_answers": ["a > b", "87 > 84", "Sardor katta", "a − b = 3 > 0"], "allow_ai_fallback": true },
+      "expected_concepts": ["uchlik-qonun", "ayirma-usuli", "son-o'qi-geometrik-ma'no"],
+      "correct_feedback": "Siz uchlik qonunning \"aynan bittasi\" shartini mantiqan tushuntirdingiz, 87 − 84 = 3 > 0 orqali a > b xulosasiga keldingiz va son o'qida 87 nuqtasi 84 dan o'ngda joylashishini §11 geometrik ta'rifi bilan bog'ladingiz.",
+      "partial_feedback": "Hisob-kitob va xulosa to'g'ri, lekin \"What\" qismida son o'qidagi joylashuv (o'ngdagi nuqta = kattaroq son) va uchlik qonun o'rtasidagi mantiqiy bog'liqlikni izohlash qoldi.",
+      "wrong_feedback": "Agar a = b va a > b bir vaqtda to'g'ri bo'lsa, a − b bir vaqtda ham nol, ham musbat bo'lishi kerak edi — bu mumkinmi? Shundan so'ng 87 − 84 ni hisoblang."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Muhandislik hisob-kitobida ikki o'lchov qiymati a va b mavjud (a ≠ b). Muhandis a² + b² > 2ab tengsizligini ishlatmoqchi. Yordamchi \"a = b = 5 holatida ham to'g'rimi?\" deb so'radi, muhandis \"Ha, har doim to'g'ri\" dedi.",
+      "why": "Nima uchun a ≠ b sharti bu tengsizlik uchun zarur? Muhandisning \"har doim to'g'ri\" javobi qaysi holni e'tiborsiz qoldirmoqda?",
+      "how": "a² + b² − 2ab ifodani to'liq kvadrat shaklida qayta yozing. a ≠ b shartidan foydalanib, natijaning nima uchun musbat ekanini isbotlang.",
+      "what": "a = b = 5 holatida a² + b² va 2ab qiymatlari qanday? Bu fakt muhandisga nima degani — tengsizlikni faqat qachon qo'llash mumkin?",
+      "prompt": "a² + b² − 2ab ni to'liq kvadrat shaklida yozib isbotlang va a ≠ b sharti nega zarurligini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["a = b bo'lganda a − b qanday qiymatga ega? Demak (a − b)² qanday chiqadi?", "(a − b)² = a² − 2ab + b². Bu a² + b² − 2ab ga tengmi? (a − b)² har doim qanday ishorada?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(a − b)² > 0", "accepted_answers": ["(a − b)²", "(a-b)^2 > 0", "(a − b)² > 0", "a ≠ b da musbat", "a = b da tenglik"], "allow_ai_fallback": true },
+      "expected_concepts": ["to'liq-kvadrat", "a≠b-sharti", "a²+b²>2ab-isboti", "chegara-holat"],
+      "correct_feedback": "Siz a² + b² − 2ab = (a − b)² ekanini isbotladingiz; a ≠ b bo'lganda (a − b)² > 0, shuning uchun a² + b² > 2ab. a = b = 5 da (5 − 5)² = 0 — bu tenglik, demak muhandisning \"har doim to'g'ri\" javobi xato ekanini aniqladingiz.",
+      "partial_feedback": "To'liq kvadrat formulasini to'g'ri yozdingiz, lekin \"What\" qismida a = b = 5 da qanday natija chiqishi va muhandis qachon shartni tekshirishi kerakligi — izohlash qoldi.",
+      "wrong_feedback": "(a − b)² ni kengaytiring: a² − 2ab + b². Bu a² + b² − 2ab ga tengmi? Agar ha — a = 5, b = 5 da bu ifoda qanday qiymat oladi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Fizika tajribasida o'quvchi a koeffitsientini o'lchaydi (a > 0). U a + 1/a ni hisoblab \"bu kattalik doim 2 dan katta\" deb yozadi. Sinfdoshi \"a = 1 bo'lsa?\" deb so'raydi; o'quvchi \"a > 0 sharti bajarilgan, demak baribir 2 dan katta\" deb turib oladi.",
+      "why": "Nima uchun a > 0 sharti yolg'iz o'zi a + 1/a > 2 ni kafolatlamaydi? a = 1 holida nima sodir bo'ladi va nima uchun bu alohida shart sifatida ko'rsatiladi?",
+      "how": "a + 1/a − 2 ifodani (a − 1)²/a shaklida qayta yozing. a > 0 va a ≠ 1 shartlari birgalikda bu ifodaning musbat ekanini qanday kafolatlaydi? Har ikki shartning rolini alohida izohlang.",
+      "what": "a = 1 da a + 1/a aynan 2 ga teng. Bu fakt \"a + 1/a kattalikning eng kichik mumkin bo'lgan qiymati\" haqida nima aytadi?",
+      "prompt": "a + 1/a − 2 ni (a − 1)²/a shaklida yozib isbotlang va a ≠ 1 sharti nega zarurligini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["a = 1 da a + 1/a = 1 + 1/1 = ? Natija 2 ga qanday munosabatda?", "a + 1/a − 2 ni umumiy maxrajga keltiring: (a² − 2a + 1)/a. Surat a² − 2a + 1 ni to'liq kvadrat shaklida yozish mumkinmi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(a − 1)²/a > 0", "accepted_answers": ["(a − 1)²/a", "(a-1)^2/a > 0", "(a − 1)²/a > 0", "a = 1 da tenglik", "minimum 2"], "allow_ai_fallback": true },
+      "expected_concepts": ["a+1/a>2-isboti", "(a-1)²/a-shakl", "chegara-holat-a=1", "minimum-qiymat"],
+      "correct_feedback": "Siz a + 1/a − 2 = (a − 1)²/a ekanini isbotladingiz; a > 0 da maxraj musbat, a ≠ 1 da surat musbat — demak butun ifoda musbat. a = 1 da (a − 1)² = 0, shuning uchun a + 1/a ning eng kichik qiymati 2 ekanini ham to'g'ri aniqladingiz.",
+      "partial_feedback": "(a − 1)²/a shaklini to'g'ri oldingiz, lekin \"What\" qismida a = 1 da a + 1/a = 2 ga tushishi (minimum qiymat) va o'quvchining xatosi (a > 0 yolg'iz yetarli emas) ni izohlash qoldi.",
+      "wrong_feedback": "a + 1/a − 2 ni bitta kasrga keltiring: a/a + 1/a − 2a/a. Surat nima chiqadi? Bu suratni tanish algebraik shaklda — to'liq kvadratga o'xshamayaptimi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Maktab direktori ikki sinf imtihon natijalarini kasr ko'rinishida taqqoslaydi: 5-sinfda 11/14, 6-sinfda 12/15. Direktor: \"to'g'ri kasr n/m bo'lganda suratga ham, maxrajga ham 1 qo'shsak, kasr har doim o'sadi — bu qoida umumiy\" deb taxmin qildi.",
+      "why": "Nima uchun to'g'ri kasr n/m ga (n < m) surat va maxrajga 1 qo'shilganda o'sishi intuitiv tuyulsa-da, isbotlash uchun ko'rinishga emas, ayirma ishorasiga murojaat qilish kerak?",
+      "how": "n/m − (n+1)/(m+1) ayirmasini umumiy maxraj m(m+1) ga keltiring. Suratni to'liq oching va soddalashtiring. n < m shartidan foydalanib, ayirma ishorasi manfiy ekanini isbotlang.",
+      "what": "n/m < (n+1)/(m+1) isbotlandi. Bu 11/14 va 12/15 holiga qanday tatbiq etiladi? n < m sharti olib tashlanib n > m bo'lsa (noto'g'ri kasr) xulosa o'zgaradimi?",
+      "prompt": "n/m − (n+1)/(m+1) ayirmasini hisoblab, n < m da ishorasini aniqlang va 11/14 va 12/15 ga tatbiq eting.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["n/m − (n+1)/(m+1) uchun umumiy maxraj m(m+1). Suratni hisoblang: n(m+1) − (n+1)m ko'paytmasini to'liq oching va qisqartiring.", "Surat n − m bo'lib qoladi. n < m da n − m ishorasi qanday? Maxraj m(m+1) qanday ishorada (m natural)?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "11/14 < 12/15", "accepted_answers": ["11/14 < 12/15", "n/m < (n+1)/(m+1)", "ayirma manfiy", "(n − m)/[m(m+1)] < 0"], "allow_ai_fallback": true },
+      "expected_concepts": ["to'g'ri-kasr-tengsizligi", "ayirma-usuli-kasrlar", "m(m+1)-maxraj", "n<m-shart"],
+      "correct_feedback": "Siz n/m − (n+1)/(m+1) = (n − m)/[m(m+1)] ekanini to'g'ri hisobladingiz; n < m da n − m < 0 va m(m+1) > 0, shuning uchun ayirma manfiy — ya'ni n/m < (n+1)/(m+1). 11 < 14 ni tekshirib, 11/14 < 12/15 xulosasiga keldingiz. Noto'g'ri kasr holida n − m > 0 bo'lib xulosa teskarisiga aylanishini ham aniqlaganingiz chuqur tushunishni ko'rsatadi.",
+      "partial_feedback": "Ayirmaning umumiy ko'rinishini to'g'ri yozdingiz, lekin suratni soddalashtirish yoki n − m < 0 ni n < m bilan bog'lash qadamida to'xtab qoldingiz — algebraik kengaytishni qadam-baqadam o'tkazing.",
+      "wrong_feedback": "n(m+1) − (n+1)m ko'paytmasini oching: nm + n − nm − m. nm qisqargandan so'ng surat nimaga tenglashadi? Shu suratga n < m shartini qo'llab ishorasini aniqlang."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz sonli tengsizliklar, uchlik qonun va ayirma usuli orqali sonlarni taqqoslashni o'rgandingiz. Asosiy prinsip: a − b > 0 bo'lsa a > b; a − b < 0 bo'lsa a < b; a − b = 0 bo'lsa a = b. Bu qoida laboratoriya hajmlari, bo'yoq konsentratsiyasi va imtihon ballarini aniq taqqoslashda qo'llanadi.",
+    "question": "Do'stingizga ayirma usuli orqali ikki sonni taqqoslashni qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga (a − b)² va (a − 1)²/a shakllari ustida — a² + b² > 2ab va a + 1/a > 2 isbotlarini yangi misollarda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz ayirma usuli bilan kasrlar va o'nli sonlarni taqqoslashni va ko'rinishga qarab hukm chiqarish xato ekanini yaxshi o'zlashtirdingiz. a² + b² > 2ab da a ≠ b shartining roli va a + 1/a > 2 uchun a > 0, a ≠ 1 shartlarini alohida ko'rib chiqishni mustahkamlash foydali.",
+      "strong_points": [
+        "Ayirma ishorasi orqali taqqoslash: 4/5 − 3/4 = 1/20 > 0 → 4/5 > 3/4; 87 − 84 = 3 > 0 → a > b",
+        "Ko'rinishga qarab hukm chiqarish (\"76 > 4\", \"79 > 4\") xato ekanini ajratish"
+      ],
+      "weak_points": [
+        "a² + b² > 2ab isbotida a ≠ b shartining roli",
+        "a + 1/a > 2 uchun a > 0 va a ≠ 1 shartlarini alohida asoslash"
+      ],
+      "next_steps": [
+        "(a − b)² va (a − 1)²/a to'liq kvadrat shakllarini chiqarishni mashq qiling",
+        "Har bir isbotda shartlar (a ≠ b, a ≠ 1, n < m) nima uchun zarurligini yozma asoslang"
+      ],
+      "weak_point_keywords": ["a ≠ b sharti", "a ≠ 1 sharti", "to'liq kvadrat", "chegara holat"],
+      "strong_point_keywords": ["ayirma usuli", "ishora", "ko'rinish xatosi"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan — ayniqsa (a − b)² va (a − 1)²/a shakllari ustida."
+    }
+  }
+}

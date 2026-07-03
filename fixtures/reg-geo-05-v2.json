@@ -1,0 +1,923 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "5-6-mavzu. Romb va kvadratning xossalari",
+    "subject_display": "Geometriya",
+    "section": "5-6-mavzu",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    {
+      "term": "Romb",
+      "def": "Barcha tomonlari teng bo'lgan parallelogramm. Romb parallelogrammning xususiy holi bo'lgani uchun uning barcha xossalarini saqlaydi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Romb diagonallarining o'zaro joylashuvi",
+      "def": "Rombning diagonallari o'zaro perpendikular bo'ladi. Ular kesishish nuqtasida 90° li burchak hosil qiladi.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Romb diagonallarining burchaklarga nisbati",
+      "def": "Rombning diagonallari uning burchaklarini teng ikkiga bo'ladi. Har bir diagonal tegishli burchakning bissektrisasi hisoblanadi.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Kvadrat",
+      "def": "Tomonlari teng bo'lgan to'g'ri to'rtburchak. Kvadrat ham to'g'ri to'rtburchak, ham rombning xususiyatlarini o'zida birlashtiradi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Kvadrat diagonallarining uzunligi",
+      "def": "Kvadratning diagonallari o'zaro teng bo'ladi. Bu xossa kvadratga to'g'ri to'rtburchakdan meros bo'lib o'tgan.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Kvadrat diagonallarining kesishish burchagi",
+      "def": "Kvadratning diagonallari o'zaro perpendikular bo'ladi. Bu xossa kvadratga rombdan o'tgan.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Kvadrat diagonallarining kesishish nuqtasi",
+      "def": "Diagonallari kesishish nuqtasida teng ikkiga bo'linadi. Bu barcha parallelogrammlar uchun umumiy xossadir.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Kvadrat diagonallarining burchaklardagi vazifasi",
+      "def": "Kvadrat diagonallari uning burchaklarini teng ikkiga bo'ladi: burchakni 45° li ikkita burchakka ajratadi.",
+      "cluster": "MISOL"
+    },
+    {
+      "term": "Rombning kvadrat bo'lish sharti",
+      "def": "Agar rombning diagonallari o'zaro teng bo'lsa, u kvadrat bo'ladi. Diagonallarning tengligi rombga to'g'ri to'rtburchak xossasini qo'shadi.",
+      "cluster": "TAHLIL"
+    },
+    {
+      "term": "Diagonallari teng va perpendikular bo'lgan to'rtburchak",
+      "def": "Agar diagonallar kesishish nuqtasida teng ikkiga bo'linmasa, u kvadrat bo'lmaydi. Shakl avvalo parallelogramm bo'lishi shart.",
+      "cluster": "TAHLIL"
+    }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Romb va kvadratning xossalari",
+    "case_setup": {
+      "story": "Siz landshaft dizayneri yordamchisisiz. Markaziy bog'da yangi gulzor barpo etilmoqda. Quruvchilar gulzorning to'rtta tomonini ham qat'iy 10 metrdan qilib o'lchashdi va burchak qoziqlarini qoqishdi. Endi gulzorning qoq markaziga o'rnatiladigan favvora uchun poydevor qo'yish kerak. Rejaga ko'ra, gulzor “mukammal kvadrat” shaklida bo'lishi shart, chunki favvoraning barcha burchaklari gulzor burchaklariga aniq yo'naltirilishi lozim. Biroq, siz qoziqlar orasiga tortilgan diagonallarni o'lchaganingizda, bir diagonal ikkinchisidan uzunroq ekanini aniqladingiz. Quruvchilar esa: “Tomonlari teng-ku, demak bu kvadrat!” deb ta'kidlashmoqda.",
+      "role": "Landshaft dizayneri yordamchisi",
+      "task": "Gulzor shaklining geometrik turini aniqlang va uni mukammal kvadratga aylantirish shartini belgilang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Hozirgi holatda (tomonlari teng, lekin diagonallari teng emas), ushbu gulzor shakli qaysi geometrik figuraga mos keladi?",
+        "options": [
+          "To'g'ri to'rtburchak",
+          "Romb",
+          "Kvadrat",
+          "Ixtiyoriy parallelogramm"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "learning_block": "Romb — barcha tomonlari teng bo'lgan parallelogrammdir. Uning o'ziga xos xossalaridan biri shundaki, diagonallari o'zaro perpendikular bo'ladi va uning burchaklarini teng ikkiga bo'ladi.",
+        "feedback": "Tomonlari o'zaro teng bo'lgan har qanday parallelogramm (yoki to'rtburchak) romb deb ataladi. Kvadrat bo'lishi uchun bu figurada qo'shimcha xossalar ham bo'lishi kerak."
+      },
+      {
+        "kind": "decide",
+        "question": "Gulzor shaklini kvadratga aylantirish uchun siz quruvchilarga qanday o'zgarish qilishni tavsiya etasiz?",
+        "options": [
+          "Tomonlar uzunligini o'zgartirishni",
+          "Diagonallar o'zaro perpendikular bo'lishini ta'minlashni",
+          "Diagonallar uzunligini o'zaro tenglashtirishni",
+          "Burchaklardan birini 45° ga sozlashni"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 2,
+          "option_count": 4
+        },
+        "learning_block": "Kvadrat — tomonlari teng bo'lgan to'g'ri to'rtburchakdir. U rombning ham, to'g'ri to'rtburchakning ham barcha xossalariga ega: uning barcha burchaklari to'g'ri (90°), diagonallari esa ham o'zaro teng, ham perpendikular bo'ladi.",
+        "feedback": "Agar rombning diagonallari teng bo'lsa, u kvadratga aylanadi. Rombda diagonallar allaqachon perpendikular bo'lgani uchun, faqat ularning tengligiga erishish kifoya."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun diagonallari perpendikular va o'zaro teng bo'lgan har qanday to'rtburchakni darhol “kvadrat” deb atash xavfli?",
+        "options": [
+          "Chunki tomonlari teng bo'lmasligi mumkin.",
+          "Chunki diagonallar kesishish nuqtasida teng ikkiga bo'linishi ham shart.",
+          "Chunki uning burchaklari to'g'ri bo'lmasligi mumkin.",
+          "Chunki bu faqat trapetsiyaga xos xususiyatdir."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "learning_block": "Diagonallari teng va perpendikular bo'lgan to'rtburchak kvadrat bo'lishi uchun, albatta, diagonallari kesishish nuqtasida teng ikkiga bo'linishi (ya'ni figura parallelogramm bo'lishi) shart.",
+        "feedback": "Darslikka ko'ra, diagonallari teng va perpendikular bo'lgan to'rtburchak kvadrat bo'lishi uchun diagonallari kesishish nuqtasida teng ikkiga bo'linishi shart."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gapdan iborat javob bering: (1) Gulzor misolida qaysi geometrik figurani va uning qaysi xossasini aniqladingiz? (2) Nima uchun faqat diagonallarni tenglashtirish orqali kvadratga erishish mumkin deb hisobladingiz? (3) Diagonallar haqidagi qaysi noto'g'ri tushuncha loyihada xatoga (favvoraning noto'g'ri joylashishiga) sabab bo'lishi mumkin edi?",
+      "min_chars": 80,
+      "concept_keywords": [
+        "romb",
+        "tomonlari teng",
+        "parallelogramm"
+      ],
+      "method_keywords": [
+        "diagonallar teng",
+        "kvadratga aylanadi",
+        "perpendikular"
+      ],
+      "mistake_keywords": [
+        "tomonlar tengligi yetarli",
+        "kvadrat deb hisoblash",
+        "kesishish nuqtasida bo'linish"
+      ],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz diagonallarni (AC va BD) o'lchab, ularni 10√2 metrga (taxminan 14.14 m) tenglashtirdingiz. Natijada gulzorning barcha burchaklari 90° ga aylandi. Favvora burchaklari gulzor burchaklari bilan aniq mos tushdi.",
+      "wrong_path": "Siz quruvchilarning gapiga ishonib, faqat tomonlar tengligiga tayandingiz. Natijada figura romb shaklida qoldi (masalan, burchaklari 60° va 120°). Favvora o'rnatilganda, uning 90° li burchaklari gulzorning o'tkir va o'tmas burchaklariga mos kelmadi. Tomonlari teng bo'lgani bilan, diagonallari teng bo'lmagan figura kvadrat emas, balki rombdir; rombning burchaklari esa to'g'ri bo'lishi kafolatlanmaydi."
+    },
+    "feedback_summary": {
+      "student_understood": "Rombning barcha tomonlari tengligi va uning kvadratga aylanishi uchun diagonallarning o'rni muhimligini tushundingiz.",
+      "mistake_appeared": "Faqat tomonlar tengligiga qarab figurani kvadrat deb hisoblash (umumiy xato) hamda diagonallarning kesishish nuqtasidagi xossasini e'tibordan chetda qoldirish ehtimoli bor edi.",
+      "what_to_review": "Kvadratning rombdan farqli va o'xshash xossalarini hamda “agar rombning diagonallari teng bo'lsa...” qoidasini qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha checkpoint savollariga javob bering",
+        "Decision Process Explanation (DPE) qismida o'z fikringizni bayon eting",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      {
+        "type": "mcq",
+        "prompt": "Rombning eng aniq ta'rifi qaysi variantda ko'rsatilgan?",
+        "options": [
+          "Barcha tomonlari teng bo'lgan ixtiyoriy to'rtburchak.",
+          "Barcha tomonlari teng bo'lgan parallelogramm.",
+          "Diagonallari o'zaro perpendikular bo'lgan to'rtburchak.",
+          "Qarama-qarshi tomonlari parallel bo'lgan to'rtburchak."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_1"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Rombning diagonallari o'zaro _____ joylashgan bo'ladi.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "perpendikular",
+          "accepted_answers": [
+            "perpendikular",
+            "perpendikulyar",
+            "to'g'ri burchak ostida",
+            "90 gradus ostida"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_2"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Rombning diagonallari uning burchaklari bilan qanday munosabatda bo'ladi?",
+        "options": [
+          "Har bir diagonal rombning burchagini teng ikkiga bo'ladi, ya'ni bissektrisa vazifasini bajaradi.",
+          "Diagonallar faqat o'tmas burchaklarni teng ikkiga bo'ladi, o'tkir burchaklarni esa yo'q.",
+          "Diagonallar burchaklarni faqat kvadratda teng bo'ladi, rombda esa burchaklar har xil bo'laklarga bo'linadi.",
+          "Diagonallar burchakni doimo 45° dan bo'ladi."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_3"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Kvadratning diagonallari uzunligi haqida qaysi tasdiq to'g'ri?",
+        "options": [
+          "Kvadratning diagonallari o'zaro teng bo'ladi.",
+          "Kvadratning diagonallari tomoniga teng bo'ladi.",
+          "Diagonallar faqat ma'lum bir burchak ostida teng bo'ladi.",
+          "Diagonal uzunligi uning yuzasiga teng bo'ladi."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_5"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Kvadratning diagonallari o'zaro _____ bo'ladi, chunki u rombning barcha xossalariga ega.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "perpendikular",
+          "accepted_answers": [
+            "perpendikular",
+            "perpendikulyar",
+            "tik",
+            "90 gradus ostida kesishadigan"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_6"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Qanday qo'shimcha shart bajarilganda rombni kvadrat deb atash mumkin?",
+        "options": [
+          "Agar rombning diagonallari o'zaro perpendikular bo'lsa.",
+          "Agar rombning diagonallari o'zaro teng bo'lsa.",
+          "Agar rombning hamma tomonlari teng bo'lsa.",
+          "Agar rombning diagonallari kesishish nuqtasida teng ikkiga bo'linsa."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_9"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Diagonallari teng va perpendikular bo'lgan to'rtburchak har doim ham kvadrat bo'lavermaydi. Buning uchun yana qaysi muhim shart bajarilishi kerak?",
+        "options": [
+          "Tomonlari o'zaro parallel bo'lmasligi kerak.",
+          "Diagonallar kesishish nuqtasida teng ikkiga bo'linishi shart.",
+          "Diagonallar burchaklarni 30 va 60 gradusga bo'lishi kerak.",
+          "To'rtburchakning faqat ikkita tomoni teng bo'lishi kerak."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_10"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Kvadratning diagonali uning burchagini _____ gradusli ikkita teng burchakka ajratadi.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "45",
+          "accepted_answers": [
+            "45",
+            "qirq besh",
+            "45 gradus"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_8"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Kvadratning eng to'liq va to'g'ri ta'rifi qaysi?",
+        "options": [
+          "Barcha burchaklari to'g'ri bo'lgan to'rtburchak.",
+          "Barcha tomonlari teng bo'lgan parallelogramm.",
+          "Tomonlari teng bo'lgan to'g'ri to'rtburchak.",
+          "Diagonallari perpendikular bo'lgan parallelogramm."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 2,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_4"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Nima uchun kvadratning diagonallari kesishish nuqtasida teng ikkiga bo'linadi?",
+        "options": [
+          "Chunki kvadrat parallelogrammning bir turi hisoblanadi va barcha parallelogrammlarda diagonallar kesishish nuqtasida bo'linadi.",
+          "Chunki faqat diagonallari perpendikular bo'lgan shakllardagina shunday xossa mavjud.",
+          "Chunki kvadratning barcha tomonlari teng, bu esa diagonallarni o'rtadan bo'lishga majbur qiladi.",
+          "Bu xossa faqat diagonallari teng bo'lgan shakllarga tegishli."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_7"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Qarorlar jadvali (TicTacToe): quyidagi tasdiqlardan qaysi biri darslik qoidasiga to'g'ri mos keladi?",
+        "options": [
+          "Rombning diagonallari teng bo'lsa, u kvadrat bo'ladi.",
+          "Diagonallari o'zaro perpendikular va teng bo'lgan har qanday to'rtburchak kvadratdir.",
+          "Tomonlari o'zaro teng bo'lgan to'rtburchakning diagonallari har doim teng bo'ladi.",
+          "Kvadratda diagonallar kesishish nuqtasida teng ikkiga bo'linmaydi."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_9"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Qarorlar jadvali (TicTacToe): nima uchun “Diagonallari o'zaro perpendikular va teng bo'lgan har qanday to'rtburchak kvadratdir” tasdig'i xato?",
+        "options": [
+          "Chunki diagonallar kesishish nuqtasida teng ikkiga bo'linishi (shakl parallelogramm bo'lishi) ham shart.",
+          "Chunki bunday shaklda diagonallar teng bo'lishi mumkin emas.",
+          "Chunki bunday shakl har doim rombdir.",
+          "Tasdiq to'g'ri, hech qanday xato yo'q."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_10"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Gapni to'ldirish (Sentence Filling): “Geometriya qoidalariga ko'ra, ixtiyoriy rombni kvadrat deb atashimiz uchun uning ____ bo'lishi zarur va yetarlidir.” Bo'sh joyni to'g'ri to'ldiring:",
+        "options": [
+          "diagonallari o'zaro perpendikular",
+          "diagonallari o'zaro teng",
+          "diagonallari kesishish nuqtasida teng ikkiga bo'lingan",
+          "diagonallari burchaklarini teng ikkiga bo'lishi"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_9"
+      }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_geo_05",
+    "expert_role": "structural_engineer",
+    "title": "Qadimiy koshinni tiklash: shaklni aniqlash",
+    "intro": "Siz tarixiy obidalarni tiklash bo'yicha bosh me'mor-restavratorsiz. Samarqanddagi qadimiy bino qoldiqlaridan juda yaxshi saqlangan koshin bo'lagi topildi. Yordamchingiz o'lchadi: koshinning barcha to'rtta tomoni teng va har biri roppa-rosa 15 sm. Koshinning qalinligi 2 sm, u loydan yasalgan. Bitta diagonal AC o'lchandi va u 15 sm ga teng. Restavratsiya rejasiga ko'ra, bu yerga faqat burchaklari 90° bo'lgan “mukammal kvadrat” shaklidagi koshinlar qo'yilishi shart.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Tomonlar tengligi asosida shaklni tasniflash",
+        "prompt": "Yordamchingiz: “Barcha tomonlari 15 sm ekan, demak bu aniq kvadrat-da!” deb xulosa qildi. Mutaxassis sifatida ushbu ma'lumotning o'zi shaklni qanday nomlashga yetarli ekanini aniqlang.",
+        "options": [
+          {
+            "id": "a",
+            "label": "Bu faqat ixtiyoriy parallelogramm bo'lishi mumkin.",
+            "is_correct": false,
+            "consequence": "To'g'ri yo'nalish, lekin aniqroq terminni ishlating: tomonlar tengligi parallelogrammning maxsus turi — rombga ishora qiladi."
+          },
+          {
+            "id": "b",
+            "label": "Barcha tomonlari teng bo'lgani uchun bu shakl — romb.",
+            "is_correct": true,
+            "consequence": "Barakalla, professional yondashuv! Tomonlar tengligi shaklning romb ekanligini kafolatlaydi, lekin kvadrat ekanligiga hali dalil yo'q."
+          },
+          {
+            "id": "c",
+            "label": "Tomonlari teng bo'lgani uchun bu shakl — to'g'ri to'rtburchak.",
+            "is_correct": false,
+            "consequence": "Hali emas. Agar to'rtburchakning hamma tomonlari teng bo'lsa, u romb deb ataladi; to'g'ri to'rtburchakda burchaklar 90° bo'lishi shart."
+          }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Diagonal uzunligini tahlil qilish",
+        "prompt": "O'lchovga ko'ra diagonal AC = 15 sm va tomon AB = 15 sm. Ushbu ma'lumot koshinning burchaklari haqida qanday xulosa berishi mumkin?",
+        "options": [
+          {
+            "id": "a",
+            "label": "Diagonal tomonga teng bo'lsa, bu “mukammal kvadrat” ekanligini isbotlaydi.",
+            "is_correct": false,
+            "info_cost": {
+              "time": "noto'g'ri yo'l"
+            }
+          },
+          {
+            "id": "b",
+            "label": "Bu shakl kvadrat emas, chunki kvadratning diagonali tomondan uzun bo'lishi kerak.",
+            "is_correct": true,
+            "info_cost": {
+              "time": "1 qadam"
+            }
+          },
+          {
+            "id": "c",
+            "label": "Diagonal tomonga teng bo'lsa, demak koshinning barcha burchaklari 90°.",
+            "is_correct": false,
+            "info_cost": {
+              "time": "noto'g'ri yo'l"
+            }
+          }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Kvadratlik shartini tasdiqlash",
+        "prompt": "Koshin romb ekanligi aniqlandi. Uning “mukammal kvadrat” ekanligini birgina o'lchov bilan qanday isbotlash mumkin?",
+        "options": [
+          {
+            "id": "a",
+            "label": "Diagonallari perpendikularligini tekshirish kifoya.",
+            "is_correct": false,
+            "consequence": "Hali emas. Rombning diagonallari shundoq ham perpendikular bo'ladi; bu kvadratni farqlamaydi."
+          },
+          {
+            "id": "b",
+            "label": "Ikkinchi diagonalni o'lchab, uning birinchisiga tengligini tekshirish.",
+            "is_correct": true,
+            "consequence": "Mutaxassis darajasidagi qaror! Rombda diagonallar allaqachon perpendikular, faqat ularning tengligi uni kvadratga aylantiradi."
+          },
+          {
+            "id": "c",
+            "label": "Tomonlari parallel ekanligini qayta o'lchash.",
+            "is_correct": false,
+            "consequence": "Bu rombda allaqachon bajarilgan; kvadratlikni isbotlamaydi."
+          }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Koshinni kvadrat emas, romb deb belgilashda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          {
+            "id": "c1",
+            "label": "Diagonal tomonga teng (AC = AB = 15 sm) — bu 60° li burchakni bildiradi, kvadratda esa burchak 90° bo'lishi shart",
+            "is_correct": true
+          },
+          {
+            "id": "c2",
+            "label": "Koshinning qalinligi 2 sm ekanligi",
+            "is_correct": false
+          },
+          {
+            "id": "c3",
+            "label": "Koshin loydan yasalganligi",
+            "is_correct": false
+          }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun barcha tomonlari teng va diagonali tomoniga teng bo'lgan koshin kvadrat emas, balki romb hisoblanadi? Koshinning qalinligi (2 sm) va materiali (loy) haqidagi ma'lumot nega ahamiyatsiz edi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": [
+          "diagonal tomonga teng",
+          "60 gradus",
+          "kvadrat emas",
+          "romb",
+          "diagonallar teng bo'lishi kerak",
+          "qalinlik ahamiyatsiz",
+          "red herring"
+        ]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_geo_05_square",
+      "instructions": "Kvadrat ABCD ning xossalari 6 ta blokda sanab o'tilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        {
+          "id": "b1",
+          "text": "Tomonlar tengligi: AB = BC = CD = DA.",
+          "is_broken": false
+        },
+        {
+          "id": "b2",
+          "text": "Burchak o'lchamlari: ∠A = ∠B = ∠C = ∠D = 90°.",
+          "is_broken": false
+        },
+        {
+          "id": "b3",
+          "text": "Diagonallar holati: AC ⊥ BD (o'zaro perpendikular).",
+          "is_broken": false
+        },
+        {
+          "id": "b4",
+          "text": "Diagonallar uzunligi: AC = BD (o'zaro teng).",
+          "is_broken": false
+        },
+        {
+          "id": "b5",
+          "text": "Diagonallar kesishishi: AO = OC va BO = OD.",
+          "is_broken": false
+        },
+        {
+          "id": "b6",
+          "text": "Diagonallar va burchak: AC diagonali ∠A burchakni 20° va 70° li burchaklarga ajratadi.",
+          "is_broken": true
+        }
+      ],
+      "correction_answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "AC diagonali ∠A burchakni 45° va 45° li burchaklarga ajratadi",
+        "accepted_answers": [
+          "45 va 45",
+          "45 gradusdan",
+          "teng ikkiga bo'ladi",
+          "burchakni bissektrisa kabi bo'ladi",
+          "45° va 45°"
+        ],
+        "allow_ai_fallback": true
+      },
+      "hint": "Kvadrat rombning barcha xossalariga ega. Rombning diagonali uning burchagini qanday qismlarga bo'lar edi?",
+      "why_prompt": "Nima uchun kvadratning diagonali burchakni aynan 45° li qismlarga bo'lishi kerak? Javobda kvadratning burchagi 90° ekanligi va uning diagonallari romb kabi bissektrisa vazifasini bajarishi (burchakni teng ikkiga bo'lishi) ko'rsatilishi kerak: 90° : 2 = 45°."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_geo_05",
+      "case_setup": "Ekrandagi kartalarni oching va bir-biriga mazmunan mos keladigan juftliklarni toping. Har bir atamani uning ta'rifi, xossasi yoki shaklning o'zgarish sharti bilan to'g'ri bog'lang. Shunchaki o'xshash so'zlarni emas, geometrik qoidalarni tushunishga harakat qiling.",
+      "pairs": [
+        {
+          "id": "p1",
+          "left": "Romb",
+          "right": "Barcha tomonlari teng bo'lgan parallelogramm"
+        },
+        {
+          "id": "p2",
+          "left": "Kvadrat",
+          "right": "Tomonlari teng bo'lgan to'g'ri to'rtburchak"
+        },
+        {
+          "id": "p3",
+          "left": "Romb diagonallari",
+          "right": "O'zaro perpendikular bo'lib, burchaklarni teng ikkiga bo'ladi"
+        },
+        {
+          "id": "p4",
+          "left": "Kvadrat diagonallari",
+          "right": "Ham teng, ham perpendikular bo'lib, bissektrisa vazifasini bajaradi"
+        },
+        {
+          "id": "p5",
+          "left": "Rombning kvadratga aylanish sharti",
+          "right": "Uning diagonallari uzunliklari o'zaro teng bo'lishi"
+        },
+        {
+          "id": "p6",
+          "left": "Kvadrat diagonali va burchak",
+          "right": "90° li burchakni 45° li ikkita teng bo'lakka ajratish"
+        }
+      ],
+      "checkpoints": [
+        {
+          "question": "“Romb diagonallari” qaysi xossaga juftlanadi?",
+          "options": [
+            "O'zaro teng bo'ladi",
+            "O'zaro perpendikular bo'lib, burchaklarni teng ikkiga bo'ladi",
+            "Kesishish nuqtasida bo'linmaydi"
+          ],
+          "correct_index": 1
+        },
+        {
+          "question": "“Rombning kvadratga aylanish sharti” nimaga bog'liq?",
+          "options": [
+            "Diagonallarining perpendikularligiga",
+            "Diagonallari uzunliklarining o'zaro tengligiga",
+            "Tomonlarining parallelligiga"
+          ],
+          "correct_index": 1
+        },
+        {
+          "question": "Rombning diagonallari perpendikularligi uni kvadratga aylantirish uchun yetarlimi?",
+          "options": [
+            "Ha, yetarli",
+            "Yo'q — perpendikularlik har qanday rombda bor, kvadrat uchun diagonallar tengligi kerak"
+          ],
+          "correct_index": 1
+        }
+      ],
+      "dpe_prompt": "“Rombning kvadratga aylanish sharti” juftligini tanlaganingizda, nima uchun diagonallarning perpendikularligi rombni kvadratga aylantirish uchun yetarli emasligini tushuntiring. Diagonallari teng va perpendikular bo'lgan ixtiyoriy to'rtburchakni darhol kvadrat deb atashda qaysi muhim parallelogramm xossasi (diagonallarning kesishish nuqtasida bo'linishi) e'tibordan chetda qolishi mumkin?",
+      "expected_components": [
+        "rombda diagonallar allaqachon perpendikular",
+        "kvadrat uchun diagonallar tengligi kerak",
+        "diagonallarning kesishish nuqtasida bo'linishi (parallelogramm sharti)"
+      ],
+      "consequence": {
+        "correct_path": "Har bir tushunchani to'g'ri xossa bilan uladingiz.",
+        "wrong_path": "Rombning perpendikularlik xossasini kvadratning farqlovchi sharti bilan almashtirib yuborish mumkin."
+      }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_geo_05",
+      "case_setup": "Har bir bo'lakni o'zaro bog'liqlik turi (termin ↔ ta'rif, shart → natija) asosida to'g'ri yo'nalishda juftlang. Bog'lanish yo'nalishi darslikdagi qoidalarga qat'iy mos kelishi va mantiqiy natijani keltirib chiqarishi kerak.",
+      "pieces": [
+        {
+          "id": "P1",
+          "label": "Rombning diagonallari o'zaro teng bo'lishi.",
+          "role": "cause"
+        },
+        {
+          "id": "P2",
+          "label": "Shaklning kvadratga aylanishi.",
+          "role": "effect"
+        },
+        {
+          "id": "P3",
+          "label": "Romb.",
+          "role": "term"
+        },
+        {
+          "id": "P4",
+          "label": "Barcha tomonlari teng bo'lgan parallelogramm.",
+          "role": "definition"
+        },
+        {
+          "id": "P5",
+          "label": "Kvadrat.",
+          "role": "term"
+        },
+        {
+          "id": "P6",
+          "label": "Tomonlari teng bo'lgan to'g'ri to'rtburchak.",
+          "role": "definition"
+        }
+      ],
+      "checkpoints": [
+        {
+          "q": "P1 (rombning diagonallari o'zaro teng) qaysi natijaga ulanadi?",
+          "options": [
+            "P2 (shaklning kvadratga aylanishi)",
+            "P4 (barcha tomonlari teng parallelogramm)"
+          ],
+          "correct_index": 0
+        },
+        {
+          "q": "P3 (Romb) qaysi ta'rif bilan juftlanadi?",
+          "options": [
+            "P4 (barcha tomonlari teng parallelogramm)",
+            "P6 (tomonlari teng to'g'ri to'rtburchak)"
+          ],
+          "correct_index": 0
+        },
+        {
+          "q": "P1 ni P3 bilan shunchaki “romb” so'zi qatnashgani uchun bog'lash nega xato?",
+          "options": [
+            "P1 — shart, P3 — termin; bog'lanish shart → natija (P1 → P2) va termin ↔ ta'rif (P3 ↔ P4) yo'nalishida bo'lishi kerak",
+            "Hech qanday farq yo'q"
+          ],
+          "correct_index": 0
+        }
+      ],
+      "dpe_prompt": "Rombning diagonallari o'zaro teng bo'lishi (P1) uni kvadratga (P2) aylantirishi haqidagi mantiqiy zanjirni qanday izohlaysiz? Nima uchun diagonallari teng va perpendikular bo'lgan ixtiyoriy to'rtburchakni (diagonallarning kesishish nuqtasida teng bo'linishi ko'rsatilmagan bo'lsa) darhol kvadrat deb atash xato? To'g'ri javobda rombning allaqachon parallelogramm ekanligi, ya'ni diagonallari kesishish nuqtasida teng ikkiga bo'linishi kvadrat bo'lishi uchun zaruriy poydevor ekanligi ta'kidlanishi lozim.",
+      "expected_components": [
+        "shart → natija (P1 → P2)",
+        "termin ↔ ta'rif (P3 ↔ P4, P5 ↔ P6)",
+        "romb allaqachon parallelogramm — diagonallar kesishish nuqtasida bo'linadi"
+      ]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Zargarga to'rtta bir xil uzunlikdagi kumush sim berildi. U bu simlarni uchma-uch ulab, yopiq shakl yasadi. Zargar shaklning diagonallarini o'lchab, ular bir-biriga perpendikular ekanini, lekin uzunliklari turlicha (10 sm va 24 sm) ekanini aniqladi.",
+      "why": "Nima uchun ushbu shaklni kvadrat emas, balki aynan romb deb atashimiz shart?",
+      "how": "Qanday qilib diagonallar uzunligi turlicha bo'lsa ham, ular o'zaro perpendikular bo'lishi mumkinligini romb xossalari orqali tushuntirasiz?",
+      "what": "Agar zargar diagonallarni ham tenglashtirsa (ikkalasini ham 18 sm qilsa), shaklning burchaklari qanday o'zgaradi va u qaysi yangi nomni oladi?",
+      "prompt": "Shakl nega kvadrat emas, balki romb ekanini asoslang va uni kvadratga aylantirish shartini ko'rsating.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Rombning ta'rifida tomonlar haqida nima deyilgan va bu shart zargar yasagan shaklda bajariladimi?",
+        "Parallelogrammda diagonallar perpendikular bo'lishi uchun uning tomonlari qanday munosabatda bo'lishi kerak?",
+        "Rombning diagonallari o'zaro teng bo'lib qolsa, uning burchaklari (masalan, 90°) haqida nima deya olamiz?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "romb; diagonallar teng emas (10 ≠ 24), kvadrat bo'lishi uchun diagonallar teng bo'lishi kerak",
+        "accepted_answers": [
+          "romb",
+          "diagonallar teng emas",
+          "10 ≠ 24",
+          "diagonallarni tenglashtirish kerak",
+          "diagonallar teng bo'lsa kvadrat bo'ladi"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "romb-definition",
+        "romb-diagonals-perpendicularity",
+        "square-condition-from-rhombus",
+        "10 ≠ 24 → romb, kvadrat emas"
+      ],
+      "correct_feedback": "Ofarin! Tomonlar tengligi rombni kafolatlashi, lekin kvadrat bo'lishi uchun diagonallar tengligi ham zarurligini aniq tushuntirdingiz.",
+      "partial_feedback": "Diagonallar perpendikularligini to'g'ri aytdingiz, lekin diagonallar teng bo'lganda burchaklar qanday o'zgarishini (90° ga aylanishini) to'liqroq yoriting.",
+      "wrong_feedback": "Hali emas. Romb va kvadratning farqini yana bir bor ko'rib chiqing. Tomonlari teng bo'lgan har qanday shakl har doim ham kvadrat bo'laveradimi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Bog'bon to'rtburchak shaklidagi maydonning diagonallarini o'lchadi: ikkala diagonal ham 15 metrga teng va ular qoq markazda (kesishish nuqtasida) 7.5 metrdan bo'lindi. Shuningdek, diagonallar o'zaro 90° ostida kesishdi.",
+      "why": "Nima uchun bu ma'lumotlar (diagonallar tengligi, perpendikularligi va o'rtadan bo'linishi) maydonning kvadrat ekanligini isbotlash uchun yetarli?",
+      "how": "Qanday qilib diagonallar o'zaro perpendikular bo'lgani holda kesishish nuqtasida teng bo'linishi bu shaklning ham romb, ham to'g'ri to'rtburchak ekanligini bildiradi?",
+      "what": "Agar diagonallar perpendikularligini saqlab, lekin uzunliklari turlicha bo'lib qolsa, maydon kvadratlik xususiyatini yo'qotadimi? Nima uchun?",
+      "prompt": "Berilgan uchta diagonal xossasidan foydalanib, maydon nega kvadrat ekanini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Diagonallari teng va kesishish nuqtasida bo'linadigan shakl qaysi (to'g'ri to'rtburchakni eslang)?",
+        "Diagonallari perpendikular va bo'linadigan shakl-chi?",
+        "Ikkala holat bir vaqtda bajarilsa, bu qaysi “mukammal” shaklga olib keladi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "kvadrat — diagonallar teng (to'g'ri to'rtburchak), perpendikular (romb) va o'rtadan bo'linadi (parallelogramm)",
+        "accepted_answers": [
+          "kvadrat",
+          "ham romb ham to'g'ri to'rtburchak",
+          "diagonallar teng va perpendikular va bo'linadi",
+          "perpendikularlik yo'qolsa kvadrat emas — romb qoladi"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "square-properties",
+        "diagonal-bisection-importance",
+        "rhombus-rectangle-intersection",
+        "teng diagonal → to'g'ri to'rtburchak",
+        "perpendikular diagonal → romb"
+      ],
+      "correct_feedback": "Barakalla! Kvadrat ham rombning, ham to'g'ri to'rtburchakning xossalarini o'zida birlashtirishini juda yaxshi asosladingiz.",
+      "partial_feedback": "Diagonallar tengligining ahamiyatini aytdingiz, biroq kesishish nuqtasida bo'linish (parallelogramm sharti) nima uchun muhimligini o'tkazib yubordingiz.",
+      "wrong_feedback": "Hali emas. Kvadrat bo'lishi uchun figura bir vaqtning o'zida ham romb, ham to'g'ri to'rtburchak bo'lishi kerakligini eslang. Qaysi xossalar bunga dalil bo'lyapti?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Chizmada romb berilgan. Uning bitta diagonali o'tkazilgan va u rombning bitta burchagini 30° li ikkita burchakka ajratgan.",
+      "why": "Nima uchun rombning diagonali uning burchagini aynan teng ikkiga bo'lishi shart?",
+      "how": "Qanday usul bilan ushbu ma'lumotdan foydalanib, rombning barcha ichki burchaklarini (o'tkir va o'tmas) hisoblash mumkin?",
+      "what": "Ushbu rombni kvadratga aylantirish uchun diagonal burchakni necha gradusdan bo'lishi kerak edi va bu holda rombning burchagi necha gradusga o'zgaradi?",
+      "prompt": "Rombning barcha ichki burchaklarini hisoblang (yarim burchak 30° berilgan).",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "Rombning diagonali burchak uchun qanday vazifani bajaradi (bissektrisa tushunchasini eslang)?",
+        "Agar yarim burchak 30° bo'lsa, butun burchak qancha va unga qo'shni burchak (yig'indisi 180°) necha gradus bo'ladi?",
+        "Kvadratning burchagi 90° bo'lsa, uning diagonali buni qanday bo'laklarga ajratadi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "o'tkir burchak 60°, o'tmas burchak 120°; kvadratda diagonal burchakni 45° dan bo'ladi",
+        "accepted_answers": [
+          "60 va 120",
+          "60° va 120°",
+          "burchaklar 60 va 120 gradus",
+          "kvadratda 45 gradusdan",
+          "45° dan bo'ladi"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "romb-diagonals-angle-bisector",
+        "rhombus-angles-calculation",
+        "square-diagonal-angle",
+        "2·30° = 60°, 180° − 60° = 120°",
+        "kvadrat burchagi 90° → 45°"
+      ],
+      "correct_feedback": "Mukammal! Romb diagonali bissektrisa ekanligini va kvadratda bu burchak doimo 45° bo'lishini to'g'ri isbotladingiz.",
+      "partial_feedback": "Burchaklarni to'g'ri hisobladingiz, lekin kvadratga o'tish shartida gradus o'zgarishini aniq ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas. Romb diagonali burchakni teng ikkiga bo'lishi (bissektrisa) haqidagi xossani qaytadan ko'rib chiqing."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Geometriya darsida Aziz shunday dedi: “Agar ixtiyoriy to'rtburchakning diagonallari o'zaro teng va perpendikular bo'lsa, u albatta kvadratdir”. O'qituvchi esa bunga javoban diagonallari teng va perpendikular bo'lgan, lekin diagonallari kesishish nuqtasida teng ikkiga bo'linmaydigan shaklni chizib ko'rsatdi.",
+      "why": "Nima uchun Azizning xulosasi noto'g'ri? Kvadrat bo'lishi uchun diagonallarning o'zaro joylashuviga oid yana qaysi “yashirin” shart bajarilishi shart?",
+      "how": "Qanday qilib darslikdagi “Agar rombning diagonallari teng bo'lsa, u kvadrat bo'ladi” qoidasi Azizning xatosidan bizni himoya qiladi? (Rombning o'zida qaysi xossa allaqachon mavjud?)",
+      "what": "Agar biz Aziz aytgan shaklni (diagonallar bo'linmaydigan) qurilishda kvadrat poydevor o'rniga ishlatsak, burchaklar va tomonlar bilan bog'liq qanday muammo yuzaga keladi?",
+      "prompt": "Azizning xulosasi nega noto'g'ri ekanini asoslang va yetishmayotgan “yashirin” shartni ko'rsating.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": [
+        "Har qanday kvadrat parallelogrammmi? Parallelogrammda diagonallar qanday nuqtada kesishadi?",
+        "Rombda diagonallar har doim o'rtasidan bo'linadimi?",
+        "Agar diagonallar o'rtasidan bo'linmasa, tomonlar o'zaro teng bo'lishi (romb bo'lishi) mumkinmi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "diagonallar kesishish nuqtasida teng ikkiga bo'linishi (parallelogramm bo'lishi) ham shart",
+        "accepted_answers": [
+          "diagonallar kesishish nuqtasida bo'linishi shart",
+          "shakl parallelogramm bo'lishi kerak",
+          "diagonallar o'rtadan bo'linishi",
+          "romb allaqachon parallelogramm"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "square-definition-precision",
+        "diagonal-bisection-necessity",
+        "misconception-repair",
+        "kvadrat avvalo parallelogramm bo'lishi shart"
+      ],
+      "correct_feedback": "Juda kuchli tahlil! Diagonallarning kesishish nuqtasida bo'linishi (parallelogramm xossasi) kvadrat uchun fundamental ekanini tushunib yetdingiz.",
+      "partial_feedback": "Azizning xatosini topdingiz, lekin rombning ta'rifi nima uchun bu xatoni oldini olishini (chunki romb — bu parallelogramm) to'liq tushuntirib bera olmadingiz.",
+      "wrong_feedback": "Hali emas. Diagonallarning kesishish nuqtasidagi xossasini darslikdan qayta o'qing. Faqat perpendikularlik va tenglik yetarlimi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Kvadratning diagonallari kesishishidan to'rtta kichik uchburchak hosil bo'ldi. Ushbu uchburchaklarning turlarini (burchaklari va tomonlariga ko'ra) aniqlash topshirig'i berildi.",
+      "why": "Nima uchun bu to'rtta uchburchakning hammasi o'zaro teng va aynan teng yonli to'g'ri burchakli uchburchaklar bo'ladi?",
+      "how": "Qanday xossalar (diagonallar tengligi, perpendikularligi va bo'linishi) orqali har bir uchburchakning burchaklari 90°, 45° va 45° ekanini isbotlaysiz?",
+      "what": "Agar biz kvadrat emas, oddiy romb (kvadrat bo'lmagan) olsak, bu to'rtta uchburchakda qaysi xususiyat (tenglik yoki burchaklar) birinchi bo'lib buziladi?",
+      "prompt": "Kvadrat diagonallaridan hosil bo'lgan to'rtta uchburchak turini aniqlang va asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "Kvadrat diagonallari kesishishda necha gradusli burchak hosil qiladi?",
+        "Kvadrat diagonallari o'zaro teng va bo'linsa, hosil bo'lgan kichik kesmalar (uchburchak tomonlari) o'zaro teng bo'ladimi?",
+        "Rombda diagonallar teng bo'lmasa, hosil bo'lgan uchburchakning yon tomonlari teng bo'lib qoladimi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "to'rtta teng, teng yonli to'g'ri burchakli uchburchak; burchaklari 90°, 45°, 45°",
+        "accepted_answers": [
+          "teng yonli to'g'ri burchakli uchburchak",
+          "90 45 45",
+          "90°, 45°, 45°",
+          "to'rttasi teng",
+          "rombda burchaklar (tenglik) buziladi"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "square-diagonals-symmetry",
+        "romb-vs-square-triangles",
+        "angle-properties",
+        "perpendikular → 90°, teng yarim diagonallar → 45° va 45°"
+      ],
+      "correct_feedback": "Ofarin! Kvadratning barcha diagonal xossalaridan foydalanib, ichki uchburchaklar tabiatini to'liq ochib berdingiz.",
+      "partial_feedback": "Uchburchaklar to'g'ri burchakli ekanini aytdingiz, lekin nima uchun ular aynan teng yonli ekanini (diagonallar yarmi tengligi) isbotlashda biroz qiynaldingiz.",
+      "wrong_feedback": "Hali emas. Kvadrat diagonallari ham perpendikular, ham o'zaro teng ekanini eslang. Bu uchburchakning burchaklari va tomonlariga qanday ta'sir qiladi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz romb va kvadrat mavzularini, ularning o'ziga xos xossalari va farqlarini o'rgandingiz. Rombning diagonallari perpendikular bo'lishi va burchaklarini teng ikkiga bo'lishi, kvadrat esa ham romb, ham to'g'ri to'rtburchak xususiyatlarini o'zida mujassam etishi asosiy tamoyildir. Ushbu geometrik qoidalar kundalik hayotda, masalan, yer maydonlarini aniq rejalashtirish yoki zargarlik dizaynlarini yaratishda keng qo'llaniladi.",
+    "question": "Do'stingizga romb va kvadrat orasidagi farqni eng sodda va tushunarli usulda qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga rombning diagonal xossalarini (perpendikularlik + bissektrisa) va rombni kvadratga aylantirish shartini (diagonallar tengligi) yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz rombning barcha tomonlari tengligi va diagonallari o'zaro perpendikular bo'lishi haqidagi fundamental tushunchalarni yaxshi o'zlashtirdingiz. To'rtburchakning kvadrat bo'lishi uchun diagonallari nafaqat teng va perpendikular, balki kesishish nuqtasida teng ikkiga bo'linishi zarurligi haqidagi mantiqiy shartni mustahkamlash foydali.",
+      "strong_points": [
+        "Rombning barcha tomonlari tengligini aniqlash",
+        "Rombning diagonallari o'zaro perpendikular bo'lishi xossasini tushunish"
+      ],
+      "weak_points": [
+        "Kvadrat bo'lishi uchun diagonallarning kesishish nuqtasida teng ikkiga bo'linishi sharti",
+        "Diagonallari teng va perpendikular bo'lishining o'zi kvadrat uchun yetarli deb hisoblash xatosi"
+      ],
+      "next_steps": [
+        "Rombning kvadratga aylanish shartiga (diagonallar tengligi) oid masalalarni qayta ko'rib chiqing",
+        "Diagonallar kesishish nuqtasida bo'linmagan hollarda figura nega kvadrat bo'la olmasligini tahlil qiling"
+      ],
+      "weak_point_keywords": [
+        "kesishish nuqtasida bo'linish",
+        "parallelogramm sharti",
+        "diagonallar tengligi",
+        "kvadrat"
+      ],
+      "strong_point_keywords": [
+        "romb",
+        "tomonlar tengligi",
+        "perpendikular",
+        "bissektrisa"
+      ],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas, balki yangi masalalar bilan."
+    }
+  }
+}

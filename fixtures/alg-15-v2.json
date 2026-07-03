@@ -1,0 +1,325 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§15. Bir noma'lumli tengsizliklar",
+    "subject_display": "Algebra",
+    "section": "§15",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Bir noma'lumli chiziqli tengsizlik", "def": "ax > b, ax < b, ax ≥ b yoki ax ≤ b ko'rinishidagi tengsizlik. Bu yerda a va b — berilgan sonlar, x — noma'lum. Misol: 4x ≥ 200.", "cluster": "QOIDA" },
+    { "term": "Tengsizlikning yechimi", "def": "Noma'lumning tengsizlikni to'g'ri sonli tengsizlikka aylantiruvchi qiymati. x > 2 uchun x = 3 yechim, chunki 3 > 2 to'g'ri.", "cluster": "QOIDA" },
+    { "term": "Tengsizlikni yechish", "def": "Uning barcha yechimlarini topish yoki yechimlari yo'qligini aniqlash. Bu butun yechimlar to'plamini (oralig'ini) aniqlash demakdir.", "cluster": "QOIDA" },
+    { "term": "Hadlarni o'tkazish", "def": "Istalgan hadni ishorasini qarama-qarshisiga o'zgartirib, bir qismdan ikkinchisiga o'tkazish mumkin; tengsizlik ishorasi o'zgarmaydi. 5x − 4 < 11 → 5x < 11 + 4.", "cluster": "METOD" },
+    { "term": "Manfiy songa ko'paytirish/bo'lish", "def": "Ikkala qismni manfiy songa ko'paytirganda yoki bo'lganda tengsizlik ishorasi qarama-qarshisiga o'zgaradi. −3x < 12 → x > −4.", "cluster": "METOD" },
+    { "term": "Musbat songa ko'paytirish/bo'lish", "def": "Ikkala qismni musbat songa ko'paytirganda yoki bo'lganda tengsizlik ishorasi o'zgarmaydi. 4x ≥ 200 → x ≥ 50.", "cluster": "METOD" },
+    { "term": "Qat'iy tengsizlik (>, <)", "def": "Son o'qida chegara nuqta nurga kirmaydi va ochiq (bo'yalmagan) doiracha bilan belgilanadi.", "cluster": "TAHLIL" },
+    { "term": "Noqat'iy tengsizlik (≥, ≤)", "def": "Son o'qida chegara nuqta nurga tegishli bo'ladi va yopiq (bo'yalgan) doiracha bilan belgilanadi.", "cluster": "TAHLIL" },
+    { "term": "0·x > −5 holati", "def": "x ning istalgan qiymati yechim bo'ladi, chunki ifoda to'g'ri sonli tengsizlikka (0 > −5) aylanadi. Javob: x — istalgan son.", "cluster": "MISOL" },
+    { "term": "0·x > 1 holati", "def": "Yechimlari yo'q, chunki ifoda noto'g'ri sonli tengsizlikka (0 > 1) aylanadi. Yechimlar to'plami bo'sh.", "cluster": "MISOL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Bir noma'lumli tengsizlik",
+    "case_setup": {
+      "story": "Siz o'quv sherigingiz Anvar bilan birgalikda algebra bo'yicha mashqlarni bajaryapsiz. Anvar 3(y−2) > 5(y+1) ko'rinishidagi tengsizlikni yechishga harakat qildi. U qavslarni ochib, o'xshash hadlarni ixchamlagandan so'ng, −2y > 11 natijasiga keldi. Lekin u shu yerda ikkilanib qoldi: noma'lum y ni topish uchun keyingi qadam qanday bo'lishi kerakligiga ishonchi komil emas. U sizdan yordam so'radi.",
+      "role": "Yordamchi tahlilchi — sherigingizning ishini ko'zdan kechiruvchi",
+      "task": "Anvarning ishini ko'zdan kechiring va to'g'ri yechimga olib boradigan keyingi qadamni aniqlashda yordam bering."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Bu qanday matematik masala?",
+        "options": [
+          "Chiziqli tenglama (ax = b)",
+          "Bir noma'lumli chiziqli tengsizlik (ax > b)",
+          "Ikki noma'lumli tenglamalar sistemasi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Bir noma'lumli chiziqli tengsizlik — bu ax > b, ax < b, ax ≥ b yoki ax ≤ b ko'rinishidagi tengsizlikdir, bu yerda a va b — berilgan sonlar, x esa noma'lum. Bunday tengsizliklarni yechish — bu noma'lumning tengsizlikni to'g'ri sonli tengsizlikka aylantiruvchi barcha qiymatlarini topish demakdir.",
+        "feedback": "To'g'ri. Bu masala tengsizlik belgisini (>) o'z ichiga oladi va uni ay > b shakliga keltirish mumkin, bu esa uni bir noma'lumli chiziqli tengsizlikka aylantiradi."
+      },
+      {
+        "kind": "decide",
+        "question": "Anvar −2y > 11 natijasiga erishdi. Noma'lum y ni topish uchun keyingi to'g'ri qadam qaysi?",
+        "options": [
+          "Tengsizlikning ikkala qismini −2 ga bo'lib, tengsizlik ishorasini o'zgarishsiz qoldirish (y > −11/2).",
+          "Tengsizlikning ikkala qismiga 2 ni qo'shish (−2y + 2 > 11 + 2).",
+          "Tengsizlikning ikkala qismini −2 ga bo'lib, tengsizlik ishorasini qarama-qarshisiga o'zgartirish (y < −11/2)."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 3 },
+        "learning_block": "Tengsizliklarni yechishning asosiy xossalaridan biri shundaki, uning ikkala qismini nolga teng bo'lmagan ayni bir songa ko'paytirish yoki bo'lish mumkin. Agar bu son musbat bo'lsa, tengsizlik ishorasi o'zgarmaydi. Agar son manfiy bo'lsa, tengsizlik ishorasi qarama-qarshisiga o'zgaradi.",
+        "feedback": "To'g'ri. Tengsizlikning ikkala qismini manfiy songa bo'lganda, tengsizlik ishorasi teskarisiga o'zgarishi kerak."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun shunchaki −2 ga bo'lib, y > −11/2 javobini olish xato hisoblanadi?",
+        "options": [
+          "Chunki tengsizliklarda manfiy songa bo'lish mumkin emas.",
+          "Chunki manfiy songa bo'lish ifodaning to'g'riligini saqlab qolish uchun tengsizlik ishorasini teskarisiga o'zgartirishni talab qiladi. Masalan, 10 > 4 to'g'ri, lekin ishorani o'zgartirmasdan −2 ga bo'lsak, −5 > −2 hosil bo'ladi, bu esa yolg'on.",
+          "Chunki avval 11 ni chap tomonga o'tkazish kerak edi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Tengsizlikning asosiy xossasi shundan iboratki, manfiy songa ko'paytirish yoki bo'lish ikki tomon o'rtasidagi munosabatni teskarisiga o'zgartiradi. Tekshiruv: 10 > 4 to'g'ri; ikkala tomonni −2 ga bo'lsak, −5 va −2 hosil bo'ladi va aslida −5 < −2 — demak ishora teskarisiga o'zgarishi shart.",
+        "feedback": "To'g'ri. Manfiy songa bo'lish ifodaning to'g'riligini saqlab qolish uchun tengsizlik ishorasini teskarisiga o'zgartirishni talab qiladi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Endi o'z fikrlaringizni umumlashtiring. 2–4 jumlada javob bering: (1) Siz bu vaziyatda qaysi matematik tuzilmani (tushunchani) aniqladingiz? (2) Nima uchun aynan shu usulni (2-nazorat nuqtasidagi tanlovingizni) tanladingiz? (3) Anvar yo'l qo'yishi mumkin bo'lgan xato (−2y > 11 dan y > −11/2 deb xulosa chiqarish) qanday noto'g'ri talqinga olib kelar edi?",
+      "min_chars": 80,
+      "concept_keywords": ["chiziqli tengsizlik", "manfiy son", "tengsizlik ishorasi", "yechim"],
+      "method_keywords": ["−2 ga bo'lish", "ishorani o'zgartirish", "tekshirish"],
+      "mistake_keywords": ["ishorani unutish", "y > −11/2", "teskarisiga o'zgartirmaslik"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz Anvarga tengsizlikning ikkala qismini −2 ga bo'lishni va tengsizlik ishorasini qarama-qarshisiga o'zgartirishni maslahat berasiz. U y < −11/2 (yoki y < −5.5) natijasini oladi. Tekshirish uchun u −5.5 dan kichik bo'lgan sonni, masalan, −6 ni oladi: 3(−6 − 2) > 5(−6 + 1) → 3(−8) > 5(−5) → −24 > −25. Bu to'g'ri tengsizlik. Demak, yechim to'g'ri.",
+      "wrong_path": "Siz Anvarga shunchaki −2 ga bo'lishni maslahat berasiz va u y > −11/2 natijasini oladi. Tekshirish uchun u −5.5 dan katta bo'lgan sonni, masalan, 0 ni oladi: 3(0 − 2) > 5(0 + 1) → 3(−2) > 5(1) → −6 > 5. Bu noto'g'ri tengsizlik. Noto'g'ri yo'l xato natija beradi, chunki tengsizlikni manfiy songa bo'lganda ishorani o'zgartirmaslik haqiqiy bo'lmagan bayonotga olib keladi."
+    },
+    "feedback_summary": {
+      "student_understood": "Bir noma'lumli chiziqli tengsizliklarni yechishni, ayniqsa, manfiy songa bo'lganda yoki ko'paytirganda tengsizlik ishorasini qarama-qarshisiga o'zgartirish qoidasini tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — manfiy songa bo'lganda tengsizlik ishorasini o'zgartirishni unutib, y > −11/2 deb xato xulosa chiqarish.",
+      "what_to_review": "Manfiy songa bo'lganda nima uchun ishora teskarisiga o'zgarishini va yechimni tekshirish (qiymat qo'yib ko'rish) odatini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 nazorat nuqtasiga muvaffaqiyatli javob bering",
+        "Qaror qabul qilish jarayonining tahlili bo'limida kamida 2–4 jumla yozing",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "Quyidagilardan qaysi biri bir noma'lumli chiziqli tengsizlikning umumiy ko'rinishiga mos keladi?", "options": ["ax > b", "ax² > b", "ax = b", "ax + by > c"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Noma'lumning tengsizlikni to'g'ri sonli tengsizlikka aylantiruvchi qiymati tengsizlikning _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "yechimi", "accepted_answers": ["yechimi", "yechim"], "allow_ai_fallback": true }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Nima uchun −3x < 12 tengsizligini yechishda natija x > −4 bo'ladi? To'g'ri tushuntirishni tanlang.", "options": ["Chunki tengsizlikning ikkala qismi manfiy songa (−3 ga) bo'linganda, tengsizlik ishorasi qarama-qarshisiga o'zgaradi.", "Chunki noma'lum x ni yolg'iz qoldirganda tengsizlik ishorasi har doim o'zgaradi.", "Chunki o'ng tomondagi son (12) musbat, chap tomondagi koeffitsiyent (−3) esa manfiy.", "Chunki ishora o'zgarmasligi kerak, to'g'ri javob x < −4 bo'lishi kerak."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "fill_blank", "prompt": "Tengsizlikni yechish — uning barcha yechimlarini topish yoki yechimlari _____ aniqlash demakdir.", "answer_spec": { "type": "text_fuzzy", "expected": "yo'qligini", "accepted_answers": ["yo'qligini", "mavjud emasligini"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Tengsizlikda hadlarni bir qismdan ikkinchisiga o'tkazish qoidasining to'g'ri ta'rifini tanlang.", "options": ["Istalgan hadni ishorasini qarama-qarshisiga o'zgartirib, bir qismdan ikkinchisiga o'tkazish mumkin, bunda tengsizlik ishorasi o'zgarmaydi.", "Istalgan hadni ishorasini o'zgartirmasdan bir qismdan ikkinchisiga o'tkazish mumkin.", "Faqat noma'lum qatnashgan hadlarni ko'chirish mumkin, ozod hadlarni ko'chirish mumkin emas.", "Hadni bir qismdan ikkinchisiga o'tkazganda, tengsizlik ishorasi hamisha qarama-qarshisiga o'zgaradi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "Nima uchun x > 2 yechimi son o'qida tasvirlanganda 2 nuqtasi ochiq (bo'yalmagan) doiracha bilan belgilanadi?", "options": ["Chunki bu qat'iy tengsizlik (>) va 2 sonining o'zi yechimlar to'plamiga kirmaydi.", "Chunki 2 musbat son va barcha musbat sonlar ochiq doiracha bilan belgilanadi.", "Chunki x ning oldidagi koeffitsiyent musbat (1 ga teng).", "Chunki tengsizlikning o'ng tomonida faqat bitta son bor."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "x ≤ 10 tengsizligining yechimlari to'plami son o'qida qanday tasvirlanadi?", "options": ["Chegara nuqta 10 yopiq (bo'yalgan) doiracha bilan belgilanadi va undan chap tomonga shtrixlanadi.", "Chegara nuqta 10 ochiq (bo'yalmagan) doiracha bilan belgilanadi va undan chap tomonga shtrixlanadi.", "Chegara nuqta 10 yopiq (bo'yalgan) doiracha bilan belgilanadi va undan o'ng tomonga shtrixlanadi.", "Faqat 10 nuqtasining o'zi bo'yalgan doiracha bilan belgilanadi, hech qanday shtrix chizilmaydi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "Agar tengsizlikni soddalashtirish natijasida 0·x > 1 kabi x ga bog'liq bo'lmagan noto'g'ri tengsizlik hosil bo'lsa, bu tengsizlik _____ ega emas deb javob beriladi.", "answer_spec": { "type": "text_fuzzy", "expected": "yechimlarga", "accepted_answers": ["yechimlarga", "yechimi yo'q"], "allow_ai_fallback": true }, "flashcard_ref": "card_9" },
+      { "type": "choose_explanation", "prompt": "0·x > −5 ko'rinishidagi tengsizlikning yechimi haqida qaysi tushuntirish to'g'ri?", "options": ["Yechimlari yo'q, chunki noma'lum yo'qoldi.", "x ning istalgan qiymati yechim bo'ladi, chunki ifoda to'g'ri sonli tengsizlikka (0 > −5) aylanadi.", "Faqat x = 0 yechim bo'ladi.", "Faqat musbat x lar yechim bo'ladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "4x ≥ 200 tengsizligini musbat son 4 ga bo'lsak, qanday natija va ishora hosil bo'ladi?", "options": ["x ≥ 50 — ishora o'zgarmaydi", "x ≤ 50 — ishora o'zgaradi", "x > 50 — qat'iy bo'lib qoladi", "x ≥ 800 — ko'paytirish kerak"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "fill_blank", "prompt": "Qarorlar panjarasi: 4 − 2x < 10 ni soddalashtirib −2x < 6 holatiga keltiring. Bir amalda to'g'ri yakuniy yechimni yozing (ikkala qismni −2 ga bo'lib, ishorani o'zgartiring).", "answer_spec": { "type": "text_fuzzy", "expected": "x > −3", "accepted_answers": ["x > −3", "x>-3", "x > -3"], "allow_ai_fallback": true } },
+      { "type": "mcq", "prompt": "Sentence Filling: Agar tengsizlikning ikkala qismi ayni bir manfiy songa ko'paytirilsa yoki bo'linsa, tengsizlik ishorasi ____.", "options": ["qarama-qarshisiga o'zgaradi", "o'zgarishsiz qoladi", "tenglik ishorasiga aylanadi", "yo'qoladi"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 } }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_alg_15",
+    "expert_role": "business_consultant",
+    "title": "Maksimal Chegirma Chegarasi",
+    "intro": "Siz — yirik savdo kompaniyasining Biznes-tahlilchisisiz. Kompaniya oyiga 400 dona yangi smart-soat sotishni rejalashtirmoqda. Rentabellik uchun oylik foyda kamida 10 000 000 so'm bo'lishi kerak. Bazaviy narx 500 000 so'm, bir donaning o'zgaruvchan xarajati 200 000 so'm, oylik doimiy xarajatlar 60 000 000 so'm. Chegirmani d (o'nli kasr) deb belgilab, Foyda ≥ Minimal talab shartini qanoatlantiradigan maksimal chegirmani toping.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-qaror. Masalani modellashtirish",
+        "prompt": "Chegirmani d deb belgilab, yuqoridagi ma'lumotlar asosida foyda shartini to'g'ri tengsizlik ko'rinishida ifodalang.",
+        "options": [
+          { "id": "a", "label": "400 · [500000 · (1 − d)] ≥ 10000000 + 60000000", "is_correct": false, "consequence": "O'zgaruvchan xarajat (200000) hisobga olinmagan." },
+          { "id": "b", "label": "500000 · (1 − d) − 200000 ≥ 10000000", "is_correct": false, "consequence": "Sotuv hajmi (400) va doimiy xarajatlar (60000000) tushib qolgan." },
+          { "id": "c", "label": "400 · [500000 · (1 − d) − 200000] − 60000000 ≥ 10000000", "is_correct": true, "consequence": "To'g'ri: sotuv hajmi, chegirmali narx, o'zgaruvchan va doimiy xarajatlar, minimal foyda — hammasi hisobga olingan." },
+          { "id": "d", "label": "400 · (300000 − d) ≥ 70000000", "is_correct": false, "consequence": "Chegirma d narxga ko'paytirilishi kerak, alohida ayirilmaydi." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-qaror. Yechish strategiyasini tanlash",
+        "prompt": "400 · [500000 · (1 − d) − 200000] − 60000000 ≥ 10000000 tengsizligini d uchun yechish uchun avval qaysi qadam kerak?",
+        "options": [
+          { "id": "a", "label": "Qavslarni ochib, soddalashtirib, d li va sonli hadlarni ajratish (120000000 − 200000000d ≥ 70000000 ko'rinishiga keltirish)", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Darhol ikkala tarafdan kvadrat ildiz olish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Bozorning yillik 10 000 dona sig'imidan foydalanib hisoblash", "is_correct": false, "info_cost": { "time": "chalg'ituvchi ma'lumot" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-qaror. Tengsizlikni yakunlash",
+        "prompt": "Soddalashtirgandan keyin −200000000d ≥ −50000000 hosil bo'ldi. Ikkala qismni −200000000 ga bo'lganda d uchun qaysi to'g'ri shart kelib chiqadi?",
+        "options": [
+          { "id": "a", "label": "d ≥ 0.25 (ishorani o'zgartirmasdan)", "is_correct": false, "consequence": "Manfiy songa bo'lganda ishorani o'zgartirish unutilgan — eng keng tarqalgan xato." },
+          { "id": "b", "label": "d ≤ 0.25 (manfiy songa bo'lganda ishora qarama-qarshisiga o'zgaradi)", "is_correct": true, "consequence": "To'g'ri: −200000000 < 0, shuning uchun ≥ ishorasi ≤ ga aylanadi. d ≤ 0.25." },
+          { "id": "c", "label": "d ≤ −0.95", "is_correct": false, "consequence": "Arifmetik xato: −50000000 / −200000000 = 0.25, −0.95 emas." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-qaror. Asosiy tushunchani aniqlash",
+        "prompt": "Bu masalada to'g'ri natijaga (d ≤ 0.25) erishishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Tengsizlikni manfiy songa bo'lganda ishora qarama-qarshisiga o'zgaradi", "is_correct": true },
+          { "id": "c2", "label": "Diskriminant manfiy bo'lsa ildiz yo'q", "is_correct": false },
+          { "id": "c3", "label": "Bozorning umumiy hajmi cheklovni belgilaydi", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-qaror. Fikringizni asoslang",
+        "prompt": "Hisob-kitob d ≤ 0.25 natijasini berdi. Rahbariyatga qanday biznes-tavsiya berasiz va nima uchun \"kamida 25% chegirma kerak\" degan xulosa xato bo'lar edi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["maksimal chegirma", "25% dan oshmasligi", "d ≤ 0.25", "ishorani o'zgartirish", "kichik yoki teng"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_alg_15_neg_div",
+      "instructions": "5(x − 2) < 8x + 2 tengsizligining yechimi 5 bosqichda berilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "5(x − 2) < 8x + 2", "is_broken": false },
+        { "id": "b2", "text": "5x − 10 < 8x + 2", "is_broken": false },
+        { "id": "b3", "text": "5x − 8x < 2 + 10", "is_broken": false },
+        { "id": "b4", "text": "−3x < 12", "is_broken": false },
+        { "id": "b5", "text": "x < −4", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "x > −4", "accepted_answers": ["x > −4", "x>-4", "x > -4"], "allow_ai_fallback": true },
+      "hint": "Tengsizlikning ikkala qismini manfiy songa (−3 ga) bo'lganda nima sodir bo'ladi?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? Oxirgi qadamda ikkala qism manfiy son −3 ga bo'linadi. Manfiy songa bo'lishda tengsizlik ishorasi (<) qarama-qarshisiga (>) o'zgarishi kerak. Shuning uchun x < −4 emas, balki x > −4 bo'lishi lozim edi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_alg_15",
+      "case_setup": "Tengsizliklarni yechish atamalari, amallari va natijalarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "−3x < 12 da noma'lumni topish", "right": "x > −4" },
+        { "id": "p2", "left": "Qat'iy tengsizlik (>, <) yechimini son o'qida tasvirlash", "right": "Chegara nuqta ochiq (bo'yalmagan) doiracha bilan belgilanadi" },
+        { "id": "p3", "left": "Noqat'iy tengsizlik (≥, ≤) yechimini son o'qida tasvirlash", "right": "Chegara nuqta yopiq (bo'yalgan) doiracha bilan belgilanadi" },
+        { "id": "p4", "left": "2(x+1)+5 > 3−(1−2x) tengsizligini yechish", "right": "0·x > −5, ya'ni yechim x — istalgan son" },
+        { "id": "p5", "left": "3(2−x)−2x > 5−3x tengsizligini yechish", "right": "0·x > 1, ya'ni yechimlari yo'q" },
+        { "id": "p6", "left": "Tengsizlikda hadlarni bir qismdan ikkinchisiga o'tkazish", "right": "Hadning ishorasi qarama-qarshisiga o'zgaradi, tengsizlik ishorasi saqlanadi" },
+        { "id": "p7", "left": "Tengsizlikning ikkala qismini manfiy songa bo'lish", "right": "Tengsizlik ishorasi qarama-qarshisiga o'zgaradi" }
+      ],
+      "checkpoints": [
+        { "question": "−3x < 12 qaysi natijaga juftlanadi?", "options": ["x < −4", "x > −4", "x > 4"], "correct_index": 1 },
+        { "question": "Qat'iy tengsizlik (>, <) son o'qida qanday doiracha bilan belgilanadi?", "options": ["Ochiq (bo'yalmagan) doiracha", "Yopiq (bo'yalgan) doiracha", "Doiracha umuman ishlatilmaydi"], "correct_index": 0 },
+        { "question": "0·x > 1 va 0·x > −5 bir xil yechim beradimi?", "options": ["Ha", "Yo'q — biri yechimsiz, biri istalgan son"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "−3x < 12 va x > −4 kartochkalari nima uchun bir-biriga mos keladi? Nima uchun x < −4 noto'g'ri juftlik bo'lar edi? Bu juftlikni qaysi asosiy qoida bog'lab turganini tushuntirib bering.",
+      "expected_components": ["manfiy songa bo'lish", "ishora qarama-qarshisiga o'zgaradi", "−3 ga bo'lish"],
+      "consequence": { "correct_path": "Har bir amalni to'g'ri natijaga uladingiz.", "wrong_path": "Manfiy songa bo'lganda ishorani saqlab qolib x < −4 deb adashish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_alg_15",
+      "case_setup": "Har bir \"Qadam\" bo'lagini unga mos keluvchi \"Natija\" bo'lagi bilan to'g'ri yo'nalishda juftlang. Har bir bog'lanish faqat tengsizliklarni yechish xossalariga asoslanishi kerak. Qadam ↔ natija.",
+      "pieces": [
+        { "id": "P1", "label": "Qadam: −3x < 12 tengsizligida noma'lumni topish", "role": "step" },
+        { "id": "P2", "label": "Qadam: 4x ≥ 200 tengsizligida noma'lumni topish", "role": "step" },
+        { "id": "P3", "label": "Natija: x > −4", "role": "result" },
+        { "id": "P4", "label": "Natija: x ≥ 50", "role": "result" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (−3x < 12) qaysi natijaga ulanadi?", "options": ["P4 (x ≥ 50)", "P3 (x > −4)"], "correct_index": 1 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Qadam ↔ natija", "O'xshash ma'no"], "correct_index": 0 },
+        { "q": "Nima uchun P1 da ishora (<) (>) ga o'zgardi, P2 da (≥) o'zgarmadi?", "options": ["P1 da manfiy songa (−3), P2 da musbat songa (4) bo'linadi", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Qaysi matematik xossa P1 → P3 juftligini to'g'ri qiladi va nima uchun bu yerda tengsizlik ishorasi (<) o'zgarib (>) qoldi? Xuddi shu xossa P2 → P4 juftligiga qanday ta'sir qiladi va nima uchun bu holda ishora (≥) o'zgarishsiz qoldi?",
+      "expected_components": ["manfiy songa bo'lish ishorani o'zgartiradi", "musbat songa bo'lish ishorani saqlaydi", "−3 manfiy, 4 musbat"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Siz ikkita turli tengsizlikni yechdingiz: 1) x ≥ −2 va 2) x > −2. Endi bu yechimlarni son o'qida tasvirlashingiz kerak, lekin ularning tasviri bir-biridan farq qilishini payqadingiz.",
+      "why": "Nima uchun birinchi yechim (x ≥ −2) son o'qida −2 nuqtasi bo'yalgan (yopiq) doiracha bilan, ikkinchisi (x > −2) esa bo'yalmagan (ochiq) doiracha bilan belgilanadi?",
+      "how": "Bu ikki yechimlar to'plamini ikkita alohida son o'qida qanday tasvirlaysiz? Har birining chizmasini so'z bilan tavsiflang (qaysi nuqta, qaysi turdagi doiracha, shtrix qaysi tomonga).",
+      "what": "Bu ikki yechimlar to'plami o'rtasidagi yagona, lekin eng muhim amaliy farq nima? −2 sonining o'zi har bir holatda qanday rol o'ynaydi?",
+      "prompt": "x ≥ −2 va x > −2 yechimlarini son o'qida tasvirlashdagi farqni tushuntiring: qaysi doiracha qaysi tengsizlik uchun va nima uchun?",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["≥ va > belgilarining nomlanishi va ma'nosidagi farq nimada?", "Agar x harorat bo'lsa, −2 gradus birinchi holatda mumkinmi? Ikkinchisida-chi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "x ≥ −2 da −2 yopiq doiracha, x > −2 da −2 ochiq doiracha", "accepted_answers": ["yopiq doiracha", "ochiq doiracha", "noqat'iy yopiq, qat'iy ochiq"], "allow_ai_fallback": true },
+      "expected_concepts": ["qat'iy tengsizlik ochiq doiracha", "noqat'iy tengsizlik yopiq doiracha", "chegara nuqta yechimga kiradimi"],
+      "correct_feedback": "Ajoyib! Siz qat'iy va noqat'iy tengsizliklar orasidagi farqni hamda ularning son o'qidagi tasviri va amaliy ma'nosini to'g'ri tushuntirib berdingiz.",
+      "partial_feedback": "Siz yechimlarni son o'qida to'g'ri tasvirladingiz, lekin nima uchun aynan shunday tasvirlanishini asoslab berishda qiynaldingiz. ≥ va > belgilari orasidagi fundamental farqni o'ylang.",
+      "wrong_feedback": "Hali emas. Tasvirlar orasidagi farq faqat chizish usuli emas, balki matematik ma'noga ega. ≥ belgisidagi = nimani anglatishini va bu yechimlar to'plamiga qanday ta'sir qilishini o'ylab ko'ring."
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Bir kichik korxonaning haftalik foydasini (ming so'mda) (3x − 20)/4 + x/2 ifodasi orqali hisoblash mumkin, bu yerda x — sotilgan mahsulotlar soni. Rahbariyat haftalik foyda kamida 15 ming so'm bo'lishini ta'minlashi kerak: (3x − 20)/4 + x/2 ≥ 15.",
+      "why": "Nima uchun bu tengsizlikni yechishning eng qulay birinchi qadami ikkala qismni umumiy maxrajga (4 ga) ko'paytirish hisoblanadi va nima uchun tengsizlik ishorasi o'zgarmaydi?",
+      "how": "Shu xossadan foydalanib, tengsizlikni qadamma-qadam yeching va korxona bir haftada sotishi kerak bo'lgan mahsulotlarning minimal sonini aniqlang.",
+      "what": "Siz topgan natija korxona uchun amalda nimani anglatadi? Agar ular siz topgan sondan bitta kam mahsulot sotsa, nima sodir bo'ladi?",
+      "prompt": "(3x − 20)/4 + x/2 ≥ 15 tengsizligini yeching va x ning minimal qiymatini toping.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Ikkala qismni musbat son 4 ga ko'paytirish ishorani o'zgartiradimi?", "(3x − 20)/4 ni 4 ga ko'paytirganda 3x − 20, x/2 ni 4 ga ko'paytirganda 2x, 15 ni 4 ga ko'paytirganda 60 hosil bo'ladi: 3x − 20 + 2x ≥ 60 → 5x ≥ 80 → x ≥ 16."],
+      "answer_spec": { "type": "numeric", "expected": 16, "canonical_display": "x ≥ 16", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["musbat songa ko'paytirish ishorani saqlaydi", "x ≥ 16", "minimal qiymat talqini"],
+      "correct_feedback": "Juda yaxshi! Siz tengsizlikni yechishning to'g'ri strategiyasini tanladingiz, xossasini to'g'ri asosladingiz va natijani amaliy vaziyat uchun aniq talqin qila oldingiz: korxona haftasiga kamida 16 dona sotishi kerak.",
+      "partial_feedback": "Siz x ning qiymatini to'g'ri hisobladingiz, lekin nima uchun aynan bu usul ishlatilishini va qaysi xossaga asoslanishini tushuntirishga qiynaldingiz.",
+      "wrong_feedback": "Hali emas. Hisoblashda xatolik bor. Har bir hadni umumiy maxraj 4 ga to'g'ri ko'paytirganingizga ishonch hosil qiling: (3x − 20)/4 ni, x/2 ni va 15 ni."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Bir fermer har bir kilogramm olma uchun 4000 so'm daromad oladi, kundalik xarajati esa 60 000 so'm. Fermer kunlik zarar 20 000 so'mdan oshmasligini ta'minlamoqchi: 60000 − 4000x ≤ 20000, bu yerda x — sotilgan olmalar miqdori (kg).",
+      "why": "60000 − 4000x ≤ 20000 ni −4000x ≤ −40000 holatiga keltirgandan so'ng, keyingi qadamda ishorani (≤) qarama-qarshisiga (≥) o'zgartirish nima uchun matematik jihatdan majburiy?",
+      "how": "Shu qoidaga amal qilib, tengsizlikni to'liq yeching va fermer kuniga kamida necha kilogramm olma sotishi kerakligini aniqlang.",
+      "what": "Olingan javob fermer uchun amalda nimani anglatadi? Agar u ishorani o'zgartirishni unutib, x ≥ 10 o'rniga x ≤ 10 olsa, bu qanday noto'g'ri qarorga olib kelishi mumkin edi?",
+      "prompt": "60000 − 4000x ≤ 20000 tengsizligini yeching va fermer kuniga kamida necha kg sotishi kerakligini toping.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["4 < 10 ni −2 ga bo'lsangiz nima bo'ladi? −2 va −5 dan qaysi biri katta?", "−4000x ≤ −40000 ni −4000 ga bo'ling; ishora o'zgargach x ≥ 10."],
+      "answer_spec": { "type": "numeric", "expected": 10, "canonical_display": "x ≥ 10", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["manfiy songa bo'lish ishorani o'zgartiradi", "x ≥ 10", "kamida 10 kg"],
+      "correct_feedback": "A'lo darajada! Siz manfiy songa bo'lishdagi eng muhim qoidani qo'lladingiz, uning sababini tushuntirdingiz va xatoning amaliy oqibatlarini tahlil qildingiz: fermer kuniga kamida 10 kg sotishi kerak.",
+      "partial_feedback": "Siz javobni to'g'ri topdingiz, ammo ishorani o'zgartirish sababini to'liq asoslay olmadingiz. Nima uchun manfiy songa bo'lish \"katta-kichik\" munosabatini teskarisiga o'zgartiradi?",
+      "wrong_feedback": "Hali emas. Eng ko'p uchraydigan xatoga yo'l qo'ydingiz: manfiy songa bo'lishda ishorani o'zgartirishni unutdingiz. 10 > 4 to'g'ri, lekin −10 > −4 noto'g'ri ekanligini yodda tuting."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Ikki raqobatchi mobil kompaniya: \"A\" da oylik 60 000 so'm + har GB uchun 10 000 so'm; \"B\" da oylik 75 000 so'm + har GB uchun 10 000 so'm. Siz \"A\" qachon \"B\" dan qimmatroq bo'lishini aniqlamoqchisiz: 60000 + 10000x > 75000 + 10000x, bu yerda x — qo'shimcha GB lar soni.",
+      "why": "Bu tengsizlikni soddalashtirishda nima uchun noma'lum x qatnashgan hadlar (10000x) to'liq yo'qolib ketadi va bu masalaning shartiga ko'ra nimani anglatadi?",
+      "how": "Noma'lumlarni bir tomonga, sonlarni ikkinchi tomonga o'tkazib, tengsizlikni oxirigacha yeching. Qanday yakuniy sonli tengsizlikka duch kelasiz?",
+      "what": "Yakuniy natija (60000 > 75000 kabi noto'g'ri tengsizlik) dastlabki savolga — \"A\" qachon \"B\" dan qimmatroq bo'ladi? — qanday javob beradi?",
+      "prompt": "60000 + 10000x > 75000 + 10000x tengsizligini yeching va \"A\" kompaniyasi \"B\" dan qachon qimmatroq bo'lishini ayting.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["10000x hadini chap tomonga o'tkazsangiz noma'lum oldida qanday koeffitsiyent qoladi?", "0·x > 15000 hech qachon to'g'ri bo'lmaydi, demak yechim yo'q — \"A\" hech qachon qimmatroq emas."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "yechimlari yo'q", "accepted_answers": ["yechim yo'q", "yechimlari yo'q", "hech qachon", "0·x > 15000"], "allow_ai_fallback": true },
+      "expected_concepts": ["0·x > 15000", "yechim yo'q", "A hech qachon qimmatroq emas"],
+      "correct_feedback": "To'liq va aniq javob! Siz noma'lum yo'qoladigan maxsus holni to'g'ri aniqladingiz, uni matematik yechdingiz va natijani amaliy vaziyat uchun mukammal talqin qildingiz: \"A\" hech qachon \"B\" dan qimmatroq emas.",
+      "partial_feedback": "Siz noma'lum x ning yo'qolib ketishini to'g'ri ko'rsatdingiz, lekin olingan noto'g'ri tengsizlik amalda nimani anglatishini tushuntirishda ikkilandingiz. 0·x > 15000 x ning biror qiymatida to'g'ri bo'lishi mumkinmi?",
+      "wrong_feedback": "Hali emas. x hadlari yo'qolganidan keyin to'xtab qoldingiz — bu vaziyatning o'zi bir javobdir. 60000 > 75000 kabi absurd natija boshlang'ich shartda mantiqiy ziddiyat borligini anglatmaydimi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz bir noma'lumli chiziqli tengsizliklarni yechishni o'rgandingiz. Asosiy xossa: tengsizlikning ikkala qismini manfiy songa bo'lganda yoki ko'paytirganda tengsizlik ishorasi qarama-qarshisiga o'zgaradi; musbat songa esa o'zgarmaydi. Bu bilim foydani hisoblash yoki xarajatlarni cheklash kabi amaliy masalalarni hal qilishda muhimdir.",
+    "question": "Do'stingizga tengsizlikni manfiy songa bo'lganda nima uchun uning ishorasi o'zgarishini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga noma'lum yo'qolib qoladigan maxsus tengsizliklar (0·x > b yoki 0·x < b) bo'yicha yangi misollarni va yechimni son o'qida (ochiq/yopiq doiracha) tasvirlashni mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz tengsizliklarni soddalashtirishning asosiy qadamlarini — hadlarni o'tkazish va yechimni son o'qida to'g'ri tasvirlashni yaxshi o'zlashtirdingiz. Noma'lum yo'qoladigan maxsus holatlar (0·x > b) natijasini talqin qilishni mustahkamlash foydali.",
+      "strong_points": [
+        "Hadlarni bir qismdan ikkinchisiga o'tkazish va soddalashtirish",
+        "Yechimni son o'qida to'g'ri tasvirlash (x > a, x ≤ b; ochiq/yopiq doiracha)"
+      ],
+      "weak_points": [
+        "Manfiy songa bo'lganda tengsizlik ishorasini o'zgartirishni unutmaslik",
+        "Noma'lum yo'qolib, 0·x > b yoki 0·x < b holatlarida natijani talqin qilish"
+      ],
+      "next_steps": [
+        "Manfiy songa bo'lish bilan bog'liq tengsizliklarni mashq qiling",
+        "Maxsus holatlar (yechim yo'q / istalgan son) bo'yicha yangi misollar ishlang"
+      ],
+      "weak_point_keywords": ["ishorani o'zgartirish", "manfiy songa bo'lish", "maxsus hol", "talqin"],
+      "strong_point_keywords": ["hadlarni o'tkazish", "son o'qi", "doiracha", "soddalashtirish"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan — ayniqsa noma'lum yo'qolib qoladigan maxsus tengsizliklar."
+    }
+  }
+}

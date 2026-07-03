@@ -1,0 +1,327 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "1-mavzu. Ko'pburchak ichki va tashqi burchaklarining xossasi",
+    "subject_display": "Geometriya",
+    "section": "1-mavzu",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Sodda yopiq siniq chiziq", "def": "O'z-o'zini kesib o'tmaydigan, boshlang'ich va oxirgi nuqtalari ustma-ust tushadigan siniq chiziq. U ko'pburchakning chegarasini hosil qiladi.", "cluster": "QOIDA" },
+    { "term": "Ko'pburchak", "def": "Sodda yopiq siniq chiziq va u bilan chegaralangan tekislik qismi. Siniq chiziq zvenolari ko'pburchakning tomonlari hisoblanadi.", "cluster": "QOIDA" },
+    { "term": "Ko'pburchak uchlari", "def": "Siniq chiziqni hosil qiluvchi kesmalarning (tomonlarning) tutashgan nuqtalari. Masalan, A, B, C, D nuqtalar to'rtburchakning uchlari.", "cluster": "QOIDA" },
+    { "term": "Ko'pburchak tomonlari", "def": "Ko'pburchakni chegaralovchi sodda yopiq siniq chiziqning har bir kesmasi.", "cluster": "QOIDA" },
+    { "term": "Qavariq ko'pburchak", "def": "Ixtiyoriy tomonini o'z ichiga olgan to'g'ri chiziqqa nisbatan bir tomonda yotuvchi ko'pburchak. Uning barcha ichki burchaklari 180° dan kichik bo'ladi.", "cluster": "QOIDA" },
+    { "term": "Ko'pburchakning ichki burchagi", "def": "Ko'pburchakning bir uchida uchrashuvchi tomonlari hosil qilgan, uning ichki sohasida yotuvchi burchak. n-burchakda n ta ichki burchak mavjud.", "cluster": "QOIDA" },
+    { "term": "Qavariq n-burchak ichki burchaklari yig'indisi formulasi", "def": "S = 180°(n − 2). Ko'pburchakni bitta uchidan o'tkazilgan diagonallar yordamida (n − 2) ta uchburchakka ajratish orqali topiladi.", "cluster": "METOD" },
+    { "term": "Muntazam n-burchakning bitta ichki burchagi", "def": "αₙ = 180°(n − 2)/n. Masalan, muntazam to'rtburchak (kvadrat) uchun: 180°(4 − 2)/4 = 90°.", "cluster": "METOD" },
+    { "term": "Ko'pburchakning tashqi burchagi", "def": "Ko'pburchakning berilgan uchidagi ichki burchagiga qo'shni bo'lgan burchak. Ichki va tashqi burchak yig'indisi har doim 180° ga teng.", "cluster": "QOIDA" },
+    { "term": "Tashqi burchaklar yig'indisi tomonlar soniga bog'liqmi?", "def": "Yo'q. Ixtiyoriy qavariq ko'pburchakning har bir uchidan bittadan olingan tashqi burchaklari yig'indisi har doim 360° bo'ladi. n ortishi bilan yig'indi ortadi deb o'ylash xatodir.", "cluster": "TAHLIL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Sakkizburchak maydon burchaklari",
+    "case_setup": {
+      "story": "Siz shaharsozlik loyihasining bosh tahlilchisisiz. Hozirda yangi madaniyat markazi oldidagi ochiq maydonni (plaza) loyihalashtirish ustida ish olib boryapsiz. Loyiha chizmasida ushbu maydon sakkizburchak shaklida bo'lishi ko'zda tutilgan. Bosh pudratchi sizga hisobot taqdim etdi. Hisobotda aytilishicha, maydonning barcha ichki burchaklari yig'indisi roppa-rosa 1200° ni tashkil etadi. Agar bu ko'rsatkich noto'g'ri bo'lsa, granit plitkalarni kesishda burchaklar bir-biriga mos kelmay qoladi va qurilishda jiddiy nuqson yuzaga keladi. Siz ushbu ma'lumotning geometrik jihatdan to'g'ri yoki noto'g'riligini aniqlashingiz va loyihani tasdiqlashingiz yoki rad etishingiz kerak.",
+      "role": "Shaharsozlik loyihasining bosh tahlilchisi",
+      "task": "Pudratchi bergan burchaklar yig'indisini geometrik jihatdan tekshiring va loyihani tasdiqlang yoki rad eting."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Pudratchi bergan ma'lumotni tekshirish uchun qaysi geometrik tushunchaga tayanish kerak?",
+        "options": [
+          "Qavariq n-burchakning tashqi burchaklari yig'indisi",
+          "Ko'pburchakning ichki burchaklari yig'indisi formulasi",
+          "Muntazam ko'pburchakning faqat bitta burchagini hisoblash usuli"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Darslikka ko'ra, har qanday qavariq n-burchakning ichki burchaklari yig'indisi 180°(n − 2) ga teng. Bu yerda n — ko'pburchakning tomonlari sonini bildiradi.",
+        "feedback": "Maydonning barcha ichki burchaklari yig'indisi haqida gap ketayotganligi sababli, aynan ichki burchaklar yig'indisi formulasi kerak bo'ladi."
+      },
+      {
+        "kind": "decide",
+        "question": "Agar maydon sakkizburchak (n = 8) shaklida bo'lsa, uning ichki burchaklari yig'indisi aslida necha darajaga teng bo'lishi shart?",
+        "options": [
+          "1080°",
+          "1200°",
+          "1440°",
+          "900°"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 },
+        "learning_block": "Ko'pburchakning bir uchidan o'tkazilgan diagonallar uni (n − 2) ta uchburchakka ajratadi. Har bir uchburchakning burchaklari yig'indisi 180° bo'lgani uchun, umumiy yig'indi har doim 180 ning butun karralisi bo'lishi shart.",
+        "feedback": "Formulaga ko'ra: 180° × (8 − 2) = 180° × 6 = 1080°. Pudratchi ko'rsatgan 1200° hisob-kitobga to'g'ri kelmaydi."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun 1200° ko'rsatkichi har qanday qavariq ko'pburchak uchun xato hisoblanadi?",
+        "options": [
+          "Chunki sakkizburchakning burchaklari yig'indisi faqat 360° bo'lishi mumkin.",
+          "Chunki 1200 soni 180 ga qoldiqsiz bo'linmaydi, ya'ni (n − 2) butun son chiqmaydi.",
+          "Chunki 1200° faqat oltiburchaklar uchun xos bo'lgan ko'rsatkichdir."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Ixtiyoriy qavariq ko'pburchakning burchaklari yig'indisini 180 ga bo'lganda butun son (n − 2) hosil bo'lishi shart. 1200 / 180 ≈ 6,66 — bu esa geometrik imkonsizlikdir.",
+        "feedback": "Yig'indi 180 ga qoldiqsiz bo'linmasa, (n − 2) butun son chiqmaydi va bunday qavariq ko'pburchak mavjud bo'la olmaydi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gap bilan javob bering: (1) Vaziyatda qaysi geometrik tushunchani aniqladingiz? (2) Nima uchun aynan shu hisoblash usulini tanladingiz? (3) Agar n − 2 o'rniga shunchaki n ni hisobga olganda qanday xato yuz bergan bo'lardi?",
+      "min_chars": 80,
+      "concept_keywords": ["ichki burchaklar yig'indisi", "180°(n − 2)", "qavariq ko'pburchak"],
+      "method_keywords": ["formula qo'llash", "n = 8", "180 × 6 = 1080°"],
+      "mistake_keywords": ["1200°", "180 ga bo'linmaydi", "n − 2 butun son emas"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz pudratchining hisobotini rad etasiz va chizmani qayta hisoblashni talab qilasiz. Maydonning burchaklari yig'indisi 1080° ekanligini isbotlaysiz. Natijada plitkalar bir-biriga aniq mos tushadi, burchaklarda bo'shliqlar qolmaydi va plaza mustahkam quriladi.",
+      "wrong_path": "Siz pudratchining 1200° lik ko'rsatkichini tasdiqlaysiz. Qurilish boshlanganda plitkalar rejalashtirilgan burchak ostida birlashmaydi. Plitkalarni qayta kesishga to'g'ri keladi, bu esa ortiqcha xarajat va vaqt yo'qotilishiga olib keladi. Geometrik nuqtai nazardan ichki burchaklar yig'indisi 180 ga bo'linmaydigan qavariq ko'pburchak mavjud bo'lishi mumkin emas."
+    },
+    "feedback_summary": {
+      "student_understood": "Ko'pburchakning ichki burchaklari yig'indisi uning tomonlari soniga qat'iy bog'liqligini aniqladingiz.",
+      "mistake_appeared": "Ko'pburchak turidan qat'i nazar, burchaklar yig'indisi ixtiyoriy son bo'lishi mumkin deb o'ylash yoki formulani noto'g'ri qo'llash ehtimoli bor edi.",
+      "what_to_review": "Ko'pburchak ichki burchaklari yig'indisi teoremasi va uning isbotidagi (n − 2) uchburchakka ajratish tamoyilini qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha checkpointlarga to'g'ri javob bering",
+        "DPE bo'limida barcha uchta komponentni (tushuncha, usul, xato) yoriting",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "Sodda yopiq siniq chiziq tushunchasining eng aniq ta'rifini ko'rsating.", "options": ["O'z-o'zini kesib o'tmaydigan, boshlang'ich va oxirgi nuqtalari ustma-ust tushadigan siniq chiziq.", "Ixtiyoriy nuqtalarda o'zini-o'zi kesib o'tadigan va barcha uchlari bir chiziqda yotmaydigan yopiq chiziq.", "Boshlang'ich va oxirgi nuqtalari bir-biriga ulanmagan, faqat kesmalardan tashkil topgan chiziq.", "Tekislikda yotuvchi va faqat ikkita nuqtasi tutashgan cheksiz to'g'ri chiziq bo'laklari."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Qavariq ko'pburchakning barcha ichki burchaklari har doim _____ gradusdan kichik bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "180", "accepted_answers": ["180", "180°", "bir yuz sakson"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "choose_explanation", "prompt": "Nima uchun ixtiyoriy qavariq n-burchakning ichki burchaklari yig'indisi 180°(n − 2) formulasi bilan hisoblanadi?", "options": ["Ko'pburchakni bitta uchidan o'tkazilgan diagonallar orqali (n − 2) ta uchburchakka ajratish mumkin va har bir uchburchak burchaklari yig'indisi 180° ga teng.", "Har bir n-burchakda n ta uchburchak mavjud bo'lib, ularning umumiy burchaklari yig'indisi doimo 180° ko'paytirilgan tomonlar soniga teng bo'ladi.", "Chunki ko'pburchakning har bir uchidagi burchak 180° bo'lib, undan faqat ikkita chetki burchak ayirib tashlanadi.", "Bu formula aylana burchagi 360° ni ikkiga bo'lib, uni ko'pburchak diagonallari soniga ko'paytirish orqali kelib chiqqan."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "Ko'pburchakning tashqi burchagi qanday aniqlanadi?", "options": ["Ko'pburchakning berilgan uchidagi ichki burchagiga qo'shni bo'lgan burchak.", "Ko'pburchakning ikki qarama-qarshi tomoni kesishishidan hosil bo'lgan burchak.", "Ko'pburchakning ichki sohasida yotmaydigan ixtiyoriy burchak.", "Ko'pburchak ichki burchagini 360 gradusga to'ldiruvchi burchak."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "fill_blank", "prompt": "Ixtiyoriy qavariq ko'pburchakning har bir uchidan bittadan olingan tashqi burchaklari yig'indisi har doim _____ gradusga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "360", "accepted_answers": ["360", "360°", "uch yuz oltmish"], "allow_ai_fallback": true }, "flashcard_ref": "card_10" },
+      { "type": "choose_explanation", "prompt": "“Ko'pburchak” tushunchasining tarkibiy qismlari haqida berilgan fikrlardan qaysi biri to'g'ri?", "options": ["Ko'pburchak — bu sodda yopiq siniq chiziq va u bilan chegaralangan tekislik qismidir.", "Ko'pburchak faqat tekislikda yotuvchi bir nechta nuqtalar va ularni tutashtiruvchi kesmalardan iborat.", "Ko'pburchak — bu ixtiyoriy yopiq chiziq bo'lib, uning ichki va tashqi sohasi mavjud bo'lishi kifoya.", "Ko'pburchak deb faqat tomonlari va burchaklari teng bo'lgan geometrik shaklga aytiladi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "mcq", "prompt": "Muntazam n-burchakning bitta ichki burchagi αₙ ni hisoblash formulasi qaysi javobda to'g'ri berilgan?", "options": ["αₙ = 180°(n − 2)/n", "αₙ = 180°(n − 2)", "αₙ = 360°/n", "αₙ = 180°(n − 3)/n"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "fill_blank", "prompt": "Siniq chiziqni hosil qiluvchi kesmalarning o'zaro tutashgan nuqtalari ko'pburchakning _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "uchlari", "accepted_answers": ["uchlari", "uchi", "uchlar"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Ko'pburchakning tomoni tushunchasiga eng mos keluvchi izohni tanlang.", "options": ["Siniq chiziqni tashkil qiluvchi har bir alohida kesma.", "Ikki qo'shni bo'lmagan uchlarni tutashtiruvchi to'g'ri chiziq bo'lagi.", "Ko'pburchak uchlari orasidagi burchak darajasi.", "Ko'pburchak ichidagi ixtiyoriy nuqtani uchi bilan birlashtiruvchi kesma."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Ko'pburchakning bir uchida uchrashuvchi tomonlari hosil qilgan va uning ichki sohasida yotuvchi burchak — bu ko'pburchakning _____ burchagi deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "ichki", "accepted_answers": ["ichki", "ichki burchak"], "allow_ai_fallback": true }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "Qarorlar tori: quyidagi tasdiqlardan qaysi biri geometrik qoidaga to'g'ri mos keladi?", "options": ["Qavariq beshburchakning ichki burchaklari yig'indisi 540° ga teng.", "Qavariq sakkizburchakning tashqi burchaklari yig'indisi 1080° ni tashkil etadi.", "Ixtiyoriy qavariq n-burchakning ichki burchaklari yig'indisi S = 180° · n formulasi bilan hisoblanadi.", "Ko'pburchakning tomonlari soni ortishi bilan tashqi burchaklari yig'indisi ham ortadi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "choose_explanation", "prompt": "Qarorlar tori: “Qavariq sakkizburchakning tashqi burchaklari yig'indisi 1080° ni tashkil etadi” tasdig'i nega xato?", "options": ["Tashqi burchaklar yig'indisi tomonlar sonidan qat'i nazar har doim 360° bo'ladi; 1080° — bu sakkizburchakning ichki burchaklari yig'indisi.", "Tashqi burchaklar yig'indisi faqat muntazam ko'pburchaklarda o'zgarmasdir.", "Sakkizburchakning tashqi burchaklari yig'indisi aslida 720° ga teng.", "Tasdiq to'g'ri, hech qanday xato yo'q."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "choose_explanation", "prompt": "Gapni to'ldiring: Qavariq ko'pburchakning har bir uchidan bittadan olingan tashqi burchaklari yig'indisi ____.", "options": ["tomonlar sonidan qat'i nazar har doim 360° ga teng bo'ladi", "tomonlar soni ortishi bilan 180°(n − 2) qonuniyati bo'yicha ortib boradi", "faqat barcha tomonlari va burchaklari teng bo'lgan muntazam ko'pburchaklar uchungina o'zgarmasdir", "ko'pburchakning ichki burchaklari yig'indisiga har doim miqdor jihatidan teng bo'ladi"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_geo_01",
+    "expert_role": "city_planner",
+    "title": "Geometriya bog'i: pavilonlar burchaklarini hisoblash",
+    "intro": "Siz landshaft me'morisiz. Zamonaviy “Geometriya bog'i” loyihasida muntazam beshburchak “Ochiq kutubxona”, muntazam oltiburchak “Shaxmat kafesi” va 10 tomonli gulzor bor. Har bir inshootning tomoni 6 metr. Qurilish brigadasi aniq burchak graduslarini talab qilmoqda. Tomon uzunligi burchaklarni hisoblashda qanday rol o'ynashiga e'tibor bering.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. “Ochiq kutubxona” (beshburchak) ichki burchaklari yig'indisi",
+        "prompt": "Qurilish guruhi barcha devorlarning umumiy burilish burchagini bilishi kerak. Beshburchak shaklidagi binoning ichki burchaklari yig'indisi necha darajaga teng?",
+        "options": [
+          { "id": "a", "label": "900°", "is_correct": false, "consequence": "Bu ko'rsatkich yettiburchakning (n = 7) yig'indisiga to'g'ri keladi, beshburchakka emas." },
+          { "id": "b", "label": "540°", "is_correct": true, "consequence": "To'g'ri: 180°(5 − 2) = 180° × 3 = 540°. Binoning geometrik asosi aniq hisoblandi." },
+          { "id": "c", "label": "360°", "is_correct": false, "consequence": "360° — bu to'rtburchakning (n = 4) ichki burchaklari yig'indisi." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. “Shaxmat kafesi” (oltiburchak) bitta burchagi uchun ma'lumot",
+        "prompt": "Kafening har bir burchagida metall ustun o'rnatiladi. Bitta ichki burchakni aniqlash uchun qaysi ma'lumot hal qiluvchi?",
+        "options": [
+          { "id": "a", "label": "Bino muntazam oltiburchak (n = 6) ekanligi: yig'indi 720° ni 6 ta teng burchakka bo'lish.", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Tomon uzunligi 6 metr ekanligi.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Kafedagi ustunlar soni.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. O'nburchakli gulzorning tashqi burchagi",
+        "prompt": "Sug'orish tizimi gulzorning har bir uchida tashqi burchak bo'ylab suv purkaydi. Muntazam o'nburchak (n = 10) shaklidagi gulzorning bitta uchidagi tashqi burchagini buyurtmaga qanday yozasiz?",
+        "options": [
+          { "id": "a", "label": "144°", "is_correct": false, "consequence": "144° — bu muntazam o'nburchakning bitta ichki burchagi, tashqi burchagi emas." },
+          { "id": "b", "label": "36°", "is_correct": true, "consequence": "To'g'ri: tashqi burchaklar yig'indisi 360° ni n ga bo'lish — 360° / 10 = 36°." },
+          { "id": "c", "label": "18°", "is_correct": false, "consequence": "18° — bu 360° ni 20 ga bo'lgandagi qiymat, tomonlar soni noto'g'ri olingan." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Loyihani sof matematik aniqlikda yakunlashda qaysi tushuncha hal qiluvchi bo'ldi va qaysi ma'lumot ortiqcha edi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Ko'pburchakning ichki va tashqi burchaklari faqat tomonlar soniga bog'liq; tomon uzunligi (6 metr) ortiqcha ma'lumot (red herring).", "is_correct": true },
+          { "id": "c2", "label": "Tomon uzunligi 6 metr burchaklarni aniqlashda asosiy omil edi.", "is_correct": false },
+          { "id": "c3", "label": "Gulzorning bog' chetida joylashuvi hisob-kitobga ta'sir qildi.", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun ko'pburchakning tomoni uzunligi (6 metr) burchaklarni hisoblashda hech qanday rol o'ynamadi? Ichki burchaklar yig'indisi va tashqi burchaklar yig'indisi tomonlar soniga qanday bog'liq ekanligini 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["tomon uzunligi ahamiyatsiz", "6 metr red herring", "faqat tomonlar soniga bog'liq", "ortiqcha ma'lumot", "180°(n − 2)", "tashqi burchaklar yig'indisi 360°"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_geo_01",
+      "instructions": "Ichki burchaklari yig'indisi 1260° ga teng bo'lgan qavariq ko'pburchakning tomonlari sonini (n) topish bosqichlari 5 ta blokda keltirilgan. Aynan bitta blokda xato bor — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "1-blok (Formula): Qavariq ko'pburchak ichki burchaklari yig'indisi formulasi: Sₙ = 180°(n − 2).", "is_broken": false },
+        { "id": "b2", "text": "2-blok (Tenglama tuzish): Masala shartidagi qiymatni formulaga qo'yish: 180°(n − 2) = 1260°.", "is_broken": false },
+        { "id": "b3", "text": "3-blok (Bo'lish amali): Noma'lum ko'paytuvchini (n − 2) topish: n − 2 = 1260° : 180°.", "is_broken": false },
+        { "id": "b4", "text": "4-blok (Natijani soddalashtirish): Bo'linmani hisoblash: n − 2 = 7.", "is_broken": false },
+        { "id": "b5", "text": "5-blok (Yakuniy natija): Tomonlar sonini aniqlash: n = 5.", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "n = 9", "accepted_answers": ["n = 9", "9", "9 ta", "n=9", "to'qqizburchak"], "allow_ai_fallback": true },
+      "hint": "Tenglamaning oxirgi bosqichida n dan 2 ayirilganda 7 hosil bo'layotganiga e'tibor bering. Kamayuvchini topish uchun qanday amal bajarilishi kerak?",
+      "why_prompt": "Nima uchun 5-blokdagi natija geometrik va algebraik jihatdan noto'g'ri? n − 2 = 7 tenglamasida n ni topish uchun 7 va 2 sonlarini qo'shish kerak, chunki ayirishning teskari amali qo'shishdir (n = 7 + 2 = 9). Geometrik jihatdan n = 5 bo'lganda ichki burchaklar yig'indisi 180° × (5 − 2) = 540° bo'lardi, bu esa masala shartiga (1260°) zid."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_geo_01",
+      "case_setup": "Kartochkalarni oching va har bir geometrik terminni unga mos keladigan ta'rif yoki formula bilan juftlang. Juftliklarni kartalar joylashuvi bo'yicha emas, balki mazmunan bog'liqligi asosida toping.",
+      "pairs": [
+        { "id": "p1", "left": "Ko'pburchak", "right": "Sodda yopiq siniq chiziq va u bilan chegaralangan tekislik qismi" },
+        { "id": "p2", "left": "Ko'pburchakning tashqi burchagi", "right": "Ko'pburchakning berilgan uchidagi ichki burchagiga qo'shni bo'lgan burchak" },
+        { "id": "p3", "left": "Qavariq n-burchak ichki burchaklari yig'indisi", "right": "S = 180°(n − 2)" },
+        { "id": "p4", "left": "Muntazam n-burchakning bitta ichki burchagi", "right": "αₙ = 180°(n − 2)/n" },
+        { "id": "p5", "left": "Qavariq ko'pburchakning tashqi burchaklari yig'indisi", "right": "Tomonlar sonidan qat'i nazar har doim 360° ga teng" },
+        { "id": "p6", "left": "Qavariq ko'pburchak", "right": "Ixtiyoriy tomonini o'z ichiga olgan to'g'ri chiziqqa nisbatan bir tomonda yotuvchi shakl" }
+      ],
+      "checkpoints": [
+        { "question": "“Qavariq n-burchak ichki burchaklari yig'indisi” qaysi formulaga juftlanadi?", "options": ["S = 180°(n − 2)", "αₙ = 180°(n − 2)/n", "Har doim 360° ga teng"], "correct_index": 0 },
+        { "question": "“Qavariq ko'pburchakning tashqi burchaklari yig'indisi” qaysi xossaga ega?", "options": ["S = 180°(n − 2)", "Tomonlar sonidan qat'i nazar har doim 360° ga teng", "180° dan katta"], "correct_index": 1 },
+        { "question": "Ichki burchaklar yig'indisi formulasi bilan muntazam ko'pburchakning bitta ichki burchagi formulasi bir xilmi?", "options": ["Ha, ular bir xil", "Yo'q — biri jami yig'indi, ikkinchisi yig'indini n ga bo'lish orqali bitta burchak"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun qavariq n-burchakning ichki burchaklari yig'indisi formulasi bilan muntazam n-burchakning bitta ichki burchagini topish formulasini adashtirmaslik kerak? Faqat yuzaki o'xshashlikka tayanib javob qidirgan o'quvchi qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["jami yig'indi 180°(n − 2)", "bitta burchak yig'indini n ga bo'lish", "yuzaki o'xshashlik xatosi"],
+      "consequence": { "correct_path": "Har bir terminni to'g'ri ta'rif yoki formula bilan uladingiz.", "wrong_path": "Ichki burchaklar yig'indisi formulasini bitta burchak formulasi bilan almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_geo_01",
+      "case_setup": "Berilgan bo'laklarni darslikdagi mantiqiy bog'liqliklar (formula ↔ o'zgaruvchi, qadam ↔ natija, atama ↔ misol) asosida to'g'ri yo'nalishda juftlang.",
+      "pieces": [
+        { "id": "P1", "label": "n o'zgaruvchisi (tomonlar soni)", "role": "cause" },
+        { "id": "P2", "label": "180°(n − 2) ifodasi", "role": "effect" },
+        { "id": "P3", "label": "Ko'pburchakning bitta uchidan barcha diagonallarni o'tkazish", "role": "cause" },
+        { "id": "P4", "label": "Shaklni (n − 2) ta uchburchakka ajratish", "role": "effect" },
+        { "id": "P5", "label": "Muntazam oltiburchak (n = 6)", "role": "cause" },
+        { "id": "P6", "label": "Har bir tashqi burchagi 60° ga tenglik", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (n o'zgaruvchisi) qaysi ifodaga ulanadi?", "options": ["P2 (180°(n − 2) ifodasi)", "P4 ((n − 2) ta uchburchak)"], "correct_index": 0 },
+        { "q": "P3 (diagonallarni o'tkazish) qaysi natijaga ulanadi?", "options": ["P2 (180°(n − 2) ifodasi)", "P4 (shaklni uchburchaklarga ajratish)"], "correct_index": 1 },
+        { "q": "P5 (muntazam oltiburchak) qaysi misolga ulanadi?", "options": ["P6 (har bir tashqi burchagi 60°)", "P2 (180°(n − 2) ifodasi)"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun ko'pburchakni uchburchaklarga ajratish (P3 → P4) bosqichi ichki burchaklar yig'indisi formulasini isbotlashda hal qiluvchi ahamiyatga ega? Agar bog'lanish yo'nalishini almashtirsangiz (avval natijani, keyin amalni qo'ysangiz), isbotning matematik mantiqi nega buziladi?",
+      "expected_components": ["burchaklar yig'indisi uchburchaklardan tarkib topadi", "ma'lumdan noma'lumga qarab isbotlash", "shart va natija iyerarxiyasi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Me'mor o'n burchakli (n = 10) bino poydevorini loyihalashtirmoqda. U ichki burchaklar yig'indisini hisoblash uchun shaklning bitta uchidan barcha diagonallarni o'tkazdi va ko'pburchakni bir nechta uchburchaklarga ajratdi.",
+      "why": "Nima uchun ko'pburchakni aynan uchburchaklarga ajratish uning ichki burchaklari yig'indisini topish uchun eng ishonchli usul hisoblanadi?",
+      "how": "O'n burchakli shaklda bitta uchdan o'tkazilgan diagonallar yordamida nechta uchburchak hosil bo'ladi va bu orqali jami burchaklar yig'indisi qanday hisoblanadi?",
+      "what": "Agar ko'pburchakning tomonlari soni 10 tadan 12 taga oshsa, hosil bo'ladigan uchburchaklar soni qanchaga o'zgaradi va bu umumiy burchaklar yig'indisiga qanday ta'sir qiladi?",
+      "prompt": "O'nburchakning (n = 10) ichki burchaklari yig'indisini hisoblang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Har bir uchburchakning ichki burchaklari yig'indisi necha gradusga tengligini eslang.", "Bitta uchdan o'tkazilgan diagonallar hosil qilgan uchburchaklar soni (n − 2) ga teng.", "Agar har bir qo'shilgan yangi tomon bitta yangi uchburchak hosil qilsa, yig'indi har safar 180° ga ortadi."],
+      "answer_spec": { "type": "numeric", "expected": 1440, "canonical_display": "1440° (8 ta uchburchak)", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["polygon-interior-angles-sum", "triangulation", "180°(10 − 2) = 1440°", "8 ta uchburchak"],
+      "correct_feedback": "Barakalla! Ko'pburchakning ichki burchaklari yig'indisi uning ichidagi uchburchaklar burchaklari yig'indisidan iborat ekanligini va (n − 2) qonuniyatini aniq ko'rsatib berdingiz: 180°(10 − 2) = 1440°.",
+      "partial_feedback": "Yig'indini to'g'ri hisobladingiz, lekin nima uchun aynan (n − 2) ta uchburchak hosil bo'lishi haqidagi tushuntirishingiz biroz kamchilikka ega.",
+      "wrong_feedback": "Hali emas. Diagonallar ko'pburchakni qismlarga ajratganda nima uchun aynan uchburchaklardan foydalanamiz? Uchburchakning burchaklari yig'indisi 180° ekanini esga oling."
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Ikki xil maydon bor: biri muntazam beshburchak, ikkinchisi esa muntazam o'nburchak shaklida. Ikkala maydonning ham har bir uchidan bittadan olingan tashqi burchaklari yig'indisi taqqoslanmoqda.",
+      "why": "Nima uchun o'nburchakning tomonlari soni beshburchaknikidan ikki barobar ko'p bo'lsa-da, uning tashqi burchaklari yig'indisi ortib ketmaydi?",
+      "how": "Ichki va tashqi burchakning qo'shnilik xossasidan foydalanib, har qanday qavariq ko'pburchak uchun tashqi burchaklar yig'indisi 360° ekanligini qanday isbotlagan bo'lardingiz?",
+      "what": "Agar muntazam o'nburchakning tomonlari soni cheksiz ortib borsa, uning har bir alohida tashqi burchagi qanday qiymatga yaqinlashadi va bu shaklning ko'rinishiga qanday ta'sir qiladi?",
+      "prompt": "Beshburchak va o'nburchakning tashqi burchaklari yig'indisini taqqoslang va nima uchun ular teng ekanligini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Har bir uchdagi ichki va tashqi burchak yig'indisi har doim 180° ga teng.", "Jami n ta uchdagi burchaklar yig'indisidan (n × 180°) ichki burchaklar yig'indisini (180°(n − 2)) ayiring — natija n ga bog'liq bo'ladimi?", "Tomonlar soni ko'paygani sari ko'pburchak aylanaga o'xshab boradi va har bir tashqi burchak kichrayadi."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "har ikkalasida ham 360°, tashqi burchaklar yig'indisi tomonlar soniga bog'liq emas", "accepted_answers": ["har ikkalasida 360°", "ikkalasi ham 360°", "tashqi burchaklar yig'indisi 360°", "tomonlar soniga bog'liq emas", "360° o'zgarmas"], "allow_ai_fallback": true },
+      "expected_concepts": ["polygon-exterior-angles-sum", "regular-polygon-property", "n × 180° − 180°(n − 2) = 360°", "yig'indi n ga bog'liq emas"],
+      "correct_feedback": "Mukammal! Tashqi burchaklar yig'indisining tomonlar soniga bog'liq emasligini ham mantiqiy, ham algebraik jihatdan isbotlab berdingiz: har ikkala maydonda ham yig'indi 360°.",
+      "partial_feedback": "Tashqi burchaklar yig'indisi 360° ekanligini to'g'ri aytdingiz, biroq tomonlar soni cheksiz ortgandagi holatni talqin qilishda biroz chalkashlik bo'ldi.",
+      "wrong_feedback": "Hali emas. Tomonlar soni ortishi bilan tashqi burchaklar yig'indisi ham ortadi deb o'ylash xato. Nima uchun yig'indi har doim o'zgarmas qolishini o'ylab ko'ring."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Zargarlik buyumidagi ko'pburchak shaklidagi qismning bitta ichki burchagi 135° ga teng ekanligi aniqlandi. Ko'pburchak muntazam deb hisoblanadi va zargar bu shaklning necha burchakli ekanligini bilishi kerak.",
+      "why": "Nima uchun faqat bitta ichki burchakning qiymati orqali muntazam ko'pburchakning tomonlari sonini aniq topish mumkin?",
+      "how": "Ushbu ma'lumot asosida ko'pburchakning tomonlari sonini (n) topish uchun qanday tenglama tuzasiz va uni qanday yechasiz?",
+      "what": "Agar ichki burchak 135° emas, balki 140° bo'lganida, bunday muntazam ko'pburchak mavjud bo'lishi mumkinmidi? Javobingizni n ning butun son bo'lishi sharti bilan asoslang.",
+      "prompt": "Bitta ichki burchagi 135° bo'lgan muntazam ko'pburchakning tomonlari sonini (n) toping.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Muntazam ko'pburchakda barcha ichki burchaklar o'zaro teng.", "Ichki burchak 135° bo'lsa, unga qo'shni tashqi burchak 180° − 135° = 45° bo'ladi; keyin 360° / 45° ni toping.", "n (tomonlar soni) har doim natural (butun va musbat) son bo'lishi shart."],
+      "answer_spec": { "type": "numeric", "expected": 8, "canonical_display": "n = 8 (sakkizburchak)", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["regular-polygon-angle", "exterior-angle-360/n", "180 − 135 = 45", "360 / 45 = 8"],
+      "correct_feedback": "Juda yaxshi! Tashqi burchakni (45°) topib, 360° / 45° = 8 orqali tomonlar sonini aniq hisobladingiz — bu sakkizburchak.",
+      "partial_feedback": "Sakkizburchak ekanligini to'g'ri topdingiz, lekin 140° lik holatda nima uchun bunday ko'pburchak bo'lmasligini (n butun son chiqmasligini) to'liq asoslab bermadingiz.",
+      "wrong_feedback": "Hali emas. Avval bitta tashqi burchakni (180° − 135°) topib ko'ring, so'ngra 360° ni shu songa bo'lish orqali tomonlar sonini aniqlang."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Chizmachilik darsida bir o'quvchi: “Men ichki burchaklaridan biri 200° bo'lgan qavariq ko'pburchak chizdim”, deb da'vo qildi.",
+      "why": "Nima uchun bu gap qavariq ko'pburchakning fundamental ta'rifiga butunlay zid hisoblanadi?",
+      "how": "Ko'pburchakning ixtiyoriy tomoni orqali o'tkazilgan to'g'ri chiziq xossasini qo'llab, bu o'quvchining shakli qavariq emasligini qanday isbotlaysiz?",
+      "what": "Agar ko'pburchak qavariq bo'lmasa (ya'ni botiq bo'lsa), biz o'rgangan 180°(n − 2) formulasi uning ichki burchaklar yig'indisini hisoblashda hali ham to'g'ri natija beradimi?",
+      "prompt": "200° li ichki burchakka ega ko'pburchak nega qavariq bo'la olmasligini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Qavariq ko'pburchakning ixtiyoriy burchagi 180° dan oshmasligi kerak.", "Agar burchak 180° dan katta bo'lsa, tomon orqali o'tgan to'g'ri chiziq shaklni ikkiga ajratib yubormaydimi?", "200° li burchak shaklning “ichkarisiga” qarab bukilgan (botiq) bo'ladi."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "qavariq ko'pburchakda barcha burchaklar 180° dan kichik, shuning uchun 200° imkonsiz", "accepted_answers": ["barcha burchaklar 180° dan kichik", "200° 180° dan katta", "qavariq emas, botiq", "qavariqlik ta'rifiga zid", "180° dan katta burchak qavariq emas"], "allow_ai_fallback": true },
+      "expected_concepts": ["convex-polygon-definition", "ichki burchak 180° dan kichik", "botiq ko'pburchak", "yarim tekislik xossasi"],
+      "correct_feedback": "To'g'ri! Qavariq ko'pburchakda barcha burchaklar 180° dan kichik bo'lishi shartligini va bu shaklning tekislikda joylashuviga qanday ta'sir qilishini yaxshi tushuntirdingiz.",
+      "partial_feedback": "Burchak 180° dan kichik bo'lishi kerakligini aytdingiz, lekin to'g'ri chiziqqa nisbatan bir tomonda yotish xossasini tushuntirishda biroz qiynaldingiz.",
+      "wrong_feedback": "Hali emas. “Qavariq” so'zining ma'nosini va burchakning 180° (yoyiq burchak) dan katta bo'lishi shakl ko'rinishini qanday o'zgartirishini eslang."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz ko'pburchak ichki va tashqi burchaklarining xossalarini o'rgandingiz. Dars davomida qavariq n-burchak ichki burchaklari yig'indisi 180°(n − 2) formulasiga bo'ysunishini hamda tashqi burchaklar yig'indisi har doim o'zgarmas 360° ga tengligini tahlil qildingiz. Ushbu geometrik qonuniyatlar muhandislik va shaharsozlik loyihalarida murakkab maydonlarni aniq rejalashtirishda muhim ahamiyatga ega.",
+    "question": "Do'stingizga muntazam ko'pburchakning tashqi burchagi nima uchun tomonlar soni ortishi bilan kichrayib borishini mantiqiy jihatdan qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga muntazam ko'pburchak burchaklari va tomonlar soni o'rtasidagi bog'liqlikni, ayniqsa ichki burchak ma'lum bo'lganda tomonlar sonini topish uchun tashqi burchak formulasidan foydalanish usulini yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz ko'pburchakni bir uchidan o'tkazilgan diagonallar orqali uchburchaklarga ajratish tamoyilini va tomonlar soniga ko'ra ichki burchaklar yig'indisini topish ko'nikmasini yaxshi egalladingiz. Tashqi burchak yig'indisining tomonlar soniga bog'liq emasligini hamda berilgan burchak qiymatiga ko'ra ko'pburchak mavjudligini (n ning butun sonligini) tekshirishni mustahkamlash foydali.",
+      "strong_points": [
+        "Ko'pburchakni diagonallar orqali uchburchaklarga ajratish tamoyili",
+        "Tomonlar soniga ko'ra ichki burchaklar yig'indisini topish ko'nikmasi"
+      ],
+      "weak_points": [
+        "Tashqi burchaklar yig'indisining tomonlar soniga bog'liq emasligini tushunish",
+        "Berilgan burchak qiymatiga ko'ra ko'pburchak mavjudligini (n ning butun sonligini) tekshirish"
+      ],
+      "next_steps": [
+        "Muntazam ko'pburchak burchaklari va tomonlar soni o'rtasidagi bog'liqlik qismini qayta ko'rib chiqing",
+        "Ichki burchak ma'lum bo'lganda tomonlar sonini tashqi burchak formulasi orqali topishni takrorlang"
+      ],
+      "weak_point_keywords": ["tashqi burchak", "360°", "butun son", "n ni topish"],
+      "strong_point_keywords": ["uchburchaklarga ajratish", "180°(n − 2)", "ichki burchaklar yig'indisi"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas, balki yangi masalalar bilan."
+    }
+  }
+}

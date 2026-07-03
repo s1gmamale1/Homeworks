@@ -1,0 +1,344 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§5. Algebraik kasrlarni ko'paytirish va bo'lish",
+    "subject_display": "Algebra",
+    "section": "§5",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Algebraik kasrlarni ko'paytirish qoidasi", "def": "Kasrlarning suratlari o'zaro ko'paytirilib suratga, maxrajlari esa o'zaro ko'paytirilib maxrajga yoziladi. Oddiy kasrlarni ko'paytirish qoidasi bilan bir xil ishlaydi.", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrlarni ko'paytirish formulasi", "def": "a/b · c/d = ac/bd. Suratni suratga, maxrajni maxrajga ko'paytiring.", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrlarni bo'lish qoidasi", "def": "Birinchi kasrni ikkinchi kasrning teskarisiga ko'paytirish kerak. Bo'lish amali ko'paytirishga aylantiriladi: a/b : c/d = a/b · d/c.", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrlarni bo'lish formulasi", "def": "a/b : c/d = ad/bc. Bo'luvchi kasrning surati va maxraji o'rni almashadi.", "cluster": "QOIDA" },
+    { "term": "Ko'paytirishdan oldin tavsiya etiladigan amal", "def": "Kasrning surat va maxrajini ko'paytuvchilarga ajratish. Bu usul umumiy ko'paytuvchilarni qisqartirishni osonlashtiradi. Masalan: (x²−y²) ni (x−y)(x+y) ko'rinishida yozish.", "cluster": "METOD" },
+    { "term": "Algebraik kasrni darajaga ko'tarish formulasi", "def": "(a/b)ⁿ = aⁿ/bⁿ. Qavs ichidagi kasrning ham surati, ham maxraji ko'rsatilgan darajaga ko'tariladi — daraja har bir qismga tegishli.", "cluster": "QOIDA" },
+    { "term": "Kasrlarni ko'paytirishda qisqartirish", "def": "Suratdagi va maxrajdagi umumiy ko'paytuvchilarni qisqartirish mumkin. Faqat ko'paytuvchilar qisqaradi, qo'shiluvchilar emas.", "cluster": "METOD" },
+    { "term": "Bo'lish amalidagi asosiy xato", "def": "Bo'linuvchi (birinchi kasr) o'z holicha qolishi kerak, uni teskari qilib bo'lmaydi. Faqat bo'luvchi (ikkinchi kasr) teskarisiga aylantiriladi.", "cluster": "METOD" },
+    { "term": "Ko'paytirish jarayonining vizual ko'rinishi", "def": "a/b va c/d ko'paytuvchilar; strelkalar suratlar o'zaro va maxrajlar o'zaro birlashishini ko'rsatadi — natija ac/bd. Amal parallel (to'g'ri) yo'nalishda bajariladi.", "cluster": "MISOL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Algebraik Kasrlarni Ko'paytirish",
+    "case_setup": {
+      "story": "Siz — muhandislik byurosida loyiha tahlilchisisiz. Hamkasbingiz yangi detalning o'lcham koeffitsiyentini hisoblash uchun ikkita algebraik ifodani ko'paytirishi kerak edi. U ish stolingizda quyidagi yozuvni qoldirgan: (x²−16)/(x+5) · (x²+5x)/(x−4). Biroq, u hisob-kitobni oxiriga yetkazmagan, faqat yakuniy natija juda murakkab ko'phad bo'lishidan xavotirda. Sizning vazifangiz — ushbu ko'paytirishni eng samarali usul bilan bajarish va natijani ishlab chiqarish bo'limiga topshirish uchun soddalashtirishdir.",
+      "role": "Loyiha tahlilchisi (muhandislik byurosi)",
+      "task": "Ko'paytirishni eng samarali usul bilan bajaring va natijani soddalashtiring."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Ushbu vaziyatda berilgan algebraik ifodalarni sodda ko'rinishga keltirish uchun qaysi asosiy qoidani qo'llash kerak?",
+        "options": [
+          "Kasrlarni umumiy maxrajga keltirish va suratlarni qo'shish.",
+          "Suratlarni va maxrajlarni o'zaro ko'paytirishdan oldin ularni ko'paytuvchilarga ajratish.",
+          "Har bir kasrni alohida kvadratga oshirish.",
+          "Faqat maxrajlardagi o'zgaruvchilarni qisqartirish."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Algebraik kasrlarni ko'paytirish oddiy kasrlarni ko'paytirish qoidasi bo'yicha amalga oshiriladi: suratlarning ko'paytmasi suratga, maxrajlarning ko'paytmasi esa maxrajga yoziladi (a/b · c/d = ac/bd). Natija murakkablashib ketmasligi uchun, ko'paytirishdan oldin ko'paytuvchilarga ajratish tavsiya etiladi.",
+        "feedback": "To'g'ri! Algebraik kasrlarni ko'paytirishda suratlarni va maxrajlarni ko'paytuvchilarga ajratish umumiy hadlarni topish va qisqartirish imkonini beradi."
+      },
+      {
+        "kind": "decide",
+        "question": "Berilgan (x²−16)/(x+5) · (x²+5x)/(x−4) ifodasida qisqartirish imkoniyatini hosil qilish uchun birinchi navbatda qaysi amalni bajarish kerak?",
+        "options": [
+          "x²−16 ni (x−4)(x+4) ko'rinishida yozish.",
+          "Maxrajdagi x+5 va x−4 ni o'zaro ko'paytirib, qavslarni ochish.",
+          "x² larni barcha ifodalardan olib tashlash.",
+          "Faqat sonli koeffitsiyentlarni (16, 5, 4) o'zaro bo'lish."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 },
+        "learning_block": "Kvadratlar ayirmasi formulasi: a²−b² = (a+b)(a−b). Bunga ko'ra x²−16 = (x−4)(x+4). Ikkinchi kasrning suratida esa umumiy omilni ajratish mumkin: x²+5x = x(x+5). Shunday qilib maxrajdagi (x−4) va (x+5) bilan qisqaradigan ko'paytuvchilar aniq ko'rinadi.",
+        "feedback": "To'g'ri! Kvadratlar ayirmasi formulasini qo'llash orqali biz maxrajdagi (x−4) bilan qisqarishi mumkin bo'lgan ko'paytuvchini hosil qilamiz."
+      },
+      {
+        "kind": "justify",
+        "question": "Agar siz ko'paytuvchilarga ajratmasdan, suratlarni to'g'ridan-to'g'ri ko'paytirib yuborsangiz (ya'ni (x²−16)(x²+5x)), qanday muammoga duch kelasiz?",
+        "options": [
+          "Ifoda butunlay xato bo'ladi va uni hisoblab bo'lmaydi.",
+          "Natijada to'rtinchi darajali murakkab ko'phad hosil bo'ladi va qisqartirish imkoniyati yashirin qoladi.",
+          "Maxraj o'z-o'zidan nolga aylanib qoladi.",
+          "Kasrning qiymati o'zgarib, manfiy bo'lib qoladi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Algebraik kasrlarni bo'lishda birinchi kasrni ikkinchi kasrning teskarisiga ko'paytirish kerak (a/b : c/d = ad/bc). Har doim umumiy ko'paytuvchilarni qisqartirish yakuniy natijani ayniy ravishda soddalashtiradi. To'g'ridan-to'g'ri ko'paytirish esa ifoda darajasini oshirib, qisqartirish imkoniyatini yashiradi.",
+        "feedback": "To'g'ri! To'g'ridan-to'g'ri ko'paytirish ifodani o'ta murakkablashtiradi, vaholanki ko'paytuvchilarga ajratish orqali sodda natijaga tezroq erishish mumkin."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi uchta savolga o'z so'zingiz bilan 2–4 jumlada javob bering: (1) Vaziyatda qaysi algebraik tushunchani (amalni) aniqladingiz? (2) Nima uchun suratlarni ko'paytuvchilarga ajratish usulini tanladingiz? (3) Agar ko'paytuvchilarga ajratmasdan qavslarni ochganingizda, qanday xato yoki qiyinchilik yuzaga kelar edi?",
+      "min_chars": 80,
+      "concept_keywords": ["algebraik kasr", "ko'paytirish qoidasi", "kvadratlar ayirmasi", "qisqartirish"],
+      "method_keywords": ["ko'paytuvchilarga ajratish", "umumiy ko'paytuvchi", "soddalashtirish"],
+      "mistake_keywords": ["qavslarni ochish", "to'g'ridan-to'g'ri ko'paytirish", "murakkab ko'phad"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "To'g'ri yo'l: Siz x²−16 ni (x−4)(x+4) deb, x²+5x ni esa x(x+5) deb yozdingiz. Kasrlarni ko'paytirganingizda: ((x−4)(x+4)·x(x+5)) / ((x+5)(x−4)). Endi (x−4) va (x+5) qisqarib ketadi va natija x(x+4) yoki x²+4x bo'ladi. Detal o'lchami juda aniq va sodda chiqdi.",
+      "wrong_path": "Noto'g'ri yo'l: Hamkasbingiz suratlarni ko'paytirdi: x⁴+5x³−16x²−80x. Maxrajda esa x²+x−20 hosil bo'ldi. Bu ifoda bilan ishlash juda qiyin va u xuddi qisqarmaydigan murakkab kasrdek ko'rinadi. To'g'ridan-to'g'ri ko'paytirish ifodaning darajasini oshirib, umumiy ko'paytuvchilarni ko'rishga xalaqit berdi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik kasrlarni ko'paytirishda ko'paytuvchilarga ajratish va qisqartirishning ahamiyatini tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — ko'paytuvchilarga ajratmasdan, qavslarni to'g'ridan-to'g'ri ochib yuborish (bu hisobni murakkablashtiradi).",
+      "what_to_review": "Qisqa ko'paytirish formulalari (kvadratlar ayirmasi) va ko'phadni ko'paytuvchilarga ajratish usullarini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 nazorat nuqtasiga javob bering",
+        "DPE bo'limida uchala savolni qamrab oluvchi 2–4 jumla yozing",
+        "Yakuniy simulyatsiya natijasini o'rganing"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Algebraik kasrlarni ko'paytirishda kasrlarning suratlari o'zaro ko'paytirilib suratga, maxrajlari esa o'zaro ko'paytirilib _____ yoziladi.", "answer_spec": { "type": "text_fuzzy", "expected": "maxrajga", "accepted_answers": ["maxrajga", "maxraj qismiga", "maxrajning o'ziga"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "Algebraik kasrlarni bo'lish qoidasini ifodalovchi to'g'ri formulani ko'rsating:", "options": ["a/b : c/d = (a+c)/(b+d)", "a/b : c/d = ad/bc", "a/b : c/d = bc/ad", "a/b : c/d = ac/bd"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "Nima uchun algebraik kasrlarni ko'paytirish yoki bo'lishdan oldin surat va maxrajni ko'paytuvchilarga ajratish tavsiya etiladi?", "options": ["Bu amal kasrning qiymatini o'zgartirib, uni oddiy butun songa aylantirish uchun xizmat qiladi.", "Ko'paytuvchilarga ajratish orqali umumiy ko'paytuvchilarni aniqlash va ularni qisqartirish osonlashadi.", "Faqat ko'paytuvchilarga ajratilgandagina kasrlarning maxrajini umumiy maxrajga keltirish mumkin bo'ladi.", "Bu qoida algebraik kasrlar bilan ishlashda majburiy bo'lib, busiz ko'paytirish amalini bajarib bo'lmaydi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "fill_blank", "prompt": "Algebraik kasrni darajaga ko'tarishda (a/b)ⁿ = aⁿ/bⁿ formulasiga ko'ra, qavs ichidagi kasrning ham surati, ham _____ ko'rsatilgan darajaga ko'tariladi.", "answer_spec": { "type": "text_fuzzy", "expected": "maxraji", "accepted_answers": ["maxraji", "maxraj qismi", "pastki qismi"], "allow_ai_fallback": true }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "Kasrlarni bo'lishda eng ko'p uchraydigan xatolardan biri nima?", "options": ["Bo'linuvchi (birinchi kasr)ni ham teskarisiga aylantirib yuborish.", "Suratni suratga ko'paytirish o'rniga qo'shib yuborish.", "Maxrajdagi harflarni suratga chiqarib yuborish.", "Natijani qisqartirishni butunlay unutib qo'yish."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "choose_explanation", "prompt": "Kasrlarni ko'paytirishda qisqartirish amali haqidagi qaysi fikr to'g'ri?", "options": ["Surat va maxrajdagi istalgan qo'shiluvchilarni bir-biriga qisqartirish mumkin.", "Faqat bir xil darajaga ega bo'lgan sonli koeffitsiyentlarnigina qisqartirishga ruxsat beriladi.", "Faqat suratdagi va maxrajdagi umumiy ko'paytuvchilarni qisqartirish mumkin.", "Qisqartirish amali faqat kasrlar ko'paytirib bo'lingandan keyin, yakuniy natijada bajarilishi shart."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "Algebraik kasrlarni bo'lish uchun birinchi kasrni ikkinchi kasrning _____ ko'paytirish kerak.", "answer_spec": { "type": "text_fuzzy", "expected": "teskarisiga", "accepted_answers": ["teskarisiga", "teskari qiymatiga", "surat va maxraji almashganiga"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Algebraik kasrlarni ko'paytirish formulasini tanlang:", "options": ["a/b · c/d = ad/bc", "a/b · c/d = ac/bd", "a/b · c/d = (a+c)/(b+d)", "a/b · c/d = ac/(b+d)"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Kasrlarni ko'paytirish jarayonini vizual tasvirlaganda (strelkalar yordamida), bu nimani anglatadi?", "options": ["Strelkalar suratlar o'zaro va maxrajlar o'zaro birlashtirilishini ko'rsatib, hisoblash yo'nalishini bildiradi.", "Strelkalar suratni maxrajga va maxrajni suratga qarama-qarshi ko'paytirish kerakligini bildiradi.", "Strelkalar faqat kasrlarni qisqartirish mumkin bo'lgan joylarni ko'rsatish uchun chiziladi.", "Bu tasvir kasrlarni umumiy maxrajga keltirish tartibini tushuntiradi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Quyidagi kataklardan qaysi biri amalni TO'G'RI bajargan?", "options": ["(2k/m)³ = 2k³/m³", "(x²−1)/y · y/(x+1) = x−1", "((a+b)/c)² = (a²+b²)/c²", "a/b : x/y = ax/by"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "Algebraik kasrlarni ko'paytirish yoki bo'lish amallarini bajarishdan avval, natijani soddalashtirish va umumiy hadlarni qisqartirish uchun surat va maxrajni nima qilish tavsiya etiladi?", "options": ["ko'paytuvchilarga ajratish", "umumiy maxrajga keltirish", "kvadratga oshirish", "butun qismini ajratish"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_5" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_alg_05",
+    "expert_role": "business_consultant",
+    "title": "Konveyer Liniyasi Samaradorligini Hisoblash",
+    "intro": "Siz — logistika tizimlari tahlilchisisiz. Yirik tarqatish markazidagi yangi saralash tizimining samaradorlik koeffitsiyentini (K) aniqlashingiz kerak: quvvat P = (a²−9)/(a+2) ni energiya sarfi E = (a−3)/(a²+2a) ga bo'ling (K = P : E) va natijani soddalashtiring. Eslatma: konveyer tasmasining 45 metr uzunligi va 2 m/s tezligi bu algebraik model uchun ortiqcha ma'lumot.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Bo'lish amalini hisoblashga tayyorlash",
+        "prompt": "Samaradorlik koeffitsiyenti K = P : E ni topish uchun bo'lish amalini qanday ko'rinishda o'zgartirib yozasiz?",
+        "options": [
+          { "id": "a", "label": "(a²−9)/(a+2) · (a²+2a)/(a−3)", "is_correct": true, "consequence": "To'g'ri. Bo'lishda birinchi kasr o'zgarmasdan, ikkinchi kasrning teskarisiga ko'paytiriladi — ifoda soddalashtirishga tayyor." },
+          { "id": "b", "label": "(a+2)/(a²−9) · (a−3)/(a²+2a)", "is_correct": false, "consequence": "Bunda birinchi kasr ham teskarisiga aylantirilib qo'yildi — bo'lishda faqat bo'luvchi (ikkinchi kasr) teskarisiga aylanadi." },
+          { "id": "c", "label": "((a²−9)(a−3)) / ((a+2)(a²+2a))", "is_correct": false, "consequence": "Bu ko'rinishda ikkinchi kasr teskarisiga aylanmagan — bo'lish ko'paytirishga to'g'ri o'tkazilmadi." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Ko'paytuvchilarga ajratish strategiyasi",
+        "prompt": "Qisqartirishni muvaffaqiyatli bajarish uchun suratlardagi va maxrajlardagi ifodalarni qanday ko'rinishda yozib olasiz?",
+        "options": [
+          { "id": "a", "label": "a²−9 = (a−3)(a+3) va a²+2a = a(a+2)", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "a²−9 = (a−3)² va a²+2a = 2a²", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "a²−9 ni o'z holicha qoldirib, faqat maxrajlarni ko'paytiraman", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Yakuniy samaradorlik koeffitsiyentini aniqlash",
+        "prompt": "Barcha amallarni va qisqartirishlarni bajarganingizdan so'ng, K uchun qanday yakuniy sodda ifodani hosil qildingiz?",
+        "options": [
+          { "id": "a", "label": "a(a+3)", "is_correct": true, "consequence": "To'g'ri. (a−3) va (a+2) umumiy ko'paytuvchilar qisqargach, suratda a(a+3) qoladi — eng sodda ko'rinish." },
+          { "id": "b", "label": "a+3", "is_correct": false, "consequence": "Suratda qolgan a o'zgaruvchisi ham hisobga olinmadi — u ko'paytuvchi sifatida saqlanib qoladi." },
+          { "id": "c", "label": "1/(a(a+3))", "is_correct": false, "consequence": "Bu teskari ifoda — bo'lishni ko'paytirishga o'tkazishda qaysidir kasr noto'g'ri ag'darilgan." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Ushbu masalani to'g'ri yechishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Bo'lishni ikkinchi kasrning teskarisiga ko'paytirishga aylantirish, so'ng ko'paytuvchilarga ajratib umumiy omilni qisqartirish", "is_correct": true },
+          { "id": "c2", "label": "Suratlarni to'g'ridan-to'g'ri ko'paytirib, barcha qavslarni ochish", "is_correct": false },
+          { "id": "c3", "label": "Konveyer uzunligi (45 m) va tezligi (2 m/s) ma'lumotidan foydalanish", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun bo'lishda faqat ikkinchi kasr teskarisiga aylantiriladi va nima uchun ko'paytirishdan oldin ko'paytuvchilarga ajratish hisobni osonlashtiradi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["teskari kasr", "ko'paytuvchilarga ajratish", "umumiy ko'paytuvchi", "qisqartirish"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_alg_05",
+      "instructions": "Bir o'quvchi (a²−b²)/a · 2a/(a−b) ifodani soddalashtirishni bosqichma-bosqich bajargan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Misol: (a²−b²)/a · 2a/(a−b)", "is_broken": false },
+        { "id": "b2", "text": "1-bosqich: ((a−b)(a+b))/a · 2a/(a−b)", "is_broken": false },
+        { "id": "b3", "text": "2-bosqich: ((a−b)(a+b)·2a) / (a(a−b))", "is_broken": false },
+        { "id": "b4", "text": "3-bosqich: (a+b)·2", "is_broken": false },
+        { "id": "b5", "text": "4-bosqich (Natija): 2a+b", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "2a+2b", "accepted_answers": ["2a+2b", "2a + 2b", "2(a+b)", "2b+2a", "2·a+2·b"], "allow_ai_fallback": true },
+      "hint": "Qavs oldida turgan ko'paytuvchi qavs ichidagi faqat birinchi hadga tegishlimi yoki barcha hadlargami? Taqsimot qonunini yodingizga oling.",
+      "why_prompt": "Bu natija nega noto'g'ri edi? Taqsimot qonuniga ko'ra qavs tashqarisidagi ko'paytuvchi qavs ichidagi har bir qo'shiluvchiga alohida ko'paytirilishi kerak: 2·(a+b) = 2·a + 2·b = 2a+2b. O'quvchi 2 sonini faqat birinchi hadga (a) ko'paytirib, ikkinchi hadni (b) ko'paytirishni unutib qoldirgan."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_alg_05",
+      "case_setup": "Algebraik kasrlar ustida amallar qoidalari, formulalari va misollarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuviga emas, faqat matematik mazmuniga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Kasrlarni ko'paytirish qoidasi", "right": "Suratlarni o'zaro ko'paytirib suratga, maxrajlarni esa maxrajga yozish" },
+        { "id": "p2", "left": "Kasrlarni bo'lish qoidasi", "right": "Birinchi kasrni ikkinchi kasrning teskarisiga ko'paytirish" },
+        { "id": "p3", "left": "Ko'paytirishdan oldin tavsiya etiladigan amal", "right": "Kasrning surat va maxrajini ko'paytuvchilarga ajratish" },
+        { "id": "p4", "left": "Darajaga ko'tarish formulasi", "right": "(a/b)ⁿ = aⁿ/bⁿ" },
+        { "id": "p5", "left": "a/b · c/d", "right": "ac/bd" },
+        { "id": "p6", "left": "a/b : c/d", "right": "ad/bc" },
+        { "id": "p7", "left": "Bo'lishdagi asosiy xato", "right": "Bo'linuvchini (birinchi kasrni) ham teskarisiga aylantirib yuborish" },
+        { "id": "p8", "left": "Qisqartirish sharti", "right": "Faqat umumiy ko'paytuvchilarni qisqartirish (qo'shiluvchilarni emas)" }
+      ],
+      "checkpoints": [
+        { "question": "a/b : c/d ifodasi qaysi natijaga juftlanadi?", "options": ["ac/bd", "ad/bc", "bc/ad"], "correct_index": 1 },
+        { "question": "Ko'paytirishdan oldin tavsiya etiladigan amal qaysi?", "options": ["Umumiy maxrajga keltirish", "Surat va maxrajni ko'paytuvchilarga ajratish", "Har bir kasrni kvadratga oshirish"], "correct_index": 1 },
+        { "question": "Kasrlarni qisqartirishda nimani qisqartirish mumkin?", "options": ["Faqat umumiy ko'paytuvchilarni", "Istalgan umumiy qo'shiluvchilarni"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Algebraik kasrlarni bo'lishda nima uchun a/b : c/d ifodasi aynan ad/bc natijasini beradi? Faqat yuzaki o'xshashlikka tayanib, amalni ko'paytirish bilan almashtirib yuborgan o'quvchi qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["ikkinchi kasrning teskarisiga ko'paytirish", "surat va maxraj o'rni almashadi", "birinchi kasr o'zgarmaydi"],
+      "consequence": { "correct_path": "Har bir qoida va formulani to'g'ri natijaga uladingiz.", "wrong_path": "Ko'rinish o'xshashligiga aldanib, bo'lishni to'g'ridan-to'g'ri ko'paytirish bilan almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_alg_05",
+      "case_setup": "Har bir algebraik amal bo'lagini (bosqich) uning dars qoidalariga muvofiq bajarilgan to'g'ri natijasi (natija) bilan to'g'ri yo'nalishda juftlang. Bosqich ↔ natija.",
+      "pieces": [
+        { "id": "P1", "label": "(x²−1)/x · x²/(x+1)", "role": "cause" },
+        { "id": "P2", "label": "x(x−1)", "role": "effect" },
+        { "id": "P3", "label": "a/b : c/d", "role": "cause" },
+        { "id": "P4", "label": "ad/bc", "role": "effect" },
+        { "id": "P5", "label": "(2x/y)³", "role": "cause" },
+        { "id": "P6", "label": "8x³/y³", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P3 (a/b : c/d) qaysi natijaga ulanadi?", "options": ["P4 (ad/bc)", "P2 (x(x−1))"], "correct_index": 0 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Bosqich ↔ natija", "Tasodifiy o'xshashlik"], "correct_index": 0 },
+        { "q": "P5 ((2x/y)³) ni 8x³/y³ ga ulash nega to'g'ri?", "options": ["Daraja koeffitsiyentga ham tegishli: 2³ = 8", "Koeffitsiyent 2 o'zgarmasdan qoladi"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Agar P3 va P4 bo'lagini bog'lashda bo'luvchi kasrni teskarisiga aylantirishni unutib, suratlarni o'zaro ko'paytirsangiz, natija qanday xato ko'rinishga kelib qolar edi? Ko'paytuvchilarga ajratish va reciprocal (teskari kasr) tushunchalarini izohlang.",
+      "expected_components": ["ko'paytuvchilarga ajratish", "ikkinchi kasr teskarisiga aylanadi", "darajaga ko'tarishda koeffitsiyent ham darajaga oshadi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Muhandislik loyihasida materialning mustahkamlik koeffitsiyentini hisoblash uchun (a²−25)/(a+3) · (a²+3a)/(a−5) ifodasini soddalashtirish topshirig'i berildi. Hamkasbingiz barcha qavslarni to'g'ridan-to'g'ri ko'paytirib, to'rtinchi darajali ko'phad hosil qildi va hisob-kitobda adashib ketdi.",
+      "why": "Nima uchun ushbu misolda ko'paytirishdan oldin suratlarni ko'paytuvchilarga ajratish eng samarali usul hisoblanadi?",
+      "how": "Qanday qilib qisqa ko'paytirish formulalari va umumiy ko'paytuvchini qavsdan tashqariga chiqarish orqali ifodani qisqartiriladigan ko'rinishga keltirasiz?",
+      "what": "Soddalashgan ifoda nimani anglatadi va agar ikkinchi kasrning maxraji (a−5) emas, (a+5) bo'lganida, yakuniy natija qanday o'zgarar edi?",
+      "prompt": "(a²−25)/(a+3) · (a²+3a)/(a−5) ifodasini eng sodda ko'rinishga keltiring.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Birinchi kasrning suratidagi a²−25 ifodasini qanday ko'paytuvchilarga ajratish mumkin? (kvadratlar ayirmasi)",
+        "Ikkinchi kasrning suratida a²+3a dan qaysi o'zgaruvchini qavsdan tashqariga chiqarsa bo'ladi?",
+        "Soddalashtirilgandan keyin (a+3) va (a−5) qisqarib ketadi — suratda nima qoladi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "a(a+5)", "accepted_answers": ["a(a+5)", "a·(a+5)", "a²+5a", "a^2+5a"], "allow_ai_fallback": true },
+      "expected_concepts": ["a²−25 = (a−5)(a+5)", "a²+3a = a(a+3)", "(a+3) va (a−5) qisqaradi", "natija a(a+5)"],
+      "correct_feedback": "Barakalla! Siz ko'paytuvchilarga ajratish qisqartirish uchun imkoniyat yaratishini va hisobni osonlashtirishini to'g'ri qo'lladingiz.",
+      "partial_feedback": "Ko'paytuvchilarga ajratish bosqichida to'g'ri yo'ldasiz, lekin natijaning o'zgarishi haqidagi xulosa biroz noaniq bo'ldi — suratda qolgan barcha ko'paytuvchilarni qayta tekshiring.",
+      "wrong_feedback": "Hali emas. Nima uchun suratlarni darhol ko'paytirish qiyinchilik tug'dirishini o'ylab ko'ring va qisqa ko'paytirish formulalarini eslang: a²−25 ni qanday ajratasiz?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Dasturchi algoritm yozayotganda (12x²)/y : (4x)/y² ifodasini hisoblashi kerak. U tasodifan birinchi kasrni ham, ikkinchi kasrni ham teskarisiga aylantirib yubordi, natijada algoritm xato ishlamoqda.",
+      "why": "Nima uchun algebraik kasrlarni bo'lishda faqat bo'luvchi (ikkinchi kasr) teskarisiga aylantirilishi shart?",
+      "how": "Qanday qilib bo'lish amalini ko'paytirishga o'tkazasiz va o'zgaruvchilarni darajalar xossasiga ko'ra qisqartirasiz?",
+      "what": "Natija sifatida hosil bo'lgan ifoda x va y o'zgaruvchilarining bog'liqligi haqida nima deydi?",
+      "prompt": "(12x²)/y : (4x)/y² ifodasini soddalashtiring.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Kasrni bo'lish qoidasida teskari kasrga ko'paytirish aynan qaysi hadga (birinchi yoki ikkinchi kasrga) tegishli?",
+        "Kasrlarni ko'paytirish ko'rinishiga keltirgandan so'ng, x² va x qanday qisqaradi?",
+        "12/4 = 3; y² / y = y; x² / x = x — natijani birlashtiring."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "3xy", "accepted_answers": ["3xy", "3·x·y", "3yx"], "allow_ai_fallback": true },
+      "expected_concepts": ["faqat ikkinchi kasr teskarisiga aylanadi", "(12x²/y)·(y²/4x)", "darajalar qisqaradi", "natija 3xy"],
+      "correct_feedback": "Juda yaxshi! Bo'lish algoritmini va o'zgaruvchilar bilan ishlashni mukammal ko'rsatib berdingiz.",
+      "partial_feedback": "Bo'lishni ko'paytirishga to'g'ri o'tkazdingiz, lekin qisqartirish jarayonida darajalar bilan ishlashda kichik xatoga yo'l qo'yildi — x² va y² darajalarini qayta tekshiring.",
+      "wrong_feedback": "Hali emas. Bo'lish amalini bajarishda qaysi kasr o'zgarmasdan qolishini qaytadan ko'rib chiqing: faqat bo'luvchi (ikkinchi kasr) teskarisiga aylanadi."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Laboratoriya tajribasida moddaning konsentratsiyasi (2ab²/c³)³ ifodasi bilan aniqlanadi. Talaba darajani faqat suratdagi sonli koeffitsiyentga va maxrajga tegishli deb o'ylab, xato hisob-kitob qildi.",
+      "why": "Nima uchun qavs tashqarisidagi daraja kasrning ham suratiga, ham maxrajiga va ular ichidagi har bir ko'paytuvchiga tegishli bo'lishi kerak?",
+      "how": "Qanday qilib bu kasrni darajaga ko'tarish formulasini qo'llab, har bir o'zgaruvchining yakuniy darajasini hisoblaysiz?",
+      "what": "Natijada hosil bo'lgan ifodada b o'zgaruvchisining darajasi necha bo'ladi va agar qavs tashqarisidagi daraja 3 emas, 2 bo'lganida, maxrajdagi c ning darajasi qanchaga farq qilgan bo'lar edi?",
+      "prompt": "(2ab²/c³)³ ifodasini darajaga ko'taring va soddalashtiring.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "(a/b)ⁿ = aⁿ/bⁿ formulasi qavs ichidagi barcha elementlarga (son va harflarga) qanday ta'sir qiladi?",
+        "Darajani darajaga ko'tarishda ko'rsatkichlar o'zaro ko'paytiriladi: (b²)³ = b⁶, (c³)³ = c⁹.",
+        "Koeffitsiyent 2 ham kubga oshiriladi: 2³ = 8."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "8a³b⁶/c⁹", "accepted_answers": ["8a³b⁶/c⁹", "8a^3b^6/c^9", "8·a³·b⁶/c⁹"], "allow_ai_fallback": true },
+      "expected_concepts": ["daraja har bir ko'paytuvchiga tegishli", "2³ = 8", "(b²)³ = b⁶", "(c³)³ = c⁹", "natija 8a³b⁶/c⁹"],
+      "correct_feedback": "Mukammal! Murakkab ifodani darajaga ko'tarish va daraja xossalarini tahlil qilishni a'lo darajada bajardingiz.",
+      "partial_feedback": "Kasrni darajaga ko'tardingiz, lekin har bir ko'paytuvchining (ayniqsa harflarning) darajasini hisoblashda diqqatsizlik qildingiz — darajani darajaga ko'tarish qoidasini qayta qo'llang.",
+      "wrong_feedback": "Hali emas. Daraja qavs ichidagi har bir hadga tarqalishi kerak. Koeffitsiyent 2 ni ham, b² va c³ ni ham uchinchi darajaga ko'taring."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Sizga (x+y)/x · x/y ifodasini soddalashtirish topshirildi. Bir o'quvchi birinchi kasrdagi x larni darhol qisqartirib yubordi va natijani y/y = 1 deb e'lon qildi.",
+      "why": "Nima uchun birinchi kasrdagi x ni maxrajdagi x bilan qisqartirish matematik xato hisoblanadi?",
+      "how": "Qanday qilib kasrlarni ko'paytirish qoidasiga ko'ra amallarni to'g'ri bajarish kerak va bu yerda qisqartirish qayerda mumkin?",
+      "what": "Haqiqiy natija nimaga teng va agar x = y bo'lsa, ifodaning qiymati necha bo'ladi?",
+      "prompt": "(x+y)/x · x/y ifodasini to'g'ri soddalashtiring va o'quvchi xatosini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "Qisqartirish faqat ko'paytuvchilar o'rtasidami yoki qo'shiluvchilar o'rtasida ham mumkinmi? x+y da x ko'paytuvchimi yoki qo'shiluvchimi?",
+        "Ikkala kasrni bitta umumiy kasr chizig'iga yozing: ((x+y)·x) / (x·y). Endi x ko'paytuvchi sifatida qisqaradi.",
+        "Qisqartirilgandan so'ng suratda (x+y), maxrajda y qoladi."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(x+y)/y", "accepted_answers": ["(x+y)/y", "(x + y)/y", "x/y + 1", "1 + x/y"], "allow_ai_fallback": true },
+      "expected_concepts": ["faqat ko'paytuvchilar qisqaradi", "x+y da x — qo'shiluvchi", "((x+y)·x)/(x·y) da x qisqaradi", "natija (x+y)/y"],
+      "correct_feedback": "Tasanno! Qo'shiluvchilarni qisqartirish mumkin emasligi haqidagi eng muhim qoidani juda aniq tushuntirdingiz.",
+      "partial_feedback": "To'g'ri natijaga erishdingiz, lekin nima uchun boshida x ni qisqartirish mumkin emasligi haqidagi dalilingiz biroz zaif — ko'paytuvchi va qo'shiluvchi farqini aniqlashtiring.",
+      "wrong_feedback": "Hali emas. Esda tuting: kasrda faqat ko'paytuvchilar qisqaradi. x+y ifodasida x — qo'shiluvchi, shuning uchun uni bevosita qisqartirib bo'lmaydi."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik kasrlarni ko'paytirish va bo'lish mavzusini o'rgandingiz hamda ifodalarni ko'paytuvchilarga ajratish orqali soddalashtirishni mashq qildingiz. Asosiy qoidalar: ko'paytirishda a/b · c/d = ac/bd, bo'lishda esa a/b : c/d = ad/bc. Bu bilimlar muhandislik loyihalarida murakkab o'lchov koeffitsiyentlarini aniq va ixcham hisoblashda muhim ahamiyatga ega.",
+    "question": "Algebraik kasrlarni ko'paytirishda suratlarni qavslarni ochmasdan turib ko'paytuvchilarga ajratish nima uchun muhimligini do'stingizga qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga bo'lish amalini ikkinchi kasrning teskarisiga ko'paytirishga o'tkazishni va darajaga ko'tarishda kasrning har bir hadiga darajani tatbiq etishni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz algebraik kasrlarni ko'paytirish tartibini va kvadratlar ayirmasi formulasi yordamida suratlarni ko'paytuvchilarga ajratishni yaxshi o'zlashtirdingiz. Bo'lishni teskari kasrga ko'paytirishga o'tkazish va darajaga ko'tarishda har bir hadga darajani to'g'ri tatbiq etishni mustahkamlash foydali.",
+      "strong_points": [
+        "Algebraik kasrlarni ko'paytirish tartibi va ko'paytuvchilarga ajratish ko'nikmasi",
+        "Kvadratlar ayirmasi formulasi bilan suratni qisqartiriladigan ko'rinishga keltirish"
+      ],
+      "weak_points": [
+        "Bo'lish amalini teskari kasrga ko'paytirishga o'tkazish",
+        "Darajaga ko'tarishda kasrning har bir hadiga daraja ko'rsatkichini to'g'ri tatbiq etish"
+      ],
+      "next_steps": [
+        "Bo'lishda faqat ikkinchi kasrni teskarisiga aylantirib qisqartirishni mashq qiling",
+        "(a/b)ⁿ = aⁿ/bⁿ formulasini koeffitsiyent va harflarga to'liq qo'llashni takrorlang"
+      ],
+      "weak_point_keywords": ["teskari kasr", "bo'lish qoidasi", "darajaga ko'tarish"],
+      "strong_point_keywords": ["ko'paytuvchilarga ajratish", "kvadratlar ayirmasi", "qisqartirish"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan."
+    }
+  }
+}

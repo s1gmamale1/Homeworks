@@ -1,0 +1,348 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§5. Algebraik kasrlarni ko'paytirish va bo'lish",
+    "subject_display": "Algebra",
+    "section": "§5",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Ko'paytirish qoidasi: a/b · c/d = ?", "def": "ac/bd — suratlar o'zaro, maxrajlar o'zaro ko'paytiriladi. Misol: 2/3 · 5/7 = 10/21.", "cluster": "QOIDA" },
+    { "term": "Bo'lish qoidasi: a/b ÷ c/d = ?", "def": "ad/bc — bo'linuvchi kasr bo'luvchining teskari qiymatiga ko'paytiriladi. Misol: 2/3 ÷ 5/7 = 2/3 · 7/5 = 14/15.", "cluster": "QOIDA" },
+    { "term": "c/d kasrining teskari qiymati", "def": "d/c — surat va maxraj o'rin almashtiriladi. Teskari kasr asli kasrga ko'paytirilganda natija 1 bo'ladi.", "cluster": "TARIF" },
+    { "term": "Kasrni darajaga ko'tarish: (a/b)ⁿ = ?", "def": "aⁿ/bⁿ — surat va maxraj alohida-alohida darajaga ko'tariladi. Daraja ko'rsatkichi suratga ham, maxrajga ham teng taqsimlanadi.", "cluster": "QOIDA" },
+    { "term": "(4a²/b)² = ?", "def": "16a⁴/b² — har bir omil kvadratga ko'tariladi: 4² = 16, (a²)² = a⁴, b² = b².", "cluster": "MISOL" },
+    { "term": "Ko'phad kasrlarni ko'paytirishda birinchi qadam", "def": "Surat va maxrajlarni ko'paytuvchilarga ajratish, keyin umumiy ko'paytuvchilarni qisqartirish. Avval ajratish, so'ngra ko'paytirish.", "cluster": "METOD" },
+    { "term": "Bo'lishda bo'linuvchi kasr o'zgaradimi?", "def": "Yo'q — bo'linuvchi o'zgarmaydi; faqat bo'luvchi teskari kasrga aylantiriladi. a/b ÷ c/d = a/b · d/c.", "cluster": "TAHLIL" },
+    { "term": "Uchta kasrni ko'paytirish: a/b · c/d · e/f = ?", "def": "ace/bdf — barcha suratlar birgalikda, barcha maxrajlar birgalikda ko'paytiriladi, so'ngra natija qisqartiriladi.", "cluster": "METOD" },
+    { "term": "Ko'paytirish oldidan ajratish nega tavsiya etiladi?", "def": "Hisoblashdan oldin qisqartirish imkonini beradi va natija soddalashadi. Katta polinomda amal bajarib, so'ng qisqartirish murakkablikka olib keladi.", "cluster": "TAHLIL" },
+    { "term": "Bo'lishda teskari kasrga o'tgandan keyin?", "def": "Ko'paytuvchilarga ajratiladi va umumiy ko'paytuvchilar qisqartiriladi, so'ngra ko'paytiriladi. Bo'lish → ko'paytirish → ajratish → qisqartirish.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Kamolning daftaridagi savol",
+    "case_setup": {
+      "story": "Algebra darsidan keyin sinfdoshingiz Kamol sizga daftarini ko'rsatdi va yordam so'radi. U shu misolni yechgan: (x²−4)/(x+3) · (x+3)/(x−2). Kamol natijani (x²−4)(x+3) / (x+3)(x−2) deb yozdi va to'xtab qoldi: \"Endi boshqa qisqartirish yo'q. Javob shunday qoladi, shekilli.\" Harflar va ifodalar to'g'ri yozilgan — lekin yakuniy natija juda murakkab ko'rinadi. O'qituvchi esa bunday holatda bir nechta harfdan iborat toza javob kutadi. Nima yetishmayapti?",
+      "role": "Sinf maslahatchi-tekshiruvchisi",
+      "task": "Kamolning yechimidagi yetishmayotgan qadamni aniqlang va to'g'ri natijani ko'rsating."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Kamol daftaridagi misolda qaysi matematik amal bajarilmoqda?",
+        "options": [
+          "Algebraik kasrlarni qo'shish",
+          "Algebraik kasrlarni ko'paytirish",
+          "Algebraik kasrlarni bo'lish",
+          "Kasrni darajaga ko'tarish"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Algebraik kasrlarni ko'paytirish oddiy kasrlar uchun qo'llaniladigan qoida asosida ishlaydi: a/b · c/d = (a·c)/(b·d). Suratlar o'zaro, maxrajlar o'zaro ko'paytiriladi. Kamol bu qadamni to'g'ri bajardi — ammo bu faqat birinchi qadam.",
+        "feedback": "Ikkita kasrning orasidagi \"·\" belgisi ko'paytirish amaliga ishora qiladi. Bu amalda suratlar o'zaro, maxrajlar o'zaro ko'paytiriladi: a/b · c/d = ac/bd. Kamol bu belgilar ketma-ketligini to'g'ri talqin qildi."
+      },
+      {
+        "kind": "decide",
+        "question": "Ko'paytirish amalini bajarishdan OLDIN qaysi qadam amalga oshirilishi kerak edi?",
+        "options": [
+          "Ikkala kasrni bo'lish amaliga aylantirish",
+          "Kasrlar uchun umumiy maxraj topish va qo'shish",
+          "Suratlar va maxrajlarni avval ko'paytuvchilarga ajratish, so'ngra umumiy ko'paytuvchilarni qisqartirish",
+          "Kasrlarni darajaga ko'tarish va keyin ko'paytirish"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Ko'paytirish amalidan oldin suratlar va maxrajlar ko'paytuvchilarga ajratilsa, umumiy bo'laklar ko'rinadi va qisqartirish mumkin bo'ladi: x²−4 = (x+2)(x−2). Endi birinchi kasrning suratida (x−2), ikkinchi kasrning maxrajida ham (x−2) bor; ularni qisqartirib, ifoda sezilarli darajada soddalashadi.",
+        "feedback": "Darslikda ko'paytirish amalidan OLDIN kasrlarni ko'paytuvchilarga ajratish va umumiy ko'paytuvchilarni qisqartirish tavsiya etiladi — bu hisoblashni sezilarli darajada soddalashtiradi. Kamol bu qadamni o'tkazib yubordi va to'g'ridan-to'g'ri ko'paytirdi."
+      },
+      {
+        "kind": "justify",
+        "question": "Kamol ko'paytirish qoidasini qo'lladi va (x²−4)(x+3) / (x+3)(x−2) natijasini oldi. Nima uchun u bu natijani to'liq qisqartirolmadi va \"boshqa soddalashtirish yo'q\" degan xulosaga keldi?",
+        "options": [
+          "Ko'paytirish qoidasi algebraik ifodalarga tatbiq bo'lmaydi",
+          "Kamol suratlarda xato ko'paytirdi",
+          "x²−4 ko'paytuvchilarga ajratilmagan edi — shuning uchun ichida yashiringan (x−2) ko'paytuvchisi ko'rinmay qoldi va maxrajdagi (x−2) bilan qisqartirish amalga oshmadi",
+          "Bunday misol uchun bo'lish qoidasini qo'llash to'g'ri bo'lar edi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "x²−4 = (x+2)(x−2) ekanini ajratib ko'rsatmasa, Kamol (x−2) ko'paytuvchisini suratda \"ko'ra olmaydi\" va maxrajdagi (x−2) bilan qisqartirishni amalga oshira olmaydi. Avval ko'paytuvchilarga ajratish esa bu yashirin umumiy bo'laklarni yuzaga chiqaradi.",
+        "feedback": "x²−4 = (x+2)(x−2) ekanini ajratib ko'rsatmasa, (x−2) ko'paytuvchisi suratda ko'rinmay qoladi va maxrajdagi (x−2) bilan qisqartirish amalga oshmaydi. Avval ko'paytuvchilarga ajratish bu yashirin umumiy bo'laklarni yuzaga chiqaradi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Siz Kamolning yechim jarayonini ko'rib chiqdingiz. Endi quyidagi uchta savol bo'yicha 2–4 jumla bilan o'z mulohazangizni yozing: (1) Bu misolda qaysi algebraik tushuncha yoki tuzilma hal qiluvchi rol o'ynadi? (2) Nima uchun siz avval ko'paytuvchilarga ajratish va qisqartirish usulini boshqa yo'llardan — masalan, to'g'ridan-to'g'ri ko'paytirib, keyin soddalashtirishdan — afzal ko'rdingiz? (3) Kamol o'tkazib yuborgan qadam — avval ko'paytuvchilarga ajratmaslik — qanday noto'g'ri xulosaga olib keldi va bu nimaga sabab bo'ldi?",
+      "min_chars": 80,
+      "concept_keywords": ["ikki kvadrat ayirmasi", "x²−4 = (x+2)(x−2)", "umumiy ko'paytuvchi", "qisqartirish"],
+      "method_keywords": ["avval ajratish", "ko'paytuvchilarga ajratish", "qisqartirish"],
+      "mistake_keywords": ["ajratmaslik", "yashirin (x−2)", "soddalashtirilmagan"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz Kamolga qadamlarni ko'rsatasiz. 1-qadam: x²−4 ni ko'paytuvchilarga ajratamiz: x²−4 = (x+2)(x−2). 2-qadam: kasrlarni ko'paytuvchilar bilan to'liq yozamiz: (x+2)(x−2)/(x+3) · (x+3)/(x−2). 3-qadam: umumiy ko'paytuvchilarni aniqlaymiz va qisqartiramiz: (x+3) birinchi kasrning maxrajida ham, ikkinchi kasrning suratida ham mavjud → qisqartiriladi; (x−2) birinchi kasrning suratida ham, ikkinchi kasrning maxrajida ham mavjud → qisqartiriladi. Natija: (x+2)·1 / (1·1) = x+2. Kamol hayratga tushdi: \"Hamma narsa faqat x+2 ga tenglashib qoldi!\"",
+      "wrong_path": "Kamol ko'paytirish qoidasini qo'lladi, lekin avval ko'paytuvchilarga ajratmadi: (x²−4)/(x+3) · (x+3)/(x−2) = (x²−4)(x+3) / (x+3)(x−2). (x+3) lar ko'rinib turadi — ularni qisqartirsa: = (x²−4)/(x−2). Bu yerda to'xtab qoldi. x²−4 ni (x−2) ga bo'lish uchun yana ko'paytuvchilarga ajratish lozim edi — ammo bu qadamni bilmadi. Natijada murakkab va soddalashtirilmagan ifoda oldi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik kasrlarni ko'paytirish amalini aniqladingiz va ko'paytirish amalidan oldin ko'paytuvchilarga ajratish kerakligini bildingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — x²−4 ni ko'paytuvchilarga ajratmaslik; shu sababli yashiringan (x−2) ko'rinmay qolib, qisqartirish amalga oshmaydi.",
+      "what_to_review": "Algebraik kasrlarni ko'paytirish qoidasini (a/b · c/d = ac/bd) qo'llashdan OLDIN suratlar va maxrajlarni ko'paytuvchilarga ajratib, umumiy ko'paytuvchilarni qisqartirish odatini takrorlang. Bu usul bo'lish va darajaga ko'tarishda ham aynan shu tartibda qo'llaniladi."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint to'ldirilgan bo'lsin",
+        "DPE mulohazasi — 2–4 jumla yozilgan bo'lsin",
+        "To'g'ri yo'l va noto'g'ri yo'l o'rtasidagi farq tushunilgan bo'lsin"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "a/b · c/d ko'paytmasi qaysi ifodaga teng?", "options": ["ac/bd", "ad/bc", "(a+c)/(b+d)", "ac/(b+d)"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "a/b ÷ c/d amalida bo'linuvchi kasrni _____ ko'paytirish lozim.", "answer_spec": { "type": "text_fuzzy", "expected": "bo'luvchining teskari qiymatiga (d/c ga)", "accepted_answers": ["teskari kasrga", "d/c ga", "bo'luvchini teskari qilib", "bo'luvchining teskari qiymatiga"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "c/d kasrining teskari qiymati qanday aniqlanadi?", "options": ["Surat va maxraj o'rin almashtiriladi — natija d/c bo'ladi.", "Kasr o'zgarmaydi — c/d ning teskari qiymati aynan o'zi c/d.", "Kasrga manfiy ishora qo'yiladi — teskari qiymat −c/d.", "Surat va maxraj ko'paytiriladi — teskari qiymat 1/(c·d)."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "(a/b)ⁿ ifodasi qaysi formulaga teng?", "options": ["aⁿ/bⁿ", "a/bⁿ", "aⁿ/b", "aⁿ · bⁿ"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "(4a²/b)² = _____", "answer_spec": { "type": "text_fuzzy", "expected": "16a⁴/b²", "accepted_answers": ["16a⁴/b²", "16·a⁴/b²", "16a⁴·b⁻²"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "Ko'phad kasrlarni ko'paytirishda to'g'ri birinchi qadam qaysi?", "options": ["Surat va maxrajlarni ko'paytuvchilarga ajratish, so'ng umumiy ko'paytuvchilarni qisqartirish.", "Barcha suratlarni bevosita ko'paytirish, so'ng katta natijani ko'paytuvchilarga ajratish.", "Avval faqat maxrajlarni ko'paytirish, suratlarni alohida keyingi bosqichda ko'paytirish.", "Ko'paytuvchilarga ajratmasdan bevosita ko'paytirish va hamma ish tugagandan so'ng qisqartirish."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "a/b ÷ c/d amalida bo'linuvchi a/b bilan nima qilinadi?", "options": ["U o'zgarmaydi — faqat bo'luvchi c/d teskari kasrga (d/c) aylantiriladi.", "U ham teskari kasrga aylantiriladi — natija b/a · d/c bo'ladi.", "U manfiyga ko'paytiriladi — natija −a/b · d/c bo'ladi.", "U ikki marta yoziladi va kvadratga ko'tariladi — natija (a/b)² · d/c bo'ladi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "a/b · c/d · e/f ko'paytmasining qisqartirishdan oldingi natijasi _____ ga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "ace/bdf", "accepted_answers": ["ace/bdf", "(a·c·e)/(b·d·f)", "ace ÷ bdf"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "Ko'paytirish amalini bajarishdan oldin kasrlarni ko'paytuvchilarga ajratish nima uchun tavsiya etiladi?", "options": ["Bu hisoblashdan oldin qisqartirish imkonini beradi va oraliq natijalarni soddalashtiradi.", "Algebraik kasrlarni ko'paytirish faqat ko'paytuvchi ko'rinishida bajarilishi mumkin — bu qoida majburiy.", "Ko'paytuvchilarga ajratish har doim natijaning son qiymatini kichiklashtiradi va hisoblashni tezlashtiradi.", "Bevosita ko'paytirish hisob-kitob xatosi hisoblanadi va baholashda kamaytiriladi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Ko'phad kasrlarni bo'lishda teskari kasrga o'tkazilgandan keyin qaysi ketma-ketlik to'g'ri?", "options": ["Ko'paytuvchilarga ajratish → umumiy ko'paytuvchilarni qisqartirish → ko'paytirish.", "Bevosita ko'paytirish → katta natijani ko'paytuvchilarga ajratish → qisqartirish.", "Avval maxrajlarni soddalashtirish → suratlarni ko'paytirish → bo'lish amalini qaytadan bajarish.", "Teskari kasrni yana bir marta teskari qilish → suratlarni ko'paytirish → qisqartirish."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "TicTacToe qaror jadvalidan: quyidagi katakchalardan qaysi biri §5 qoidalarini TO'G'RI qo'llagan?", "options": ["(a/b) ÷ (c/d) = ac/bd", "(2x/y)² = 4x/y²", "(x²−9)/(x+1) · (x+1)/(x−3) = x+3", "(a/b)² = a²/b"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Sentence Filling: Bo'lishda faqat _____ teskari kasrga aylantiriladi; bo'linuvchi esa o'zgarmaydi.", "answer_spec": { "type": "text_fuzzy", "expected": "bo'luvchi", "accepted_answers": ["bo'luvchi", "ikkinchi kasr", "bo'luvchi (ikkinchi kasr)"], "allow_ai_fallback": true } }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_alg_05",
+    "expert_role": "structural_engineer",
+    "title": "To'qimachilik kombinatidagi samaradorlik koeffitsienti",
+    "intro": "Siz — O'rta Osiyo to'qimachilik kombinatidagi ishlab chiqarish samaradorligi hisob-muhandisisiz. Ikkinchi sexning texnik pasportida mashinalar unumdorligi (x²−4)/(x+3) va energiya sarfi koeffitsienti (x−2)/(x+3) formulalari bilan berilgan (x — ishlab turgan mashinalar soni). Samaradorlik koeffitsientini hisoblab, bosh muhandisga yagona soddalashtirilgan algebraik ifoda sifatida taqdim eting. Joriy oyda sexga 12 ta yangi dastgoh yetkazilgani ham qayd etilgan.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Qaysi amal qo'llaniladi?",
+        "prompt": "Mashinalar unumdorligi va energiya sarfi koeffitsientidan samaradorlik koeffitsientini hosil qilish uchun qaysi matematik amal bajariladi?",
+        "options": [
+          { "id": "a", "label": "Ikkala ifodani qo'shish: (x²−4)/(x+3) + (x−2)/(x+3)", "is_correct": false, "consequence": "Qo'shish nisbat (ratio) bermaydi; samaradorlik — bu ikki ko'rsatkichning nisbati." },
+          { "id": "b", "label": "Ikkala ifodani ko'paytirish: (x²−4)/(x+3) · (x−2)/(x+3)", "is_correct": false, "consequence": "Ko'paytirish nisbatni emas, ikki ko'rsatkichning ko'paytmasini beradi." },
+          { "id": "c", "label": "Birinchi ifodani ikkinchisiga bo'lish: (x²−4)/(x+3) ÷ (x−2)/(x+3)", "is_correct": true, "consequence": "To'g'ri: samaradorlik = unumdorlik ÷ energiya sarfi — bu nisbat, bo'lish amali orqali hisoblanadi." },
+          { "id": "d", "label": "Birinchi ifodani ikkinchisining darajasiga ko'tarish", "is_correct": false, "consequence": "Darajaga ko'tarish bu masalada hech qanday muhandislik ma'nosiga ega emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Bo'lish qoidasini qo'llash",
+        "prompt": "Bo'lish amali (x²−4)/(x+3) ÷ (x−2)/(x+3) belgilandi. Bo'lish qoidasiga ko'ra bu ifoda qaysi ko'rinishni oladi?",
+        "options": [
+          { "id": "a", "label": "(x²−4)/(x+3) · (x+3)/(x−2) — bo'luvchi teskari kasrga aylantiriladi, bo'linuvchi o'zgarmaydi", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "(x²−4)/(x+3) · (x−2)/(x+3) — bo'luvchi o'zgarishsiz qoldiriladi, faqat amal ko'paytirishga aylantiriladi", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "(x+3)/(x²−4) · (x−2)/(x+3) — bo'linuvchi teskari aylantiriladi, bo'luvchi o'zgarmaydi", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Ko'paytuvchilarga ajratish va yakuniy natija",
+        "prompt": "Ifoda endi ko'paytirish ko'rinishida: (x²−4)/(x+3) · (x+3)/(x−2). Surat va maxrajlarni ko'paytuvchilarga ajratib, umumiy ko'paytuvchilarni qisqartiring. Yakuniy natija nima?",
+        "options": [
+          { "id": "a", "label": "x + 2", "is_correct": true, "consequence": "To'g'ri: x²−4 = (x+2)(x−2) ajratilib, (x−2) va (x+3) har ikki kasrda qisqartirildi. Samaradorlik koeffitsienti = x+2." },
+          { "id": "b", "label": "x − 2", "is_correct": false, "consequence": "x²−4 ajratildi, (x+3) qisqartirildi, lekin (x−2) noto'g'ri qisqartirildi." },
+          { "id": "c", "label": "(x²−4)/(x−2)", "is_correct": false, "consequence": "Faqat (x+3) qisqartirildi; x²−4 ko'paytuvchilarga ajratilmadi — natija soddalashtirilmagan." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Bu masalada to'liq soddalashtirilgan natijaga yetishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Ko'paytirishdan oldin ko'paytuvchilarga ajratib qisqartirish (ikki kvadrat ayirmasi: x²−4 = (x+2)(x−2))", "is_correct": true },
+          { "id": "c2", "label": "Umumiy maxraj topib, kasrlarni qo'shish", "is_correct": false },
+          { "id": "c3", "label": "Diskriminant orqali ildizlarni topish", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Ko'paytirish (yoki bo'lishni ko'paytirishga aylantirish) amalidan OLDIN x²−4 ni ko'paytuvchilarga ajratish nima uchun majburiy qadam? Agar bu qadamni o'tkazib yuborsangiz, qaysi qisqartirish ko'rinmas qolar edi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["ikki kvadrat ayirmasi", "x²−4 = (x+2)(x−2)", "yashirin (x−2)", "qisqartirish", "soddalashtirish"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_alg_05_div",
+      "instructions": "Quyida (x²−9)/(x²+x) ÷ (x−3)/(x+1) misolining yechim qadamlari berilgan. Aynan bitta qadam noto'g'ri — uni toping va to'g'rilab yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Qadam 1: (x²−9)/(x²+x) ÷ (x−3)/(x+1)", "is_broken": false },
+        { "id": "b2", "text": "Qadam 2: = (x²−9)/(x²+x) · (x+1)/(x−3)", "is_broken": false },
+        { "id": "b3", "text": "Qadam 3: x²−9 = (x+3)(x−3)", "is_broken": false },
+        { "id": "b4", "text": "Qadam 4: x²+x = x(x−1)", "is_broken": true },
+        { "id": "b5", "text": "Qadam 5: = (x+3)(x−3)/x(x+1) · (x+1)/(x−3)", "is_broken": false },
+        { "id": "b6", "text": "Qadam 6: (x−3) va (x+1) ko'paytuvchilari qisqartiriladi.", "is_broken": false },
+        { "id": "b7", "text": "Qadam 7: = (x+3)/x", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "x² + x = x(x+1)", "accepted_answers": ["x(x+1)", "(x+1)·x", "x² + x = x(x+1)", "x²+x=x(x+1)"], "allow_ai_fallback": true },
+      "hint": "Ko'paytuvchilarga ajratish qadamlarining har birini ochib yozing (ko'paytishni qaytadan hisoblang) va hosil bo'lgan natijani o'sha qadamdagi boshlang'ich ifoda bilan birma-bir solishtiring.",
+      "why_prompt": "Bu qadam nega noto'g'ri edi? x²+x dan x umumiy ko'paytuvchi ajratilsa, qolgan qism x+1 — musbat 1, manfiy emas. Yozilgan x(x−1) esa x²−x ni beradi — ishorasi boshqacha ifoda. Qadam 5 da x(x+1) ishlatilgani ham Qadam 4 dagi xatoni tasdiqlaydi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_alg_05",
+      "case_setup": "Algebraik kasrlar bilan ishlash qoidalari, formulalari va natijalarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "a/b · c/d", "right": "ac/bd (suratlar o'zaro, maxrajlar o'zaro)" },
+        { "id": "p2", "left": "a/b ÷ c/d", "right": "a/b · d/c = ad/bc (bo'luvchi teskari bo'ladi)" },
+        { "id": "p3", "left": "c/d kasrining teskari qiymati", "right": "d/c (surat va maxraj almashadi)" },
+        { "id": "p4", "left": "(a/b)ⁿ", "right": "aⁿ/bⁿ (daraja surat va maxrajga)" },
+        { "id": "p5", "left": "x²−4", "right": "(x+2)(x−2) (ikki kvadrat ayirmasi)" },
+        { "id": "p6", "left": "Ko'phad ko'paytirishda 1-qadam", "right": "Avval ajratish, so'ng qisqartirish" },
+        { "id": "p7", "left": "(4a²/b)²", "right": "16a⁴/b²" }
+      ],
+      "checkpoints": [
+        { "question": "a/b ÷ c/d qaysi natijaga juftlanadi?", "options": ["ac/bd", "ad/bc (bo'luvchi teskari)", "(a+c)/(b+d)"], "correct_index": 1 },
+        { "question": "Bo'lishda qaysi kasr teskari aylantiriladi?", "options": ["Bo'linuvchi (birinchi)", "Bo'luvchi (ikkinchi)", "Ikkalasi ham"], "correct_index": 1 },
+        { "question": "x²−4 qaysi ko'paytuvchilarga ajraladi?", "options": ["(x+2)(x−2)", "(x+4)(x−1)", "(x−2)²"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Ko'paytirish va bo'lish qoidalari nima uchun bir-biriga o'xshasa-da, aynan bir xil emas? Bo'lishda faqat bo'luvchi teskari aylantirilishini va \"belgiga qarab ko'paytiramiz\" mantiqi qaysi holatda yanglishishini tushuntiring.",
+      "expected_components": ["a/b · c/d = ac/bd", "a/b ÷ c/d = a/b · d/c", "faqat bo'luvchi teskari", "bo'linuvchi o'zgarmaydi"],
+      "consequence": { "correct_path": "Har bir qoidani to'g'ri natijaga uladingiz — ko'paytirish va bo'lish farqini aniq ko'rasiz.", "wrong_path": "\"Ikkala kasrni teskari qilaman\" yoki \"belgiga qaramayman\" deb ko'paytirish va bo'lishni adashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_alg_05",
+      "case_setup": "Har bir amal bo'lagini (sabab) u keltirib chiqaradigan to'g'ri natija bo'lagi (oqibat) bilan §5 qoidalari asosida to'g'ri yo'nalishda juftlang. Sabab ↔ natija.",
+      "pieces": [
+        { "id": "P1", "label": "Amal: (x²−4)/(x+3) · (x+3)/(x−2) ni ajratib qisqartirish", "role": "cause" },
+        { "id": "P2", "label": "Natija: x + 2", "role": "effect" },
+        { "id": "P3", "label": "Amal: a/b ÷ c/d bo'lishni ko'paytirishga aylantirish", "role": "cause" },
+        { "id": "P4", "label": "Natija: a/b · d/c", "role": "effect" },
+        { "id": "P5", "label": "Amal: (3a/b²)³ ni darajaga ko'tarish", "role": "cause" },
+        { "id": "P6", "label": "Natija: 27a³/b⁶", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P3 (bo'lishni aylantirish) qaysi natijaga ulanadi?", "options": ["P2 (x+2)", "P4 (a/b · d/c)"], "correct_index": 1 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Sabab ↔ natija", "O'xshash ma'no"], "correct_index": 0 },
+        { "q": "P5 ((3a/b²)³) ni P2 ga ulash nega xato?", "options": ["P5 darajaga ko'tarish, natijasi 27a³/b⁶ (P6)", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun (3a/b²)³ natijasi 3a³/b² emas, balki 27a³/b⁶ bo'ladi? Daraja ko'rsatkichi son koeffitsientga (3) va maxrajga (b²) ham qanday tatbiq etilishini tushuntiring.",
+      "expected_components": ["daraja surat va maxrajga", "3³ = 27", "(b²)³ = b⁶", "har bir omilga alohida"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Barno olimpiadaga tayyorlanmoqda va (5a/b²) · (b/a³) ifodasini hisoblashga urinmoqda. U \"ko'paytirishda suratni maxrajga ko'paytirish kerak bo'lsa kerak\" deb o'ylab, formulalarni chalkashtirib yubordi.",
+      "why": "Nima uchun bu amalda ac/bd (surat×surat, maxraj×maxraj) qoidasi qo'llanilishi kerak, bo'lish qoidasidagi ad/bc tuzilmasi emas?",
+      "how": "Ko'paytirish qoidasini (5a/b²) · (b/a³) ga to'g'ri tatbiq etib, natijani to'liq qisqartiring.",
+      "what": "To'g'ri natija nimaga teng? Barno bo'lish formulasini qo'llaganda qanday noto'g'ri javobga kelgan bo'lardi?",
+      "prompt": "(5a/b²) · (b/a³) ifodasini to'g'ri qisqartirilgan ko'rinishda yozing.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Ikkita kasrning o'rtasidagi \"·\" belgisi qaysi qoidani ishlatish kerakligini aytmoqda — nima ko'rinmoqda?", "Suratlarni birgalikda (5a·b), maxrajlarni birgalikda (b²·a³) yozing, so'ng a va b larni qisqartiring."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "5/(a²b)", "accepted_answers": ["5/(a²b)", "5/a²b", "5 / (a^2 b)", "5/(a^2*b)"], "allow_ai_fallback": true },
+      "expected_concepts": ["ko'paytirish qoidasi ac/bd", "bo'lish qoidasidan farqi", "a va b ni qisqartirish"],
+      "correct_feedback": "Siz ko'paytirish va bo'lish formulalarining tub farqini aniq tushungansiz — \"·\" belgisini to'g'ri tanib, ac/bd qoidasini ishlatdingiz, keyin a va b ko'paytuvchilarini qisqartirib 5/(a²b) natijasiga keldingiz.",
+      "partial_feedback": "Ko'paytirish qoidasini to'g'ri tanladingiz, lekin qisqartirish bosqichida bir yoki bir nechta o'zgaruvchi o'tkazib yuborildi — suratda 5a·b, maxrajda b²·a³ bor, qaysi harflar ikkalasida ham qatnashmoqda?",
+      "wrong_feedback": "Hali emas — ikkita kasrning o'rtasida turgan belgi ko'paytirish yoki bo'lish ekanligini qanday aniqlaysiz, va bu tanlov formulaga qanday ta'sir qiladi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Jasur (2x/3) ÷ (4/x) misolini yechdi. U shunday yozdi: (3/2x) · (x/4) — ya'ni ikkala kasrni ham teskari qilib, so'ng ko'paytirdi va 3/8 natijasiga keldi.",
+      "why": "Bo'lish amalida nima uchun faqat bo'luvchi (ikkinchi kasr) teskari qiymatiga aylantiriladi, bo'linuvchi (birinchi kasr) esa hech qanday o'zgarishsiz qoladi?",
+      "how": "(2x/3) ÷ (4/x) misolini to'g'ri usulda bajaring.",
+      "what": "To'g'ri natija nima? Jasurning 3/8 javobi qaysi bosqichda noto'g'rilashdi?",
+      "prompt": "(2x/3) ÷ (4/x) ning to'g'ri natijasini yozing.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Teskari kasr ta'rifiga qarang: c/d · ? = 1. Bo'linuvchi bu tenglamada qatnashyaptimi?", "Bo'luvchi faqat 4/x — faqat shu kasrni teskariga o'girib, 2x/3 ni o'zgarmagan holda ko'paytiring."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "x²/6", "accepted_answers": ["x²/6", "x^2/6", "x²/6", "(x²)/6"], "allow_ai_fallback": true },
+      "expected_concepts": ["faqat bo'luvchi teskari", "bo'linuvchi o'zgarmaydi", "teskari qiymat ta'rifi"],
+      "correct_feedback": "Bo'linuvchi (2x/3) o'zgarmaydi, faqat bo'luvchi (4/x) teskari kasrga (x/4) aylantiriladi degan asosiy qoidani to'g'ri qo'lladingiz va x²/6 natijasiga keldingiz.",
+      "partial_feedback": "Bo'lishni ko'paytirishga aylantirish g'oyasini tushundingiz, lekin qaysi kasr teskari qilinishi kerakligida xato qildingiz — bo'linuvchi va bo'luvchidan aynan qaysi biri o'zgarishi kerakligini qayta tekshiring.",
+      "wrong_feedback": "Hali emas — a ÷ b dan natija topish uchun a ni qanday o'zgartirish kerak, va b ni qanday o'zgartirish kerak? Faqat bitta o'zgaradi."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Dilrabo daftarida (x²−9)/(x+2) · (x+2)/(x−3) misolini yechdi. U to'g'ridan-to'g'ri ko'paytirib (x²−9)(x+2) / (x+2)(x−3) oldi, (x+2) ni qisqartirib (x²−9)/(x−3) natijasiga keldi va \"boshqa soddalashtirish yo'q\" deb to'xtadi.",
+      "why": "Nima uchun x²−9 iborasini ko'paytirishdan oldin ko'paytuvchilarga ajratish zarur? Dilrabo olgan (x²−9)/(x−3) natijasida qanday ko'paytuvchi hali yashirinib turibdi?",
+      "how": "x²−9 ni ko'paytuvchilarga ajrating va dastlabki misolni shu holda to'liq bajaring.",
+      "what": "To'liq soddalashtirilgan natija nimaga teng? Dilrabo o'tkazib yuborgan qadam qanday umumiy xulosa beradi?",
+      "prompt": "(x²−9)/(x+2) · (x+2)/(x−3) ning to'liq soddalashtirilgan natijasini yozing.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["x²−9 ga qarang: u x²−3² shaklida. Ikki kvadrat ayirmasi (a²−b²) bu yerda qanday ishlaydi?", "x²−9 = (x+3)(x−3) deb yozsangiz, maxrajdagi (x−3) bilan nima qilish mumkin?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "x+3", "accepted_answers": ["x+3", "x + 3", "(x+3)"], "allow_ai_fallback": true },
+      "expected_concepts": ["ikki kvadrat ayirmasi", "ko'paytuvchilarga ajratish", "umumiy ko'paytuvchilarni qisqartirish"],
+      "correct_feedback": "Mukammal — x²−9 = (x+3)(x−3) ajratishni to'g'ri bajardingiz, (x−3) va (x+2) ni qisqartirib, natija x+3 ekanligini ko'rsatdingiz. Avval ajratish, so'ng qisqartirish prinsipi aniq tushunilgan.",
+      "partial_feedback": "x²−9 ni ajratdingiz, lekin barcha umumiy ko'paytuvchilarni qisqartirishni tugatmadingiz — yozgan ko'paytuvchilaringizga qarang, suratda ham maxrajda ham qaytariladigani bormi?",
+      "wrong_feedback": "Hali emas — x²−9 iborasini x²−3² ko'rinishida yozsangiz, a²−b² formulasi unga qanday tatbiq etiladi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Sinf doskasida o'qituvchi (3a/b²)³ = ? masalasini yozib qoldirdi. O'quvchilardan biri shunday yozdi: 3a³/b² — ya'ni daraja ko'rsatkichini faqat a ga tatbiq etti, 3 ga ham, b² ga ham emas.",
+      "why": "(a/b)ⁿ = aⁿ/bⁿ formulasiga ko'ra, nima uchun daraja ko'rsatkichi suratdagi har bir omilga (shu jumladan son koeffitsientga ham) va maxrajga alohida tatbiq etilishi kerak?",
+      "how": "(3a/b²)³ ni to'g'ri hisoblang: 3, a, va b² — har bir omilni alohida darajaga ko'taring.",
+      "what": "To'g'ri natija nima? U o'quvchining 3a³/b² javobi bilan qanday farq qiladi?",
+      "prompt": "(3a/b²)³ ning to'g'ri natijasini yozing.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["(3a)³ ifodani kengaytiring: 3a · 3a · 3a — bu yerda 3 necha marta ko'paytirilmoqda?", "(b²)³ ni hisoblashda daraja ko'rsatkichlari bilan qanday amal bajariladi: ko'paytiriladi yoki qo'shiladi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "27a³/b⁶", "accepted_answers": ["27a³/b⁶", "27a^3/b^6", "27a³/b⁶", "(27a³)/(b⁶)"], "allow_ai_fallback": true },
+      "expected_concepts": ["kasrni darajaga ko'tarish", "son koeffitsient daraja: 3³=27", "(b²)³ = b⁶"],
+      "correct_feedback": "3³ = 27, (a)³ = a³, (b²)³ = b⁶ ekanini to'g'ri hisoblab, 27a³/b⁶ natijasiga keldingiz — daraja ko'rsatkichini har bir omilga, shu jumladan son koeffitsientga ham, teng taqsimlashni bilasiz.",
+      "partial_feedback": "Bir qism to'g'ri, lekin yo 3 ga, yo (b²) ga daraja to'liq tatbiq etilmadi. Suratdagi har bir omilni (3 va a ni alohida) va maxrajdagi b² ni qayta tekshiring.",
+      "wrong_feedback": "Hali emas — (3a)³ ni \"uch marta 3a ga ko'paytirish\" deb yozing: 3a · 3a · 3a. Endi 3 lar nechta bo'ladi, a lar-chi? Shundan keyin maxrajni ham shu mantiq bilan ko'rib chiqing."
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Murodbek imtihon topshiriqlarini tekshirmoqda. U (x²−4)/(x²+5x+6) ÷ (x−2)/(x+3) ifodasiga duch keldi. Bu ifodani to'liq soddalashtirib, x = 5 da qiymatini topish talab etiladi.",
+      "why": "Nima uchun bu masalani to'g'ri yechish uchun bo'lish qoidasi va ko'paytuvchilarga ajratish strategiyasi bir vaqtda, ketma-ket qo'llanilishi shart?",
+      "how": "Ketma-ketlikda bajaring: bo'lishni ko'paytirishga aylantiring, x²−4 va x²+5x+6 ni ko'paytuvchilarga ajrating, umumiy ko'paytuvchilarni qisqartiring, natijani x=5 da hisoblang.",
+      "what": "Natija nima? Bu natija x ning turli ruxsat etilgan qiymatlarida ham bir xil bo'ladimi — bu algebraik jihatdan nimani anglatadi?",
+      "prompt": "(x²−4)/(x²+5x+6) ÷ (x−2)/(x+3) ifodasining to'liq soddalashtirilgan qiymati (x = 5 da) nechaga teng?",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["Birinchi qadam: bo'lishni ko'paytirishga aylantiring — qaysi kasr teskari qiymatiga o'tkaziladi?", "x²−4 = (x+2)(x−2) va x²+5x+6 = (x+2)(x+3). Barcha umumiy ko'paytuvchilarni qisqartiring."],
+      "answer_spec": { "type": "numeric", "expected": 1, "canonical_display": "1", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["bo'lishni ko'paytirishga aylantirish", "ko'paytuvchilarga ajratish kombinatsiyasi", "to'liq soddalashtirish — natija 1"],
+      "correct_feedback": "Mukammal mastery — bo'lishni ko'paytirishga aylantirish → x²−4 = (x+2)(x−2), x²+5x+6 = (x+2)(x+3) ajratish → (x+2), (x−2), (x+3) larning barchasini qisqartirish → natija 1, x=5 da ham 1. Ifodaning har qanday ruxsat etilgan x da 1 ga tengligi algebrada kuchli umumlashma ekanini ko'rsatdingiz.",
+      "partial_feedback": "Ketma-ketlikning bir yoki ikki bosqichini to'g'ri bajardingiz, lekin to'liq qisqartirishga yetmadingiz — yozgan ko'paytuvchilaringizga qarang, suratda ham maxrajda ham takrorlanadigan omillar hali qolganmi?",
+      "wrong_feedback": "Hali emas — bu ifodada birinchi bajarilishi shart bo'lgan amal bo'lish, va bo'lishda dastlab nima qilish kerakligini eslang, shundan keyingina ko'paytuvchilarga ajratishga o'ting."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik kasrlarni ko'paytirish va bo'lish qoidalarini o'rgandingiz: ko'paytirishda a/b · c/d = ac/bd formulasi, bo'lishda esa bo'linuvchi kasrni bo'luvchining teskari qiymatiga ko'paytirish usuli qo'llaniladi. Amallardan oldin suratlar va maxrajlarni ko'paytuvchilarga ajratib, umumiy ko'paytuvchilarni qisqartirish — bu hisoblashni sezilarli darajada soddalashtiruvchi asosiy strategiyadir.",
+    "question": "Do'stingizga algebraik kasrlarni ko'paytirish va bo'lishni qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga x²−4 va x²−9 kabi ikki kvadrat ayirmalarini ajratishni va kasrni darajaga ko'tarishda son koeffitsientni (3³=27) hisobga olishni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz ko'paytirish (\"·\") va bo'lish (\"÷\") belgilarini tanib to'g'ri formulani tanlashni hamda ikki kvadrat ayirmalarini ajratishni yaxshi o'zlashtirdingiz. Amallardan oldin ko'paytuvchilarga ajratish odatini va kasrni darajaga ko'tarishda son koeffitsientni hisobga olishni mustahkamlash foydali.",
+      "strong_points": [
+        "Ko'paytirish (\"·\") va bo'lish (\"÷\") belgilarini tanib, to'g'ri formulani tanlash",
+        "x²−9 va x²−4 kabi ikki kvadrat ayirmalarini (x+3)(x−3) va (x+2)(x−2) ko'rinishida ajratish"
+      ],
+      "weak_points": [
+        "Amallardan oldin ko'paytuvchilarga ajratmaslik — yashiringan umumiy ko'paytuvchilar qisqartirilmay qolishi",
+        "Kasr darajaga ko'tarilganda son koeffitsientni (3³ = 27) e'tiborsiz qoldirish"
+      ],
+      "next_steps": [
+        "Ko'paytirish/bo'lishdan oldin ko'paytuvchilarga ajratib qisqartirishni mashq qiling",
+        "(a/b)ⁿ = aⁿ/bⁿ qoidasini son koeffitsientli misollarda yozma mashq qiling"
+      ],
+      "weak_point_keywords": ["ajratmaslik", "son koeffitsient", "darajaga ko'tarish"],
+      "strong_point_keywords": ["ko'paytuvchi", "ikki kvadrat ayirmasi", "teskari kasr"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas."
+    }
+  }
+}

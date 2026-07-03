@@ -1,0 +1,863 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§1. Algebraik ifodalar",
+    "subject_display": "Algebra",
+    "section": "§1",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    {
+      "term": "Algebraik ifoda",
+      "def": "Sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifoda. Masalan: 3x + 2y − 5.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Ifodaning son qiymati",
+      "def": "Harflar o'rniga sonlar qo'yilib, amallar bajarilganda hosil bo'lgan son. a = 2 bo'lganda 5 + a ifodaning son qiymati 7 ga teng.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Son qiymatini topish jarayoni",
+      "def": "O'zgaruvchilar o'rniga berilgan sonlarni qo'yish va ko'rsatilgan arifmetik amallarni bajarish. Avval almashtirish, so'ngra hisoblash.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Butun ifoda",
+      "def": "Qo'shish, ayirish va ko'paytirish belgilari yordamida birlashtirilgan bir nechta ko'phadlardan iborat ifoda.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Butun ifodaning xossasi",
+      "def": "Ixtiyoriy butun ifodani standart ko'rinishdagi ko'phadga keltirish mumkin. Soddalashtirish orqali ifoda eng ixcham ko'rinishga keladi.",
+      "cluster": "METOD"
+    },
+    {
+      "term": "Butun ifodada qo'llaniladigan amallar",
+      "def": "Faqat qo'shish, ayirish va ko'paytirish amallari. Bo'lish amali bu ro'yxatda mavjud emas.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Algebraik ifodaning tarkibiy qismlari",
+      "def": "Sonlar, harflar (o'zgaruvchilar) va amallar (+, −, ·, ÷) belgilari.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Algebraik ifoda tarkibidagi harflar",
+      "def": "Ixtiyoriy sonli qiymatlarni qabul qilishi mumkin bo'lgan belgilar. Harflar umumiy holda sonlarning o'rnini bosadi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Butun ifoda va o'zgaruvchilar",
+      "def": "Butun ifodada o'zgaruvchilar (harflar) faqat qo'shiladi, ayiriladi yoki ko'paytiriladi. Agar o'zgaruvchiga bo'lish bo'lsa, u butun ifoda bo'lmaydi.",
+      "cluster": "QOIDA"
+    },
+    {
+      "term": "Algebraik ifoda tuzilishi",
+      "def": "Ifoda uch elementdan tuziladi: '3' — son, '+' — amal belgisi, 'x' — harf (o'zgaruvchi). Har bir element algebraik ifodaning zaruriy qismidir.",
+      "cluster": "MISOL"
+    }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Algebraik Ifodalarni Tekshirish",
+    "case_setup": {
+      "story": "Siz qurilish kompaniyasida tizim tahlilchisi bo'lib ishlayapsiz. Kompaniya muhandislar uchun xonalarning yuzasi va sarflanadigan materiallar miqdorini hisoblaydigan yangi dasturiy ta'minot yaratmoqda. Dasturchilar jamoasi sizga hisoblash modullari uchun tayyorlangan bir nechta matematik formulalarni taqdim etdi. Sizning vazifangiz ushbu formulalarni to'g'ri tasniflash va ularning son qiymatlarini hisoblash algoritmi xatosiz ishlashini tekshirishdir. Hozirgi bosqichda sizga 2(a + b) · h ko'rinishidagi formula va uning parametrlari berilgan. Ekranda ushbu ifodaning tuzilishi va undagi belgilarning o'zaro bog'liqligini ko'rib turibsiz.",
+      "role": "Tizim tahlilchisi",
+      "task": "Formulalarni to'g'ri tasniflang va ularning son qiymatini hisoblash algoritmi xatosiz ishlashini tekshiring."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Dastur kodida 2(a + b) · h yozuvi uchraydi. Unda sonlar, harflar va amallar belgilari mavjud. Ushbu yozuv matematik nuqtai nazardan qanday nomlanadi?",
+        "options": [
+          "Faqat sonli ifoda",
+          "Algebraik ifoda",
+          "Mantiqiy tenglik",
+          "O'zgaruvchan tenglama"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "learning_block": "Algebraik ifoda — sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifodadir. Agar algebraik ifodaga kirgan harflar o'rniga aniq sonlar qo'yilib, ko'rsatilgan amallar bajarilsa, hosil qilingan son ifodaning son qiymati deyiladi.",
+        "feedback": "To'g'ri. Sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifoda algebraik ifoda deb ataladi."
+      },
+      {
+        "kind": "decide",
+        "question": "Dasturda xonaning perimetrini hisoblash uchun P = 2a + 2b formulasi ishlatiladi. Bu ifoda qo'shish va ko'paytirish amallari yordamida birlashtirilgan. Darslik qoidasiga ko'ra, bunday ifoda qanday maxsus nomga ega?",
+        "options": [
+          "Murakkab sonli ifoda",
+          "Irratsional ifoda",
+          "Butun ifoda",
+          "Maxrajli ifoda"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 2,
+          "option_count": 4
+        },
+        "learning_block": "Qo'shish, ayirish va ko'paytirish belgilari yordamida birlashtirilgan bir nechta ko'phadlardan iborat algebraik ifoda butun ifoda deyiladi. Ixtiyoriy butun ifoda har doim soddalashtirilib, standart ko'rinishdagi ko'phadga keltirilishi mumkin.",
+        "feedback": "To'g'ri. Qo'shish, ayirish va ko'paytirish belgilari yordamida birlashtirilgan algebraik ifoda butun ifoda deyiladi."
+      },
+      {
+        "kind": "justify",
+        "question": "Dasturchi 3a ifodasining son qiymatini a = 5 bo'lganda hisobladi va natijani 35 deb chiqardi. Tahlilchi sifatida ushbu xatoning sababini aniqlang. Nima uchun bu hisob-kitob noto'g'ri?",
+        "options": [
+          "Harf o'rniga son qo'yilganda, ular orasidagi ko'paytirish amali bajarilishi shart.",
+          "Harf va son qo'shilishi kerak edi, ya'ni 3 + 5 = 8 bo'lishi lozim.",
+          "Algebraik ifodada harf doim sondan keyin yozilishi shart.",
+          "Butun ifodalarda son qiymatini hisoblab bo'lmaydi."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 0,
+          "option_count": 4
+        },
+        "learning_block": "Algebraik ifodada son va harf orasida ko'paytirish belgisi yozilmasa-da, hisoblashda u albatta inobatga olinishi kerak. 3a ifodada a = 5 bo'lsa, 3 · 5 = 15 bo'ladi, 35 emas. Son va harfni shunchaki yonma-yon yozish (konkatenatsiya) matematik mantiqni buzadi.",
+        "feedback": "To'g'ri. Algebraik ifodada son va harf orasida ko'paytirish belgisi yozilmasa-da, hisoblashda u albatta inobatga olinishi kerak (3 · 5 = 15)."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi uch savolning barchasiga o'z so'zingiz bilan 2–4 jumlada javob bering: (1) Vaziyatda qaysi algebraik tushunchani aniqladingiz? (2) Nima uchun aynan butun ifoda tushunchasini tanladingiz? (3) Son qiymatini hisoblashda yo'l qo'yilgan keng tarqalgan xato nimaga olib keladi?",
+      "min_chars": 80,
+      "concept_keywords": [
+        "algebraik ifoda",
+        "butun ifoda",
+        "ifodaning son qiymati"
+      ],
+      "method_keywords": [
+        "o'rniga qo'yish",
+        "amallarni bajarish",
+        "tasniflash"
+      ],
+      "mistake_keywords": [
+        "konkatenatsiya",
+        "ko'paytirishni tashlab ketish",
+        "yonma-yon yozish"
+      ],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "To'g'ri yo'l: Siz 2(a + b) ifodasini butun ifoda deb tasniflaysiz. a = 3 va b = 4 bo'lganda, sonlarni o'rniga qo'yib, 2 · (3 + 4) = 2 · 7 = 14 natijasini olasiz. Dastur to'g'ri ishlaydi, chunki amallar tartibi va harfiy ko'paytuvchilar qoidasiga rioya qilindi.",
+      "wrong_path": "Noto'g'ri yo'l: Tahlilchi 2(a + b) ifodasidagi ko'paytirishni e'tiborsiz qoldiradi va a = 3, b = 4 bo'lganda sonlarni shunchaki yonma-yon yozadi. Natijada 234 kabi xato qiymat hosil bo'ladi. Harfiy o'zgaruvchi va son orasidagi ko'paytirish amalini bajarmaslik matematik mantiqni butunlay buzadi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik ifoda va butun ifoda o'rtasidagi farqni hamda ularni qanday aniqlashni o'rgandingiz.",
+      "mistake_appeared": "O'zgaruvchilar o'rniga son qo'yilganda ko'paytirish amalini tashlab ketish (konkatenatsiya xatosi).",
+      "what_to_review": "Algebraik ifodalarning son qiymatini hisoblash qoidalarini va butun ifodaning ta'rifini darslikdan qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint to'g'ri bajarildi",
+        "DPE bo'limida uch savol bo'yicha mulohazalar yuritildi",
+        "Algebraik ifoda va butun ifoda tushunchalari darslik asosida qo'llanildi"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      {
+        "type": "fill_blank",
+        "prompt": "Algebraik ifoda — sonlar va harflardan tuzilib, _____ belgilari bilan birlashtirilgan ifodadir.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "amallar",
+          "accepted_answers": [
+            "amallar",
+            "arifmetik amallar",
+            "amal"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_1"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Butun ifoda deganda quyidagilardan qaysi biri nazarda tutiladi?",
+        "options": [
+          "Faqat sonlar va harflar yig'indisidan iborat sodda ifoda.",
+          "Qo'shish, ayirish va ko'paytirish belgilari yordamida birlashtirilgan bir nechta ko'phadlardan iborat ifoda.",
+          "Har qanday ko'rinishdagi harfiy va sonli ifodalar majmuasi, jumladan o'zgaruvchiga bo'lish amali mavjud ifodalar.",
+          "O'zgaruvchisi maxrajda qatnashgan va faqat kasr ko'rinishida yoziladigan barcha turdagi ifodalar."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_4"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Ifodaning son qiymati nima ekanligini eng to'g'ri tushuntiruvchi bandni aniqlang.",
+        "options": [
+          "Bu ifoda tarkibidagi harflarning ixtiyoriy sonlarni qabul qila olish xususiyatidir.",
+          "Bu harflar o'rniga aniq sonlar qo'yib, amallar bajarilganda hosil bo'lgan sondir.",
+          "Bu faqat sonli ifodalarda amallarni bajarish ketma-ketligini belgilovchi maxsus qoidadir.",
+          "Bu ifodani standart ko'rinishga keltirish uchun bajariladigan soddalashtirish bosqichidir."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_2"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Ixtiyoriy butun ifodani _____ ko'rinishdagi ko'phadga keltirish mumkin.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "standart",
+          "accepted_answers": [
+            "standart",
+            "standart shakldagi",
+            "soddalashtirilgan"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_5"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Nima uchun o'zgaruvchiga (harfga) bo'lish amali qatnashgan ifoda butun ifoda hisoblanmaydi?",
+        "options": [
+          "Chunki butun ifodalarda harflar ishtirok etishi taqiqlangan deb hisoblanadi.",
+          "Chunki butun ifoda ta'rifiga ko'ra o'zgaruvchilar ustida faqat qo'shish, ayirish va ko'paytirish bajariladi.",
+          "Chunki bunday ifodalarni har doim musbat sonli natija beradigan ko'rinishga keltirib bo'lmaydi.",
+          "Chunki bo'lish amali faqat sonli ifodalar uchun xos bo'lib, algebraik ifodalarda ishlatilmaydi."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_9"
+      },
+      {
+        "type": "choose_explanation",
+        "prompt": "Algebraik ifoda tarkibidagi harflarning vazifasini qaysi izoh to'g'ri yoritadi?",
+        "options": [
+          "Harflar faqat noma'lum bo'lgan va topilishi kerak bo'lgan bitta aniq sonni bildiradi.",
+          "Harflar ixtiyoriy sonli qiymatlarni qabul qilishi mumkin bo'lgan belgilardir.",
+          "Harflar ifodaning qaysi sinfga tegishli ekanligini ko'rsatuvchi kodlardir.",
+          "Harflar faqat amallar tartibini ko'rsatuvchi va qavslar o'rniga ishlatiladigan yordamchi vositadir."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_8"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Algebraik ifoda sonlar, harflar va _____ belgilaridan tashkil topadi.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "amallar",
+          "accepted_answers": [
+            "amallar",
+            "amal",
+            "arifmetik amallar"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_7"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Ifodaning son qiymatini topish jarayonida qaysi tartibga amal qilinadi?",
+        "options": [
+          "Avval barcha harflarni ifodadan chiqarib tashlab, qolgan sonlarni o'zaro qo'shish kerak.",
+          "O'zgaruvchilar o'rniga berilgan sonlarni qo'yish va ko'rsatilgan arifmetik amallarni bajarish kerak.",
+          "Ifodadagi barcha sonlarni harflarga almashtirib, natijani harfiy ko'rinishda qoldirish kerak.",
+          "Faqat qavslar ichidagi harflarni hisoblab, qavs tashqarisidagi sonlarni o'zgarishsiz qoldirish kerak."
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_3"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Algebraik ifoda tuzilishini tasvirlovchi sxemada '3' — sonni, '+' — amal belgisini, 'x' esa _____ ifodalaydi.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "o'zgaruvchini",
+          "accepted_answers": [
+            "o'zgaruvchini",
+            "harfni",
+            "harf",
+            "o'zgaruvchi"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_10"
+      },
+      {
+        "type": "mcq",
+        "prompt": "Quyidagi ifodalardan qaysi biri butun ifoda hisoblanadi (faqat qo'shish, ayirish va ko'paytirish amallari qatnashadi)?",
+        "options": [
+          "x + 6 ÷ x",
+          "2(a + b) − 9",
+          "15 ÷ (x + 3)",
+          "y + z > 1"
+        ],
+        "answer_spec": {
+          "type": "option_index",
+          "expected": 1,
+          "option_count": 4
+        },
+        "flashcard_ref": "card_6"
+      },
+      {
+        "type": "fill_blank",
+        "prompt": "Qo'shish, ayirish va ko'paytirish amallari yordamida birlashtirilgan bir nechta ko'phadlardan tashkil topgan algebraik ifoda _____ deb ataladi.",
+        "answer_spec": {
+          "type": "text_fuzzy",
+          "expected": "butun ifoda",
+          "accepted_answers": [
+            "butun ifoda",
+            "butun"
+          ],
+          "allow_ai_fallback": true
+        },
+        "flashcard_ref": "card_4"
+      }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_alg_01",
+    "expert_role": "business_consultant",
+    "title": "Logistika Formulasini Tekshirish",
+    "intro": "Siz logistika kompaniyasida yangi dasturiy ta'minotni tekshirayotgan mutaxassissiz. 'Yuk-Servis' kompaniyasining xarajatlarni hisoblash algoritmida C = p(as + b) formulasi kiritilgan, bu yerda p — yoqilg'i narxi, a — masofa koeffitsiyenti, s — yo'l uzunligi, b — texnik xizmatning o'zgarmas xarajati. Berilgan ma'lumotlar: p = 10 000 so'm, a = 0.2, s = 500 km, b = 50 000 so'm. Eslatma: omborda 15 ta yuk mashinasi navbatda turibdi — bu ma'lumot hisob-kitobga ta'sir qilmaydi.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Formula turini aniqlash",
+        "prompt": "Dasturiy kodda ishlatilgan C = p(as + b) yozuvi matematik nuqtai nazardan qanday ifoda turiga kiradi?",
+        "options": [
+          {
+            "id": "a",
+            "label": "Sonli ifoda",
+            "is_correct": false,
+            "consequence": "Hali emas. Bu yozuvni faqat sonlardan iborat deb o'ylayapsiz, lekin undagi harfiy o'zgaruvchilar (p, a, s, b) ifodaning turini o'zgartiradi."
+          },
+          {
+            "id": "b",
+            "label": "Algebraik ifoda",
+            "is_correct": true,
+            "consequence": "To'g'ri. Bizda o'zgaruvchilar (harflar) mavjud bo'lgani uchun, bu klassik algebraik ifodadir."
+          },
+          {
+            "id": "c",
+            "label": "Mantiqiy tenglama",
+            "is_correct": false,
+            "consequence": "Hali emas. Bu yerda tenglik yoki mantiqiy shart yo'q — sonlar, harflar va amallar belgilari mavjud, xolos."
+          }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Hisoblash tartibini tanlash",
+        "prompt": "C = p(as + b) ifodasining son qiymatini to'g'ri hisoblash uchun avval qaysi qadamni bajarish kerak?",
+        "options": [
+          {
+            "id": "a",
+            "label": "Avval qavs ichidagi a · s ko'paytmani topib, so'ng b ni qo'shish, oxirida natijani p ga ko'paytirish",
+            "is_correct": true,
+            "info_cost": {
+              "time": "1 qadam"
+            }
+          },
+          {
+            "id": "b",
+            "label": "Avval p ni b ga ko'paytirib, keyin a · s ni alohida qo'shib qo'yish",
+            "is_correct": false,
+            "info_cost": {
+              "time": "noto'g'ri yo'l"
+            }
+          },
+          {
+            "id": "c",
+            "label": "Harflar o'rniga sonlarni yonma-yon yozib, ularni birlashtirib chiqish",
+            "is_correct": false,
+            "info_cost": {
+              "time": "noto'g'ri yo'l"
+            }
+          }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Son qiymatini hisoblash",
+        "prompt": "Berilgan parametrlar (p = 10 000, a = 0.2, s = 500, b = 50 000) asosida xarajatning son qiymatini hisoblang.",
+        "options": [
+          {
+            "id": "a",
+            "label": "501 000 000",
+            "is_correct": true,
+            "consequence": "Barakalla! 10 000 · (0.2 · 500 + 50 000) = 10 000 · (100 + 50 000) = 10 000 · 50 100 = 501 000 000. Amallar tartibi va o'rniga qo'yish algoritmini aniq bajardingiz."
+          },
+          {
+            "id": "b",
+            "label": "1 500 000",
+            "is_correct": false,
+            "consequence": "Hali emas. Ehtimol b o'zgarmas qiymatini yoki amallar tartibini noto'g'ri tushundingiz. Qavs ichidagi amallarni qayta ko'ring."
+          },
+          {
+            "id": "c",
+            "label": "510 000",
+            "is_correct": false,
+            "consequence": "Hali emas. Nollar sonini va ko'paytirish tartibini qayta tekshiring: avval a · s, keyin b ni qo'shing, so'ng p ga ko'paytiring."
+          }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Ushbu formulani to'g'ri tasniflash va hisoblashda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          {
+            "id": "c1",
+            "label": "Butun ifoda: o'zgaruvchilar ustida faqat qo'shish, ayirish va ko'paytirish amallari bajariladi va amallar tartibiga rioya qilinadi",
+            "is_correct": true
+          },
+          {
+            "id": "c2",
+            "label": "Konkatenatsiya: harflar o'rniga sonlarni shunchaki yonma-yon yozish",
+            "is_correct": false
+          },
+          {
+            "id": "c3",
+            "label": "Omborda navbatda turgan 15 ta yuk mashinasi ma'lumoti (ortiqcha ma'lumot)",
+            "is_correct": false
+          }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun C = p(as + b) butun ifoda hisoblanadi va uning son qiymatini hisoblashda amallar tartibiga qat'iy rioya qilish shart? '15 ta yuk mashinasi' ma'lumoti nima uchun hisob-kitobga ta'sir qilmaydi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": [
+          "butun ifoda",
+          "amallar tartibi",
+          "o'rniga qo'yish",
+          "algebraik ifoda",
+          "ortiqcha ma'lumot"
+        ]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_alg_01_son_qiymat",
+      "instructions": "Bir tahlilchi 5(a + 2b) − 3a algebraik ifodasining a = 4 va b = 3 bo'lgandagi son qiymatini bosqichma-bosqich hisobladi. Aynan bitta blok noto'g'ri — uni toping va to'g'ri natijani yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        {
+          "id": "b1",
+          "text": "O'zgaruvchilar o'rniga qiymatlarni qo'yish: 5 · (4 + 2 · 3) − 3 · 4",
+          "is_broken": false
+        },
+        {
+          "id": "b2",
+          "text": "Qavs ichida avval ko'paytirishni bajarish: 5 · (4 + 6) − 3 · 4",
+          "is_broken": false
+        },
+        {
+          "id": "b3",
+          "text": "Qavs ichidagi yig'indini hisoblash: 5 · 10 − 3 · 4",
+          "is_broken": false
+        },
+        {
+          "id": "b4",
+          "text": "Ko'paytirish amallarini bajarish: 50 − 12",
+          "is_broken": false
+        },
+        {
+          "id": "b5",
+          "text": "Yakuniy ayirish amalini bajarish va natijani aniqlash: 48",
+          "is_broken": true
+        }
+      ],
+      "correction_answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "38",
+        "accepted_answers": [
+          "38",
+          "Natija 38",
+          "Javob 38",
+          "50 - 12 = 38",
+          "50 − 12 = 38"
+        ],
+        "allow_ai_fallback": true
+      },
+      "hint": "Hisoblashning eng oxirgi bosqichiga e'tibor bering. 50 dan 12 soni ayirilganda hosil bo'ladigan natijani qaytadan tekshirib ko'ring.",
+      "why_prompt": "Nima uchun 5-blokdagi natija noto'g'ri va butun ifodaning son qiymati aslida nechaga teng bo'lishi kerak? (50 − 12 ayirmasining qiymati 38 ga teng, 48 esa noto'g'ri hisoblangan natijadir.)"
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_alg_01",
+      "case_setup": "Algebraik ifodalar va ularning turlariga oid atamalar hamda ta'riflarni ma'no jihatidan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        {
+          "id": "p1",
+          "left": "Algebraik ifoda",
+          "right": "Sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifoda"
+        },
+        {
+          "id": "p2",
+          "left": "Ifodaning son qiymati",
+          "right": "O'zgaruvchilar o'rniga son qo'yib, amallar bajarilganda hosil bo'lgan natija"
+        },
+        {
+          "id": "p3",
+          "left": "Butun ifoda",
+          "right": "Qo'shish, ayirish va ko'paytirish amallari bilan birlashtirilgan ko'phadlar"
+        },
+        {
+          "id": "p4",
+          "left": "Butun ifodaning xossasi",
+          "right": "Ixtiyoriy butun ifodani standart ko'rinishdagi ko'phadga keltirish mumkinligi"
+        },
+        {
+          "id": "p5",
+          "left": "Algebraik ifoda elementlari",
+          "right": "Sonlar, harflar (o'zgaruvchilar) va amallar (+, −, ·, ÷) belgilari"
+        },
+        {
+          "id": "p6",
+          "left": "Son qiymatini topish jarayoni",
+          "right": "O'zgaruvchilar o'rniga berilgan sonlarni qo'yish va arifmetik amallarni bajarish"
+        }
+      ],
+      "checkpoints": [
+        {
+          "question": "'Algebraik ifoda' qaysi ta'rifga juftlanadi?",
+          "options": [
+            "Sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifoda",
+            "Faqat sonlardan iborat ifoda",
+            "Tenglik belgisi bo'lgan ifoda"
+          ],
+          "correct_index": 0
+        },
+        {
+          "question": "Butun ifodada qaysi amallar ruxsat etilgan?",
+          "options": [
+            "Qo'shish, ayirish va ko'paytirish",
+            "Barcha amallar, jumladan o'zgaruvchiga bo'lish",
+            "Faqat bo'lish amali"
+          ],
+          "correct_index": 0
+        },
+        {
+          "question": "Nima uchun 'butun ifoda' va 'algebraik ifoda' tushunchalarini chalkashtirmaslik kerak?",
+          "options": [
+            "Butun ifodada o'zgaruvchiga bo'lish amali qatnashmaydi — bu amallar cheklovi",
+            "Ular butunlay bir xil tushunchalar",
+            "Butun ifodada harf umuman bo'lmaydi"
+          ],
+          "correct_index": 0
+        }
+      ],
+      "dpe_prompt": "Nima uchun 'Butun ifoda' va 'Algebraik ifoda' tushunchalarini o'zaro chalkashtirmaslik kerak? Faqat yuzaki o'xshashlikka yoki 'ifoda' so'zining borligiga tayanib taxmin qilgan o'quvchi butun ifoda tarkibidagi amallar cheklovini (o'zgaruvchiga bo'lish amali yo'qligini) qanday e'tibordan chetda qoldirishi mumkin?",
+      "expected_components": [
+        "amallar cheklovi",
+        "o'zgaruvchiga bo'lish amali yo'qligi",
+        "butun ifoda ta'rifi",
+        "algebraik ifoda umumiy tushuncha"
+      ],
+      "consequence": {
+        "correct_path": "Har bir atamani to'g'ri ta'rifiga uladingiz.",
+        "wrong_path": "Yuzaki o'xshashlikka aldanib, butun ifodadagi amallar cheklovini e'tibordan chetda qoldirish mumkin."
+      }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_alg_01",
+      "case_setup": "Har bir bo'lakni o'zaro mantiqiy bog'liqligi bo'yicha mos jufti bilan birlashtiring: tushuncha ↔ ta'rif va qadam ↔ natija. Bo'laklar faqat darslikda keltirilgan qoidalar asosida ulanadi.",
+      "pieces": [
+        {
+          "id": "P1",
+          "label": "Algebraik ifoda (tushuncha)",
+          "role": "cause"
+        },
+        {
+          "id": "P2",
+          "label": "Sonlar va harflardan tuzilib, amallar belgilari bilan birlashtirilgan ifoda (ta'rif)",
+          "role": "effect"
+        },
+        {
+          "id": "P3",
+          "label": "Butun ifoda (tushuncha)",
+          "role": "cause"
+        },
+        {
+          "id": "P4",
+          "label": "Qo'shish, ayirish va ko'paytirish belgilari yordamida birlashtirilgan ko'phadlar (ta'rif)",
+          "role": "effect"
+        },
+        {
+          "id": "P5",
+          "label": "Harflar o'rniga aniq sonlarni qo'yish va ko'rsatilgan amallarni bajarish (qadam)",
+          "role": "cause"
+        },
+        {
+          "id": "P6",
+          "label": "Ifodaning son qiymati (natija)",
+          "role": "effect"
+        }
+      ],
+      "checkpoints": [
+        {
+          "q": "P1 (Algebraik ifoda) qaysi bo'lakka ulanadi?",
+          "options": [
+            "P2 (Sonlar va harflardan tuzilgan ifoda)",
+            "P6 (Ifodaning son qiymati)"
+          ],
+          "correct_index": 0
+        },
+        {
+          "q": "P5 (harflar o'rniga sonlarni qo'yish) qaysi natijaga ulanadi?",
+          "options": [
+            "P4 (ko'phadlar ta'rifi)",
+            "P6 (Ifodaning son qiymati)"
+          ],
+          "correct_index": 1
+        },
+        {
+          "q": "P5 → P6 bog'lanish turi qanday?",
+          "options": [
+            "Qadam ↔ natija",
+            "Tasodifiy o'xshashlik"
+          ],
+          "correct_index": 0
+        }
+      ],
+      "dpe_prompt": "Siz qaysi matematik qoidaga ko'ra P5 va P6 bo'laklarini birlashtirdingiz? Nima uchun yig'ish yo'nalishi aynan qadamdan natijaga qarab bo'lishi shart, va agar P1 hamda P3 bo'laklarini shunchaki yuzaki o'xshashligi (ikkalasi ham 'ifoda' deb nomlanishi) uchun o'rnini almashtirib qo'ysangiz, ta'riflarda qanday mantiqiy xatolik yuzaga keladi?",
+      "expected_components": [
+        "algebraik ifoda umumiy tushuncha",
+        "butun ifoda cheklangan xususiy hol",
+        "son qiymatini topish algoritmi ketma-ketligi",
+        "qadam natijaga olib keladi"
+      ]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Maktab do'konida bitta daftarning narxi n so'm, bitta qalamning narxi esa m so'm. Sotuvchi jami savdoni hisoblash uchun 12n + 8m ko'rinishidagi ifodani tuzdi.",
+      "why": "Nima uchun ushbu yozuv 'algebraik ifoda' deb ataladi va undagi harflar nimani anglatadi?",
+      "how": "Agar n = 2000 va m = 1500 bo'lsa, sotuvchi jami summani (ifodaning son qiymatini) qanday tartibda hisoblashi kerak?",
+      "what": "Topilgan natija do'kon uchun nimani anglatadi va agar qalamlar narxi (m) oshsa, butun ifodaning qiymati qanday o'zgaradi?",
+      "prompt": "12n + 8m ifodasining n = 2000 va m = 1500 bo'lgandagi son qiymatini hisoblang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Ifoda tarkibidagi sonlar, harflar va amallar belgilarining birikmasiga e'tibor bering; bu qaysi ta'rifga mos keladi?",
+        "Sonli qiymatlarni harflar o'rniga qo'yganda, harf va son orasida qaysi 'yashirin' amal bajarilishini eslang.",
+        "Har bir hadni alohida hisoblang: 12 · 2000 va 8 · 1500, so'ng ularni qo'shing."
+      ],
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 36000,
+        "tolerance": 0
+      },
+      "expected_concepts": [
+        "algebraik ifoda",
+        "ifodaning son qiymati",
+        "12 · 2000 = 24000",
+        "8 · 1500 = 12000"
+      ],
+      "correct_feedback": "Juda yaxshi! 12 · 2000 + 8 · 1500 = 24 000 + 12 000 = 36 000. Algebraik ifoda tuzilishini va uning amaliy ahamiyatini to'g'ri tushuntirib berdingiz.",
+      "partial_feedback": "Hisoblash jarayoni to'g'ri, lekin harflarning matematik vazifasini (o'zgaruvchi ekanini) to'liqroq yoritishingiz kerak.",
+      "wrong_feedback": "Hali emas. Algebraik ifodada harflar o'rniga son qo'yilganda ular shunchaki yonma-yon yoziladimi yoki ko'paytiriladimi? Har bir hadni alohida ko'paytirib, so'ng qo'shing."
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Dasturchi kod yozishda 10x ifodasidan foydalandi. Foydalanuvchi x o'rniga 5 sonini kiritganida, dastur natijani 105 deb chiqardi.",
+      "why": "Nima uchun bu natija matematik nuqtai nazardan xato hisoblanadi?",
+      "how": "Algebraik ifoda qoidasiga ko'ra, 10 va x orasida qaysi amal bajarilishi kerak edi va to'g'ri natija qanday topiladi?",
+      "what": "Agar dasturchi xatoni tuzatmasa, x ning qiymati ortishi bilan natija haqiqiy matematik qiymatdan qanchalik uzoqlashib ketadi?",
+      "prompt": "10x ifodasining x = 5 bo'lgandagi to'g'ri son qiymatini toping va dastur xatosini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Matematikada son va harf orasida belgi qo'yilmagan bo'lsa, qaysi amal ko'zda tutiladi?",
+        "10 dona x ni qo'shib chiqishni tasavvur qiling, bu qanday qisqartirilgan amalga teng?",
+        "Sonlarni shunchaki yonma-yon yozish (konkatenatsiya) va ko'paytirish natijalari orasidagi farq haqida o'ylang."
+      ],
+      "answer_spec": {
+        "type": "numeric",
+        "expected": 50,
+        "tolerance": 0
+      },
+      "expected_concepts": [
+        "10x = 10 · x",
+        "10 · 5 = 50",
+        "konkatenatsiya xatosi",
+        "son va harf orasidagi ko'paytirish"
+      ],
+      "correct_feedback": "Balli! 10 · 5 = 50. Harf va son orasidagi ko'paytirish amalini va uning son qiymatiga ta'sirini aniq ko'rsatdingiz.",
+      "partial_feedback": "Xatoni aniqladingiz, ammo bu xato x ning boshqa qiymatlarida qanday oqibatlarga olib kelishini chuqurroq tahlil qiling.",
+      "wrong_feedback": "Hali emas. Algebraik ifodada 10x yozuvi 10 va x ni birlashtirishni emas, balki ma'lum bir amalni bajarishni bildiradi. U qaysi amal?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Sizga ikkita ifoda berilgan: A = (x − y) ÷ 4 va B = 4 ÷ (x − y).",
+      "why": "Nima uchun A ifodasi 'butun ifoda' hisoblanadi-yu, B ifodasi butun ifoda emas?",
+      "how": "Butun ifoda ta'rifidagi 'ruxsat etilgan amallar' ro'yxatidan foydalanib, har bir ifodadagi o'zgaruvchilar ustida qanday amallar bajarilayotganini tahlil qiling.",
+      "what": "Agar B ifodasidagi o'zgaruvchini maxrajdan suratga o'tkazsak, uning tasnifi o'zgaradimi va nima uchun?",
+      "prompt": "A = (x − y) ÷ 4 va B = 4 ÷ (x − y) ifodalarini tasniflang va farqni asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "Butun ifoda ta'rifida o'zgaruvchiga (harfga) bo'lish amali haqida nima deyilgan edi?",
+        "A ifodasida bo'lish amali bormi? Agar bo'lsa, u songa bo'lishmi yoki harfga?",
+        "Butun ifoda bo'lishi uchun o'zgaruvchilar faqat qaysi uchta amal yordamida birlashishi kerak?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "A butun ifoda, B esa butun ifoda emas",
+        "accepted_answers": [
+          "A butun ifoda, B emas",
+          "A butun ifoda, B butun ifoda emas",
+          "A - butun ifoda, B - butun emas"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "butun ifoda ta'rifi",
+        "songa bo'lish mumkin",
+        "o'zgaruvchiga bo'lish cheklovi",
+        "B da maxrajda x − y bor"
+      ],
+      "correct_feedback": "Ajoyib! A ifodada songa (4 ga) bo'linadi — bu ruxsat etilgan, shuning uchun u butun ifoda. B ifodada esa o'zgaruvchili ifodaga (x − y) bo'linadi — bu butun ifoda emas. Asosiy shartni juda aniq tushuntirdingiz.",
+      "partial_feedback": "Tasnifingiz to'g'ri, lekin B ifodasi nima uchun butun ifoda emasligini ta'rifdagi amallar cheklovi bilan bog'lab bering.",
+      "wrong_feedback": "Hali emas. Sonli maxrajli ifoda bilan o'zgaruvchili maxrajli ifodaning farqiga diqqat qiling. Butun ifodada harf qayerda bo'lishi mumkin emas?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Muhandis loyiha uchun 3(a + b) − 2a ifodasini tuzdi. U bu ifodani soddaroq ko'rinishga keltirmoqchi.",
+      "why": "Nima uchun ixtiyoriy butun ifodani standart ko'rinishdagi ko'phadga keltirish mumkin deb hisoblanadi?",
+      "how": "Qavslarni ochish va o'xshash hadlarni ixchamlash orqali ushbu ifodani qanday qilib standart shaklga keltirasiz?",
+      "what": "Hosil bo'lgan yangi ifoda asl ifoda bilan bir xil son qiymatiga ega bo'ladimi? Agar a = 10, b = 5 bo'lsa, ikkala holatda ham tekshirib ko'ring.",
+      "prompt": "3(a + b) − 2a ifodasini standart ko'rinishga (soddalashtirilgan ko'phadga) keltiring.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "Butun ifodalarni tashkil qiluvchi amallar (qo'shish, ko'paytirish) qanday matematik xossalarga (masalan, taqsimot qonuni) ega?",
+        "Avval qavsdan qutuling: 3(a + b) = 3a + 3b, so'ngra 'a' harfi qatnashgan hadlarni o'zaro hisoblang.",
+        "Agar ikki ifoda aynan bir xil bo'lsa (soddalashtirilgan bo'lsa), o'zgaruvchilarning bir xil qiymatlarida natija o'zgaradimi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "a + 3b",
+        "accepted_answers": [
+          "a + 3b",
+          "a+3b",
+          "3b + a"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "3(a + b) = 3a + 3b",
+        "3a − 2a = a",
+        "taqsimot qonuni",
+        "standart ko'rinish"
+      ],
+      "correct_feedback": "Mukammal! 3(a + b) − 2a = 3a + 3b − 2a = a + 3b. a = 10, b = 5 da: asl ifoda 3 · 15 − 20 = 25, soddalashtirilgan a + 3b = 10 + 15 = 25 — teng. Standart shaklga keltirish jarayonini to'liq asosladingiz.",
+      "partial_feedback": "Soddalashtirishni bajardingiz, ammo 'nima uchun har doim standart shaklga keltirish mumkin' degan savolga ta'rif asosida javob bering.",
+      "wrong_feedback": "Hali emas. Qavslarni ochishda ko'paytirishning taqsimot qonunini to'g'ri qo'llayotganingizga ishonch hosil qiling: 3(a + b) = 3a + 3b."
+    },
+    {
+      "id": "bq_4",
+      "scenario": "To'rtburchak shaklidagi bog'ning bo'yi a metr, eni esa undan 3 metrga qisqa. Bog'ning yuzasini hisoblash uchun algebraik ifoda tuzish talab etiladi.",
+      "why": "Nima uchun bog'ning enini ifodalashda a − 3 yozuvidan foydalanamiz va bu bog'liqlik qanday nomlanadi?",
+      "how": "To'rtburchak yuzasi formulasidan (S = bo'yi · eni) foydalanib, bog'ning yuzasini a orqali ifodalovchi butun ifodani qanday tuzasiz?",
+      "what": "Agar a = 3 bo'lsa, yuzaning qiymati necha bo'ladi va bu natija real hayotda nimani anglatadi (shunday bog' mavjud bo'lishi mumkinmi)?",
+      "prompt": "Bog'ning yuzasini a orqali ifodalovchi butun ifodani tuzing (bo'yi a, eni a − 3).",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": [
+        "'Qisqa' degan so'z matematikada qaysi amalni bildiradi va u nimaga nisbatan bajariladi?",
+        "Yuza formulasini eslang (S = bo'yi · eni) va har bir qismni o'zgaruvchilar bilan almashtiring.",
+        "Agar yuza 0 ga teng bo'lsa, shaklning o'lchamlari haqida nima deyish mumkin? a = 3 da eni nechaga teng bo'ladi?"
+      ],
+      "answer_spec": {
+        "type": "text_fuzzy",
+        "expected": "a(a − 3)",
+        "accepted_answers": [
+          "a(a − 3)",
+          "a(a−3)",
+          "a² − 3a",
+          "a·(a-3)",
+          "a2 - 3a"
+        ],
+        "allow_ai_fallback": true
+      },
+      "expected_concepts": [
+        "S = a · (a − 3)",
+        "a² − 3a",
+        "a = 3 da yuza 0",
+        "a > 3 bo'lishi shart"
+      ],
+      "correct_feedback": "Juda kuchli tahlil! S = a(a − 3) = a² − 3a. a = 3 bo'lsa yuza 0 ga teng — bunday bog' mavjud bo'lolmaydi, demak a > 3 bo'lishi kerak. Ham ifodani tuzdingiz, ham real hayotdagi mantiqiy chegarani ko'rsatdingiz.",
+      "partial_feedback": "Ifoda to'g'ri tuzilgan, lekin a = 3 bo'lgandagi natijaning ma'nosi va uning imkonsizligi haqidagi xulosangizni kutaman.",
+      "wrong_feedback": "Hali emas. Yuza hisoblashda bo'yi va enini o'zaro qanday amal bilan bog'lash kerakligini qayta ko'rib chiqing: S = bo'yi · eni."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik ifodalar va butun ifodalar haqidagi bilimlaringizni mustahkamladingiz. Algebraik ifodadagi harflar o'rniga sonlar qo'yilganda uning son qiymati hosil bo'lishini hamda faqat qo'shish, ayirish va ko'paytirish amallaridan iborat ifodalar butun ifoda deb atalishini o'rgandingiz. Ushbu tushunchalar kundalik hayotda, masalan, qurilish loyihalarida xonalarning yuzasini yoki materiallar sarfini avtomatik hisoblashda asosiy poydevor bo'lib xizmat qiladi.",
+    "question": "Do'stingizga algebraik ifodaning son qiymatini hisoblayotganda nima uchun son va harfni shunchaki yonma-yon yozib qo'yish xato ekanligini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga butun ifodalar tasnifi va amallar tartibi bo'yicha yangi misollarni mashq qiling — ayniqsa o'zgaruvchiga bo'lish amali mavjud bo'lgan ifodalarning nima uchun butun ifoda hisoblanmasligiga alohida diqqat qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz algebraik ifodalarni sonli ifodalardan ajratishni va o'zgaruvchilarning berilgan qiymatlari asosida son qiymatini hisoblashni yaxshi o'zlashtirdingiz. Son va harf orasidagi 'yashirin' ko'paytirish amalini hamda o'zgaruvchi maxrajda kelgan hollarda ifodaning butun yoki butun emasligini aniqlashni mustahkamlash foydali.",
+      "strong_points": [
+        "Algebraik ifodalarni tushunish va ularni sonli ifodalardan ajrata olish",
+        "O'zgaruvchilarning berilgan qiymatlari asosida sodda natijalarni hisoblash"
+      ],
+      "weak_points": [
+        "Son va harf orasidagi 'yashirin' ko'paytirish amalini (masalan, 10x) qo'llashdagi e'tibor",
+        "O'zgaruvchi maxrajda kelgan hollarda ifodaning butun yoki butun emasligini aniqlash"
+      ],
+      "next_steps": [
+        "Son va harf orasidagi ko'paytirishga e'tibor berib, ifodalarning son qiymatini hisoblashni mashq qiling",
+        "Butun ifodalar tasnifi va amallar tartibi bo'limiga qaytib, o'zgaruvchiga bo'lish amalini alohida ko'rib chiqing"
+      ],
+      "weak_point_keywords": [
+        "yashirin ko'paytirish",
+        "o'zgaruvchiga bo'lish",
+        "konkatenatsiya"
+      ],
+      "strong_point_keywords": [
+        "algebraik ifoda",
+        "son qiymati",
+        "butun ifoda"
+      ],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan."
+    }
+  }
+}

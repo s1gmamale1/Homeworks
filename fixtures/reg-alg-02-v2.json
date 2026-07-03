@@ -1,0 +1,348 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§2. Algebraik kasr. Kasrlarni qisqartirish",
+    "subject_display": "Algebra",
+    "section": "§2",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Algebraik kasr", "def": "Surati va maxraji algebraik ifodalardan iborat bo'lgan kasr. Masalan: (a−b)/(a+b), x(b+c)/(y(a+c)).", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrning son qiymati", "def": "Kasrdagi harflar o'rniga berilgan sonlarni qo'yib, amallarni bajarish natijasida hosil bo'lgan son. x=2 bo'lganda x/(x+1) ning qiymati 2/3 ga teng.", "cluster": "METOD" },
+    { "term": "Joiz (yo'l qo'yiladigan) qiymatlar", "def": "O'zgaruvchilarning kasr maxraji nolga teng bo'lmaydigan barcha qiymatlari. Maxrajni nolga aylantiruvchi sonlar chiqarib tashlanadi.", "cluster": "QOIDA" },
+    { "term": "Kasrning asosiy xossasi", "def": "Surat va maxrajni bir xil (noldan farqli) ifodaga ko'paytirish yoki bo'lish natijasida unga teng kasr hosil bo'ladi: A/B = (A·C)/(B·C), bunda C ≠ 0.", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrni qisqartirish", "def": "Kasrning surati va maxrajini ularning umumiy ko'paytuvchisiga bo'lish jarayoni; natijada teng, lekin soddaroq kasr hosil bo'ladi.", "cluster": "METOD" },
+    { "term": "Umumiy ko'paytuvchini topish", "def": "Kasrning surati va maxrajini ko'paytuvchilarga ajratish orqali amalga oshiriladi. Masalan: a(x+y)/(b(x+y)) = a/b.", "cluster": "METOD" },
+    { "term": "Qarama-qarshi kasr hosil qilish", "def": "Kasrning faqat surati yoki faqat maxrajidagi ishorani qarama-qarshisiga o'zgartirish. a/b kasriga qarama-qarshi kasr −a/b yoki a/(−b).", "cluster": "QOIDA" },
+    { "term": "Maxrajni nolga aylantiruvchi qiymat", "def": "Bunday qiymatlarda algebraik kasr ma'noga ega bo'lmaydi, chunki nolga bo'lish mumkin emas.", "cluster": "QOIDA" },
+    { "term": "Surat va maxraj ishoralarini bir vaqtda o'zgartirish", "def": "Ikkala ishora birdan o'zgarsa, kasrning o'ziga teng kasr hosil bo'ladi: −a/−b = a/b.", "cluster": "MISOL" },
+    { "term": "Algebraik kasrlar ustida amallar tartibi", "def": "Son qiymatni hisoblashda avval qavslar, keyin daraja, so'ngra ko'paytirish/bo'lish va oxirida qo'shish/ayirish bajariladi.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Algebraik Kasrni Qisqartirish",
+    "case_setup": {
+      "story": "Siz 'MathLogic' dasturiy ta'minot kompaniyasida sifat nazorati tahlilchisi bo'lib ishlaysiz. Hamkasbingiz Sardor algebraik ifodalarni soddalashtiruvchi yangi modul ustida ishlamoqda. U (x²−16)/(x²−4x) ifodasi bilan bog'liq muammoga duch keldi. Sardor yozgan dastur x = 4 qiymati kiritilganda 'Xatolik: 0 ga bo'lish' xabarini bermayapti, balki noto'g'ri hisob-kitobni davom ettirmoqda. Shuningdek, dasturning soddalashtirish algoritmi kasrning surat va maxrajidagi x² larni shunchaki o'chirib yuboryapti. Sizning vazifangiz — Sardorga ushbu algebraik kasrning tuzilishini tushuntirish va hisoblash jarayonidagi xatolarni tuzatishdir.",
+      "role": "Sifat nazorati tahlilchisi",
+      "task": "Har bir qadamni tekshiring, Sardorga algebraik kasrning tuzilishini tushuntiring va hisoblash xatolarini tuzating."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Dastur x = 4 va x = 0 qiymatlarida nima uchun ehtiyotkor bo'lishi kerak? Ushbu ifoda matematika nuqtayi nazaridan qanday nomlanadi va uning mavjudlik sharti nimaga bog'liq?",
+        "options": [
+          "Bu oddiy ko'paytma bo'lib, o'zgaruvchilarning har qanday qiymatida aniqlangan.",
+          "Bu algebraik kasr bo'lib, uning maxraji nolga teng bo'lmasligi kerak (joiz qiymatlar).",
+          "Bu chiziqli tenglama bo'lib, faqat bitta to'g'ri yechimga ega.",
+          "Bu kasrlarni umumiy maxrajga keltirish algoritmining bir qismidir."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Algebraik kasr — surati va maxraji algebraik ifodalardan iborat bo'lgan kasrdir. Kasr maxraji nolga teng bo'lmaydigan o'zgaruvchilarning qiymatlari uning joiz qiymatlari deyiladi. Agar maxraj nolga teng bo'lsa, kasr ma'noga ega bo'lmaydi.",
+        "feedback": "To'g'ri. Surati va maxraji algebraik ifodalardan iborat bo'lgan kasr algebraik kasr deyiladi. Uning maxraji nolga aylanishi mumkin bo'lgan x ning qiymatlari (bu holatda x=4 va x=0) kasrning joiz qiymatlari sohasiga kirmaydi."
+      },
+      {
+        "kind": "decide",
+        "question": "Sardorga kasrni to'g'ri soddalashtirish uchun birinchi navbatda qaysi matematik amalni bajarishni maslahat berasiz?",
+        "options": [
+          "Surat va maxrajdagi x² larni o'zaro qisqartirish.",
+          "Suratdan maxrajni ayirib tashlash.",
+          "Surat va maxrajni ko'paytuvchilarga ajratish.",
+          "Faqat maxrajdagi x o'zgaruvchisini o'chirib yuborish."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Kasrning asosiy xossasiga ko'ra, kasrning surat va maxrajini bir xil algebraik ifodaga ko'paytirish yoki bo'lish natijasida unga teng kasr hosil bo'ladi. Qisqartirish jarayonida faqat umumiy ko'paytuvchilarni qisqartirish mumkin, alohida qo'shiluvchilarni (hadlarni) qisqartirish qat'iyan man etiladi.",
+        "feedback": "To'g'ri. Algebraik kasrni qisqartirish uchun uning surat va maxrajini umumiy ko'paytuvchiga bo'lish kerak. Buning uchun avval surat va maxraj ko'paytuvchilarga ajratiladi."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun Sardorning x² larni shunchaki o'chirib yuborishi (qisqartirishi) xato hisoblanadi?",
+        "options": [
+          "Chunki x² bu yerda ko'paytuvchi emas, balki ayiruvchi va kamayuvchining bir qismi (had) hisoblanadi.",
+          "Chunki x² har doim musbat son bo'lishi shart.",
+          "Chunki suratdagi x² va maxrajdagi x² ning qiymatlari har xil bo'lishi mumkin."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 3 },
+        "learning_block": "Algebraik kasrda faqat umumiy ko'paytuvchilarni qisqartirish mumkin. (x²−16)/(x²−4x) ifodada x² — surat va maxrajdagi ayirmalarning bir hadi (qo'shiluvchisi), butun surat yoki maxraj uchun umumiy ko'paytuvchi emas. Uni 'kesib tashlash' kasr qiymatini o'zgartiradi. To'g'ri yo'l — avval ko'paytuvchilarga ajratish: x²−16 = (x−4)(x+4), x²−4x = x(x−4).",
+        "feedback": "To'g'ri. Algebraik kasrlarda faqat ko'paytuvchilarni qisqartirish mumkin. x² bu yerda ayiruvchi yoki kamayuvchi sifatida qatnashmoqda, u butun surat yoki maxraj uchun umumiy ko'paytuvchi emas."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi uch savolning barchasiga o'z so'zingiz bilan 2–4 jumlada javob bering: (1) Vaziyatda qaysi Matematika/Algebra tushunchasini aniqladingiz? (2) Nima uchun aynan ko'paytuvchilarga ajratish usulini tanladingiz? (3) Sardor yo'l qo'ygan xato (hadlarni qisqartirish) qanday noto'g'ri natijaga olib keladi?",
+      "min_chars": 80,
+      "concept_keywords": ["algebraik kasr", "joiz qiymatlar", "kasrning asosiy xossasi", "umumiy ko'paytuvchi"],
+      "method_keywords": ["ko'paytuvchilarga ajratish", "qisqartirish", "kvadratlar ayirmasi"],
+      "mistake_keywords": ["had", "qo'shiluvchi", "x² ni o'chirish", "kesib tashlash"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "To'g'ri yo'l: (x²−16)/(x²−4x). 1) Suratni ajratamiz: x²−16 = (x−4)(x+4). 2) Maxrajni ajratamiz: x²−4x = x(x−4). 3) Umumiy ko'paytuvchi (x−4) ni qisqartiramiz. Natija: (x+4)/x. Joiz qiymatlar: x ≠ 0, x ≠ 4. Dastur to'g'ri va aniq ishlaydi.",
+      "wrong_path": "Noto'g'ri yo'l: Sardor x² larni o'chirib yuboradi: (x²−16)/(x²−4x) → (−16)/(−4x) = 4/x. Bu xato, chunki asl ifoda va 4/x teng kuchli emas. Masalan, x=1 da asl ifoda (1−16)/(1−4) = −15/−3 = 5, lekin Sardorning natijasi 4/1 = 4. Algebraik kasrning faqat umumiy ko'paytuvchilarini qisqartirish mumkin; hadlarni qisqartirish kasr qiymatini butunlay o'zgartiradi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik kasr tushunchasini, joiz qiymatlar sohasining ahamiyatini va qisqartirishning asosiy shartini tushundingiz.",
+      "mistake_appeared": "Kasr hadlarini ko'paytuvchilar bilan almashtirib yuborish (eng keng tarqalgan xato).",
+      "what_to_review": "Qisqa ko'paytirish formulalari va qavsdan tashqariga chiqarish orqali ko'paytuvchilarga ajratish mavzusini takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint to'g'ri yechilgan va DPE savollariga to'liq javob berilgan bo'lsa: Full Credit",
+        "DPE qisman to'ldirilgan bo'lsa: Partial Credit",
+        "Checkpointlarda xatolar ko'p bo'lsa: Needs Retry"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Surati va maxraji algebraik ifodalardan iborat bo'lgan kasr _____ kasr deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "algebraik", "accepted_answers": ["algebraik", "algebraik kasr"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "Algebraik kasrning joiz (yo'l qo'yiladigan) qiymatlari deganda nima tushuniladi?", "options": ["O'zgaruvchining suratni nolga aylantirmaydigan barcha qiymatlari.", "O'zgaruvchining maxrajni nolga aylantirmaydigan barcha qiymatlari.", "Faqat butun sonlar to'plamidagi musbat qiymatlar.", "Kasrning qiymati faqat nolga teng bo'ladigan qiymatlar."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "choose_explanation", "prompt": "Kasrning asosiy xossasini qaysi tushuntirish to'g'ri ifodalaydi?", "options": ["Kasrning surat va maxrajiga bir xil algebraik ifodani qo'shish natijasida unga teng kasr hosil bo'ladi.", "Kasrning faqat maxrajini nolga teng bo'lmagan ifodaga ko'paytirish unga teng kasr beradi.", "Kasrning surat va maxrajini nolga teng bo'lmagan bir xil algebraik ifodaga ko'paytirish yoki bo'lish natijasida unga teng kasr hosil bo'ladi.", "Kasrning suratini kvadratga oshirib, maxrajini o'z holicha qoldirish orqali unga teng kasr hosil qilinadi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "fill_blank", "prompt": "Kasrning surati va maxrajini ularning umumiy _____ bo'lish jarayoni algebraik kasrni qisqartirish deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "ko'paytuvchisiga", "accepted_answers": ["ko'paytuvchisiga", "ko'paytuvchiga", "bo'luvchisiga"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "Berilgan algebraik kasrga qarama-qarshi kasr hosil qilish uchun qanday amal bajarilishi kerak?", "options": ["Kasrning ham surati, ham maxrajidagi ishoralarni bir vaqtda o'zgartirish kerak.", "Kasrning surat va maxrajini o'zaro o'rinlarini almashtirish kerak.", "Kasrning faqat surati yoki faqat maxrajidagi ishorani qarama-qarshisiga o'zgartirish kerak.", "Kasrning surat va maxrajini bir vaqtda kvadratga oshirish kerak."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "choose_explanation", "prompt": "Nima uchun algebraik kasrning surat va maxrajidagi ishoralar bir vaqtda o'zgartirilganda kasrning qiymati o'zgarmaydi?", "options": ["Chunki ikkita manfiy ishoraning nisbati (bo'linmasi) musbat bo'lib, ular bir-birini kompensatsiya qiladi.", "Chunki ishoralar faqat kasrning surati uchun ahamiyatga ega, maxrajga ta'sir qilmaydi.", "Chunki algebraik kasrlarda ishoralar har doim ixtiyoriy ravishda o'zgartirilishi mumkin.", "Chunki maxraj har doim suratga moslashib, o'z ishorasini avtomatik o'zgartiradi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "fill_blank", "prompt": "O'zgaruvchining maxrajni _____ aylantiruvchi qiymatlarida algebraik kasr ma'noga ega bo'lmaydi.", "answer_spec": { "type": "text_fuzzy", "expected": "nolga", "accepted_answers": ["nolga", "nol"], "allow_ai_fallback": true }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Algebraik kasrni qisqartirishdan avval umumiy ko'paytuvchini topish uchun qanday usuldan foydalaniladi?", "options": ["Surat va maxrajni o'zaro qo'shish usulidan.", "Kasrning surat va maxrajini ko'paytuvchilarga ajratish usulidan.", "Faqat sonli koeffitsiyentlarni o'zaro ayirish usulidan.", "O'zgaruvchilarni butunlay o'chirib tashlash usulidan."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Kasrdagi o'zgaruvchilar o'rniga berilgan sonli qiymatlarni qo'yib hisoblash natijasida algebraik kasrning _____ qiymati hosil bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "son", "accepted_answers": ["son", "sonli"], "allow_ai_fallback": true }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Algebraik kasrning son qiymatini hisoblashda amallar tartibi qoidasiga qanday rioya qilinadi?", "options": ["Har doim birinchi bo'lib qo'shish va ayirish amallari, so'ngra qolganlari bajariladi.", "Amallar ixtiyoriy tartibda, qaysi biri oson bo'lsa, shundan boshlab bajariladi.", "Avval qavslar ichidagi ifodalar, so'ngra daraja, ko'paytirish/bo'lish va nihoyat qo'shish/ayirish bajariladi.", "Faqat ko'paytirish va bo'lish amallari bajarilib, qolganlariga e'tibor berilmaydi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "Quyidagi amallardan qaysi biri TO'G'RI bajarilgan?", "options": ["(a+b)/(a+c) kasrini a ga qisqartirib b/c hosil qilish.", "3a(x+1)/(b(x+1)) kasrida (x+1) ni qisqartirib 3a/b hosil qilish.", "(a²−b²)/(a−b) ni a²÷a, b²÷b qilib a−b hosil qilish.", "−x/−y = −(x/y) har doim o'rinli bo'ladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "Quyidagi tasdiqlardan qaysi biri to'g'ri?", "options": ["7/(x+5) ifodasi uchun joiz qiymatlar: x ≠ −5.", "(x²+1)/x kasrining joiz qiymatlar sohasi — barcha haqiqiy sonlar to'plamidir.", "x/y = (x−5)/(y−5) tengligi kasrning asosiy xossasini ifodalaydi.", "a=3 bo'lganda (a+2)/(a−3) kasrining son qiymati 5 ga teng."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "fill_blank", "prompt": "Algebraik kasrni qisqartirish jarayonida uning surati va maxrajini avval ko'paytuvchilarga ajratish, so'ngra ularni _____ bo'lish talab etiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "umumiy ko'paytuvchiga", "accepted_answers": ["umumiy ko'paytuvchiga", "umumiy ko'paytuvchi", "ko'paytuvchiga"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_alg_02",
+    "expert_role": "business_consultant",
+    "title": "Ombor Samaradorligi Formulasini Tekshirish",
+    "intro": "Siz — 'Smart-Storage' xalqaro kompaniyasining logistika tizimlari tahlilchisisiz. Yangi dasturiy ta'minot ombor samaradorligini K = (5a − 5b)/(a² − ab) formulasi orqali hisoblaydi, bu yerda a — ombordagi jami konteynerlar sig'imi, b — band qilingan konteynerlar soni. Operator a = b bo'lganda dastur 'Kritik xatolik: 0 ga bo'lish' xabarini berib to'xtab qolayotganidan shikoyat qildi. Eslatma: ombor ichidagi 45% havo namligi bu tahlilga aloqasi yo'q.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Tizim nima uchun a = b bo'lganda ishdan chiqadi",
+        "prompt": "Tizim nima uchun a = b bo'lganda ishdan chiqayotganini aniqlang.",
+        "options": [
+          { "id": "a", "label": "Chunki algebraik kasrning surati nolga teng bo'lsa, kasr ma'noga ega bo'lmaydi.", "is_correct": false, "consequence": "Surat nolga teng bo'lishi mumkin — bu kasrni aniqlanmagan qilmaydi. Muammo maxrajda." },
+          { "id": "b", "label": "Chunki a = b bo'lganda maxraj a² − a·a = 0 ga aylanadi, nolga bo'lish esa mumkin emas.", "is_correct": true, "consequence": "To'g'ri. Joiz qiymatlar — maxraj nolga teng bo'lmaydigan qiymatlar; a = b da maxraj nolga aylanadi." },
+          { "id": "c", "label": "Chunki a va b o'zaro teng bo'lganda, ularning ayirmasi musbat son bo'lishi shart.", "is_correct": false, "consequence": "a = b bo'lganda ayirma nolga teng, musbat emas — bu maxrajni nolga aylantiradi." },
+          { "id": "d", "label": "Chunki ombordagi namlik darajasi (45%) formula qiymatiga ta'sir qilib, maxrajni nolga aylantiradi.", "is_correct": false, "consequence": "Namlik — chalg'ituvchi ma'lumot, u formulaning tarkibiy qismi emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Soddalashtirish uchun qaysi qadam kerak",
+        "prompt": "K = (5a − 5b)/(a² − ab) formulasini dastur kodi uchun eng sodda ko'rinishga keltirish uchun avval qaysi qadamni bajarasiz?",
+        "options": [
+          { "id": "a", "label": "Suratdan 5 ni, maxrajdan a ni qavsdan tashqariga chiqarib, ko'paytuvchilarga ajratish: 5(a−b) va a(a−b).", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Surat va maxrajdagi a va b larni shunchaki o'chirib, 5 natijasini qoldirish.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Faqat 5a va a² ni qisqartirib, (5 − 5b)/(a − ab) ko'rinishida qoldirish.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Yakuniy soddalashtirilgan formula",
+        "prompt": "Ko'paytuvchilarga ajratib, umumiy ko'paytuvchi (a−b) ni qisqartirsangiz, K formulasi qanday soddalashadi?",
+        "options": [
+          { "id": "a", "label": "K = 5/a", "is_correct": true, "consequence": "To'g'ri: surat 5(a−b), maxraj a(a−b); umumiy ko'paytuvchi (a−b) qisqaradi → 5/a." },
+          { "id": "b", "label": "K = 5", "is_correct": false, "consequence": "Bu a va b larni bevosita o'chirish natijasi — hadlarni qisqartirish xato." },
+          { "id": "c", "label": "K = (5 − 5b)/(a − ab)", "is_correct": false, "consequence": "Bu qisman qisqartirish, natija eng sodda ko'rinishda emas." },
+          { "id": "d", "label": "Bu formulani soddalashtirib bo'lmaydi.", "is_correct": false, "consequence": "Ko'paytuvchilarga ajratsangiz, ikkala tomonda (a−b) ko'rinadi va qisqaradi." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushuncha",
+        "prompt": "Bu masalani to'g'ri yechishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Joiz qiymatlar va kasrning asosiy xossasi — avval ko'paytuvchilarga ajratib, umumiy ko'paytuvchini qisqartirish", "is_correct": true },
+          { "id": "c2", "label": "Surat va maxrajdagi bir xil hadlarni (a, b) bevosita o'chirib tashlash", "is_correct": false },
+          { "id": "c3", "label": "Ombordagi 45% namlik ma'lumotidan foydalanish", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun 5a−5b va a²−ab dagi hadlarni bevosita 'o'chirish' xato, lekin ko'paytuvchilarga ajratgach umumiy ko'paytuvchi (a−b) ni qisqartirish to'g'ri? Shuningdek, teskari hisob (b−a) natija ishorasiga qanday ta'sir qiladi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["umumiy ko'paytuvchi", "qo'shiluvchi", "ko'paytuvchilarga ajratish", "kasrning asosiy xossasi", "ishora o'zgarishi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_alg_02",
+      "instructions": "Bir o'quvchi (5x − 10)/(x² − 4) algebraik kasrini qisqartirishni bosqichma-bosqich bajargan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Boshlang'ich ifoda: (5x − 10)/(x² − 4)", "is_broken": false },
+        { "id": "b2", "text": "Suratni qavsdan tashqariga chiqarish orqali ajratamiz: 5x − 10 = 5(x − 2)", "is_broken": false },
+        { "id": "b3", "text": "Maxrajni kvadratlar ayirmasi formulasi bilan ajratamiz: x² − 4 = (x − 2)(x + 2)", "is_broken": false },
+        { "id": "b4", "text": "Surat va maxrajdagi umumiy ko'paytuvchi (x − 2) ni qisqartiramiz", "is_broken": false },
+        { "id": "b5", "text": "Yakuniy natija: 5(x + 2)", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "5/(x+2)", "accepted_answers": ["5/(x+2)", "5 / (x+2)", "5 bo'lingan (x+2)"], "allow_ai_fallback": true },
+      "hint": "Qisqartirishdan so'ng (x + 2) ifodasi kasrning qaysi qismida — suratidami yoki maxrajidami — qolganiga e'tibor bering.",
+      "why_prompt": "Nima uchun 5-blokdagi natija matematik jihatdan noto'g'ri edi va to'g'ri javobda kasr chizig'i nima uchun saqlanib qolishi kerak? (x + 2) ko'paytuvchisi maxrajda joylashgan edi va u qisqartirishdan so'ng ham maxrajda qolishi shart, shuning uchun to'g'ri natija 5/(x+2)."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_alg_02",
+      "case_setup": "Algebraik kasrlar xossalari va tushunchalarini ma'no jihatdan to'g'ri juftlang — kartalarning joylashuviga emas, faqat matematik ma'nosiga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Algebraik kasr", "right": "Surati va maxraji algebraik ifodalardan iborat bo'lgan kasr" },
+        { "id": "p2", "left": "Algebraik kasrning son qiymati", "right": "Harflar o'rniga sonlar qo'yib amallarni bajarish natijasida hosil bo'lgan natija" },
+        { "id": "p3", "left": "Joiz (yo'l qo'yiladigan) qiymatlar", "right": "O'zgaruvchilarning maxrajni nolga aylantirmaydigan barcha qiymatlari" },
+        { "id": "p4", "left": "Kasrning asosiy xossasi", "right": "Surat va maxrajni noldan farqli bir xil ifodaga ko'paytirish yoki bo'lish orqali teng kasr hosil qilish" },
+        { "id": "p5", "left": "Algebraik kasrni qisqartirish", "right": "Surat va maxrajni ularning umumiy ko'paytuvchisiga bo'lish jarayoni" },
+        { "id": "p6", "left": "Qisqartirish uchun umumiy ko'paytuvchini topish", "right": "Kasrning surati va maxrajini ko'paytuvchilarga ajratish orqali amalga oshiriladi" },
+        { "id": "p7", "left": "Kasrga qarama-qarshi kasr hosil qilish", "right": "Kasrning faqat surati yoki faqat maxrajidagi ishorani o'zgartirish" },
+        { "id": "p8", "left": "Maxrajni nolga aylantiruvchi qiymat", "right": "Bunday holatda algebraik kasr ma'noga ega bo'lmaydi" }
+      ],
+      "checkpoints": [
+        { "question": "Joiz (yo'l qo'yiladigan) qiymatlar qaysi ta'rifga to'g'ri keladi?", "options": ["Suratni nolga aylantirmaydigan qiymatlar", "Maxrajni nolga aylantirmaydigan qiymatlar", "Barcha haqiqiy sonlar"], "correct_index": 1 },
+        { "question": "Algebraik kasrni qisqartirish nima?", "options": ["Surat va maxrajni umumiy ko'paytuvchisiga bo'lish", "Surat va maxrajga bir xil ifoda qo'shish", "Surat va maxrajni ko'paytirish"], "correct_index": 0 },
+        { "question": "Kasrning asosiy xossasi qaysi amallarni o'z ichiga oladi?", "options": ["Faqat bo'lish", "Ko'paytirish va bo'lish", "Qo'shish va ayirish"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun 'Kasrning asosiy xossasi' va 'Algebraik kasrni qisqartirish' tushunchalari o'zaro bog'liq, lekin ularni chalkashtirmaslik kerak? Faqat yuzaki o'xshashlikka (masalan, 'bo'lish' amali borligiga) tayanib javob qidirgan o'quvchi qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["asosiy xossa ko'paytirishni ham, bo'lishni ham o'z ichiga oladi", "qisqartirish faqat bo'lish orqali soddalashtirish", "qo'shishni asosiy xossa deb o'ylash xato"],
+      "consequence": { "correct_path": "Har bir tushunchani to'g'ri ta'rifi bilan uladingiz.", "wrong_path": "Ko'rinish o'xshashligiga aldanib, qo'shiluvchini ko'paytuvchi bilan yoki asosiy xossani qisqartirish bilan adashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_alg_02",
+      "case_setup": "Berilgan bo'laklarni darsda o'rganilgan qoidalar asosida to'g'ri yo'nalishda juftlang: shart ↔ termin, qadam ↔ natija, tushuncha ↔ misol.",
+      "pieces": [
+        { "id": "P1", "label": "Maxrajni nolga aylantirmaydigan o'zgaruvchi qiymatlari to'plami", "role": "cause" },
+        { "id": "P2", "label": "Joiz (yo'l qo'yiladigan) qiymatlar", "role": "effect" },
+        { "id": "P3", "label": "Kasrning surat va maxrajini ko'paytuvchilarga ajratish", "role": "cause" },
+        { "id": "P4", "label": "Umumiy ko'paytuvchilarni qisqartirish imkoniyati", "role": "effect" },
+        { "id": "P5", "label": "Surati va maxraji algebraik ifodalardan iborat bo'lgan kasr", "role": "cause" },
+        { "id": "P6", "label": "(a² − 9)/(a + 3)", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P5 (algebraik kasr ta'rifi) qaysi bo'lakka ulanadi?", "options": ["P6 ((a²−9)/(a+3)) — misol", "P4 (qisqartirish imkoniyati)"], "correct_index": 0 },
+        { "q": "P3 (ko'paytuvchilarga ajratish) nima uchun P4 (qisqartirish imkoniyati) ga ulanadi?", "options": ["Ko'paytuvchilarga ajratgach umumiy ko'paytuvchi ko'rinadi", "Hech qanday bog'liqlik yo'q"], "correct_index": 0 },
+        { "q": "P1 (maxrajni nolga aylantirmaydigan qiymatlar) qaysi terminga ulanadi?", "options": ["P2 (joiz qiymatlar)", "P6 (misol)"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Siz qaysi matematik xossaga ko'ra P3 va P4 bo'laklarini bog'ladingiz va nima uchun bu jarayonda yo'nalish (avval ko'paytuvchilarga ajratish) muhim? Agar ko'paytuvchilarga ajratmasdan shunchaki o'xshash hadlarni (masalan, a² va a ni) qisqartirsak, qanday xatolikka yo'l qo'yiladi?",
+      "expected_components": ["kasrning asosiy xossasi", "umumiy ko'paytuvchi", "hadlarni (qo'shiluvchilarni) qisqartirish mumkin emas"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Avtomobil yo'lida harakatlanayotgan yuk mashinasining sarflaydigan vaqti t = 600/(v − 20) formula bilan ifodalangan, bu yerda v — mashinaning tezligi (km/soat).",
+      "why": "Nima uchun ushbu algebraik kasrda v = 20 qiymati joiz (yo'l qo'yiladigan) qiymat hisoblanmaydi?",
+      "how": "Ixtiyoriy algebraik kasr berilganda, uning ma'noga ega bo'lmaydigan qiymatlarini topish uchun qanday matematik amal yoki shartni bajarish kerak?",
+      "what": "Agar haydovchi tezlikni 20 km/soatga juda yaqinlashtirsa, vaqt t qanday o'zgaradi va agar maxraj v + 20 bo'lganida, joiz qiymatlar haqidagi xulosangiz qanday o'zgarar edi?",
+      "prompt": "t = 600/(v − 20) kasrining joiz bo'lmagan qiymatini toping va nima uchun bunday ekanini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Bo'lish amali qaysi son ustida bajarilishi mumkin emasligini eslang.",
+        "Kasrning ma'noga ega bo'lishi uchun maxrajdagi butun ifoda qanday shartni qanoatlantirishi kerak?",
+        "Agar maxraj nolga juda yaqinlashsa (masalan, 0.001), bo'linmaning qiymati kattalashadimi yoki kichiklashadimi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "v ≠ 20", "accepted_answers": ["v ≠ 20", "v = 20", "v=20", "20"], "allow_ai_fallback": true },
+      "expected_concepts": ["maxraj nolga teng emas", "joiz qiymatlar", "v ≠ 20"],
+      "correct_feedback": "Barakalla! Siz maxraj nolga teng bo'la olmasligi va bu holat fizik/matematik ma'noni yo'qotishini to'g'ri tushuntirdingiz.",
+      "partial_feedback": "Siz maxrajdagi cheklovni aniqladingiz, biroq kasrning o'zgaruvchi qiymatiga bog'liq ravishda o'zgarishini to'liq tahlil qilmadingiz.",
+      "wrong_feedback": "Hali emas. Agar maxraj nolga teng bo'lsa, sonni nolga bo'lish mumkinmi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Dasturchi algebraik ifodalarni qisqartirish uchun kod yozmoqda. U (x + 7)/7 ifodasini ko'rganda, suratdagi 7 va maxrajdagi 7 ni o'chirib, natijani x + 1 deb chiqarmoqda.",
+      "why": "Nima uchun ushbu holatda 7 sonini qisqartirish algebraik kasrlarning asosiy xossasiga zid hisoblanadi?",
+      "how": "Algebraik kasrni to'g'ri qisqartirish uchun surat va maxraj qanday ko'rinishda (qaysi amal yordamida bog'langan) bo'lishi shart va buni amalga oshirish uchun qaysi xossani qo'llash kerak?",
+      "what": "Ushbu xato natijaga qanday ta'sir qiladi (masalan, x = 7 bo'lganda tekshiring) va agar ifoda (7x + 7)/7 ko'rinishida bo'lsa, qisqartirish qanday o'zgarar edi?",
+      "prompt": "(x + 7)/7 ifodasini '7 larni o'chirish' nima uchun xato ekanini asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Kasrning suratida 7 soni ko'paytuvchimi yoki qo'shiluvchi?",
+        "Kasrning asosiy xossasida 'ko'paytirish/bo'lish' haqida gapirilganmi yoki 'qo'shish/ayirish'?",
+        "Agar suratdagi barcha hadlarni 7 ga bo'lishning imkoni bo'lsa (masalan, 7x + 7), natija qanday o'zgaradi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "qisqartirib bo'lmaydi", "accepted_answers": ["qisqartirib bo'lmaydi", "x/7 + 1", "x/7+1", "7 qo'shiluvchi"], "allow_ai_fallback": true },
+      "expected_concepts": ["7 — qo'shiluvchi (had), ko'paytuvchi emas", "faqat umumiy ko'paytuvchini qisqartirish mumkin", "(x+7)/7 ni x+1 ga qisqartirib bo'lmaydi"],
+      "correct_feedback": "Ajoyib! Siz had (qo'shiluvchi) va ko'paytuvchi o'rtasidagi farqni hamda faqat ko'paytuvchilarni qisqartirish mumkinligini aniq ko'rsatib berdingiz.",
+      "partial_feedback": "Qisqartirish mumkin emasligini to'g'ri aytdingiz, lekin buni 'had' va 'ko'paytuvchi' tushunchalari bilan to'liq asoslab bermadingiz.",
+      "wrong_feedback": "Hali emas. Suratdagi x + 7 ifodasida 7 soni butun suratga ko'paytirilganmi yoki faqat qo'shilganmi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Sizga (a − b)/(b − a) ifodasini soddalashtirish vazifasi berildi.",
+      "why": "Nima uchun ushbu kasrning qiymati doimo −1 ga teng (agar a ≠ b bo'lsa)? Ishoralarni o'zgartirish qoidasi bu yerda qanday rol o'ynaydi?",
+      "how": "Maxrajdagi b − a ifodasini a − b ko'rinishiga keltirish uchun qavsdan tashqariga qaysi sonni yoki ishorani chiqarish kerak va bu kasrning umumiy ishorasiga qanday ta'sir qiladi?",
+      "what": "Agar biz ham suratning, ham maxrajning ishorasini bir vaqtda qarama-qarshisiga o'zgartirsak (ya'ni −(a−b)/−(b−a) bo'lsa), kasrning yakuniy qiymati o'zgaradimi yoki yo'qmi?",
+      "prompt": "(a − b)/(b − a) ifodasini soddalashtiring (a ≠ b) va natijani asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "b − a va a − b ifodalari o'zaro qanday bog'langan (masalan, 5 − 3 va 3 − 5)?",
+        "Qavs oldiga minus ishorasini chiqarish qavs ichidagi hadlarning ishorasini qanday o'zgartiradi?",
+        "Ikkita manfiy ishoraning bo'linmasi qanday natija berishini eslang."
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "−1", "accepted_answers": ["−1", "-1", "minus 1"], "allow_ai_fallback": true },
+      "expected_concepts": ["b − a = −(a − b)", "ishora o'zgarishi qoidasi", "natija −1"],
+      "correct_feedback": "Juda yaxshi! Ishoralarni boshqarish orqali qarama-qarshi ifodalarni aniqlash va ularni qisqartirish usulini mukammal o'zlashtiribsiz.",
+      "partial_feedback": "Natija −1 ekanini bildingiz, lekin ishoralarni almashtirish jarayonini bosqichma-bosqich tushuntirishda biroz chalkashdingiz.",
+      "wrong_feedback": "Hali emas. a − b va b − a ifodalari bir-biriga tengmi yoki ular qarama-qarshimi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Detalning yuzasini hisoblashda muhandis (x² − 9)/(2x + 6) algebraik kasridan foydalanmoqda. U hisob-kitoblarni osonlashtirish uchun ifodani soddaroq ko'rinishga keltirishi kerak.",
+      "why": "Nima uchun ushbu kasrni to'g'ridan-to'g'ri qisqartirib bo'lmaydi va avval ko'paytuvchilarga ajratish nima uchun zarur?",
+      "how": "Suratdagi x² − 9 uchun qaysi qisqa ko'paytirish formulasini va maxrajdagi 2x + 6 uchun qaysi usulni qo'llab, umumiy ko'paytuvchini hosil qilasiz?",
+      "what": "Soddalashgan ifoda qanday ko'rinishga ega bo'ladi va agar maxraj 2x − 6 bo'lib o'zgarganida, natija qanday ko'rinishda bo'lar edi?",
+      "prompt": "(x² − 9)/(2x + 6) kasrini eng sodda ko'rinishga keltiring.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "x² − 9 ifodasini a² − b² formulasi yordamida qanday yozish mumkin?",
+        "Maxrajdagi 2x va 6 sonlari uchun qaysi son umumiy bo'luvchi bo'la oladi?",
+        "Qisqartirishdan so'ng qolgan ifoda o'zgaruvchining barcha joiz qiymatlarida asl ifoda bilan bir xil natija beradimi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(x−3)/2", "accepted_answers": ["(x−3)/2", "(x-3)/2", "(x − 3)/2"], "allow_ai_fallback": true },
+      "expected_concepts": ["x² − 9 = (x−3)(x+3)", "2x + 6 = 2(x+3)", "(x+3) qisqaradi", "natija (x−3)/2, x ≠ −3"],
+      "correct_feedback": "Mukammal! Siz ham formulalarni qo'llashni, ham qavsdan tashqariga chiqarishni to'g'ri bajarib, kasrni eng sodda ko'rinishga keltirdingiz.",
+      "partial_feedback": "Suratni ko'paytuvchilarga ajratdingiz, lekin maxrajdagi umumiy ko'paytuvchini chiqarishda yoki qisqartirishda xatolikka yo'l qo'ydingiz.",
+      "wrong_feedback": "Hali emas. x² − 9 ni ko'paytuvchilarga ajratish uchun 'kvadratlar ayirmasi' formulasini eslay olasizmi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik kasrlar, ya'ni surati va maxraji algebraik ifodalardan iborat bo'lgan kasrlar hamda ularning xossalari mavzusini o'rgandingiz. Kasrning maxraji nolga teng bo'lmasligi (joiz qiymatlar) va qisqartirish jarayonida faqat umumiy ko'paytuvchilardan foydalanish zarurligi darsning asosiy tamoyili hisoblanadi. Ushbu tushunchalar muhandislikda fizik jarayonlarning aniqligini ta'minlash va murakkab algoritmlarni soddalashtirishda muhim rol o'ynaydi.",
+    "question": "Sizningcha, algebraik kasrni qisqartirishda eng muhim qoidani do'stingizga qanday qilib eng sodda usulda tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga kvadratlar ayirmasi formulasini qo'llab ko'paytuvchilarga ajratishni va (b−a) = −(a−b) ishora o'zgarishini yangi misolda mashq qiling. Xuddi shu tushunchalar, lekin yangi savollar bilan.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz algebraik kasrning joiz qiymatlarini aniqlash va kasrning asosiy xossasini amalda qo'llash ko'nikmalarini yaxshi o'zlashtirdingiz — Sardorning xatosini topish orqali bu tushuncha mustahkamlandi. Murakkab ifodalarni qisqa ko'paytirish formulalari bilan ko'paytuvchilarga ajratish va qarama-qarshi ishorali ifodalarni soddalashtirishni mustahkamlash foydali.",
+      "strong_points": [
+        "Algebraik kasrning joiz qiymatlarini to'g'ri aniqlash",
+        "Kasrning asosiy xossasini amalda qo'llash ko'nikmasi"
+      ],
+      "weak_points": [
+        "Murakkab ifodalarni qisqa ko'paytirish formulalari yordamida ko'paytuvchilarga ajratish",
+        "Qarama-qarshi ishorali ifodalarni (a − b va b − a) to'g'ri soddalashtirish"
+      ],
+      "next_steps": [
+        "Kvadratlar ayirmasi formulasini (a² − b² = (a+b)(a−b)) qo'llab qisqartirishni mashq qiling",
+        "Umumiy ko'paytuvchini qavsdan tashqariga chiqarish bosqichini qayta ko'rib chiqing"
+      ],
+      "weak_point_keywords": ["ko'paytuvchilarga ajratish", "ishora o'zgarishi", "qarama-qarshi ifoda"],
+      "strong_point_keywords": ["joiz qiymatlar", "kasrning asosiy xossasi", "umumiy ko'paytuvchi"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan."
+    }
+  }
+}

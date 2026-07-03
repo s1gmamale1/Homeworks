@@ -1,0 +1,312 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "Families — Adverbs of Manner",
+    "subject_display": "English",
+    "section": "Unit · Families",
+    "cefr_level": "A2",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "How to form most adverbs of manner?", "def": "Add -ly to an adjective (quick → quickly). He closed the door quietly.", "cluster": "QOIDA" },
+    { "term": "good (as an adverb)", "def": "well — irregular adverb of \"good\". Jana plays the piano really well. (\"goodly\" yo'q.)", "cluster": "QOIDA" },
+    { "term": "nephew", "def": "The son of your brother or sister. Female version: niece.", "cluster": "VOCAB" },
+    { "term": "Adverb from adjective ending in -y", "def": "Change -y to -ily: happy → happily; easy → easily.", "cluster": "QOIDA" },
+    { "term": "quite", "def": "To some degree; not completely or very. The house is quite big, but not huge.", "cluster": "VOCAB" },
+    { "term": "cousin", "def": "The child of your uncle or aunt. Same word for male and female.", "cluster": "VOCAB" },
+    { "term": "ups and downs", "def": "A mix of good and bad experiences. Life in a big family has its ups and downs.", "cluster": "VOCAB" }
+  ],
+  "case_based_preview": {
+    "title": "Case-Based Preview: Be the Editor",
+    "case_setup": {
+      "story": "Siz do'stingiz Alexga uning maktab blogi uchun yozgan postini tahrirlashga yordam beryapsiz. U oilasi sportni sevishi haqida yozgan. Postni chop etishdan oldin tekshirayotganda, biroz g'alati eshitiladigan gapga ko'zingiz tushadi: \"My sister loves basketball. She is a very good player. She moves quick and scores a lot of points.\"",
+      "role": "Peer editor (tahrirchi)",
+      "task": "\"quick\" so'zi to'g'ri ishlatilganmi yoki uni o'zgartirish kerakmi — aniqlang."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "\"She moves quick\" gapidagi muammo nimaga oid?",
+        "options": [
+          "Shaxsni qanday tasvirlash (how to describe a person)",
+          "Ish-harakatni qanday tasvirlash (how to describe an action)",
+          "Oila a'zolari haqida qanday gapirish (how to talk about family members)"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Ish-harakatning qanday sodir bo'lishini tasvirlash uchun biz ravishlardan (adverbs of manner) foydalanamiz. Ko'pgina ravishlar sifatga -ly qo'shimchasini qo'shish orqali yasaladi: slow → slowly.",
+        "feedback": "To'g'ri. Gap \"moves\" (harakatlanadi) fe'lini tasvirlashga urinmoqda — biz harakatning qanday bajarilishini aytishimiz kerak."
+      },
+      {
+        "kind": "decide",
+        "question": "Gapni to'g'rilash uchun qaysi so'zni tanlash kerak?",
+        "options": ["quick", "quickly", "quickful"],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "\"Quick\" — sifat (adjective), otni tasvirlaydi (\"a quick player\"). \"Quickly\" — ravish (adverb), fe'lni tasvirlaydi (\"she moves quickly\"). Careful → carefully kabi, quick → quickly.",
+        "feedback": "To'g'ri tanlov. \"moves\" fe'lini tasvirlash uchun \"quickly\" ravishi kerak."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun \"She moves quick\" deyish xato hisoblanadi?",
+        "options": [
+          "Chunki \"quick\" faqat odamlarni emas, narsalarni ham tasvirlaydi",
+          "Chunki \"quick\" otni (\"player\") tasvirlaydigan sifatdir, fe'lni (\"moves\") emas",
+          "Chunki \"quick\" eskirgan va hozirgi ingliz tilida ishlatilmaydi"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 3 },
+        "learning_block": "Sifatlar (adjectives) otlarni tasvirlaydi, ravishlar (adverbs) esa fe'llarni. Bu yerda \"moves\" fe'lini tasvirlayapmiz, shuning uchun ravish kerak.",
+        "feedback": "Juda to'g'ri. \"moves\" fe'lini tasvirlash uchun ravish (quickly) kerak, sifat (quick) emas."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "2–4 ta gap bilan javob yozing: (1) Ushbu matn qismida qaysi grammatik qoidaga duch keldingiz? (2) Nima uchun \"moves\" so'zini tasvirlash uchun aynan shu so'z shaklini tanladingiz? (3) Agar \"quick\" ni o'zgarishsiz qoldirsangiz qanday xatoga yo'l qo'yilgan bo'lardi va nima uchun?",
+      "min_chars": 80,
+      "concept_keywords": ["adverb", "adjective", "ravish", "sifat", "-ly"],
+      "method_keywords": ["fe'lni tasvirlash", "describe an action", "modify the verb"],
+      "mistake_keywords": ["quick", "quickly", "adjective for a verb"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz \"quick\" ni \"quickly\" ga o'zgartirishni maslahat berasiz. Alex gapni tuzatadi: \"She moves quickly and scores a lot of points.\" Endi gap grammatik jihatdan to'g'ri va harakat aniq tasvirlangan — blog posti ajoyib chiqadi!",
+      "wrong_path": "Siz \"quick\" to'g'ri deb o'ylab, uni o'zgartirmaysiz. Blogda \"She moves quick and scores a lot of points\" chop etiladi. O'quvchilar grammatik xatoni payqab, matn savodli yozilmagan deb o'ylashlari mumkin."
+    },
+    "feedback_summary": {
+      "student_understood": "Harakatni tasvirlash uchun ravish (adverb) ishlatilishini va ko'pchilik ravishlar -ly bilan yasalishini (quick → quickly) tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — fe'lni sifat bilan tasvirlash (\"moves quick\").",
+      "what_to_review": "Sifat otlarni, ravish fe'llarni tasvirlaydi: \"a quick player\" vs \"moves quickly\"."
+    },
+    "completion_rules": {
+      "rules": [
+        "3 ta nazorat nuqtasidan o'ting",
+        "Qaror Qabul Qilish Jarayoni (DPE) bo'limini to'ldiring",
+        "Yakuniy simulyatsiyani o'qib, javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "How do you form most adverbs of manner from adjectives?", "options": ["By adding -ly to the adjective", "By adding -ily to the adjective", "By using \"well\" after the adjective", "By not changing the adjective at all"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Jana doesn't play the piano good, she plays it really _____.", "answer_spec": { "type": "text_fuzzy", "expected": "well", "accepted_answers": ["well"], "allow_ai_fallback": true }, "flashcard_ref": "card_2" },
+      { "type": "choose_explanation", "prompt": "Who is your nephew?", "options": ["He is the son of my brother or sister", "He is the son of my uncle or aunt", "He is the brother of my mother or father", "He is the son of my son or daughter"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Which sentence correctly uses the adverb form of \"easy\"?", "options": ["She won the game easily.", "She won the game easyly.", "She won the game easy.", "She won the game more easy."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "If someone says, \"The house is quite big,\" what do they mean?", "options": ["The house is big to some degree, but maybe not huge.", "The house is very, very big.", "The house is small.", "The house is certainly the biggest on the street."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "fill_blank", "prompt": "The daughter of your aunt is your _____.", "answer_spec": { "type": "text_fuzzy", "expected": "cousin", "accepted_answers": ["cousin"], "allow_ai_fallback": true }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "The article says life in a big family has \"ups and downs\". What does this idiom mean?", "options": ["It has a mix of good and bad experiences.", "It is always fun and exciting.", "It is always difficult and sad.", "You have to go up and down stairs a lot."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "To change the adjective \"happy\" into an adverb, you change the -y to -i and add -ly to make _____.", "answer_spec": { "type": "text_fuzzy", "expected": "happily", "accepted_answers": ["happily"], "allow_ai_fallback": true }, "flashcard_ref": "card_4" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_english_g8_families",
+    "expert_role": "general",
+    "title": "\"Family Champions\" — Casting Decision",
+    "intro": "Siz \"Family Champions\" realiti-shouning Kasting direktori yordamchisisiz. Prodyuser: \"Bizga o'z harakatlarini jonli va ANIQ tasvirlaydigan oilalar kerak.\" Patel oilasi (Rishi, Priya, onasi Anika) ning video-sinovlarini baholab, ularni keyingi bosqichga chaqirishni tavsiya qilasizmi?",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. O'g'ilning klipi",
+        "prompt": "Rishi: \"I play cricket. I'm a good batsman. My father taught me to bat good.\" Uning tavsifi shou uchun mosmi?",
+        "options": [
+          { "id": "a", "label": "Ha, juda yaxshi — ishonchli eshitiladi", "is_correct": false, "consequence": "Tilga emas, ishonchga e'tibor berildi." },
+          { "id": "b", "label": "Yo'q — u \"good\" so'zini noto'g'ri ishlatyapti (\"bat well\" bo'lishi kerak)", "is_correct": true, "consequence": "To'g'ri: \"bat\" fe'lini tasvirlash uchun ravish kerak." },
+          { "id": "c", "label": "Yo'q — juda oddiy tavsif", "is_correct": false, "consequence": "Muammo soddalikda emas, bitta so'zda." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Qizning klipi",
+        "prompt": "Priya: \"I am a very fast runner and I always run fast in competitions.\" Bu sizga nomzod haqida qanday qo'shimcha ma'lumot beradi?",
+        "options": [
+          { "id": "a", "label": "\"fast\" — irregular adverb; u ham otni, ham fe'lni to'g'ri tasvirlagan → kuchli nomzod", "is_correct": true, "info_cost": { "access": "klipni qayta ko'rish" } },
+          { "id": "b", "label": "Xato — \"fastly\" bo'lishi kerak edi", "is_correct": false, "info_cost": { "access": "—" } },
+          { "id": "c", "label": "Kuchsiz — \"good\" \"fast\"dan kuchliroq", "is_correct": false, "info_cost": { "access": "—" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Yakuniy tavsiya",
+        "prompt": "Anika: \"Everyone works hard and tries to win. We support each other enthusiastic.\" Uchala klipni hisobga olib, yakuniy tavsiyangiz?",
+        "options": [
+          { "id": "a", "label": "Taklif qilmaslik — juda ko'p xato bor", "is_correct": false, "consequence": "Xatolar kichik va tuzatsa bo'ladi." },
+          { "id": "b", "label": "Taklif qilish, lekin onaning nutqi ustida ishlash kerakligini belgilab qo'yish", "is_correct": true, "consequence": "Muvozanatli professional qaror." },
+          { "id": "c", "label": "Faqat Priyani taklif qilish", "is_correct": false, "consequence": "Shou oilalar haqida, bir kishi haqida emas." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushuncha",
+        "prompt": "Patel oilasining xatolari (\"bat good\", \"support enthusiastic\") qaysi tushunchaga oid?",
+        "concept_chips": [
+          { "id": "c1", "label": "Adverbs of manner — fe'lni ravish bilan tasvirlash", "is_correct": true },
+          { "id": "c2", "label": "Verb tenses — fe'l zamonlari", "is_correct": false },
+          { "id": "c3", "label": "Plural nouns — ko'plik otlar", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun butun oilani rad etish noto'g'ri qaror bo'lardi? Ularning xatolari nima uchun \"tuzatsa bo'ladigan\" (coachable) hisoblanadi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["adverb", "well", "enthusiastically", "fast correct", "coachable", "competitive"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_english_families",
+      "instructions": "Oila a'zosi haqidagi ushbu gapning qaysi qismi noto'g'ri? Buzilgan blokni toping va to'g'ri variantini yozing.",
+      "pattern": "grammar",
+      "work_blocks": [
+        { "id": "b1", "text": "My brother", "is_broken": false },
+        { "id": "b2", "text": "plays tennis", "is_broken": false },
+        { "id": "b3", "text": "really good", "is_broken": true },
+        { "id": "b4", "text": "because he practises", "is_broken": false },
+        { "id": "b5", "text": "every day.", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "really well", "accepted_answers": ["really well", "well"], "allow_ai_fallback": true },
+      "hint": "Gapning bu qismi \"plays\" (o'ynaydi) fe'lini tasvirlayapti. Harakatni tasvirlash uchun qaysi so'z turkumi kerak?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? \"Plays\" — harakat fe'li; uni tasvirlash uchun sifat (good) emas, ravish (well) kerak. \"Good\" otlarni (\"a good player\"), \"well\" fe'llarni (\"he plays well\") tasvirlaydi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_english_families",
+      "case_setup": "Ravishlar va oila so'zlarini ma'nosiga ko'ra to'g'ri juftlang — taxmin yoki joylashuviga emas.",
+      "pairs": [
+        { "id": "p1", "left": "The adverb form of \"good\"", "right": "well" },
+        { "id": "p2", "left": "The adverb form of \"easy\"", "right": "easily" },
+        { "id": "p3", "left": "An adverb that is the same as the adjective", "right": "hard / fast" },
+        { "id": "p4", "left": "The son of your brother or sister", "right": "nephew" },
+        { "id": "p5", "left": "The child of your uncle or aunt", "right": "cousin" },
+        { "id": "p6", "left": "A mix of good and bad moments", "right": "ups and downs" }
+      ],
+      "checkpoints": [
+        { "question": "The adverb form of \"good\" is...", "options": ["goodly", "well", "gooder"], "correct_index": 1 },
+        { "question": "Which adverb is the SAME as its adjective?", "options": ["easily", "happily", "hard / fast"], "correct_index": 2 },
+        { "question": "The child of your uncle or aunt is your...", "options": ["nephew", "cousin", "niece"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun \"An adverb that is the same as the adjective\" va \"hard / fast\" juftlik bo'ladi, \"well\" yoki \"easily\" esa bu juftlikka mos kelmaydi?",
+      "expected_components": ["irregular adverb", "adjective", "does not change", "no -ly"],
+      "consequence": { "correct_path": "Har bir so'zni to'g'ri juftladingiz.", "wrong_path": "\"hard\" ni \"hardly\" bilan adashtirish mumkin — ma'no butunlay o'zgaradi." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_english_families",
+      "case_setup": "Ella Blackstone haqidagi matndan har bir sabab (Cause) bo'lagini uning oqibati (Effect) bilan to'g'ri juftlang. Barcha bog'lanishlar faqat matnga asoslanishi shart.",
+      "pieces": [
+        { "id": "P1", "label": "Cause: The Blackstone family is very competitive.", "role": "cause" },
+        { "id": "P2", "label": "Effect: You must move quickly for the shower or the best minibus seat.", "role": "effect" },
+        { "id": "P3", "label": "Cause: In a big family, being fast for everyday things is important.", "role": "cause" },
+        { "id": "P4", "label": "Effect: The house has shelves full of the children's sports prizes.", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "Which effect does P1 (competitive family) lead to?", "options": ["P2 (move quickly)", "P4 (shelves of prizes)"], "correct_index": 1 },
+        { "q": "Which cause leads to P2 (move quickly)?", "options": ["P1 (competitive)", "P3 (big family, be fast)"], "correct_index": 1 },
+        { "q": "What is the relationship type?", "options": ["Cause ↔ Effect", "Parallel / synonym"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun P1 (\"competitive\") bo'lagini P2 (\"move quickly\") bilan bog'lash xato bo'lardi va bu matn mazmunini qanday noto'g'ri tushunishga olib keladi?",
+      "expected_components": ["competitive → prizes", "big family → move quickly", "cause and effect", "textual evidence"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Do'stingiz musiqa imtihoniga tayyorlanmoqda. Pianino chalib bo'lgach: \"My teacher says I play the piano good.\"",
+      "why": "Nima uchun bu gapda \"good\" grammatik jihatdan noto'g'ri? U nimani tasvirlashi kerak edi?",
+      "how": "Gapni to'g'rilash uchun qaysi so'zdan foydalanasiz va nima uchun aynan shu so'z to'g'ri?",
+      "what": "\"He is a good player\" va \"He plays well\" o'rtasida qanday ma'no farqi bor?",
+      "prompt": "\"I play the piano good\" gapini to'g'rilang va farqni izohlang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Biz odamni (player) emas, harakatni (play) tasvirlayapmiz.", "\"Good\" ning ravish shakli — \"well\"."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "well", "accepted_answers": ["well", "plays well", "play well"], "allow_ai_fallback": true },
+      "expected_concepts": ["adjective vs adverb", "good → well", "describe the verb"],
+      "correct_feedback": "Ajoyib! Sifat va ravish farqini ko'rsatdingiz va \"good\" ning maxsus ravish shakli \"well\" ekanligini to'g'ri qo'lladingiz.",
+      "partial_feedback": "\"Well\"ni topdingiz, lekin nima uchun \"good\" xato ekanligini to'liq tushuntirmadingiz.",
+      "wrong_feedback": "Hali emas. \"Good\" odatda ot yoki fe'lni tasvirlaydimi? \"a good book\" yoki \"he runs good\"?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Hikoyada: \"The children played happyly in the garden.\"",
+      "why": "Nima uchun \"happyly\" noto'g'ri? Sifatni ravishga aylantirishda qanday imlo qoidasi buzilgan?",
+      "how": "Bu so'zni qanday to'g'ri yozish kerak? Qaysi harflar o'zgaradi — bosqichma-bosqich tushuntiring.",
+      "what": "\"happily\" \"The children were happy\" bera olmaydigan qanday ma'lumot beradi?",
+      "prompt": "\"happyly\" so'zini to'g'ri yozing va imlo qoidasini tushuntiring.",
+      "tags": "[Bloom: L2 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["\"Happy\" undosh + y bilan tugaydi.", "\"easy\" qanday ravishga aylangan edi?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "happily", "accepted_answers": ["happily"], "allow_ai_fallback": true },
+      "expected_concepts": ["-y → -ily", "consonant + y", "spelling rule"],
+      "correct_feedback": "Juda yaxshi! -y bilan tugaydigan sifatlardan ravish yasash qoidasini (happy → happily) aniq tushundingiz.",
+      "partial_feedback": "So'zni to'g'ri yozdingiz, lekin imlo qoidasini tushuntirmadingiz.",
+      "wrong_feedback": "Hali emas. Muammo -ly da emas, undan oldingi harfda. \"easy\" qanday ravishga aylangan?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Do'stingiz juda katta (enormous) uyni \"It's quite big, so we have enough space\" deb tasvirladi.",
+      "why": "Nima uchun \"quite\" enormous uyni tasvirlash uchun mos emas? Bu so'z qanday darajani bildiradi?",
+      "how": "Kattalikni kuchliroq ifodalash uchun \"quite\" o'rniga qaysi daraja ravishini ishlatish kerak edi?",
+      "what": "Do'stingiz nima uchun ataylab \"quite\" ishlatgan bo'lishi mumkin — bu uning xarakteri haqida nima deydi?",
+      "prompt": "\"quite big\" o'rniga qaysi so'z to'g'riroq bo'lardi va nima uchun?",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["\"Quite\" \"very\"dan kuchsizroqmi?", "Sifatni kuchaytirish uchun: really yoki probably?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "really", "accepted_answers": ["really", "very", "really big", "very big"], "allow_ai_fallback": true },
+      "expected_concepts": ["adverb of degree", "quite < very/really", "inference"],
+      "correct_feedback": "Ajoyib! \"quite\" va \"really\" o'rtasidagi nozik ma'no farqini aniqladingiz va odamning niyati haqida mantiqiy xulosa chiqardingiz.",
+      "partial_feedback": "\"Really\"ni tanladingiz, lekin nima uchun \"quite\" zaifroq ekanligini tushuntirmadingiz.",
+      "wrong_feedback": "Hali emas. Biror narsa \"juda\" (very) bo'lsa, \"quite\" (an'cha) ishlatamizmi? Ularning kuchi bir xilmi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Ella Blackstone katta oilasi haqida: \"...you must move quickly for the shower, the best minibus seat, and food/cake.\" Kimdir: \"Bu adolatsizlik!\" deydi.",
+      "why": "Maqolaga asoslanib, nima uchun Ellaning oilasida tez harakat qilish muhim — bu shunchaki shoshqaloqlikmi?",
+      "how": "\"Quickly\" ravishi oiladagi umumiy muhitni (sur'atni) tushunishga qanday yordam beradi?",
+      "what": "Oila \"very competitive\" deb ta'riflangan. \"Competitive\" bo'lish va \"move quickly\" qilish o'rtasida qanday bog'liqlik bor?",
+      "prompt": "\"Quickly\" va \"competitive\" so'zlarini bog'lab, oila muhitini tahlil qiling.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Oilada ko'p farzand, resurslar (joy, ovqat) cheklangan.", "Raqobatlashganda odamlar tez harakat qiladimi yoki sekin?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "competitive family limited resources move quickly", "accepted_answers": ["competitive", "competition", "limited resources"], "allow_ai_fallback": true },
+      "expected_concepts": ["competitive", "big family", "move quickly", "synthesis"],
+      "correct_feedback": "A'lo tahlil! \"competitive\", \"big family\" va \"move quickly\" g'oyalarini bog'lab, matnning chuqur ma'nosini ochdingiz.",
+      "partial_feedback": "Tez harakat muhimligini aytdingiz, lekin uni \"competitive\" tabiat bilan bog'lamadingiz.",
+      "wrong_feedback": "Hali emas. Oila shunchaki tartibsizmi yoki ular orasida doimiy musobaqa ruhimi? \"Competitive\" kalit."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz harakat ravishlari (adverbs of manner) va daraja ravishlarini o'rgandingiz. Fe'lning qanday bajarilishini tasvirlash uchun ko'pincha sifatga -ly qo'shiladi (quick → quickly), shuningdek good → well kabi istisnolarni mashq qildingiz.",
+    "question": "Do'stingizga \"good\" va \"well\" o'rtasidagi farqni qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga -y bilan tugaydigan sifatlardan ravish yasashni (happy → happily) yangi misollarda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz sifat (adjective) va ravish (adverb) farqini yaxshi angladingiz — \"a good player\" vs \"plays well\". -y bilan tugaydigan sifatlardan ravish yasash imlo qoidasini mustahkamlash foydali.",
+      "strong_points": [
+        "Adjective vs adverb farqini aniqlash: a good player vs plays well",
+        "Irregular adverblar: good → well, fast → fast"
+      ],
+      "weak_points": [
+        "Imlo qoidasi: -y bilan tugaydigan sifatlar (happy → happily)",
+        "Daraja ravishlari: quite vs really/very"
+      ],
+      "next_steps": [
+        "happy/easy kabi -y sifatlardan ravish yasashni mashq qiling",
+        "quite, really, very ravishlarini kuchiga qarab tartiblang"
+      ],
+      "weak_point_keywords": ["spelling", "happyly", "quite"],
+      "strong_point_keywords": ["adverb", "well", "fast"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi gaplar bilan."
+    }
+  }
+}

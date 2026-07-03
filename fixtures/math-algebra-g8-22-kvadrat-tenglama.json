@@ -1,0 +1,371 @@
+{
+  "meta": {
+    "title": "22-§. Kvadrat tenglama va uning ildizlari",
+    "subject_display": "Algebra",
+    "section": "22-§",
+    "cefr_level": "B1"
+  },
+  "quotes": [
+    "Kvadrat tenglama — noma'lumni izlab topishning eng ishonchli xaritasidir.",
+    "x² = d tenglamada barcha javob d ning ishorasida yashiringan."
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "PANEL 1 — AMALIY HOLAT",
+      "pages": [
+        {
+          "blocks": [
+            { "type": "h2", "text": "Amaliy Holat: Kvadrat Tenglama" },
+            { "type": "p", "text": "Sizning rolingiz — sinfda tenglamalarni tekshirib beruvchi maslahatchi. Nilufar uyga vazifasini bajararkan, x² = −9 tenglamani yechdi va daftariga x₁ = 3, x₂ = −3 deb yozdi. O'qituvchi javob ustidan qizil chiziq tortib, yoniga \"Qaytadan o'ylab ko'ring!\" deb yozgan. Nilufar nima xato qilganini tushunmaydi va sizdan so'raydi: \"Nima xato qildim?\"" },
+            { "type": "quote", "text": "Vazifangiz: Nilufar qayerda xato qilganini aniqlang." }
+          ]
+        },
+        {
+          "blocks": [
+            { "type": "h2", "text": "O'quv bloki 1 — x² = d ko'rinishi" },
+            { "type": "p", "text": "x² = d ko'rinishidagi tenglama kvadrat tenglamaning maxsus holatidir (a = 1, b = 0, c = −d). Uni yechish uchun avval d ning qanday son ekanligini tekshirish lozim — aynan shu qiymat tenglamaning yechimlari sonini belgilaydi." },
+            { "type": "h2", "text": "O'quv bloki 2 — Uch holat" },
+            { "type": "p", "text": "§22 da d ning qiymatiga ko'ra x² = d tenglamasining uch holati isbotlanadi:" },
+            { "type": "ul", "items": [
+              "d > 0 → 2 ta ildiz: x₁,₂ = ±√d",
+              "d = 0 → 1 ta ildiz: x = 0",
+              "d < 0 → haqiqiy ildiz mavjud emas"
+            ]},
+            { "type": "p", "text": "Darslikdagi misollar: x² = 64 → x₁,₂ = ±8; x² = 0 → x = 0; x² = −25 → haqiqiy ildiz yo'q." },
+            { "type": "quote", "text": "Asosiy qoida: har qanday haqiqiy son x uchun x² ≥ 0, shuning uchun x² hech qachon manfiy songa teng bo'la olmaydi." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "PANEL 2 — XATONI ANIQLASH",
+      "pages": [
+        {
+          "blocks": [
+            { "type": "h2", "text": "2x² − 18 = 0 — qaysi qadam xato?" },
+            { "type": "p", "text": "Quyidagi yechimda aynan bitta qadam noto'g'ri. Qaysi blok xato ekanligini toping:" },
+            { "type": "ul", "items": [
+              "1) 2x² − 18 = 0",
+              "2) 2x² = 18",
+              "3) x² = 16   ← shu yerda xato",
+              "4) d = 16 > 0, ikkita ildiz",
+              "5) x₁,₂ = ±√16",
+              "6) x₁ = 4, x₂ = −4"
+            ]},
+            { "type": "p", "text": "To'g'ri variant: x² = 9. Sababi: 2x² = 18 dan x² ni ajratish uchun ikkala tarafni 2 ga BO'LISH kerak (18 ÷ 2 = 9), AYIRISH (18 − 2 = 16) emas. Keyin d = 9 > 0 → x₁,₂ = ±3." }
+          ]
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    { "term": "Kvadrat tenglama", "def": "ax² + bx + c = 0 ko'rinishidagi tenglama; a, b, c — berilgan sonlar, a ≠ 0.", "cluster": "QOIDA" },
+    { "term": "Birinchi koeffitsient (a)", "def": "x² oldidagi koeffitsient; a ≠ 0 bo'lishi shart, aks holda tenglama chiziqli bo'lib qoladi.", "cluster": "QOIDA" },
+    { "term": "Ozod had (c)", "def": "Hech qanday o'zgaruvchiga bog'liq bo'lmagan doimiy son. Masalan x² + 10x − 24 = 0 da c = −24.", "cluster": "QOIDA" },
+    { "term": "x² = d,  d > 0", "def": "x₁,₂ = ±√d; ikkita haqiqiy ildiz. Masalan x² = 64 → ±8.", "cluster": "METOD" },
+    { "term": "x² = d,  d = 0", "def": "x₁ = x₂ = 0; bitta (ikki teng) ildiz. √0 = 0.", "cluster": "METOD" },
+    { "term": "x² = d,  d < 0", "def": "Haqiqiy ildiz yo'q — haqiqiy son kvadrati manfiy bo'lmaydi.", "cluster": "METOD" },
+    { "term": "x² − d ni ajratish", "def": "x² − d = (x − √d)(x + √d). Masalan x² − 9 = (x − 3)(x + 3).", "cluster": "METOD" },
+    { "term": "x² = 8 ildizlari", "def": "x₁,₂ = ±2√2, chunki √8 = √(4·2) = 2√2.", "cluster": "MISOL" },
+    { "term": "Ildizlar soni", "def": "d > 0 → ikki ildiz; d = 0 → bir ildiz; d < 0 → haqiqiy ildiz yo'q.", "cluster": "QOIDA" },
+    { "term": "ax² = 0 yechimi", "def": "x = 0 (a ≠ 0 bo'lganda yagona ildiz). Koeffitsient a ildiz emas.", "cluster": "TAHLIL" }
+  ],
+  "memory_sprint": [
+    {
+      "type": "KO",
+      "prompt": "ax² + bx + c = 0 kvadrat tenglamasida birinchi koeffitsient a uchun qaysi shart albatta bajarilishi kerak?",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "a ≠ 0 sharti x²-hadning mavjudligini ta'minlaydi; a = 0 bo'lsa tenglama chiziqli ko'rinishga o'tadi.",
+      "options": ["a > 0 bo'lishi shart", "a ≠ 0 bo'lishi shart", "a = 1 bo'lishi shart", "a butun son bo'lishi shart"],
+      "correct": 1
+    },
+    {
+      "type": "KO",
+      "prompt": "x² = d tenglamada d > 0 bo'lganda ildizlar haqida qaysi tushuntirish to'g'ri?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "explain": "x² − d = (x − √d)(x + √d) = 0 → x = ±√d. Ikkala ildiz haqiqiy va d > 0 da farqli.",
+      "options": ["Bitta ildiz: x = √d", "Ikkita ildiz: x₁,₂ = ±√d", "Haqiqiy ildiz yo'q", "Ikkita ildiz: √d va √(−d)"],
+      "correct": 1
+    },
+    {
+      "type": "KO",
+      "prompt": "x² = 0 tenglamaning ildizlari qanday bo'ladi?",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "x² = 0 → x = √0 = 0; yagona takrorlanuvchi ildiz x₁ = x₂ = 0.",
+      "options": ["x₁,₂ = ±1", "Haqiqiy ildiz yo'q", "x₁ = x₂ = 0", "x₁ = 0 va x₂ = 1"],
+      "correct": 2
+    },
+    {
+      "type": "KO",
+      "prompt": "x² = −25 tenglamasi haqida qaysi tushuntirish to'g'ri?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L2]",
+      "explain": "Har qanday haqiqiy son x uchun x² ≥ 0, shuning uchun x² = −25 yechimga ega emas.",
+      "options": ["x₁ = 5, x₂ = −5", "Haqiqiy ildiz yo'q", "x = −5 (bitta ildiz)", "x₁,₂ = ±5"],
+      "correct": 1
+    },
+    {
+      "type": "KO",
+      "prompt": "x² = 8 tenglamaning to'g'ri soddalashtirilgan ildizlari qaysi?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L2]",
+      "explain": "√8 = √(4·2) = √4 · √2 = 2√2; javob radikallar ostida mukammal kvadrat qolmaguncha soddalashtiriladi.",
+      "options": ["±√8", "±4", "±2√2", "±2√4"],
+      "correct": 2
+    },
+    {
+      "type": "KO",
+      "prompt": "a ≠ 0 bo'lganda ax² = 0 tenglamaning ildizlari qanday?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "explain": "ax²/a = 0/a → x² = 0 → x = 0. Koeffitsient a ildiz emas — u faqat x² oldidagi omil.",
+      "options": ["x₁ = 0 va x₂ = a", "x₁,₂ = ±√a", "Yechim yo'q", "x = 0 — yagona ildiz"],
+      "correct": 3
+    },
+    {
+      "type": "KO",
+      "prompt": "Bo'sh joyni to'ldiring: x² = d ko'rinishidagi tenglamada aynan ikkita haqiqiy ildiz bo'lishi uchun d ____ bo'lishi shart.",
+      "subtitle": "Sentence Fill",
+      "tags": "[Bloom: L2 | PISA: L2]",
+      "explain": "d > 0 bo'lganda x₁,₂ = ±√d. d to'liq kvadrat bo'lishi shart emas — masalan x² = 3 ham ikkita ildizga ega.",
+      "options": ["noldan katta", "nolga teng", "noldan kichik", "musbat to'liq kvadrat son"],
+      "correct": 0
+    },
+    {
+      "type": "KO",
+      "prompt": "Quyidagi x² = d katakchalaridan qaysi biri TO'G'RI yechilgan?",
+      "subtitle": "Tic-Tac-Toe",
+      "tags": "[Bloom: L3 | PISA: L2]",
+      "explain": "x² = 64 → ±8 to'g'ri. x² = 0 → x = 0 (yechim yo'q emas); x² = −9 → ildiz yo'q (±3 emas); x² = 36 → ±6 (faqat 6 emas).",
+      "options": ["x² = 64 → x₁,₂ = ±8", "x² = 0 → yechim yo'q", "x² = −9 → x₁ = 3, x₂ = −3", "x² = 36 → x = 6"],
+      "correct": 0
+    },
+    {
+      "type": "TF",
+      "prompt": "x² = −9 tenglamaning haqiqiy ildizlari yo'q.",
+      "subtitle": "",
+      "tags": "[Bloom: L1 | PISA: L1]",
+      "explain": "To'g'ri: d = −9 < 0, haqiqiy son kvadrati manfiy bo'lmaganligi uchun yechim yo'q.",
+      "options": ["To'g'ri", "Noto'g'ri"],
+      "correct": 0
+    },
+    {
+      "type": "YNNG",
+      "prompt": "2x² = 18 tenglamada x² ni ajratish uchun ikkala tarafni 2 ga bo'lish kerakmi?",
+      "subtitle": "",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "explain": "Ha — bo'lish amali x² oldidagi koeffitsientni 1 ga tushiradi: 18/2 = 9, x² = 9. Ayirish (18 − 2) noto'g'ri.",
+      "options": ["Ha", "Yo'q", "Ma'lum emas"],
+      "correct": 0
+    }
+  ],
+  "gb_adaptive_quiz": [
+    {
+      "q": "x² = 64 tenglamaning musbat ildizini toping.",
+      "tags": "[Bloom: L2 | PISA: L1]",
+      "tier": "EASY",
+      "ans": ["8"],
+      "capture": false,
+      "answer_spec": { "type": "numeric", "expected": 8, "canonical_display": "8", "allow_ai_fallback": false, "tolerance": 0 },
+      "accepted_answers": ["8"]
+    },
+    {
+      "q": "2x² − 18 = 0 tenglamada x² ning qiymatini toping.",
+      "tags": "[Bloom: L2 | PISA: L2]",
+      "tier": "MEDIUM",
+      "ans": ["9"],
+      "capture": false,
+      "answer_spec": { "type": "numeric", "expected": 9, "canonical_display": "9", "allow_ai_fallback": false, "tolerance": 0 },
+      "accepted_answers": ["9"]
+    },
+    {
+      "q": "To'g'ri to'rtburchakning eni x, uzunligi (x + 6), yuzi 27 sm². x(x+6) = 27 → x² + 6x − 27 = 0. Xonaning enini (musbat ildizini) toping.",
+      "tags": "[Bloom: L3 | PISA: L3]",
+      "tier": "HARD",
+      "ans": ["3"],
+      "capture": true,
+      "answer_spec": { "type": "numeric", "expected": 3, "canonical_display": "3", "allow_ai_fallback": false, "tolerance": 0 },
+      "accepted_answers": ["3"]
+    }
+  ],
+  "gb_why_chain": [
+    {
+      "q": "Nima uchun d < 0 bo'lganda x² = d tenglamaning haqiqiy ildizi yo'q?",
+      "inv": "haqiqiy sonlar olamida",
+      "reprompts": [
+        "Har qanday haqiqiy son x uchun x² qanday belgiga ega bo'ladi?",
+        "x² ≥ 0 doimo o'rinli — u manfiy son d ga teng bo'la oladimi?"
+      ]
+    },
+    {
+      "q": "Nima uchun d = 0 va d < 0 holatlari bir xil sonli ildiz bermaydi?",
+      "inv": "√0 ni eslang",
+      "reprompts": [
+        "d = 0 bo'lganda x² = 0 ning yechimi nima?",
+        "√0 = 0 yagona — bu bitta ildiz; d < 0 da esa umuman ildiz yo'q."
+      ]
+    }
+  ],
+  "gb_memory_match": [
+    ["ax² + bx + c = 0 (a ≠ 0)", "Kvadrat tenglama"],
+    ["Ozod had", "c — o'zgaruvchiga bog'liq bo'lmagan doimiy son"],
+    ["x² = d,  d > 0", "x₁,₂ = ±√d (ikkita ildiz)"],
+    ["x² = d,  d = 0", "x₁ = x₂ = 0 (bitta ildiz)"],
+    ["x² = d,  d < 0", "Haqiqiy ildiz yo'q"],
+    ["x² − d", "(x − √d)(x + √d)"],
+    ["x² = 8", "x₁,₂ = ±2√2"]
+  ],
+  "real_life": {
+    "badge": "VAZIFA · Ko'rgazma xonasi loyihasi",
+    "story": "Siz — Ravshan Toshmatov, shahar qurilish boshqarmasining bosh loyihachi-arxitektori. Maktab direktori talab qo'ydi: ko'rgazma xonasining pol yuzasi 21 m², uzunligi enidan aynan 4 metrga katta bo'lsin. Chizma dasturiga aniq raqamlar kiritilishi lozim — taxminiy hisob qabul qilinmaydi. Xonaning aniq en va uzunligini hisoblang. Enni x metr deb belgilang.",
+    "q1": {
+      "prompt": "Qaysi tenglama bu holatni to'g'ri ifodalaydi?  A) x + (x + 4) = 21   B) x · (x + 4) = 21   C) x² + 4 = 21   D) (x + 4)² = 21",
+      "ans": "B",
+      "fb": "To'g'ri. To'g'ri to'rtburchak yuzasi = en × uzunlik = x(x + 4) = 21. A varianti perimetrning yarmini beradi, yuzani emas."
+    },
+    "q2": {
+      "prompt": "x(x + 4) = 21 ni standart ko'rinishga keltirib yeching. Qaysi jarayon to'g'ri?  A) x² = 17 → ±√17   B) x² + 4x − 21 = 0 → (x + 7)(x − 3) = 0 → x = −7, x = 3   C) x₁ = 7, x₂ = −3   D) ±√21",
+      "ans": "B",
+      "fb": "To'g'ri. x(x + 4) = x² + 4x, demak x² + 4x − 21 = 0. (x + 7)(x − 3): 7·(−3) = −21 va 7 + (−3) = 4. Ildizlar: x₁ = −7, x₂ = 3."
+    },
+    "q3": {
+      "prompt": "Topilgan ildizlar x₁ = −7 va x₂ = 3. Xonaning enini belgilash uchun qaysi qiymatni qabul qilasiz?  A) x = −7   B) ikkalasi ham   C) x = 3   D) o'rtacha −2",
+      "ans": "C",
+      "fb": "To'g'ri. Xona eni — jismoniy o'lcham, u musbat bo'lishi shart. x = −7 m chizmaga kirita olmaymiz. Demak en = 3 m, uzunlik = 3 + 4 = 7 m."
+    },
+    "q4": {
+      "prompt": "Xonaning yakuniy o'lchamlarini yozing va tekshiring (en × uzunlik = 21).",
+      "fields": [
+        { "id": "en", "label": "en =", "ans": "3" },
+        { "id": "uzunlik", "label": "uzunlik =", "ans": "7" }
+      ],
+      "fb": "Tekshiruv: 3 × 7 = 21 m² ✓. Chizmaga tushirishga tayyor."
+    },
+    "q5": {
+      "prompt": "Hisoblashdan oldin natija qanday chiqishini kutgan edingiz? Manfiy javob (en = −7) nima uchun geometrik kontekstda rad etiladi, garchi u tenglamani matematik jihatdan qanoatlantirsa ham? 2–4 jumlada izohlang.",
+      "open": true,
+      "fb": "Javobingiz tahlil qilinmoqda. Asosiysi: (−9)² + 6(−9) − 27 = 0 — manfiy ildiz tenglamani qanoatlantiradi, lekin uzunlik manfiy bo'la olmaydi, shu sababli geometrik shart uni rad etadi."
+    },
+    "q6": {
+      "prompt": "Masalada qaysi ma'lumot ortiqcha (qizil seld) bo'lishi mumkin edi?",
+      "ans": "balandlik",
+      "fb": "To'g'ri. Xona balandligi (2,8 m) pol yuzasini topishda kerak emas — yuza faqat en va uzunlik orqali hisoblanadi. Balandlik faqat hajmni topishda kerak bo'lardi."
+    },
+    "endTitle": "Ko'rgazma xonasi loyihasi tugallandi!",
+    "endSub": "Kvadrat tenglama va geometrik shart sizga aniq o'lchamlarni topishga yordam berdi."
+  },
+  "boss_questions": [
+    {
+      "q": "Sinfda o'qituvchi x² = −36 tenglamasini yozdi. Sherzod: \"x₁ = 6, x₂ = −6, chunki 6² = 36\" dedi, lekin o'qituvchi qabul qilmadi. x² = −36 tenglamaning nechta haqiqiy ildizi bor?",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "scenario": "Sinfda o'qituvchi x² = −36 tenglamasini doskaga yozdi. Sherzod darhol qo'l ko'tardi: \"x₁ = 6, x₂ = −6, chunki 6² = 36.\" O'qituvchi javobni qabul qilmadi.",
+      "why": "Nima sababdan x² = d tenglamasida d ning ishorasi ildizlar mavjudligini belgilovchi asosiy mezon — d = −36 bo'lganda bu mezon qanday xulosa chiqaradi?",
+      "how": "§22 ning uch holat jadvalini qo'llab x² = −36 uchun ildizlar sonini aniqlang, so'ng Sherzodning 6 va −6 javoblarini tenglamaga qo'yib tekshiring.",
+      "what": "Sherzod manfiy ishorani e'tiborga olmay aslida qaysi tenglamani yechdi?",
+      "ans": ["0"],
+      "hint": "x² = −36 da d = −36 < 0. §22 da d < 0 holati nechta ildiz beradi?",
+      "hints": ["d = −36 musbatmi, nolmi, manfiymi?", "6² = 36, bu −36 ga tengmi?"],
+      "dmg": 10,
+      "answer_spec": { "type": "numeric", "expected": 0, "canonical_display": "0 (haqiqiy ildiz yo'q)", "allow_ai_fallback": true, "tolerance": 0 },
+      "accepted_answers": ["0", "yo'q", "haqiqiy ildiz yo'q"],
+      "correct_feedback": "To'g'ri. d = −36 < 0, §22 ning uchinchi holati: haqiqiy ildiz yo'q. 6² = 36 ≠ −36 — Sherzod aslida x² = 36 ni yechgan.",
+      "partial_feedback": "\"Yechim yo'q\" xulosasiga keldingiz, lekin Sherzod x² = −36 ni x² = 36 bilan adashtirganini ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas — biror haqiqiy son x uchun x² qachon manfiy bo'lishi mumkin?"
+    },
+    {
+      "q": "O'quvchi 9x² = 0 tenglamasini yechib, x₁ = 0 va x₂ = 9 deb yozgan. 9x² = 0 ning yagona ildizini toping.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "scenario": "Daftarni tekshirishda o'quvchining ishi diqqatni jalb etdi: u 9x² = 0 tenglamasini yechib, x₁ = 0 va x₂ = 9 deb yozgan.",
+      "why": "Nima sababdan 9x² = 0 tenglamasida 9 ildiz bo'la olmaydi — \"koeffitsient\" va \"ildiz\" tushunchalari farqini izohlang.",
+      "how": "9x² = 0 ni ikkala tarafni 9 ga bo'lib x² = 0 ko'rinishiga keltiring, so'ng §22 ning mos holatini qo'llang.",
+      "what": "x = 9 ni tenglamaga qo'ying: 9·(9²) qancha — va bu 0 ga tengmi?",
+      "ans": ["0"],
+      "hint": "9x² = 0 ni 9 ga bo'lsangiz x² = 0, ya'ni d = 0.",
+      "hints": ["Ikkala tarafni 9 ga bo'lsangiz qanday tenglama qoladi?", "9 · 81 = 729 ≠ 0, demak 9 ildiz emas."],
+      "dmg": 15,
+      "answer_spec": { "type": "numeric", "expected": 0, "canonical_display": "0", "allow_ai_fallback": false, "tolerance": 0 },
+      "accepted_answers": ["0"],
+      "correct_feedback": "To'g'ri. x² = 0 → x = 0 yagona ildiz. 9 — koeffitsient, ildiz emas; 9·81 = 729 ≠ 0.",
+      "partial_feedback": "x = 0 ni topdingiz, lekin nima uchun 9 ildiz bo'lolmasligini asoslamadingiz.",
+      "wrong_feedback": "Hali emas — \"ildiz\" tenglamani qanoatlantiruvchi x. x = 9 ni 9x² = 0 ga qo'ying."
+    },
+    {
+      "q": "Musobaqada x² = 12 berildi. Anvar ±√12, Bobur ±6, Davron ±2√3 deb yozdi. To'g'ri va soddalashtirilgan ildizlarni yozing.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "scenario": "Musobaqada x² = 12 tenglama berildi. Anvar x₁,₂ = ±√12 deb qoldirdi, Bobur ±6 dedi, Davron ±2√3 yozdi.",
+      "why": "Nima uchun ±√12 javobini yakunlangan deb hisoblash mumkin emas — radikallarni soddalashtirish qanday talab qo'yadi?",
+      "how": "√12 ni mukammal kvadrat omilga ajrating va √(a·b) = √a · √b qoidasini qo'llang.",
+      "what": "Uch o'quvchining javobini tahlil qiling: qaysi biri to'g'ri, qolganlarida qaysi xato bor?",
+      "ans": ["2√3", "±2√3"],
+      "hint": "12 = 4 · 3; √4 = 2.",
+      "hints": ["12 ning qaysi omili mukammal kvadrat?", "6² = 36 ≠ 12, demak Bobur xato."],
+      "dmg": 20,
+      "answer_spec": { "type": "text_fuzzy", "expected": "2√3", "canonical_display": "x₁,₂ = ±2√3", "allow_ai_fallback": true, "tolerance": 0 },
+      "accepted_answers": ["2√3", "±2√3", "2 ildiz 3"],
+      "correct_feedback": "To'g'ri — Davron haq. √12 = √(4·3) = 2√3. Bobur 6² = 36 ≠ 12 da xato; Anvar soddalashtirmagan.",
+      "partial_feedback": "Davron to'g'ri ekanini topdingiz, lekin Anvar yoki Bobur xatosini asoslamadingiz.",
+      "wrong_feedback": "Hali emas — 12 ni juft omillarga ajrating; qaysi biri mukammal kvadrat?"
+    },
+    {
+      "q": "O'quvchi: \"x² − x = 0 — bu kvadrat tenglama emas, chunki c = 0\" dedi. Bu da'vo to'g'rimi va tenglamaning ildizlarini toping.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "scenario": "Darsda x² − x = 0 tenglamasini yechish topshirig'i berildi. O'quvchi: \"Bu ax² + bx + c = 0 shakli emas, chunki c = 0. Demak kvadrat tenglama emas\" dedi.",
+      "why": "Nima sababdan x² − x = 0 haqiqiy kvadrat tenglama — c = 0 bo'lishi turiga qanday ta'sir qiladi?",
+      "how": "x² − x = 0 da x ni umumiy omil sifatida ajrating va har bir ko'paytuvchini nolga tenglang.",
+      "what": "Topilgan ildizlarni tenglamaga qo'yib tekshiring; a, b, c qiymatlarini ko'rsating.",
+      "ans": ["0 va 1", "x=0, x=1"],
+      "hint": "x² − x = x(x − 1) = 0.",
+      "hints": ["x² − x = x · (?)", "Kvadrat tenglama ta'rifida faqat a ≠ 0 talab qilinadi, c ga cheklov yo'q."],
+      "dmg": 25,
+      "answer_spec": { "type": "text_fuzzy", "expected": "0 va 1", "canonical_display": "x₁ = 0, x₂ = 1", "allow_ai_fallback": true, "tolerance": 0 },
+      "accepted_answers": ["0 va 1", "0, 1", "x=0 va x=1", "1 va 0"],
+      "correct_feedback": "To'g'ri. x(x − 1) = 0 → x = 0 yoki x = 1. a = 1 ≠ 0, demak bu kvadrat tenglama; c = 0 bo'lishi buni o'zgartirmaydi.",
+      "partial_feedback": "Ildizlarni topdingiz, lekin o'quvchining da'vosi nega xato — kvadrat tenglama ta'rifida faqat a ≠ 0 talab qilinishini — ko'rsatmadingiz.",
+      "wrong_feedback": "Hali emas — kvadrat tenglama ta'rifida qaysi koeffitsientga \"nolga teng emas\" sharti qo'yilgan: a, b yoki c?"
+    },
+    {
+      "q": "To'g'ri to'rtburchakning eni balandligidan 6 sm ortiq, yuzi 27 sm². Balandlikni x deb olib, balandlikni toping (faqat geometrik javob).",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "scenario": "To'g'ri to'rtburchakning eni uning balandligidan 6 sm ga ortiq, yuzi 27 sm² ga teng. Balandlikni x sm deb belgilang.",
+      "why": "Nima sababdan masala sharti x haqida kvadrat tenglama tuzishga olib keladi, va nima uchun ikkala ildizni ham javob sifatida qabul qilib bo'lmaydi?",
+      "how": "Balandlik x, eni (x + 6) ekanini hisobga olib yuza formulasidan tenglama tuzing, standart shaklga keltiring va ko'paytuvchilarga ajrating.",
+      "what": "Topilgan ildizlarni geometrik shart nuqtai nazaridan tahlil qiling: qaysi biri javob, qaysi biri rad etiladi?",
+      "ans": ["3"],
+      "hint": "x(x + 6) = 27 → x² + 6x − 27 = 0 → (x + 9)(x − 3) = 0.",
+      "hints": ["Ko'paytmasi −27, yig'indisi +6 bo'lgan juft son toping.", "Balandlik musbat bo'lishi shart — qaysi ildiz qabul qilinadi?"],
+      "dmg": 30,
+      "answer_spec": { "type": "numeric", "expected": 3, "canonical_display": "x = 3 sm", "allow_ai_fallback": false, "tolerance": 0 },
+      "accepted_answers": ["3"],
+      "correct_feedback": "To'g'ri. x² + 6x − 27 = 0 → (x + 9)(x − 3) = 0 → x = −9 yoki x = 3. Balandlik musbat bo'lishi shart, demak x = 3 sm (eni 9 sm). Tekshiruv: 3 × 9 = 27 ✓.",
+      "partial_feedback": "Tenglamani to'g'ri tuzdingiz va ildiz topdingiz, lekin nima uchun x = −9 rad etilishini geometrik shart bilan asoslamadingiz.",
+      "wrong_feedback": "Hali emas — balandlik manfiy bo'lishi mumkinmi? Topilgan ildizlardan qaysi biri javob bo'la oladi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz kvadrat tenglama (ax² + bx + c = 0, a ≠ 0) tushunchasini va uning muhim maxsus holati x² = d ni o'rgandingiz. Asosiy qoida: d > 0 → x₁,₂ = ±√d, d = 0 → x = 0, d < 0 → haqiqiy ildiz yo'q. Bu bilim kundalik hayotda — masalan, ma'lum yuzaga ega xonaning o'lchamlarini topishda — qo'llaniladi.",
+    "question": "Do'stingizga \"nima uchun d < 0 bo'lganda javob yo'q\"ligini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga √8 ni ±2√2 ko'rinishiga keltirishni va manfiy ildizni geometrik kontekstda rad etishni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz d ning ishorasiga qarab ildizlar sonini aniqlash va ko'paytuvchilarga ajratish usulini yaxshi o'zlashtirdingiz. Radikallarni soddalashtirish va geometrik kontekstda ildiz tanlashni mustahkamlash foydali bo'ladi.",
+      "strong_points": [
+        "d ning ishorasiga qarab ildizlar sonini aniqlash (d < 0 → haqiqiy ildiz yo'q)",
+        "Ko'paytuvchilarga ajratish: x² − x = x(x − 1), x² + 6x − 27 = (x + 9)(x − 3)"
+      ],
+      "weak_points": [
+        "Radikallarni soddalashtirish: ±√12 ni ±2√3 ko'rinishiga keltirish",
+        "Geometrik kontekstda manfiy ildizni asoslab rad etish"
+      ],
+      "next_steps": [
+        "√d ni mukammal kvadrat omilga ajratishni mashq qiling",
+        "Amaliy masalalarda ildiz tanlash shartini yozma asoslang"
+      ],
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan: radikallarni soddalashtirish va geometrik masalalarda ildiz tanlash."
+    }
+  }
+}

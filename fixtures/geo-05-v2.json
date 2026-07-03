@@ -1,0 +1,344 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "5-§. Trigonometrik ayniyatlar",
+    "subject_display": "Geometriya",
+    "section": "5-§",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Asosiy trigonometrik ayniyat", "def": "sin²α + cos²α = 1. Ixtiyoriy burchak uchun sinus va kosinus kvadratlari yig'indisi doim birga teng. Masalan: sin²30° + cos²30° = 1.", "cluster": "QOIDA" },
+    { "term": "Tangensning ifodasi", "def": "tgα = sinα / cosα — tangens burchak sinusining uning kosinusiga nisbatiga teng. sinα = 0,6 va cosα = 0,8 bo'lsa, tgα = 0,75.", "cluster": "METOD" },
+    { "term": "Kotangensning ifodasi", "def": "ctgα = cosα / sinα — kotangens burchak kosinusining uning sinusiga nisbatiga teng.", "cluster": "METOD" },
+    { "term": "tgα · ctgα ko'paytmasi", "def": "tgα · ctgα = 1. Bir xil burchak ostidagi tangens va kotangens qiymatlari o'zaro teskari sonlardir.", "cluster": "QOIDA" },
+    { "term": "1 + tg²α", "def": "1 + tg²α = 1 / cos²α. Asosiy ayniyatning har ikki tomonini cos²α ga bo'lish natijasi; tangens va kosinus o'rtasidagi bog'lanish.", "cluster": "METOD" },
+    { "term": "1 + ctg²α", "def": "1 + ctg²α = 1 / sin²α. Asosiy ayniyatni sin²α ga bo'lish orqali keltirib chiqariladi; kotangens va sinus o'rtasidagi bog'lanish.", "cluster": "METOD" },
+    { "term": "sin²α + cos²β ≠ 1 (β ≠ α)", "def": "Asosiy ayniyat faqat bir xil burchaklar (α = β) uchun o'rinli. Argumentlar turlicha bo'lsa, yig'indi birga teng bo'lmasligi mumkin.", "cluster": "TAHLIL" },
+    { "term": "Ifodalarni soddalashtirish", "def": "Ayniyatlar yordamida murakkab trigonometrik ifodani ixchamroq yoki hisoblashga qulay ko'rinishga keltirish jarayoni.", "cluster": "TAHLIL" },
+    { "term": "Kosinusdan sinusni topish (o'tkir burchak)", "def": "sinα = √(1 − cos²α). Asosiy ayniyatdan sinusni ajratib olish orqali hisoblanadi. cosα = 0,6 bo'lsa, sinα = √(1 − 0,36) = 0,8.", "cluster": "MISOL" },
+    { "term": "Ayniyatning geometrik ma'nosi", "def": "To'g'ri burchakli uchburchakda gipotenuza 1 bo'lsa, katetlar sinα va cosα bo'ladi; sin²α + cos²α = 1 — Pifagor teoremasining ifodasi.", "cluster": "QOIDA" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Trigonometrik Ayniyatlar",
+    "case_setup": {
+      "story": "Siz — zamonaviy turar-joy majmuasini loyihalashtirayotgan arxitektor yordamchisisiz. Binoning tom qismini yopish uchun maxsus qiya konstruksiya chizmasini tayyorlashingiz kerak. Loyihaga ko'ra, tomning qiyalik burchagi α deb belgilangan. Konstruktorlar sizga faqat bitta ma'lumotni taqdim etishdi: ushbu burchakning sinusi sinα = 0,6 ga teng. Biroq, qurilish materiallariga buyurtma berish va tayanch ustunlarining balandligini aniqlash uchun sizga ushbu burchakning kosinusi (cosα) va tangensi (tgα) qiymatlari zarur. Sizda burchakning o'zini o'lchash imkoniyati yo'q, faqatgina trigonometrik nisbatlar orasidagi bog'lanishlarga tayanib hisob-kitobni yakunlashingiz kerak. Agar hisob-kitobda xatoga yo'l qo'yilsa, tom qismlari bir-biriga mos tushmaydi va konstruksiya qulab tushishi mumkin.",
+      "role": "Arxitektor yordamchisi",
+      "task": "Berilgan sinα = 0,6 qiymati orqali cosα va tgα ni trigonometrik ayniyatlar yordamida toping."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Berilgan sinus qiymati orqali kosinusni topish uchun qaysi fundamental geometrik bog'lanishdan foydalanish eng to'g'ri hisoblanadi?",
+        "options": [
+          "sinα + cosα = 1",
+          "tgα · ctgα = 1",
+          "sin²α + cos²α = 1",
+          "1 + tg²α = 1 / cos²α"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Asosiy trigonometrik ayniyat sin²α + cos²α = 1 ko'rinishida bo'lib, u to'g'ri burchakli uchburchak uchun Pifagor teoremasidan kelib chiqadi. Bu ayniyat yordamida burchakning sinus va kosinusidan biri ma'lum bo'lsa, ikkinchisini har doim topish mumkin.",
+        "feedback": "Barakalla! Bu asosiy trigonometrik ayniyat bo'lib, u bitta burchakning sinus va kosinusi o'rtasidagi uzviy bog'liqlikni ifodalaydi."
+      },
+      {
+        "kind": "decide",
+        "question": "Agar sinα = 0,6 bo'lsa, kosinusni topish uchun qaysi matematik amalni bajarish kerak?",
+        "options": [
+          "cosα = √(1 − 0,6²)",
+          "cosα = 1 − 0,6",
+          "cosα = √(1 + 0,6²)",
+          "cosα = 1 − 0,6²"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 },
+        "learning_block": "Bir burchakning sinus va kosinusini bilgan holda, uning tangensini tgα = sinα / cosα formulasi orqali topish mumkin. Bu burchak qarshisidagi katetning yopishgan katetga nisbatini aniqlab beradi.",
+        "feedback": "To'g'ri. cos²α = 1 − sin²α tengligidan kosinusni topish uchun ayirmaning kvadrat ildizini olish zarur."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun hisob-kitobda sinα = 0,6 va cosα = 0,4 natijasini olish xato hisoblanadi?",
+        "options": [
+          "Chunki ularning ko'paytmasi 1 ga teng bo'lishi kerak.",
+          "Chunki ularning kvadratlari yig'indisi 1 ga teng emas (0,36 + 0,16 = 0,52 ≠ 1).",
+          "Chunki o'tkir burchakning kosinusi doim 0,5 dan katta bo'lishi shart.",
+          "Chunki sinus va kosinus qiymatlari bir-biriga teng bo'lishi kerak."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Tekshiruv: sinα = 0,6 va cosα = 0,8 bo'lsa, 0,36 + 0,64 = 1 — ayniyat bajariladi. Lekin cosα = 0,4 olinsa, 0,36 + 0,16 = 0,52 ≠ 1 — bu natija xato ekanini ko'rsatadi.",
+        "feedback": "To'g'ri. Asosiy trigonometrik ayniyatga ko'ra, burchak qanday bo'lishidan qat'i nazar, uning sinus va kosinusi kvadratlarining yig'indisi doimo 1 ga teng bo'lishi shart."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gapdan iborat javob yozing: (1) Ushbu vaziyatda qaysi asosiy trigonometrik ayniyatni qo'lladingiz? (2) Kosinusni topishda nima uchun oddiy ayirish emas, balki kvadrat ildizli usulni tanladingiz? (3) Agar kvadratlar hisobga olinmasa, muhandislik chizmasida qanday xatolik yuz berishi mumkin edi?",
+      "min_chars": 80,
+      "concept_keywords": ["asosiy trigonometrik ayniyat", "sin²α + cos²α = 1", "Pifagor"],
+      "method_keywords": ["kvadrat ildiz", "kvadratga ko'tarish", "ayirma ildizi"],
+      "mistake_keywords": ["chiziqli ayirish", "Pifagor bog'lanishi buziladi", "noto'g'ri nisbat"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz sin²α + cos²α = 1 ayniyatini qo'lladingiz. cos²α = 1 − 0,6² = 1 − 0,36 = 0,64. Bundan cosα = √0,64 = 0,8 ekanini aniqladingiz. Keyin tgα = 0,6 / 0,8 = 0,75 natijasiga keldingiz. Natija: Tomning barcha o'lchamlari geometrik jihatdan aniq chiqdi, qurilish materiallari aniq o'lchamda buyurtma qilindi.",
+      "wrong_path": "Agar siz kvadratlarni hisobga olmay, cosα = 1 − 0,6 = 0,4 deb hisoblaganingizda, olingan tgα = 0,6 / 0,4 = 1,5 qiymati haqiqatdan uzoq bo'lar edi. Natija: Tomning balandligi va qiyaligi mos kelmay qoladi, tayanch ustunlari juda uzun yoki qisqa bo'lib chiqadi. Trigonometrik funksiyalar orasidagi chiziqli ayirish Pifagor teoremasiga zid keladi va uchburchak tomonlari orasidagi real geometrik bog'lanishni buzadi."
+    },
+    "feedback_summary": {
+      "student_understood": "Asosiy trigonometrik ayniyat va funksiyalar orasidagi bog'lanishlar.",
+      "mistake_appeared": "Kvadratga ko'tarish va ildiz olish bosqichini e'tibordan chetda qoldirish (distraktor xatosi).",
+      "what_to_review": "Trigonometrik ayniyatlarning kelib chiqishi va ularni ifodalarni soddalashtirishda qo'llash usullari."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 nazorat nuqtasiga javob bering",
+        "DPE bo'limida kamida 2–4 jumla yozing",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "mcq", "prompt": "Asosiy trigonometrik ayniyatning to'g'ri ifodalangan shaklini ko'rsating:", "options": ["sin²α + cos²α = 1", "sinα + cosα = 1", "sin²α − cos²α = 1", "sin²α + cos²β = 1"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "fill_blank", "prompt": "Burchakning tangensi uning sinusining uning _____ bo'lgan nisbatiga teng.", "answer_spec": { "type": "text_fuzzy", "expected": "kosinusiga", "accepted_answers": ["kosinusiga", "kosinus", "kosinus qiymatiga", "kosinusga"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "Nima uchun sin²30° + cos²60° = 1 tengligi har doim ham to'g'ri deb hisoblanmaydi?", "options": ["Chunki asosiy trigonometrik ayniyat faqat burchaklar (argumentlar) bir xil bo'lgandagina (α = β) so'zsiz bajariladi.", "Chunki sinus va kosinus qiymatlarining yig'indisi har doim manfiy son bo'lishi kerak.", "Chunki 30° va 60° burchaklar faqat o'tmas burchakli uchburchaklarda uchrashi mumkin.", "Chunki kvadratga oshirilgan qiymatlar har doim birdan katta bo'lishi shart."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "mcq", "prompt": "Kotangensning sinus va kosinus orqali ifodalanishi qaysi variantda xatosiz berilgan?", "options": ["ctgα = cosα / sinα", "ctgα = sinα / cosα", "ctgα = sinα · cosα", "ctgα = 1 / sinα"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "fill_blank", "prompt": "Bir xil burchak ostidagi tangens va kotangens qiymatlari o'zaro teskari sonlar bo'lgani uchun, ularning ko'paytmasi tgα · ctgα = _____ ga teng bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "1", "accepted_answers": ["1", "bir", "birga"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "1 + tg²α = 1 / cos²α ayniyati qanday usul bilan keltirib chiqariladi?", "options": ["Asosiy trigonometrik ayniyatning (sin²α + cos²α = 1) har ikki tomonini cos²α ga bo'lish orqali.", "Tangens va kotangensni o'zaro qo'shib, natijani kvadrat ildizdan chiqarish orqali.", "Sinus qiymatini har doim birga teng deb faraz qilish orqali.", "To'g'ri burchakli uchburchakning gipotenuzasini katetiga ko'paytirish orqali."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "1 + ctg²α ifodasining qiymatini aniqlang:", "options": ["1 / sin²α", "1 / cos²α", "sin²α", "tg²α"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "O'tkir burchakli uchburchakda kosinus qiymati berilgan bo'lsa, sinusni topish uchun sinα = √(1 − _____) formulasidan foydalaniladi.", "answer_spec": { "type": "text_fuzzy", "expected": "cos²α", "accepted_answers": ["cos²α", "cos^2 alpha", "cos^2(alpha)", "kosinus kvadrat alfa"], "allow_ai_fallback": true } },
+      { "type": "choose_explanation", "prompt": "To'g'ri burchakli uchburchak (gipotenuza 1, katetlar sinα va cosα) tasvirida asosiy trigonometrik ayniyat qanday ifodalangan?", "options": ["Pifagor teoremasiga ko'ra, katetlar kvadratlarining yig'indisi (sin²α + cos²α) gipotenuza kvadratiga (1²) teng.", "Uchburchakning yuzi har doim sinus va kosinusning yig'indisiga teng ekanligi orqali.", "Alfa burchakning qiymati har doim 45 gradusga teng bo'lishi sharti bilan.", "Katetlardan biri har doim ikkinchisidan ikki marta uzun bo'lishi kerakligi orqali."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "fill_blank", "prompt": "Trigonometrik ayniyatlar yordamida berilgan ifodani ixchamroq yoki hisoblashga qulay ko'rinishga keltirish jarayoni trigonometrik ifodalarni _____ deb ataladi.", "answer_spec": { "type": "text_fuzzy", "expected": "soddalashtirish", "accepted_answers": ["soddalashtirish", "soddalashtirish jarayoni", "ixchamlash"], "allow_ai_fallback": true } },
+      { "type": "mcq", "prompt": "Qarorlar jadvali: quyidagi katakdagi ifoda asosiy trigonometrik ayniyatni TO'G'RI qo'llaganmi — sin²25° + cos²65° = 1?", "options": ["Noto'g'ri, chunki argumentlar (burchaklar) bir xil emas (25° ≠ 65°)", "To'g'ri, chunki yig'indi har doim 1 ga teng", "To'g'ri, chunki 25° + 65° = 90°", "Noto'g'ri, chunki kvadratlar olinmagan"], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 } },
+      { "type": "fill_blank", "prompt": "Qarorlar jadvali (Sentence Filling): asosiy trigonometrik ayniyatning (sin²α + cos²α = 1) har ikki tomonini cos²α ga bo'lish natijasida _____ ayniyati hosil bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "1 + tg²α = 1 / cos²α", "accepted_answers": ["1 + tg²α = 1 / cos²α", "1 + tg^2 a = 1/cos^2 a", "1 + tan²α = 1/cos²α"], "allow_ai_fallback": true } }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_geo_05",
+    "expert_role": "structural_engineer",
+    "title": "Sun'iy Yo'ldosh Antennasini Sozlash",
+    "intro": "Siz — sun'iy yo'ldosh aloqasi bo'yicha muhandis-texniksiz. Stansiya antennasi sun'iy yo'ldoshga α burchak ostida yo'naltirilgan. Tizim datchigi faqat kosinusni ko'rsatmoqda: cosα = 0,28. Signalni optimallashtirish uchun sizga sinα, tgα va ctgα qiymatlari aniqlik bilan zarur.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-qaror. Burchakning sinusini aniqlash",
+        "prompt": "Signal amplitudasi burchakning sinusiga bog'liq. cosα = 0,28 bo'lsa, sinα ni qanday hisoblaysiz?",
+        "options": [
+          { "id": "a", "label": "sinα = 1 − 0,28 = 0,72", "is_correct": false, "consequence": "Bu chiziqli ayirish — kvadratlar va ildiz hisobga olinmagan. Pifagor bog'lanishi buziladi." },
+          { "id": "b", "label": "sinα = √(1 − 0,28²) = 0,96", "is_correct": true, "consequence": "To'g'ri: sin²α + cos²α = 1 ayniyatidan sinα = √(1 − cos²α)." },
+          { "id": "c", "label": "sinα = √(1 + 0,28²) ≈ 1,04", "is_correct": false, "consequence": "Sinus 1 dan katta bo'la olmaydi; ayniyatda ayirma bo'lishi kerak, yig'indi emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-qaror. Yo'nalish koeffitsienti (Tangens)",
+        "prompt": "Antenna yo'nalishini aniqlashtirish uchun tgα zarur. sinα = 0,96 va cosα = 0,28 ekanligidan foydalanib, tangensni qanday hisoblaysiz?",
+        "options": [
+          { "id": "a", "label": "tgα = 0,96 / 0,28 ≈ 3,43", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "tgα = 0,28 / 0,96 ≈ 0,29", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "tgα = 0,96 · 0,28 = 0,2688", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-qaror. Tizimni tekshirish (Kotangens)",
+        "prompt": "Tizim avtomatik ravishda ctgα ≈ 0,29 qiymatini qaytardi. Bu ma'lumot yuqoridagi hisob-kitoblaringizga mos keladimi?",
+        "options": [
+          { "id": "a", "label": "Ha, chunki tgα · ctgα = 1 bo'lishi kerak (3,43 · 0,29 ≈ 1).", "is_correct": true, "consequence": "To'g'ri: tangens va kotangens o'zaro teskari funksiyalar, ko'paytmasi 1 ga teng — tekshiruv mos keldi." },
+          { "id": "b", "label": "Yo'q, kotangens doimo sinusga teng bo'lishi kerak.", "is_correct": false, "consequence": "Kotangens sinusga teng emas; bu funksiyalarning ta'rifi xato tushunilgan." },
+          { "id": "c", "label": "Ha, chunki kotangens va kosinus doimo bir xil qiymatga ega.", "is_correct": false, "consequence": "Kotangens va kosinus bir xil emas — natija tasodifan emas, ayniyat orqali tekshiriladi." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-qaror. Asosiy tushunchani aniqlash",
+        "prompt": "Sinusni cosα = 0,28 dan topishda hal qiluvchi tushuncha qaysi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Asosiy trigonometrik ayniyat: sin²α + cos²α = 1", "is_correct": true },
+          { "id": "c2", "label": "Sinus va kosinusning chiziqli yig'indisi 1 ga teng", "is_correct": false },
+          { "id": "c3", "label": "Kotangens kosinusga teng", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-qaror. Fikringizni asoslang",
+        "prompt": "Kontekstda berilgan \"36 000 km balandlik\" nima uchun bu hisob-kitobda chalg'ituvchi (red herring) ma'lumot edi? Trigonometrik ayniyatlar nimaga asoslanishini hisobga olib, 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["nisbat", "burchak", "tomonlar nisbati", "mutloq o'lcham ahamiyatsiz", "chalg'ituvchi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_geo_05_tan",
+      "instructions": "cosα = 0,6 (o'tkir burchak) berilgan. tgα ni topish 5 bosqichda berilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "sin²α + cos²α = 1 asosiy trigonometrik ayniyatidan foydalanamiz.", "is_broken": false },
+        { "id": "b2", "text": "sin²α = 1 − cos²α", "is_broken": false },
+        { "id": "b3", "text": "sin²α = 1 − (0,6)² = 1 − 0,36 = 0,64", "is_broken": false },
+        { "id": "b4", "text": "Burchak o'tkir bo'lgani uchun: sinα = √0,64 = 0,8", "is_broken": false },
+        { "id": "b5", "text": "tgα = 0,8 · 0,6 = 0,48", "is_broken": true }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "tgα = 0,8 / 0,6 = 4/3", "accepted_answers": ["tan a = 0,8 / 0,6", "tg a = 0,8 / 0,6", "tan a = 4/3", "tg a = 4/3", "tan a = sin a / cos a", "tg a = sin a / cos a", "0,8/0,6", "4/3"], "allow_ai_fallback": true },
+      "hint": "Tangens — bu burchak qarshisidagi katetning yopishgan katetga nisbatidir. Ushbu nisbatni sinus va kosinus orqali qanday ifodalash mumkinligini eslang.",
+      "why_prompt": "Nima uchun 5-blokdagi hisoblash usuli noto'g'ri edi? Tangens sinusning kosinusga BO'LGAN nisbatiga teng (tgα = sinα / cosα), ularning KO'PAYTMASIGA emas. To'g'ri hisob-kitob: 0,8 / 0,6 = 4/3."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_geo_05",
+      "case_setup": "Trigonometrik ayniyatlar va ularning natijalarini mazmuni jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Asosiy trigonometrik ayniyat", "right": "sin²α + cos²α = 1" },
+        { "id": "p2", "left": "Tangensning sinus va kosinus orqali ifodasi", "right": "tgα = sinα / cosα" },
+        { "id": "p3", "left": "Kotangensning sinus va kosinus orqali ifodasi", "right": "ctgα = cosα / sinα" },
+        { "id": "p4", "left": "tgα · ctgα ko'paytmaning qiymati", "right": "1" },
+        { "id": "p5", "left": "1 + tg²α ifodaning natijasi", "right": "1 / cos²α" },
+        { "id": "p6", "left": "1 + ctg²α ifodaning natijasi", "right": "1 / sin²α" },
+        { "id": "p7", "left": "O'tkir burchak uchun sinusni topish formulasi", "right": "√(1 − cos²α)" }
+      ],
+      "checkpoints": [
+        { "question": "1 + ctg²α ifodasi qaysi natijaga juftlanadi?", "options": ["1 / cos²α", "1 / sin²α", "tg²α"], "correct_index": 1 },
+        { "question": "tgα · ctgα ko'paytmasi nimaga teng?", "options": ["0", "1", "sinα"], "correct_index": 1 },
+        { "question": "1 + ctg²α ni 1 / cos²α bilan juftlash to'g'rimi?", "options": ["Ha, ikkalasi ham bir xil", "Yo'q — kotangens ayniyatida maxrajda sin²α turadi"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun 1 + ctg²α ifodasi 1 / sin²α bilan juftlik hosil qiladi? Agar o'quvchi faqat yuzaki o'xshashlikka tayanib, uni 1 / cos²α bilan juftlashtirsa, u kotangens va sinus/kosinus o'rtasidagi qaysi fundamental bog'liqlikni e'tibordan chetda qoldirgan bo'ladi?",
+      "expected_components": ["kotangens maxrajida sinus", "asosiy ayniyatni sin²α ga bo'lish", "1 + ctg²α = 1/sin²α keltirib chiqarish"],
+      "consequence": { "correct_path": "Har bir ayniyatni to'g'ri natijaga uladingiz.", "wrong_path": "1/cos²α va 1/sin²α tashqi o'xshashligiga aldanib tangens va kotangens ayniyatlarini adashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_geo_05",
+      "case_setup": "1 + tg²α = 1/cos²α ayniyatining isbotlanish zanjirini sabab ↔ natija va qadam ↔ natija yo'nalishida to'g'ri juftlang. Har bir ulanish faqat tasdiqlangan matematik qoidalar va keltirib chiqarish bosqichlari bo'yicha bo'lishi shart.",
+      "pieces": [
+        { "id": "P1", "label": "sin²α + cos²α = 1 asosiy ayniyati", "role": "cause" },
+        { "id": "P2", "label": "Ayniyatning har ikki qismini cos²α ga bo'lish amali", "role": "effect" },
+        { "id": "P3", "label": "1 + tg²α = 1/cos²α yangi ayniyatining hosil bo'lishi", "role": "effect" },
+        { "id": "P4", "label": "tgα = sinα/cosα va ctgα = cosα/sinα ta'riflarining qo'llanilishi", "role": "cause" },
+        { "id": "P5", "label": "tgα · ctgα = 1 ekanligining isbotlanishi", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P2 (cos²α ga bo'lish) qaysi natijaga ulanadi?", "options": ["P3 (1 + tg²α = 1/cos²α)", "P5 (tgα · ctgα = 1)"], "correct_index": 0 },
+        { "q": "P4 (ta'riflarning qo'llanilishi) qaysi natijani beradi?", "options": ["P3", "P5 (tgα · ctgα = 1)"], "correct_index": 1 },
+        { "q": "Zanjir yo'nalishi qanday bo'lishi kerak?", "options": ["Ma'lum asosiy formuladan yangi formulaga", "Yangi formuladan asosiyga (teskari)"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Qaysi trigonometrik ayniyat P2 qadamidan P3 natijasiga o'tishda asos bo'lib xizmat qildi va nima uchun zanjirda yo'nalishni teskari (P3 → P2) tanlash isbotlash mantiqini buzadi?",
+      "expected_components": ["har bir had cos²α ga bo'linadi", "sin²α/cos²α = tg²α nisbati", "isbot ma'lum asosiydan yangi formulaga boradi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Matematika darsida ikki o'quvchi bahslashdi. Birinchisi: \"Agar sin²20° + cos²20° = 1 bo'lsa, demak sin²20° + cos²70° ham 1 ga teng bo'lishi kerak, chunki ikkala holda ham bitta sinus va bitta kosinus kvadratlari qo'shilyapti\", — deb ta'kidlamoqda.",
+      "why": "Nima uchun asosiy trigonometrik ayniyatni (sin²α + cos²α = 1) to'g'ridan-to'g'ri ikkinchi holatga qo'llab bo'lmaydi?",
+      "how": "Ikkinchi ifodaning qiymati 1 ga teng yoki teng emasligini isbotlash uchun burchaklar (20° va 70°) orasidagi qanday bog'liqlikni tekshirish zarur?",
+      "what": "Agar argumentlar (burchaklar) turlicha bo'lsa, yig'indi natijasi haqida qanday umumiy xulosa chiqarish mumkin?",
+      "prompt": "sin²20° + cos²70° ifodasi 1 ga tengmi va o'quvchi qayerda yanglishmoqda? Asosiy ayniyat shartini tushuntiring.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Asosiy ayniyatda burchaklar (argumentlar) bir-biriga qanday munosabatda bo'lishi shart?", "sin20° va cos70° qiymatlari o'zaro teng bo'lishi mumkinligini hisobga oling — yig'indi haqida nima deysiz?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "argumentlar bir xil bo'lishi shart", "accepted_answers": ["argumentlar bir xil", "burchaklar bir xil bo'lishi kerak", "α = β bo'lishi shart"], "allow_ai_fallback": true },
+      "expected_concepts": ["argument-consistency", "fundamental-identity-limitation", "α = β sharti"],
+      "correct_feedback": "Barakalla! Siz ayniyat faqat bir xil burchaklar uchun o'rinli ekanini va argumentlar o'zgarsa, qonuniyat buzilishini to'g'ri tushuntirdingiz.",
+      "partial_feedback": "Siz burchaklarning turlicha ekanini payqadingiz, biroq bu nima uchun ayniyat shartiga zid kelishini to'liq asoslab bermadingiz.",
+      "wrong_feedback": "Hali emas. Asosiy ayniyatdagi α belgisi ikkala funksiya uchun ham bir xil bo'lishi shartligiga e'tibor bera olasizmi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Yo'l qurilishi loyihasida tepalikka ko'tarilish qiyaligi (burchagi) α bilan belgilangan. Maxsus datchik ushbu burchakning kosinusini aniqladi: cosα = 0,28. Xavfsizlik qoidalariga ko'ra, yo'l qiyaligining sinusi (sinα) va tangensini (tgα) hisoblash talab etiladi.",
+      "why": "Nima uchun bu vaziyatda sinα ni topish uchun aynan sin²α + cos²α = 1 formulasini tanlash eng ishonchli usul hisoblanadi?",
+      "how": "cosα = 0,28 qiymatidan foydalanib, sinα ni qanday hisoblaysiz va nima uchun natijani manfiy olish mumkin emas?",
+      "what": "Olingan sinus va kosinus qiymatlari yordamida tgα ni aniqlang.",
+      "prompt": "cosα = 0,28 bo'lsa, sinα va tgα ni toping (o'tkir burchak). Hisob-kitob zanjirini ko'rsating.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["To'g'ri burchakli uchburchakda sinus va kosinus o'rtasida Pifagor teoremasiga asoslangan qanday bog'liqlik bor?", "sin²α = 1 − 0,28² ni hisoblagandan so'ng, sinα ni topish uchun qaysi amalni qo'llaysiz?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "sinα ≈ 0,96, tgα ≈ 3,43", "accepted_answers": ["sin a = 0,96; tg a = 3,43", "0,96 va 3,43", "sinα=0,96 tgα=3,43"], "allow_ai_fallback": true },
+      "expected_concepts": ["square-root-usage", "sine-from-cosine", "tangent-definition"],
+      "correct_feedback": "Juda yaxshi! Siz asosiy ayniyatdan sinusni ajratib olishni va uning asosida tangensni hisoblash zanjirini mukammal bajardingiz.",
+      "partial_feedback": "Sinusni topish bosqichida to'g'ri yo'ldasiz, biroq tangensni hisoblashda yoki burchak o'zgarishi ta'sirini tushuntirishda biroz noaniqlik bor.",
+      "wrong_feedback": "Hali emas. cosα dan sinα ni topishda kvadratga ko'tarish va ildiz olish amallarini ketma-ket qo'llashni yodga ola olasizmi?"
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Laboratoriya tadqiqotida yorug'lik nurining sinish koeffitsientini hisoblash uchun quyidagi murakkab ifoda hosil bo'ldi: (1 + tg²α) · cos²α. Tadqiqotchi bu ifodani asbobga kiritishdan oldin soddalashtirishi kerak.",
+      "why": "Nima uchun ushbu ifodani bevosita hisoblashdan ko'ra, trigonometrik ayniyatlar yordamida soddalashtirish foydaliroq?",
+      "how": "1 + tg²α ifodasini qaysi ayniyat bilan almashtirasiz va yakuniy natijaga qanday qisqartirishlar orqali erishasiz?",
+      "what": "Soddalashgan natija burchakning qiymatiga bog'liqmi va agar ifoda (1 + ctg²α) · sin²α ko'rinishida bo'lsa, natija o'zgararmidi?",
+      "prompt": "(1 + tg²α) · cos²α ifodasini soddalashtiring va natijani yozing.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["1 + tg²α yig'indisini kosinus ishtirok etgan qaysi kasr ifoda bilan almashtirish mumkin?", "Kasrni cos²α ga ko'paytirganda surat va maxrajdagi o'xshash hadlar bilan nima sodir bo'ladi?"],
+      "answer_spec": { "type": "numeric", "expected": 1, "canonical_display": "1", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["tan-secant-identity", "expression-simplification", "1 + tg²α = 1/cos²α"],
+      "correct_feedback": "Mukammal! 1 + tg²α = 1/cos²α ekanini ko'rdingiz; (1/cos²α) · cos²α = 1. Ifoda eng sodda ko'rinishga keldi.",
+      "partial_feedback": "Siz 1 + tg²α ni to'g'ri almashtirdingiz, biroq ko'paytirish va qisqartirish bosqichida mantiqiy yakuniga yetmadingiz.",
+      "wrong_feedback": "Hali emas. 1 + tg²α = 1/cos²α ayniyatini ushbu ifodaga qanday tatbiq etish mumkin deb o'ylaysiz?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Darslikda 1 + ctg²α = 1/sin²α ayniyati berilgan. Sizdan ushbu formulani faqat ctgα = cosα/sinα va sin²α + cos²α = 1 formulalaridan foydalanib isbotlash talab etiladi.",
+      "why": "Nima uchun kotangens kvadratiga birni qo'shish natijasi aynan sinus kvadratiga teskari qiymatni beradi (geometrik bog'liqlik)?",
+      "how": "Isbotlash jarayonida 1 + (cosα/sinα)² ifodasini qanday qilib umumiy maxrajga keltirasiz va suratda qanday ayniyat hosil bo'ladi?",
+      "what": "Ushbu isbotlangan formula α = 0° yoki α = 180° bo'lganda ham o'rinlimi va nima uchun?",
+      "prompt": "1 + ctg²α = 1/sin²α ayniyatini isbotlang va aniqlanish sohasidagi cheklovni ko'rsating.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["ctg²α ni cos²α/sin²α ko'rinishida yozib, 1 ni qanday kasr ko'rinishida qo'shish mumkin?", "Umumiy maxrajga keltirilgan kasrning suratida sin²α + cos²α paydo bo'lganda, uni nima bilan almashtirasiz?"],
+      "answer_spec": { "type": "text_fuzzy", "expected": "1 + ctg²α = (sin²α + cos²α)/sin²α = 1/sin²α", "accepted_answers": ["(sin²α + cos²α)/sin²α = 1/sin²α", "1/sin²α", "sin a noldan farqli bo'lishi kerak"], "allow_ai_fallback": true },
+      "expected_concepts": ["cot-derivation", "common-denominator-method", "domain-limitations", "sinα ≠ 0"],
+      "correct_feedback": "Tasanno! Siz murakkab ayniyatni fundamental formulalar yordamida isbotlab, uning aniqlanish sohasidagi cheklovlarni (sinα ≠ 0) ham to'g'ri ko'rsatib berdingiz.",
+      "partial_feedback": "Isbot jarayonini umumiy maxrajga keltirishgacha to'g'ri bajardingiz, lekin suratdagi asosiy ayniyatni qo'llashda to'xtab qoldingiz.",
+      "wrong_feedback": "Hali emas. Kotangensni sinus va kosinus nisbati orqali ifodalab, so'ngra bir soni bilan qo'shishga harakat qilib ko'rasizmi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Arxitektor chizmasida tayanch ustunlarining o'zaro nisbati quyidagi ifoda bilan berilgan: (sinα · ctgα) / cosα. Muhandis buni hisoblashdan oldin sodda shaklga keltirishi zarur.",
+      "why": "Nima uchun ushbu kasrda kotangensni boshqa funksiyalar orqali ifodalash qisqartirish imkonini beradi?",
+      "how": "Suratdagi sinα · ctgα ko'paytmasini qanday o'zgartirasiz va natijada butun kasr qanday ko'rinishga keladi?",
+      "what": "Yakuniy soddalashgan qiymat nimaga teng va agar ctgα o'rniga tgα bo'lganida, ifoda qanday o'zgarardi?",
+      "prompt": "(sinα · ctgα) / cosα ifodasini soddalashtiring va yakuniy qiymatni yozing.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": ["ctgα = cosα/sinα ni suratga qo'ying; sinα · (cosα/sinα) da nima qisqaradi?", "Suratda va maxrajda bir xil funksiyalar (cosα) qolsa, ularning bo'linmasi qanday qiymat beradi?"],
+      "answer_spec": { "type": "numeric", "expected": 1, "canonical_display": "1", "tolerance": 0, "allow_ai_fallback": false },
+      "expected_concepts": ["cot-definition-application", "complex-fraction-reduction", "ctgα = cosα/sinα"],
+      "correct_feedback": "Ajoyib! sinα · ctgα = cosα, demak (cosα)/cosα = 1. Murakkab kasrni 1 ga keltirdingiz.",
+      "partial_feedback": "Kotangensni to'g'ri yoydingiz, biroq qisqartirish jarayonida surat yoki maxrajda qaysi hadlar qolishida chalkashdingiz.",
+      "wrong_feedback": "Hali emas. ctgα = cosα/sinα ekanligini suratga qo'yib, ko'paytirish amalini bajarib ko'ring-chi?"
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz o'tkir burchakning trigonometrik funksiyalari orasidagi bog'lanishlar va asosiy trigonometrik ayniyatlarni o'rgandingiz: sin²α + cos²α = 1, tgα = sinα/cosα, ctgα = cosα/sinα, tgα · ctgα = 1, 1 + tg²α = 1/cos²α va 1 + ctg²α = 1/sin²α. Bu qonuniyatlar bino tomlarining qiyalik burchagini yoki yo'l nishabligini aniq hisoblashda qo'llaniladi.",
+    "question": "Keyingi safar trigonometrik ifodalarni soddalashtirishda qaysi mantiqiy xatodan qochishga harakat qilasiz?",
+    "spaced_rep": "Ertaga cosα ma'lum bo'lganda sinα = √(1 − cos²α) ni topishni va (1 + tg²α) · cos²α kabi ifodalarni ayniyatlar yordamida soddalashtirishni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz asosiy trigonometrik ayniyat yordamida sinusdan kosinusga o'tishni va tangensning ta'rifiga asoslangan sodda hisob-kitoblarni yaxshi o'zlashtirdingiz. Argumentlar turlicha bo'lganda ayniyat cheklovlarini aniqlash va murakkab kasrlarni soddalashtirishni mustahkamlash foydali.",
+      "strong_points": [
+        "Asosiy ayniyat yordamida sinusdan kosinusga o'tish (sin²α + cos²α = 1)",
+        "Tangens ta'rifiga asoslangan sodda hisob-kitoblar (tgα = sinα/cosα)"
+      ],
+      "weak_points": [
+        "Argumentlar (burchaklar) turlicha bo'lganda ayniyat cheklovlarini aniqlash",
+        "(1 + tg²α) kabi ifodalarni o'z ichiga olgan murakkab kasrlarni soddalashtirish"
+      ],
+      "next_steps": [
+        "Asosiy ayniyatni cos²α va sin²α ga bo'lib yangi ayniyatlarni keltirib chiqarishni mashq qiling",
+        "Murakkab trigonometrik kasrlarni bosqichma-bosqich soddalashtirishni yozma bajaring"
+      ],
+      "weak_point_keywords": ["argumentlar mosligi", "soddalashtirish", "murakkab kasr"],
+      "strong_point_keywords": ["asosiy ayniyat", "sinusdan kosinusga", "tangens ta'rifi"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan — ayniqsa ifodalarni shakl almashtirish bosqichiga qayting."
+    }
+  }
+}

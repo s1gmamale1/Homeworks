@@ -1,0 +1,368 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "§2. Algebraik kasr. Kasrlarni qisqartirish",
+    "subject_display": "Algebra",
+    "section": "§2",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Algebraik kasr", "def": "Surat va maxraji algebraik ifodalardan iborat kasr. Masalan: (a+b)/(a−b), x(b+c)/(y(a+c)).", "cluster": "QOIDA" },
+    { "term": "Algebraik kasrda joiz qiymatlar", "def": "Maxrajni nolga aylantirmaydigan harf qiymatlari. a/(a(a−1)) uchun a=0 va a=1 joiz emas.", "cluster": "QOIDA" },
+    { "term": "Kasrning asosiy xossasi (formula)", "def": "a/b = ma/mb, bunda b ≠ 0, m ≠ 0. m = 0 bo'lsa xossa ishlamaydi — nolga bo'lish ta'qiqlangan.", "cluster": "QOIDA" },
+    { "term": "Kasrni qisqartirish", "def": "Surat va maxrajni ularning umumiy ko'paytuvchisiga bo'lish. Asosiy xossa teskari yo'nalishda qo'llaniladi.", "cluster": "METOD" },
+    { "term": "Umumiy ko'paytuvchi vs umumiy qo'shiluvchi", "def": "Faqat umumiy ko'paytuvchiga bo'lish mumkin. (a+b)/(a+c) — a qo'shiluvchi, qisqartirish noto'g'ri; (ab)/(ac) — a ko'paytuvchi, qisqartirish to'g'ri.", "cluster": "METOD" },
+    { "term": "12a²b / 4ab² qisqartirilsa?", "def": "3a/b. Umumiy ko'paytuvchi 4ab: 12a²b ÷ 4ab = 3a; 4ab² ÷ 4ab = b.", "cluster": "MISOL" },
+    { "term": "(m²−n²)/(m²+mn) ni ko'paytuvchilarga ajratish", "def": "Surat: (m+n)(m−n); maxraj: m(m+n). Umumiy ko'paytuvchi (m+n) ko'rinadi.", "cluster": "METOD" },
+    { "term": "(m²−n²)/(m²+mn) qisqartirilgandan keyin", "def": "(m−n)/m. Umumiy ko'paytuvchi — (m+n).", "cluster": "MISOL" },
+    { "term": "Ishora o'zgarishi qoidasi (formula)", "def": "−a/b = a/(−b) = −(a/b). Faqat bitta ishorani o'zgartiring; ikkalasini birdan o'zgartirish kasrni o'zgartirmaydi.", "cluster": "QOIDA" },
+    { "term": "3(ay−x) / a(x−y) qisqartirilsa?", "def": "−3/a. ay−x = −(x−y) bo'lgani uchun (x−y) qisqartiriladi va ishora o'zgaradi.", "cluster": "MISOL" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Algebraik Kasrni Qisqartirish",
+    "case_setup": {
+      "story": "Sinfdoshingiz Dilnoza uyga vazifani bajargan va natijasini tekshirishingizni so'radi. U (m²−n²)/(m²+mn) ifodani soddalashtirdi. Dilnozaning jarayoni: 1-qadam — suratda ham, maxrajda ham m² bor; 2-qadam — m² lar bir xil bo'lgani uchun ularni \"kesaman\": (m²−n²)/(m²+mn) → (−n²)/(mn); 3-qadam — n ga qisqartiraman: (−n²)/(mn) = −n/m. Dilnozaning javobi: −n/m. Siz bu yozuvlarni ko'rganingizda natija kutilmagan ko'rinadi. Dilnoza shoshib, to'garak yig'ilishi boshlanishidan oldin javobni topishingizni kutmoqda.",
+      "role": "Matematika to'garagi tekshiruvchisi",
+      "task": "Har bir qadamni sinchkovlik bilan tekshiring va to'g'ri natijani toping."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Ushbu ifodani to'g'ri soddalashtirish uchun qaysi yondashuvdan foydalanish kerak?",
+        "options": [
+          "Surat va maxrajdagi bir xil hadlarni bevosita \"kesib tashlash\" mumkin.",
+          "Avval surat va maxrajni ko'paytuvchilarga ajratish, so'ng umumiy ko'paytuvchiga bo'lish kerak.",
+          "Ifoda allaqachon eng sodda ko'rinishda — qisqartirib bo'lmaydi.",
+          "Faqat sonli koeffitsiyentlarni qisqartirish kerak, harflarni emas."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Algebraik kasr deb surat yoki maxraji algebraik ifodadan iborat kasrga aytiladi; (m²−n²)/(m²+mn) — bunga tipik misol. Uning asosiy xossasiga ko'ra surat va maxrajni bir xil ifodaga ko'paytirsak yoki bo'lsak, kasr o'zgarmaydi: a/b = ma/mb (b ≠ 0, m ≠ 0). Qisqartirishda bu xossadan teskari yo'nalishda foydalaniladi — surat va maxraj ularning umumiy ko'paytuvchisiga bo'linadi.",
+        "feedback": "Kasrni qisqartirishda kasrning asosiy xossasiga ko'ra surat va maxrajni faqat ularning umumiy ko'paytuvchisiga bo'lish mumkin. Bunday ko'paytuvchi ko'rinib turishi uchun surat va maxraj avval ko'paytuvchilarga ajratiladi — shundagina qaysi omil umumiy ekanini aniq ko'rish mumkin."
+      },
+      {
+        "kind": "decide",
+        "question": "m² − n² ifodani ko'paytuvchilarga ajratish uchun qaysi natija to'g'ri?",
+        "options": [
+          "m² − n² = (m − n)²",
+          "m² − n² = (m + n)(m − n)",
+          "m² − n² ifoda ko'paytuvchilarga ajratilmaydi.",
+          "m² − n² = m(m − n²)"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Kvadratlar ayirmasi formulasi: a² − b² = (a+b)(a−b); bu formulaga ko'ra m² − n² = (m+n)(m−n). Maxrajda esa umumiy omil ajratiladi: m² + mn = m(m+n). Natijada suratdagi ham, maxrajdagi ham (m+n) — ikkalasi ko'paytuvchi sifatida aniq ko'rinadi va qisqartirishga ruxsat beradi.",
+        "feedback": "m² − n² — ikki tam kvadrat ayirmasi; uni (m+n)(m−n) ko'paytmasi sifatida ifodalash mumkin. Maxrajda esa m² + mn = m(m+n) — m umumiy omil sifatida ajratiladi. Shunday qilib, suratda ham, maxrajda ham (m+n) ko'paytuvchi sifatida paydo bo'ladi."
+      },
+      {
+        "kind": "justify",
+        "question": "Nima uchun Dilnoza suratdagi m² ni maxrajdagi m² bilan \"kesib tashlashi\" noto'g'ri?",
+        "options": [
+          "Chunki m² manfiy bo'lishi mumkin va bu qisqartirishni buzadi.",
+          "Chunki m² bu yerda qo'shiluvchi, ko'paytuvchi emas — kasrning asosiy xossasi faqat umumiy ko'paytuvchini qisqartirishga ruxsat beradi.",
+          "Chunki maxrajda m² emas, balki faqat mn bor.",
+          "Chunki surat va maxrajni bir vaqtda o'zgartirish taqiqlanadi."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "(m²−n²)/(m²+mn) ifodada m² — suratdagi m² − n² yig'indisining bir hadi, ko'paytuvchi emas. Kasrning asosiy xossasi faqat umumiy ko'paytuvchiga bo'lishga ruxsat beradi. m² ni \"kesib tashlash\" — bu yig'indidan bir hadni olib tashlashga teng, bu esa butunlay boshqa amal va kasr qiymatini o'zgartiradi.",
+        "feedback": "m² — suratdagi m² − n² yig'indisining bir hadi, ko'paytuvchi emas. Faqat umumiy ko'paytuvchiga bo'lish mumkin; bir hadni \"kesib tashlash\" kasr qiymatini o'zgartiradi va noto'g'ri natija beradi."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Ushbu holat tavsifiga qarab, o'z so'zingiz bilan 2–4 jumla yozib, quyidagi uch savolning barchasiga javob bering: (1) Dilnozaning ifodasi va qadamlarini ko'rganingizda qaysi algebraik tushuncha yoki qoidani tanidingiz? (2) Siz tanlagan usulni boshqa variantlarga qaraganda nima uchun afzal ko'rdingiz? (3) Dilnozaning xatosi qaysi noto'g'ri farazga asoslangan edi va bu faraz uni qanday noto'g'ri natijaga olib keldi?",
+      "min_chars": 80,
+      "concept_keywords": ["algebraik kasr", "kasrning asosiy xossasi", "umumiy ko'paytuvchi", "kvadratlar ayirmasi"],
+      "method_keywords": ["ko'paytuvchilarga ajratish", "qisqartirish", "umumiy omil"],
+      "mistake_keywords": ["qo'shiluvchi", "kesib tashlash", "m² had"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "To'g'ri yo'l: (m²−n²)/(m²+mn). 1-qadam — suratni ajratish: m² − n² = (m+n)(m−n). 2-qadam — maxrajni ajratish: m² + mn = m(m+n). 3-qadam — umumiy ko'paytuvchini qisqartirish: (m+n)(m−n) / m(m+n) = (m−n)/m. Natija: (m−n)/m — to'g'ri va eng sodda ko'rinish.",
+      "wrong_path": "Noto'g'ri yo'l (Dilnozaning usuli): u suratdagi va maxrajdagi m² ni \"bir xil\" deb bevosita kesdi: (m²−n²)/(m²+mn) → (−n²)/(mn) = −n/m. Uning javobi −n/m. Bu noto'g'ri, chunki m² — suratda ham, maxrajda ham qo'shiluvchi (yig'indining bir hadi), ko'paytuvchi emas; kasrning asosiy xossasi faqat umumiy ko'paytuvchini qisqartirishga ruxsat beradi."
+    },
+    "feedback_summary": {
+      "student_understood": "Algebraik kasrni qisqartirishdan oldin surat va maxrajni ko'paytuvchilarga ajratish zarurligini va faqat umumiy ko'paytuvchini qisqartirish mumkinligini tushundingiz.",
+      "mistake_appeared": "Eng ko'p uchraydigan xato — qo'shiluvchini (m²) ko'paytuvchi deb o'ylab, uni \"kesib tashlash\".",
+      "what_to_review": "Faqat ko'paytuvchilar qisqartiriladi; qo'shiluvchilarni \"kesib tashlash\" kasr qiymatini o'zgartiradi — kvadratlar ayirmasi formulasi va umumiy omil ajratishni takrorlang."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 nazorat nuqtasiga javob bering",
+        "DPEda uchala savolni qamrab oluvchi 2–4 jumla yozing",
+        "DPE javobi o'qituvchi tomonidan tekshiriladi — avtomatik o'tkazilmaydi"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Surat va maxraji algebraik ifodalardan iborat kasr _____ deyiladi.", "answer_spec": { "type": "text_fuzzy", "expected": "algebraik kasr", "accepted_answers": ["algebraik kasr", "algebrik kasr"], "allow_ai_fallback": true }, "flashcard_ref": "card_1" },
+      { "type": "mcq", "prompt": "a/(a(a−1)) kasri uchun qaysi qiymatlar joiz emas?", "options": ["a = 1 va a = −1", "a = 0 va a = 1", "a = 0 va a = −1", "Faqat a = 0"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "fill_blank", "prompt": "Kasrning asosiy xossasiga ko'ra a/b = _____, bunda b ≠ 0 va m ≠ 0.", "answer_spec": { "type": "text_fuzzy", "expected": "ma/mb", "accepted_answers": ["ma/mb", "(ma)/(mb)", "am/bm"], "allow_ai_fallback": true }, "flashcard_ref": "card_3" },
+      { "type": "mcq", "prompt": "Kasrni qisqartirish deb nimaga aytiladi?", "options": ["Surat va maxrajdan bir xil ifodani ayirish.", "Surat va maxrajga bir xil ifodani qo'shish.", "Surat va maxrajni ularning umumiy ko'paytuvchisiga bo'lish.", "Surat va maxrajni ularning umumiy ko'paytuvchisiga ko'paytirish."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_4" },
+      { "type": "choose_explanation", "prompt": "(a+b)/(a+c) kasrida nima uchun a ni qisqartirish mumkin emas?", "options": ["Chunki a salbiy bo'lishi mumkin va salbiy qiymatlar qisqartirish qoidasiga kirmaydi.", "Chunki qisqartirish faqat surat va maxraj sonli bo'lganda ishlaydi, harf bo'lganda emas.", "Chunki a bu kasrda umumiy ko'paytuvchi emas, umumiy qo'shiluvchi — bo'lish amalga oshirilmaydi.", "Chunki a qisqartirilganda natija b/c bo'lib qoladi va bu kasrning qiymatini o'zgartiradi."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "12a²b / 4ab² kasri qisqartirilganda qanday natija hosil bo'ladi?", "options": ["3a²/b", "3b/a", "3a/b", "3ab"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "choose_explanation", "prompt": "(m²−n²)/(m²+mn) kasr uchun nima uchun surat (m+n)(m−n) ko'rinishida yoziladi?", "options": ["Chunki m²−n² ni kengaytirish kerak — bu yo'l bilan ifoda osonlashadi.", "Chunki m²−n² ni ko'paytuvchilarga ajratsak, maxrajdagi (m+n) bilan mos keladigan omil ko'rinadi va qisqartirish mumkin bo'ladi.", "Chunki m²−n² bir necha ko'rinishda yozilishi mumkin va (m+n)(m−n) eng ixcham variantidir.", "Chunki maxrajda ham n² mavjud, shuning uchun suratdagi n² ni alohida ajratib chiqarish kerak."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_7" },
+      { "type": "fill_blank", "prompt": "(m²−n²)/(m²+mn) kasri to'liq qisqartirilgandan keyin _____ hosil bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "(m−n)/m", "accepted_answers": ["(m−n)/m", "m minus n bo'lingan m ga"], "allow_ai_fallback": true }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Ishora o'zgarishi qoidasiga ko'ra −a/b ifodasiga teng bo'lgan qaysi?", "options": ["a/b", "−(−a/b)", "a/(−b)", "(−a)/(−b)"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_9" },
+      { "type": "choose_explanation", "prompt": "3(ay−x) / a(x−y) kasri nima uchun −3/a ga teng?", "options": ["Chunki ay−x va x−y qarama-qarshi ishorali ifodalar bo'lgani uchun ularni qo'shib qisqartirish mumkin.", "Chunki ay−x = −(x−y) bo'lgani uchun (x−y) ko'paytuvchi sifatida qisqartiriladi va surat ishorasi o'zgaradi.", "Chunki ay va xy o'xshash a'zolar bo'lgani uchun surat va maxraj birlashtiriladi va soddalashtirish amalga oshiriladi.", "Chunki a surat va maxrajda umumiy omil sifatida ko'rinadi va u qo'shiluvchi sifatida qisqartiriladi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "mcq", "prompt": "TicTacToe taxtasidagi qaysi katak qisqartirishni TO'G'RI bajargan?", "options": ["(a+b)/(a+c) = b/c", "(a²−b²)/(a−b) = a−b", "(m²−n²)/(m²+mn) = (m−n)/m", "(b−a)/(a−b) = 1"], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "fill_blank", "prompt": "Umumiy ko'paytuvchi 2xy ga bo'lganda: (6x²y)/(2xy²) = _____.", "answer_spec": { "type": "text_fuzzy", "expected": "3x/y", "accepted_answers": ["3x/y", "(3x)/y"], "allow_ai_fallback": true }, "flashcard_ref": "card_6" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_alg_02",
+    "expert_role": "structural_engineer",
+    "title": "Irrigatsiya Formulalarini Tekshirish",
+    "intro": "Siz — irrigatsiya loyihasi gidravlik muhandisisiz. Toshkent viloyatidagi yangi sug'orish tarmog'ini loyihalash guruhida ishlaysiz. Suv taqsimlash tizimining uch xil nasos konfiguratsiyasi uchun algebraik kasrlar ko'rinishidagi muhandislik formulalarini tekshirishingiz va har birini to'g'ri soddalashtirganingizni tasdiqlab, hujjatni ishlab chiqarishga yo'llashingiz kerak. Eslatma: qurilish bo'limidan kelgan quvur diametrlari (15 sm va 20 sm) bu tekshiruvga aloqasi yo'q.",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Formula A — Joiz qiymatlarni aniqlash",
+        "prompt": "x / (x(x−3)) formulasi faqat maxraj nol bo'lmagan qiymatlarda ishlaydi. Qaysi variant to'g'ri joiz bo'lmagan qiymatlar to'plamini ko'rsatadi?",
+        "options": [
+          { "id": "a", "label": "Faqat x = 0 joiz emas (suratda ham x bor, shuning uchun faqat shu holat muhim)", "is_correct": false, "consequence": "Maxrajda ikkita mustaqil omil bor: x va (x−3). Bittasini topish yetarli emas." },
+          { "id": "b", "label": "Faqat x = 3 joiz emas (chunki (x−3) = 0 bo'ladi)", "is_correct": false, "consequence": "x = 0 ham maxrajni nolga aylantiradi — ikkala omil alohida tekshirilishi kerak." },
+          { "id": "c", "label": "x = 0 va x = 3 — ikkalasi ham joiz emas", "is_correct": true, "consequence": "Maxraj x·(x−3) ko'paytmasi; ko'paytma nol bo'lishi uchun x = 0 YOKI x − 3 = 0." },
+          { "id": "d", "label": "Barcha haqiqiy sonlar joiz — maxraj hech qachon nolga aylanmaydi", "is_correct": false, "consequence": "x = 0 yoki x = 3 da maxraj x·(x−3) nolga aylanadi." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Formula B uchun keyingi qadamni tanlash",
+        "prompt": "18m²n / 6mn² formulasini eng sodda ko'rinishga keltirish uchun avval qaysi qadam kerak?",
+        "options": [
+          { "id": "a", "label": "Son omil (18 va 6), m ning quvvati va n ning quvvatini alohida solishtirib, umumiy ko'paytuvchi 6mn ni ajratish", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "Faqat sonli koeffitsiyentlarni bo'lish, harfli ko'paytuvchilarni o'zgarishsiz qoldirish", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "Surat va maxrajdan bir xil m² ni \"kesib tashlash\"", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Formula C — Bosim nisbatini soddalashtirish",
+        "prompt": "(k²−4) / (k²+2k) formulasi bo'yicha ikki muhandis ixtilofda: biri (k−2)/k, ikkinchisi (k+2)/k deb topgan. Qaysi natija to'g'ri?",
+        "options": [
+          { "id": "a", "label": "(k−2) / k", "is_correct": true, "consequence": "k²−4 = (k+2)(k−2), k²+2k = k(k+2); umumiy ko'paytuvchi (k+2) qisqaradi → (k−2)/k." },
+          { "id": "b", "label": "(k+2) / k", "is_correct": false, "consequence": "Suratni ajratishda omillar o'rni aralashtirilgan — (k+2) qisqaradi, qolgan omil (k−2)." },
+          { "id": "c", "label": "Bu ifodani qisqartirish mumkin emas — umumiy ko'paytuvchi yo'q", "is_correct": false, "consequence": "Ko'paytuvchilarga ajratsangiz, ikkala tomonda (k+2) ko'rinadi." },
+          { "id": "d", "label": "−4 / 2k = −2/k", "is_correct": false, "consequence": "k² ni \"kesib tashlash\" noto'g'ri — u yig'indining bir hadi, ko'paytuvchi emas." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Asosiy tushunchani aniqlash",
+        "prompt": "Uchala formulani to'g'ri qisqartirishda qaysi tushuncha hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Avval ko'paytuvchilarga ajratish — faqat umumiy ko'paytuvchini qisqartirish mumkin", "is_correct": true },
+          { "id": "c2", "label": "Yig'indidagi bir xil hadlarni bevosita \"kesib tashlash\"", "is_correct": false },
+          { "id": "c3", "label": "Quvur diametri (15 sm, 20 sm) ma'lumotidan foydalanish", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun k²−4 yoki m² kabi ifodalardan bir hadni bevosita \"kesib tashlash\" noto'g'ri, lekin ko'paytuvchilarga ajratgandan keyin umumiy omilni qisqartirish to'g'ri? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["umumiy ko'paytuvchi", "qo'shiluvchi", "ko'paytuvchilarga ajratish", "kasrning asosiy xossasi"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_alg_02_kvadrat_uchlik",
+      "instructions": "Bir o'quvchi (x²+2xy+y²)/(x²−y²) algebraik kasrni qisqartirishni bosqichma-bosqich bajargan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "Boshlang'ich ifoda: (x² + 2xy + y²)/(x² − y²)", "is_broken": false },
+        { "id": "b2", "text": "Suratni ko'paytuvchilarga ajratish: x² + 2xy + y² = (x + y)(x − y)", "is_broken": true },
+        { "id": "b3", "text": "Maxrajni ko'paytuvchilarga ajratish: x² − y² = (x + y)(x − y)", "is_broken": false },
+        { "id": "b4", "text": "Umumiy ko'paytuvchi: (x + y)", "is_broken": false },
+        { "id": "b5", "text": "Qisqartirish: (x+y)² / ((x+y)(x−y)) = (x+y)/(x−y)", "is_broken": false },
+        { "id": "b6", "text": "Yakuniy natija: (x+y)/(x−y), x ≠ y, x ≠ −y", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "x² + 2xy + y² = (x+y)²", "accepted_answers": ["(x+y)²", "(x+y)(x+y)", "x² + 2xy + y² = (x+y)²"], "allow_ai_fallback": true },
+      "hint": "2-blokdagi (x+y)(x−y) ifodani qo'l bilan ko'paytirib ko'ring. Hosil bo'lgan natija berilgan suratdagi x² + 2xy + y² ifodaga tengmi?",
+      "why_prompt": "Bu blok nega noto'g'ri edi? (x+y)(x−y) = x² − y² — bu kvadratlar ayirmasi formulasi, o'rta hadsiz. Suratdagi x² + 2xy + y² da musbat o'rta had +2xy mavjud — demak, bu to'liq kvadrat uchlik va faqat a² + 2ab + b² = (a+b)² formulasi qo'llaniladi."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_alg_02",
+      "case_setup": "Algebraik kasrlarni qisqartirish atamalari va misollarini ma'no jihatdan to'g'ri juftlang — kartaning joylashuvi yoki uzunligiga emas, faqat tushunchaga tayanib.",
+      "pairs": [
+        { "id": "p1", "left": "Algebraik kasr", "right": "Surat va maxraji algebraik ifodalardan iborat kasr" },
+        { "id": "p2", "left": "Kasrning asosiy xossasi", "right": "a/b = ma/mb (b ≠ 0, m ≠ 0)" },
+        { "id": "p3", "left": "Kvadratlar ayirmasi formulasi", "right": "a² − b² = (a+b)(a−b)" },
+        { "id": "p4", "left": "(m²−n²)/(m²+mn)", "right": "(m−n)/m" },
+        { "id": "p5", "left": "12a²b / 4ab²", "right": "3a/b" },
+        { "id": "p6", "left": "Ishora o'zgarishi qoidasi", "right": "−a/b = a/(−b) = −(a/b)" },
+        { "id": "p7", "left": "(a+b)/(a+c) da a", "right": "Umumiy qo'shiluvchi — qisqartirilmaydi" }
+      ],
+      "checkpoints": [
+        { "question": "(m²−n²)/(m²+mn) qaysi natijaga juftlanadi?", "options": ["−n/m", "(m−n)/m", "qisqartirib bo'lmaydi"], "correct_index": 1 },
+        { "question": "Kvadratlar ayirmasi formulasi qaysi?", "options": ["a² − b² = (a−b)²", "a² − b² = (a+b)(a−b)", "a² − b² = a(a − b²)"], "correct_index": 1 },
+        { "question": "(a+b)/(a+c) da a ni qisqartirish mumkinmi?", "options": ["Ha — umumiy ko'paytuvchi", "Yo'q — u umumiy qo'shiluvchi"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun (ab)/(ac) da a ni qisqartirish mumkin, lekin (a+b)/(a+c) da mumkin emas? Ko'paytuvchi va qo'shiluvchi farqini tushuntiring.",
+      "expected_components": ["umumiy ko'paytuvchiga bo'lish", "qo'shiluvchini qisqartirib bo'lmaydi", "kasrning asosiy xossasi"],
+      "consequence": { "correct_path": "Har bir atamani to'g'ri natijaga uladingiz.", "wrong_path": "Ko'rinish o'xshashligiga aldanib qo'shiluvchini ko'paytuvchi bilan adashtirish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_alg_02",
+      "case_setup": "Har bir algebraik ifoda bo'lagini (sabab) uning to'g'ri ko'paytuvchilarga ajratilgan ko'rinishi (natija) bilan to'g'ri yo'nalishda juftlang. Ifoda ↔ faktorizatsiya.",
+      "pieces": [
+        { "id": "P1", "label": "m² − n²", "role": "cause" },
+        { "id": "P2", "label": "(m + n)(m − n)", "role": "effect" },
+        { "id": "P3", "label": "m² + mn", "role": "cause" },
+        { "id": "P4", "label": "m(m + n)", "role": "effect" },
+        { "id": "P5", "label": "x² + 2xy + y²", "role": "cause" },
+        { "id": "P6", "label": "(x + y)²", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P5 (x²+2xy+y²) qaysi natijaga ulanadi?", "options": ["P2 ((m+n)(m−n))", "P6 ((x+y)²)"], "correct_index": 1 },
+        { "q": "Bog'lanish turi qanday?", "options": ["Ifoda ↔ faktorizatsiya", "Tasodifiy o'xshashlik"], "correct_index": 0 },
+        { "q": "P5 ni kvadratlar ayirmasi (m+n)(m−n) bilan ulash nega xato?", "options": ["x²+2xy+y² — to'liq kvadrat uchlik, o'rta hadi +2xy", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Nima uchun x² + 2xy + y² (P5) kvadratlar ayirmasiga emas, aynan (x+y)² (P6) ga ulanadi? Ikkala formulada ham x² va y² bor — o'quvchi nima uchun aldanishi mumkin?",
+      "expected_components": ["+2xy o'rta had", "to'liq kvadrat uchlik", "kvadratlar ayirmasi o'rta hadsiz"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Kamol uyga vazifada (x²−5x+6)/(x−3) kasrini soddalashtirdi. U suratda va maxrajda \"x\" borligini ko'rib, to'g'ridan-to'g'ri x ni \"qisqartirib\", (x−5+6)/(−3) natijasiga keldi.",
+      "why": "Kamol suratdagi x²−5x+6 ifodadan x ni \"olib tashlashi\" nima uchun noto'g'ri? Kasrning asosiy xossasi qaysi turdagi ifodani qisqartirishga ruxsat beradi?",
+      "how": "(x²−5x+6)/(x−3) kasrini to'g'ri soddalashtiring: suratni ko'paytuvchilarga ajrating va maxrajdagi ifoda bilan mos keladigan umumiy ko'paytuvchini qisqartiring.",
+      "what": "Natijada hosil bo'lgan eng sodda ifoda x = 3 bo'lganda nima uchun aniqlanmaydi — va bu cheklov dastlabki kasr uchun ham amaldami?",
+      "prompt": "(x²−5x+6)/(x−3) kasrini soddalashtiring va Kamolning mulohazasidagi xatoni asoslang.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": [
+        "Kasrning asosiy xossasiga ko'ra surat va maxrajdan qaysi turdagi ifodani qisqartirish mumkin — yig'indidagi alohida hadni olib tashlashmi yoki ularning umumiy ko'paytuvchisiga bo'lishmi?",
+        "x²−5x+6 ni (x−p)(x−q) ko'rinishida yozmoqchi bo'lsangiz, p·q va p+q qiymatlari nima bo'lishi lozim?",
+        "Suratni ajratgandan so'ng maxrajdagi (x−3) bilan qaysi omil mos keladi — qisqartirgandan keyin suratda nima qoladi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "x − 2", "accepted_answers": ["x−2", "x − 2", "(x−2)"], "allow_ai_fallback": true },
+      "expected_concepts": ["x²−5x+6 = (x−2)(x−3)", "(x−3) qisqartiriladi", "x = 3 joiz emas", "ko'paytuvchi–qo'shiluvchi farqi"],
+      "correct_feedback": "Zo'r! Siz ko'paytuvchilarga ajratish orqali umumiy ko'paytuvchini topib qisqartirdingiz va x = 3 ning joiz emasligini ham ko'rsatdingiz — ko'paytuvchi va qo'shiluvchi farqini mukammal qo'lladingiz.",
+      "partial_feedback": "Ko'paytuvchilarga ajratish yoki qisqartirish qadamlaridan biri to'g'ri bajarildi, lekin natijaning x = 3 da nima uchun aniqlanmasligi izohlanmadi — bu cheklov qaerdan kelib chiqadi?",
+      "wrong_feedback": "Hali emas — kasrning asosiy xossasi bo'yicha faqat ko'paytuvchiga bo'lish mumkin; x bu yerda suratdagi yig'indining bir hadi. Yig'indidagi hadni \"olib tashlash\" qanday amalni anglatadi va bu kasr qiymatiga nima qiladi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Laboratoriya hisobotida 15a³b² / 5a²b³ ifodani soddalashtirish talab qilinadi. Tengdoshingiz Zulfiya: \"Surat va maxraj juda katta — hech narsa qisqarmaydi\" deb o'tib ketdi. Siz esa qisqartirish mumkinligini ko'ryapsiz.",
+      "why": "Bu kasr qisqartirilishi mumkin — surat 15a³b² va maxraj 5a²b³ da qanday tuzilish mavjud bo'lib, kasrning asosiy xossasini qo'llashga imkon beradi?",
+      "how": "15a³b² / 5a²b³ kasrini to'liq qisqartiring: sonli koeffitsiyent, a ning quvvati va b ning quvvati uchun umumiy ko'paytuvchini alohida toping, so'ng eng sodda ko'rinishga keltiring.",
+      "what": "Hosil bo'lgan eng sodda kasrda qaysi qiymat joiz emas — va bu cheklov dastlabki kasrdagi cheklov bilan bir xilmi?",
+      "prompt": "15a³b² / 5a²b³ kasrini eng sodda ko'rinishga keltiring.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": [
+        "Son omillarni, a ning quvvatlarini va b ning quvvatlarini alohida-alohida solishtiring — har bir juft uchun eng katta umumiy omil qanday?",
+        "Umumiy ko'paytuvchiga bo'lganda qolgan quvvatlar: katta quvvatdan kichigini ayirishning natijalari nima?",
+        "Hosil bo'lgan eng sodda kasrda maxraj nolga aylanishi uchun b qaysi qiymatni olishi kerak?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "3a/b", "accepted_answers": ["3a/b", "(3a)/b"], "allow_ai_fallback": true },
+      "expected_concepts": ["umumiy ko'paytuvchi 5a²b²", "natija 3a/b", "b ≠ 0 joiz emas"],
+      "correct_feedback": "Ajoyib! Siz son va harf omillarini alohida tahlil qilib, to'g'ri umumiy ko'paytuvchini topdingiz, kasrni eng sodda ko'rinishga keltirdingiz va joiz bo'lmagan qiymatni ham aniqladingiz.",
+      "partial_feedback": "Son omil yoki harf quvvatlari qismidan birida hisob to'g'ri, lekin ikkinchisida xato ketdi — a va b ning umumiy quvvatini qayta tekshiring: ikkita quvvatdan kichikroq bo'lgani umumiy ko'paytuvchiga kiradi.",
+      "wrong_feedback": "Hali emas — surat va maxrajni sonli koeffitsiyent, a ning quvvati va b ning quvvati sifatida alohida yozing. Har bir juft uchun kichikroq (yoki teng) quvvat umumiy ko'paytuvchiga kiradi."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Fizika masalasida o'tish vaqti va masofa nisbati (t²−16)/(t²+4t) ifoda orqali berilgan, bunda t — vaqt, soniyada (t > 0). Formulani iloji boricha soddalashtiring.",
+      "why": "t²−16 va t²+4t ifodalar bevosita \"umumiy t²\" deb qisqartirib bo'lmaydi — nima uchun? Qisqartirishdan oldin nima qilish zarur?",
+      "how": "(t²−16)/(t²+4t) kasrini to'liq soddalashtiring: surat va maxrajni ko'paytuvchilarga ajrating, umumiy ko'paytuvchini qisqartiring.",
+      "what": "Dastlabki kasrda maxrajni nolga aylantiruvchi barcha t qiymatlarini toping. Soddalashtirilgan natijada esa faqat qanday qiymat joiz emas — va bu ikki to'plam nima uchun farq qiladi?",
+      "prompt": "(t²−16)/(t²+4t) kasrini soddalashtiring va joiz bo'lmagan qiymatlarni izohlang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": [
+        "t²−16 ifodasi a²−b² formulasiga to'g'ri keladimi — a va b o'rnida nima turishi kerak? 16 ni \"tam kvadrat\" sifatida yozish mumkinmi?",
+        "Maxraj t²+4t da qaysi omilni ikkala haddan ajratib olish mumkin — qavs ichida nima qoladi?",
+        "Ikkala ifodada bir xil bo'lgan omilni toping — qisqartirilgandan so'ng eng sodda ko'rinish nima?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "(t−4)/t", "accepted_answers": ["(t−4)/t", "t−4/t", "(t - 4)/t"], "allow_ai_fallback": true },
+      "expected_concepts": ["t²−16 = (t+4)(t−4)", "t²+4t = t(t+4)", "natija (t−4)/t", "dastlab t ≠ 0 va t ≠ −4"],
+      "correct_feedback": "Mukammal! Siz kvadratlar ayirmasi formulasini va umumiy omil ajratishni to'g'ri qo'llab, dastlabki kasrdagi barcha joiz bo'lmagan qiymatlarni va soddalashtirilgan natijadagi qiymatni aniqladingiz hamda ularning farqini izohladingiz.",
+      "partial_feedback": "Ko'paytuvchilarga ajratish to'g'ri bajarildi, lekin joiz bo'lmagan qiymatlarni solishtirish qismi to'liq emas — dastlabki kasrda maxraj t²+4t nolga aylanishi uchun barcha t qiymatlarini qayta tekshiring.",
+      "wrong_feedback": "Hali emas — t²−16 va t²+4t da t² qo'shiluvchi sifatida turadi, ko'paytuvchi emas. Avval ko'paytuvchilarga ajratish kerak. Birinchi ifodada qaysi mashhur formula ishlatiladi?"
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Kimyo masalasida ikki eritma konsentratsiyasining nisbati 5(b−a)/(a²−ab) algebraik ifoda orqali berilgan. Tajriba hisobotida bu ifodani eng sodda ko'rinishga keltirish talab qilinadi.",
+      "why": "Surat (b−a) va maxrajdagi omil (a−b) — ular ko'rinishda o'xshash, lekin bir xil emas. Ularning qaysi algebraik munosabati kasrni qisqartirishda hal qiluvchi rol o'ynaydi — va bu §2 dagi qaysi qoidaga asoslangan?",
+      "how": "5(b−a)/(a²−ab) kasrini to'liq soddalashtiring: maxrajni ko'paytuvchilarga ajrating, keyin (b−a) va maxrajdagi omil o'rtasidagi algebraik munosabatdan foydalanib qisqartiring.",
+      "what": "Natijada hosil bo'lgan eng sodda ifodaning ishorasi nima uchun manfiy — bu ishoraning paydo bo'lishi jarayonning qaysi aniq qadamiga bog'liq?",
+      "prompt": "5(b−a)/(a²−ab) kasrini soddalashtiring va natija ishorasini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L2 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": [
+        "Maxraj a²−ab da ikkala haddagi umumiy omilni ajrating — qolgan qavs ichidagi ifoda (a−b) ga tengmi?",
+        "(b−a) va (a−b) bir xil hadlardan, lekin teskari tartibda — bunday ifodalar orasidagi munosabat qanday?",
+        "Ishora o'zgarishidan so'ng surat va maxrajda bir xil ko'paytuvchi paydo bo'ladimi — qisqartirilgandan keyin nima qoladi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "−5/a", "accepted_answers": ["−5/a", "-5/a", "−5 / a"], "allow_ai_fallback": true },
+      "expected_concepts": ["a²−ab = a(a−b)", "b−a = −(a−b)", "ishora o'zgarishi qoidasi", "natija −5/a"],
+      "correct_feedback": "Zo'r! Siz maxrajni to'g'ri ko'paytuvchilarga ajratdingiz, (b−a) va (a−b) orasidagi ishora munosabatini aniqladingiz va natijaning ishorasi qaysi qadam natijasida paydo bo'lganini aniq izohladingiz.",
+      "partial_feedback": "Maxrajni ajratish yoki ishora munosabatini topish qadamlaridan biri to'g'ri bajarildi, lekin ular to'liq bog'lanmadi — ishora o'zgarishidan keyin qisqartirish uchun surat va maxrajda nima paydo bo'lishini qayta ko'rib chiqing.",
+      "wrong_feedback": "Hali emas — (b−a) va (a−b) ifodalar ko'rinishda farq qiladi, lekin ular orasida algebraik bog'liqlik bor. Avval maxraj a²−ab ni ko'paytuvchilarga ajratish bilan boshlang: unda qaysi omil aniq ko'rinib turadi?"
+    },
+    {
+      "id": "bq_4",
+      "scenario": "Optika masalasida nur sindirish nisbati (x²−a²y²)/(ay−x) ifoda orqali berilgan. Bu ifodani eng sodda ko'rinishga keltiring va maxrajning joiz bo'lmagan qiymatini aniqlang.",
+      "why": "Surat x²−a²y² ni qisqartirish uchun nima uchun avval ko'paytuvchilarga ajratish zarur — va bu jarayonda maxrajdagi (ay−x) bilan suratning ko'paytuvchilari orasida qanday xususiy algebraik munosabat paydo bo'ladi?",
+      "how": "(x²−a²y²)/(ay−x) kasrini to'liq soddalashtiring: suratga kvadratlar ayirmasi formulasini qo'llang, ishora o'zgarishi qoidasidan foydalaning va kasrni qisqartiring.",
+      "what": "Soddalashtirilgan natijada joiz bo'lmagan qiymatni aniqlang va bu cheklov dastlabki kasrdagi cheklov bilan qanday farq qilishini tushuntiring.",
+      "prompt": "(x²−a²y²)/(ay−x) kasrini soddalashtiring va joiz bo'lmagan qiymatni izohlang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -30 HP]",
+      "dmg": 30,
+      "hints": [
+        "Surat x²−a²y² da ikkita \"tam kvadrat\" bor — x² ning ildizi nima va a²y² ning ildizi nima?",
+        "Suratni ajratgandan so'ng hosil bo'lgan ikkita omilni (ay−x) bilan solishtiring: ulardan birining hadlari (ay−x) bilan bir xil, lekin tartibi teskari — bu qanday munosabat?",
+        "Ishora o'zgarishi qo'llangandan so'ng (ay−x) bilan mos ko'paytuvchi qisqartirilsa, suratda qolgan omil qanday — va ishorasi qaysi?"
+      ],
+      "answer_spec": { "type": "text_fuzzy", "expected": "−(x+ay)", "accepted_answers": ["−(x+ay)", "-(x+ay)", "−x−ay", "−(ay+x)"], "allow_ai_fallback": true },
+      "expected_concepts": ["x²−a²y² = (x+ay)(x−ay)", "x−ay = −(ay−x)", "ishora o'zgarishi", "ay ≠ x joiz emas"],
+      "correct_feedback": "Ajoyib! Siz kvadratlar ayirmasi formulasini to'g'ri qo'lladingiz, suratdagi omil bilan maxraj orasidagi ishora munosabatini aniqladingiz, qisqartirdingiz va joiz bo'lmagan qiymatlar solishtirmasini ham izohladingiz — §2 ning barcha asosiy g'oyalari bitta masalada qo'llandi.",
+      "partial_feedback": "Ko'paytuvchilarga ajratish yoki ishora o'zgarishi qadamlaridan biri to'g'ri bajarildi, lekin ular to'liq bog'lanmadi yoki dastlabki va soddalashtirilgan kasrdagi joiz bo'lmagan qiymatlar taqqoslanmadi — qaysi qadam to'liqsiz qoldi?",
+      "wrong_feedback": "Hali emas — x²−a²y² da ikkita \"tam kvadrat\" bor. Har birining ildizini toping (qaysi ifodani o'ziga ko'paytirsangiz x² va a²y² chiqadi), keyin kvadratlar ayirmasi formulasini qo'llang."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz algebraik kasr tushunchasini va kasrlarni ko'paytuvchilarga ajratib qisqartirish usulini o'rgandingiz. Asosiy qoida: a/b = ma/mb — surat va maxrajni faqat ularning umumiy ko'paytuvchisiga bo'lish mumkin, qo'shiluvchilarni emas. Bu usul kundalik hayotda ham uchraydi — masalan, kater tezligidagi (a+b)/(a−b) nisbati aynan shunday algebraik kasr.",
+    "question": "Do'stingizga \"nima uchun faqat umumiy ko'paytuvchini qisqartirish mumkin, qo'shiluvchini emas\"ligini qanday tushuntirgan bo'lar edingiz?",
+    "spaced_rep": "Ertaga (b−a) = −(a−b) ishora o'zgarishini zanjirga qo'shishni va dastlabki hamda soddalashtirilgan kasr uchun joiz qiymatlarni aniqlashni yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz kvadratlar ayirmasi formulasini qo'llash va ko'paytuvchi–qo'shiluvchi farqini anglashni yaxshi o'zlashtirdingiz — Dilnozaning xatosini topish orqali bu tushuncha mustahkamlandi. Ishora o'zgarishi qoidasini va joiz qiymatlarni aniqlashni mustahkamlash foydali.",
+      "strong_points": [
+        "Kvadratlar ayirmasi formulasini (a²−b² = (a+b)(a−b)) to'g'ri qo'llash va suratni ko'paytuvchilarga ajrata olish",
+        "Ko'paytuvchi va qo'shiluvchi farqini anglash"
+      ],
+      "weak_points": [
+        "Ishora o'zgarishi qoidasi: (b−a) = −(a−b) munosabatini zanjirga qo'shish",
+        "Joiz qiymatlarni aniqlash: dastlabki va soddalashtirilgan kasr uchun cheklovlar har doim bir xil emas"
+      ],
+      "next_steps": [
+        "Ishora o'zgarishi qoidasini qo'llab teskari tartibli omillarni qisqartirishni mashq qiling",
+        "Har bir kasr uchun joiz bo'lmagan qiymatlarni yozma asoslang"
+      ],
+      "weak_point_keywords": ["ishora o'zgarishi", "joiz qiymatlar", "teskari tartib"],
+      "strong_point_keywords": ["ko'paytuvchi", "kvadratlar ayirmasi", "ko'paytuvchilarga ajratish"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin yangi misollar bilan."
+    }
+  }
+}

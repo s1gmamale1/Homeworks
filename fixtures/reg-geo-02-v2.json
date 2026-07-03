@@ -1,0 +1,327 @@
+{
+  "flow_version": "v2",
+  "meta": {
+    "title": "2-mavzu. Parallelogramm va uning xossalari",
+    "subject_display": "Geometriya",
+    "section": "2-mavzu",
+    "cefr_level": "B1",
+    "lang": "uz"
+  },
+  "flashcards": [
+    { "term": "Parallelogramm", "def": "Qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak. Masalan, ABCD to'rtburchakda AB ∥ DC va AD ∥ BC bo'lsa, u parallelogrammdir.", "cluster": "QOIDA" },
+    { "term": "Parallelogramm balandligi", "def": "Bir tomondagi nuqtadan qarama-qarshi tomonni o'z ichiga olgan to'g'ri chiziqqa tushirilgan perpendikular. Balandlik har doim asosga 90° burchak ostida tushadi.", "cluster": "QOIDA" },
+    { "term": "Bir uchdan o'tkaziladigan balandliklar soni", "def": "Ikkita. Har bir uchdan ikkita qo'shni bo'lmagan tomonga (yoki ularning davomiga) balandlik tushirish mumkin.", "cluster": "TAHLIL" },
+    { "term": "Bir tomoniga yopishgan burchaklar yig'indisi", "def": "180°. Bu burchaklar parallel to'g'ri chiziqlar orasidagi ichki bir tomonli burchaklar hisoblanadi: ∠A + ∠B = 180°.", "cluster": "QOIDA" },
+    { "term": "Qarama-qarshi tomonlari va burchaklari", "def": "O'zaro teng. AB = CD va AD = BC; ∠A = ∠C va ∠B = ∠D.", "cluster": "QOIDA" },
+    { "term": "Diagonallarning kesishish xossasi", "def": "Diagonallar kesishadi va kesishish nuqtasida teng ikkiga bo'linadi. Kesishish nuqtasi har bir diagonal uchun o'rta nuqta bo'ladi.", "cluster": "METOD" },
+    { "term": "Diagonallar va uchburchaklar", "def": "Ikkala diagonal parallelogrammni to'rtta tengdosh (yuzalari teng) uchburchakka ajratadi.", "cluster": "TAHLIL" },
+    { "term": "Parallelogramm diagonallari har doim tengmi?", "def": "Yo'q. Diagonallar faqat kesishish nuqtasida teng bo'linadi, lekin o'zaro teng bo'lishi shart emas. Diagonallar teng bo'lishi uchun shakl to'g'ri to'rtburchak bo'lishi kerak.", "cluster": "TAHLIL" },
+    { "term": "Parallelogramm perimetri formulasi", "def": "P = 2(a + b). Qarama-qarshi tomonlar teng bo'lgani uchun ikki qo'shni tomon yig'indisi ikkiga ko'paytiriladi.", "cluster": "MISOL" },
+    { "term": "Bitta diagonal shaklni qanday bo'ladi?", "def": "Bitta diagonal parallelogrammni ikkita o'zaro teng (kongruent) uchburchakka ajratadi. Tomon-tomon-tomon (TTT) alomatiga ko'ra bu uchburchaklar tengdir.", "cluster": "METOD" }
+  ],
+  "case_based_preview": {
+    "title": "Amaliy Holat: Parallelogramm shaklidagi metall karkas",
+    "case_setup": {
+      "story": "Siz metall mebellar ishlab chiqaruvchi korxonada texnik-dizayner bo'lib ishlayapsiz. Buyurtmachi dekorativ javon uchun maxsus metall karkas chizmasini taqdim etdi. Chizmada karkasning to'rtta tomoni bo'lib, uning yuqori va pastki relslari qat'iy gorizontal parallel, chap va o'ng yon tayanchlari esa ma'lum bir burchak ostida qiyalangan, lekin ular ham o'zaro parallel bo'lishi shart. Payvandlovchi ishni boshlashdan oldin sizdan ikki narsani aniqlab berishingizni so'radi: agar pastki chap burchak 70° bo'lsa, unga yopishgan yuqori burchakni necha gradusga sozlash kerak; va karkasning mustahkamligini ta'minlash uchun o'rnatiladigan ikkita diagonal sim aynan qayerda kesishadi.",
+      "role": "Metall mebellar korxonasining texnik-dizayneri",
+      "task": "Karkasning geometrik tuzilishini aniqlang, burchaklar va diagonallar bo'yicha payvandlash uchun aniq ko'rsatmalar bering."
+    },
+    "checkpoints": [
+      {
+        "kind": "identify",
+        "question": "Karkasning tavsifiga ko'ra (qarama-qarshi tomonlari o'zaro parallel), ushbu shakl qaysi geometrik strukturaga mos keladi?",
+        "options": [
+          "Trapetsiya",
+          "Parallelogramm",
+          "Ixtiyoriy to'rtburchak",
+          "To'g'ri to'rtburchak"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Parallelogramm — bu qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchakdir (masalan, ABCD parallelogrammda AB ∥ DC va AD ∥ BC). Shuningdek, parallelogrammning bir tomonida yotgan nuqtadan qarama-qarshi tomonni o'z ichiga olgan to'g'ri chiziqqa tushirilgan perpendikular uning balandligi hisoblanadi.",
+        "feedback": "Darslik ta'rifiga ko'ra, qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak parallelogramm deyiladi. Karkasning barcha qarama-qarshi tomonlari parallel bo'lgani uchun u parallelogrammdir."
+      },
+      {
+        "kind": "decide",
+        "question": "Payvandlovchi pastki chap burchakni 70° qilib o'rnatdi. Ushbu tomonning yuqori qismidagi (unga yopishgan) burchak necha gradus bo'lishi kerak?",
+        "options": [
+          "70°",
+          "90°",
+          "110°",
+          "180°"
+        ],
+        "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 },
+        "learning_block": "Parallelogramm bir qancha muhim xossalarga ega: uning qarama-qarshi tomonlari va qarama-qarshi burchaklari o'zaro tengdir. Eng asosiysi, parallelogrammning diagonallari kesishadi va kesishish nuqtasida teng ikkiga bo'linadi, bu xossa konstruksiyalarni aniq markazlashtirishda juda muhimdir.",
+        "feedback": "Parallelogrammning xossasiga ko'ra, bir tomoniga yopishgan burchaklar yig'indisi 180° ga teng. Shuning uchun: 180° − 70° = 110°."
+      },
+      {
+        "kind": "justify",
+        "question": "Karkasning ichki diagonal simlarini o'rnatishda qaysi qoidaga rioya qilish kerak?",
+        "options": [
+          "Diagonallar faqat to'g'ri burchak ostida kesishishi shart.",
+          "Diagonallar kesishish nuqtasida har biri teng ikkiga bo'linishi kerak.",
+          "Diagonallar har doim bir-biriga teng uzunlikda bo'lishi kerak.",
+          "Diagonallar qarama-qarshi burchaklarni teng ikkiga bo'lishi (bissektrisa) shart."
+        ],
+        "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 },
+        "learning_block": "Parallelogramm diagonallarining asosiy xossasi shundaki, ular kesishish nuqtasida o'zaro teng ikkiga bo'linadi. Diagonallar teng bo'lishi yoki bissektrisa bo'lishi parallelogrammning barcha turlari uchun majburiy emas — bu faqat to'g'ri to'rtburchak yoki romb uchun xos bo'lishi mumkin.",
+        "feedback": "Diagonallar kesishish nuqtasida o'zaro teng ikkiga bo'linadi. Diagonallar teng yoki bissektrisa bo'lishi faqat maxsus parallelogrammlarga (to'g'ri to'rtburchak, romb) xosdir."
+      }
+    ],
+    "decision_process_explanation": {
+      "prompt": "Quyidagi savollarga 2–4 ta gapdan iborat javob yozing: (1) Vaziyatda qaysi geometrik tushunchani (shakl turini) aniqladingiz? (2) Nima uchun burchakni hisoblashda aynan 180° dan foydalandingiz? (3) Diagonallar xossasini noto'g'ri talqin qilish qanday xatoga olib kelishi mumkin edi?",
+      "min_chars": 80,
+      "concept_keywords": ["parallelogramm", "qarama-qarshi tomonlar parallel", "to'rtburchak"],
+      "method_keywords": ["bir tomonli burchaklar", "180°", "qo'shni burchaklar"],
+      "mistake_keywords": ["diagonallar teng", "bissektrisa", "to'g'ri to'rtburchak bilan chalkashtirish"],
+      "pass_score": 60
+    },
+    "final_simulation": {
+      "correct_path": "Siz burchakni 110° deb belgiladingiz va diagonal simlarni markazda (teng yarmida) birlashtirishni buyurdingiz. Natijada karkasning qarama-qarshi tomonlari parallel bo'lib qoldi, karkas qiyshaymadi va barcha qismlar chizmaga mos tushdi.",
+      "wrong_path": "Agar siz burchaklarni 70° dan (yoki o'zaro teng deb) olganingizda yoki diagonallar teng ikkiga bo'linishini hisobga olmaganingizda, karkasning tomonlari parallel bo'lmas edi. Parallelogrammning bir tomoniga yopishgan burchaklari yig'indisi 180° bo'lmasa, uning qarama-qarshi tomonlari parallelligi buziladi va karkas devordagi parallel qavslarga tushmay qoladi."
+    },
+    "feedback_summary": {
+      "student_understood": "Parallelogrammning ta'rifi hamda burchaklari va diagonallari orasidagi bog'liqlikni to'g'ri aniqladingiz.",
+      "mistake_appeared": "Qo'shni burchaklarni o'zaro teng deb hisoblash yoki diagonallar xossasini boshqa shakllar (masalan, to'g'ri to'rtburchak) bilan chalkashtirish ehtimoli bor edi.",
+      "what_to_review": "Parallelogrammning bir tomoniga yopishgan burchaklari xossasini va diagonallarning kesishish nuqtasidagi xususiyatini qayta ko'rib chiqing."
+    },
+    "completion_rules": {
+      "rules": [
+        "Barcha 3 ta checkpoint savoliga javob bering",
+        "Decision Process Explanation (DPE) qismida mulohaza yuriting",
+        "Yakuniy simulyatsiyani o'qib, o'z javobingiz bilan solishtiring"
+      ]
+    }
+  },
+  "memory_check": {
+    "pass_threshold_pct": 60,
+    "items": [
+      { "type": "fill_blank", "prompt": "Parallelogrammning bir tomoniga yopishgan burchaklari yig'indisi _____ gradusga teng bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "180", "accepted_answers": ["180", "bir yuz sakson", "180°", "180 gradus"], "allow_ai_fallback": true }, "flashcard_ref": "card_4" },
+      { "type": "mcq", "prompt": "Quyidagi ta'riflardan qaysi biri parallelogrammga tegishli?", "options": ["Faqat ikkita qarama-qarshi tomoni parallel bo'lgan to'rtburchak.", "Barcha burchaklari 90° ga teng bo'lgan to'rtburchak.", "Qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak.", "Diagonallari perpendikular bo'lgan ixtiyoriy to'rtburchak."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_1" },
+      { "type": "choose_explanation", "prompt": "Parallelogramm diagonallarining kesishish xossasini qaysi izoh to'g'ri tushuntiradi?", "options": ["Diagonallar kesishadi va kesishish nuqtasida teng ikkiga bo'linadi.", "Diagonallar kesishganda har doim to'g'ri burchak hosil qiladi.", "Diagonallar kesishadi va ular o'zaro teng uzunlikka ega bo'ladi.", "Diagonallar kesishib, parallelogramm burchaklarini teng ikkiga bo'ladi."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "fill_blank", "prompt": "Parallelogrammning qarama-qarshi tomonlari va qarama-qarshi burchaklari o'zaro _____ bo'ladi.", "answer_spec": { "type": "text_fuzzy", "expected": "teng", "accepted_answers": ["teng", "baravar", "kongruent"], "allow_ai_fallback": true }, "flashcard_ref": "card_5" },
+      { "type": "mcq", "prompt": "Parallelogrammning bitta uchidan nechta xil balandlik o'tkazish mumkin?", "options": ["Faqat bitta", "Ikkita", "To'rtta", "Cheksiz ko'p"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_3" },
+      { "type": "choose_explanation", "prompt": "Nima uchun ixtiyoriy parallelogrammning diagonallari o'zaro teng deb hisoblash xato sanaladi?", "options": ["Chunki diagonallar parallel tomonlar orasidagi masofaga bog'liq emas.", "Chunki diagonallar teng bo'lishi uchun barcha burchaklar 90° bo'lishi kerak, oddiy parallelogrammda esa burchaklar har xil bo'lishi mumkin.", "Chunki parallelogramm diagonallari hech qachon kesishmaydi.", "Chunki diagonal faqat bitta tomonga tushirilgan perpendikular hisoblanadi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_8" },
+      { "type": "mcq", "prompt": "Parallelogramm balandligiga berilgan eng aniq ta'rifni ko'rsating.", "options": ["Qarama-qarshi uchlarni tutashtiruvchi eng qisqa kesma.", "Bir tomondagi nuqtadan qarama-qarshi tomonni o'z ichiga olgan to'g'ri chiziqqa tushirilgan perpendikular.", "Parallelogrammning ikkita parallel tomoni o'rtalarini tutashtiruvchi kesma.", "Parallelogramm ichida chizilgan ixtiyoriy to'g'ri chiziq kesmasi."], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_2" },
+      { "type": "fill_blank", "prompt": "Tomonlari a va b bo'lgan parallelogrammning perimetri P = _____ formulasi bilan aniqlanadi.", "answer_spec": { "type": "text_fuzzy", "expected": "2(a+b)", "accepted_answers": ["2(a+b)", "2*(a+b)", "2a+2b", "(a+b)*2"], "allow_ai_fallback": true }, "flashcard_ref": "card_9" },
+      { "type": "mcq", "prompt": "Parallelogrammning bitta diagonali uni qanday shakllarga ajratadi?", "options": ["Ikkita ixtiyoriy to'rtburchakka.", "To'rtta teng yuzali uchburchakka.", "Ikkita o'zaro teng (kongruent) uchburchakka.", "Ikkita har xil shakldagi uchburchakka."], "answer_spec": { "type": "option_index", "expected": 2, "option_count": 4 }, "flashcard_ref": "card_10" },
+      { "type": "choose_explanation", "prompt": "Qarorlar tori: quyidagi amallardan qaysi biri parallelogramm xossasiga to'g'ri mos keladi?", "options": ["Diagonallarning kesishish nuqtasini har bir diagonalning o'rtasi deb belgilash.", "Diagonallar uzunliklari har doim o'zaro teng deb chizmani chizish.", "Diagonalni burchakning bissektrisasi deb qabul qilish.", "Qo'shni tomonlar (AB va AD) har doim o'zaro teng deb perimetrni topish."], "answer_spec": { "type": "option_index", "expected": 0, "option_count": 4 }, "flashcard_ref": "card_6" },
+      { "type": "mcq", "prompt": "Gapni to'ldiring: Parallelogrammning diagonallari kesishadi va kesishish nuqtasida ____.", "options": ["o'zaro teng bo'ladi", "teng ikkiga bo'linadi", "bissektrisa vazifasini bajaradi", "har doim perpendikular bo'ladi"], "answer_spec": { "type": "option_index", "expected": 1, "option_count": 4 }, "flashcard_ref": "card_6" }
+    ]
+  },
+  "real_life_challenge": {
+    "id": "rlc_reg_geo_02",
+    "expert_role": "structural_engineer",
+    "title": "Konstruksiyalar muhandisi: parallelogramm karkasni tasdiqlash",
+    "intro": "Siz me'moriy konstruksiyalar va metall qurilmalar bo'yicha bosh muhandissiz. Yangi biznes markazi uchun tayyorlangan parallelogramm ABCD shaklidagi dekorativ metall karkasning texnik parametrlarini tasdiqlashingiz kerak. Buyurtma bo'yicha AB tomoni 210 sm, BC tomoni 140 sm; loyihachi pastki burchak ∠A ni 70° qilib chizgan. Ishlatiladigan alyuminiy profil qalinligi 5 sm (bu tashqi o'lchamlarga ta'sir qilmaydi).",
+    "pisa_level": "L4",
+    "tier": "basic",
+    "grade_band": "g7_9",
+    "variant": "standard",
+    "steps": [
+      {
+        "id": "step1",
+        "kind": "decision",
+        "title": "1-bosqich. Burchaklarni sozlash",
+        "prompt": "Payvandlash apparati sozlamalarida ∠B burchagi uchun qanday qiymatni kiritasiz?",
+        "options": [
+          { "id": "a", "label": "70°", "is_correct": false, "consequence": "Bu qiymat to'g'ri to'rtburchak kabi qarama-qarshi burchak bilan adashtirish. Karkasning AD va BC tomonlari parallel bo'lmay qoladi." },
+          { "id": "b", "label": "110°", "is_correct": true, "consequence": "To'g'ri: parallel to'g'ri chiziqlar orasidagi ichki bir tomonli burchaklar yig'indisi 180°, shuning uchun 180° − 70° = 110°." },
+          { "id": "c", "label": "180°", "is_correct": false, "consequence": "Yig'indining o'zini burchak deb hisoblash xatosi. 180° — bu ikki burchak yig'indisi, bitta burchak emas." }
+        ]
+      },
+      {
+        "id": "step2",
+        "kind": "info_request",
+        "title": "2-bosqich. Qarama-qarshi tomon uzunligi",
+        "prompt": "Payvandchi qarama-qarshi CD ustuni uzunligini so'radi. Qaysi ma'lumot to'g'ri xulosaga olib keladi?",
+        "options": [
+          { "id": "a", "label": "CD = 210 sm, chunki parallelogrammda qarama-qarshi tomonlar o'zaro teng (AB = CD).", "is_correct": true, "info_cost": { "time": "1 qadam" } },
+          { "id": "b", "label": "CD = 205 sm, chunki profil qalinligi 5 sm ni ayirish kerak.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } },
+          { "id": "c", "label": "CD = 140 sm, chunki bu qo'shni BC tomoniga teng.", "is_correct": false, "info_cost": { "time": "noto'g'ri yo'l" } }
+        ]
+      },
+      {
+        "id": "step3",
+        "kind": "final_decision",
+        "title": "3-bosqich. Mustahkamlovchi diagonallar",
+        "prompt": "Karkas markaziga diagonallarni birlashtiruvchi po'lat sterjen o'rnatmoqchisiz. Bu sterjen diagonallarning qaysi nuqtasida payvandlanishi kerak?",
+        "options": [
+          { "id": "a", "label": "Har bir diagonalning qoq o'rtasida.", "is_correct": true, "consequence": "To'g'ri: parallelogramm diagonallari kesishish nuqtasida teng ikkiga bo'linadi — bu karkasning muvozanat markazi." },
+          { "id": "b", "label": "Diagonallarning burchakka yaqinroq bo'lgan 1/3 qismida.", "is_correct": false, "consequence": "Noto'g'ri proporsiya: kesishish nuqtasi diagonalni 1/3 ga emas, teng yarmiga bo'ladi." },
+          { "id": "c", "label": "Diagonallar burchaklarni teng ikkiga bo'lgan nuqtada.", "is_correct": false, "consequence": "Diagonallarning bissektrisa xossasi bilan chalkashtirish — u faqat rombga xos." }
+        ]
+      },
+      {
+        "id": "step4",
+        "kind": "concept_select",
+        "title": "4-bosqich. Hal qiluvchi tushunchani aniqlash",
+        "prompt": "Karkasni to'g'ri tasdiqlashda qaysi tushunchalar to'plami hal qiluvchi bo'ldi?",
+        "concept_chips": [
+          { "id": "c1", "label": "Parallelogramm xossalari: qo'shni burchaklar yig'indisi 180°, qarama-qarshi tomonlar teng, diagonallar kesishish nuqtasida teng ikkiga bo'linadi.", "is_correct": true },
+          { "id": "c2", "label": "Alyuminiy profilning 5 sm qalinligi (qizil chiziq — hisobga ta'sir qilmaydi).", "is_correct": false },
+          { "id": "c3", "label": "Payvandlash apparatining sozlash tugmalari joylashuvi.", "is_correct": false }
+        ]
+      },
+      {
+        "id": "step5",
+        "kind": "reasoning",
+        "title": "5-bosqich. Fikringizni asoslang",
+        "prompt": "Nima uchun ∠B ni 110°, CD ni 210 sm deb oldingiz va sterjenni diagonallar o'rtasiga payvandladingiz? Alyuminiy profilning 5 sm qalinligi nega hisob-kitobda rol o'ynamadi? 2–4 jumlada izohlang.",
+        "placeholder": "Javobingizni shu yerga yozing...",
+        "min_chars": 80,
+        "acceptable_keywords": ["bir tomonli burchaklar 180°", "110°", "qarama-qarshi tomonlar teng", "diagonallar teng ikkiga bo'linadi", "profil qalinligi ahamiyatsiz", "qizil chiziq"]
+      }
+    ]
+  },
+  "gb_error_detection": [
+    {
+      "id": "ed_reg_geo_02",
+      "instructions": "ABCD parallelogramm diagonallarini yechish 5 ta blokda ko'rsatilgan. Aynan bitta blok noto'g'ri — uni toping va to'g'ri variantini yozing.",
+      "pattern": "math",
+      "work_blocks": [
+        { "id": "b1", "text": "ABCD parallelogramm berilgan, uning diagonallari AC = 12 sm va BD = 20 sm ga teng.", "is_broken": false },
+        { "id": "b2", "text": "Ushbu diagonallar O nuqtada kesishadi.", "is_broken": false },
+        { "id": "b3", "text": "Parallelogramm xossasiga ko'ra, diagonallar kesishish nuqtasida teng ikkiga bo'linadi.", "is_broken": false },
+        { "id": "b4", "text": "AO kesmaning uzunligini topish uchun BD diagonalini ikkiga bo'lamiz: AO = 20 : 2 = 10 sm.", "is_broken": true },
+        { "id": "b5", "text": "BO kesmaning uzunligini topish uchun BD diagonalini ikkiga bo'lamiz: BO = 20 : 2 = 10 sm.", "is_broken": false }
+      ],
+      "correction_answer_spec": { "type": "text_fuzzy", "expected": "AO kesmaning uzunligini topish uchun AC diagonalini ikkiga bo'lamiz: AO = 12 : 2 = 6 sm", "accepted_answers": ["AO = 6", "6 sm", "12 : 2 = 6", "AO = 12 : 2 = 6 sm", "AO = 6 sm"], "allow_ai_fallback": true },
+      "hint": "AO kesmasi qaysi diagonalning (AC yoki BD) bir qismi ekanligiga va 1-blokdagi qiymatlarga diqqat bilan e'tibor bering.",
+      "why_prompt": "Bu qadamda AO kesmasini hisoblash uchun nima sababdan BD diagonalining uzunligidan foydalanish noto'g'ri deb hisoblanadi? AO kesmasi AC diagonalining bir qismidir, shuning uchun hisoblashda aynan AC uzunligi (12 sm) olinishi shart: AO = 12 : 2 = 6 sm."
+    }
+  ],
+  "gb_memory_matching": [
+    {
+      "id": "mm_reg_geo_02",
+      "case_setup": "Kartalarni oching va har bir atama yoki xossani uning to'g'ri ta'rifi yoki natijasi bilan juftlang. Juftliklarni kartalar joylashuvi bo'yicha emas, balki geometrik ma'nosiga tayanib toping.",
+      "pairs": [
+        { "id": "p1", "left": "Parallelogramm", "right": "Qarama-qarshi tomonlari juft-jufti bilan parallel bo'lgan to'rtburchak" },
+        { "id": "p2", "left": "Balandlik", "right": "Uchdan qarama-qarshi tomonni o'z ichiga olgan to'g'ri chiziqqa tushirilgan perpendikular" },
+        { "id": "p3", "left": "Diagonallarning kesishish nuqtasi", "right": "Har bir diagonalni qoq o'rtasidan (teng ikkiga) bo'luvchi nuqta" },
+        { "id": "p4", "left": "Bir tomoniga yopishgan burchaklar", "right": "Yig'indisi 180° ga teng bo'lgan burchaklar juftligi" },
+        { "id": "p5", "left": "Bitta diagonal o'tkazish", "right": "Parallelogrammni ikkita o'zaro teng (kongruent) uchburchakka ajratish" },
+        { "id": "p6", "left": "Qarama-qarshi burchaklar", "right": "O'zaro tenglik xossasiga ega bo'lgan ro'baro' burchaklar" }
+      ],
+      "checkpoints": [
+        { "question": "Diagonallarning kesishish nuqtasi qaysi natijaga juftlanadi?", "options": ["Har bir diagonalni qoq o'rtasidan bo'luvchi nuqta", "O'zaro teng uzunlikdagi diagonallar", "Perpendikular kesishuvchi diagonallar"], "correct_index": 0 },
+        { "question": "Bir tomoniga yopishgan burchaklar qaysi xossaga ega?", "options": ["Yig'indisi 90° ga teng", "Yig'indisi 180° ga teng", "O'zaro teng"], "correct_index": 1 },
+        { "question": "Diagonallarning teng ikkiga bo'linishi bilan diagonallarning o'zaro tengligi bir xil tushunchami?", "options": ["Ha", "Yo'q — teng ikkiga bo'linish har doim, tenglik esa faqat to'g'ri to'rtburchakda"], "correct_index": 1 }
+      ],
+      "dpe_prompt": "Nima uchun parallelogramm diagonallarining kesishish nuqtasida teng ikkiga bo'linishi bilan ularning o'zaro teng bo'lishi tushunchalarini almashtirib bo'lmaydi? Faqat yuzaki o'xshashlikka tayanib juftlik tanlagan o'quvchi qanday xatoga yo'l qo'yishi mumkin?",
+      "expected_components": ["kesishish nuqtasi diagonalning o'rtasi", "diagonallar tengligi faqat to'g'ri to'rtburchakda", "yuzaki o'xshashlik xatosi"],
+      "consequence": { "correct_path": "Har bir tushunchani to'g'ri xossa bilan uladingiz.", "wrong_path": "Teng ikkiga bo'linish va o'zaro tenglik tushunchalarini almashtirib yuborish mumkin." }
+    }
+  ],
+  "gb_jigsaw_matching": [
+    {
+      "id": "jigsaw_reg_geo_02",
+      "case_setup": "Berilgan tushuncha parchalarini darslikdagi mantiqiy bog'liqliklar (atama ↔ ta'rif, shart → natija) asosida to'g'ri yo'nalishda juftlang.",
+      "pieces": [
+        { "id": "P1", "label": "Parallelogramm", "role": "cause" },
+        { "id": "P2", "label": "Qarama-qarshi tomonlari o'zaro parallel bo'lgan to'rtburchak", "role": "effect" },
+        { "id": "P3", "label": "Bir tomoniga yopishgan burchaklar", "role": "cause" },
+        { "id": "P4", "label": "Ularning yig'indisi 180° ga teng bo'lishi", "role": "effect" },
+        { "id": "P5", "label": "Diagonallarning kesishish nuqtasi", "role": "cause" },
+        { "id": "P6", "label": "Diagonallarning har birini teng ikkiga bo'lishi", "role": "effect" }
+      ],
+      "checkpoints": [
+        { "q": "P1 (Parallelogramm) qaysi bo'lakka ulanadi?", "options": ["P2 (qarama-qarshi tomonlari parallel)", "P4 (yig'indisi 180°)"], "correct_index": 0 },
+        { "q": "P3 (bir tomoniga yopishgan burchaklar) qaysi natijaga ulanadi?", "options": ["P4 (yig'indisi 180°)", "P6 (teng ikkiga bo'linishi)"], "correct_index": 0 },
+        { "q": "P3 ni P6 bilan (shaklning ichki qismlari o'xshashligi sababli) bog'lash nega xato?", "options": ["Burchaklar yig'indisi va diagonallarning bo'linishi turli xossalar; har bir shart o'z natijasiga ulanadi", "Hech qanday farq yo'q"], "correct_index": 0 }
+      ],
+      "dpe_prompt": "Diagonallarning kesishish xossasini birlashtirishda nima uchun yo'nalish aynan P5 dan P6 ga qarab bo'lishi kerakligini tushuntiring. Agar siz P3 bo'lagini (burchaklar) P6 bilan (teng bo'linish) shunchaki shaklning ichki qismlari degan umumiy o'xshashlikka tayanib bog'lasangiz, qaysi geometrik xatolikka yo'l qo'yasiz?",
+      "expected_components": ["parallelogramm ta'rifi", "ichki bir tomonli burchaklar yig'indisi 180°", "diagonallar teng ikkiga bo'linadi", "shart va natija yo'nalishi"]
+    }
+  ],
+  "boss_questions": [
+    {
+      "id": "bq_0",
+      "scenario": "Muhandis bino tomiga parallelogramm shaklidagi quyosh panellarini o'rnatmoqda. Chizmaga ko'ra, panelning pastki chap burchagi 65° qilib belgilangan. Panelning barcha tomonlari parallel saqlanishi uchun uning qolgan uchta burchagi qanday bo'lishi kerak?",
+      "why": "Parallelogrammning bir tomoniga yopishgan burchaklari va uning qarama-qarshi burchaklari haqidagi qaysi xossalarga tayanib xulosa qilasiz?",
+      "how": "Berilgan 65° burchakdan foydalanib, unga qo'shni bo'lgan va qarama-qarshi bo'lgan burchaklarni qanday hisoblaysiz?",
+      "what": "Topilgan burchaklar yig'indisi nima uchun 360° bo'lishi kerak va agar biz pastki burchakni 90° ga o'zgartirsak, bu panel qanday yangi shaklga aylanadi?",
+      "prompt": "Pastki chap burchak 65° bo'lsa, parallelogrammning qolgan uchta burchagini toping.",
+      "tags": "[Bloom: L2 | PISA: L1 | Damage: -10 HP]",
+      "dmg": 10,
+      "hints": ["Parallel to'g'ri chiziqlarni uchinchi to'g'ri chiziq kesib o'tganda hosil bo'lgan ichki bir tomonli burchaklar haqida o'ylab ko'ring.", "Parallelogrammda burchaklar juft-jufti bilan qanday munosabatda bo'lishini eslang.", "Agar barcha burchaklar to'g'ri (90°) bo'lib qolsa, shakl to'g'ri to'rtburchakka aylanadi."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "115°, 65°, 115°", "canonical_display": "qo'shni burchaklar 115°, qarama-qarshi burchak 65° (ya'ni 115°, 65°, 115°)", "accepted_answers": ["115°, 65°, 115°", "115, 65, 115", "65° va 115°", "qo'shni 115°, qarama-qarshi 65°"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogram-adjacent-angles-sum-180", "parallelogram-opposite-angles-equal", "180° − 65° = 115°", "qarama-qarshi burchak 65°"],
+      "correct_feedback": "Ajoyib! Burchaklar orasidagi bog'liqlikni (180° yig'indi va qarama-qarshi tenglik) juda aniq tushuntirib berdingiz: 180° − 65° = 115°, qarama-qarshi burchak esa 65°.",
+      "partial_feedback": "Burchaklarni to'g'ri hisobladingiz, lekin nima uchun aynan shu qoidalarni (qo'shni burchaklar 180°, qarama-qarshi tenglik) qo'llaganingizni to'liqroq asoslang.",
+      "wrong_feedback": "Hali emas. Parallelogrammning bir tomoniga yopishgan burchaklari yig'indisi necha gradus bo'lishi kerak edi?"
+    },
+    {
+      "id": "bq_1",
+      "scenario": "Bog'bon parallelogramm shaklidagi gulzorning o'rtasidan o'tuvchi ikkita diagonal yo'lak qurmoqchi. U diagonallarning kesishish nuqtasiga favvora o'rnatishni rejalashtirgan. Diagonallar uzunligi 12 metr va 18 metr.",
+      "why": "Nima uchun favvora o'rnatiladigan nuqta har bir yo'lakni (diagonalni) qoq o'rtasidan bo'lishiga amin bo'lishimiz mumkin?",
+      "how": "Favvoradan gulzorning uchlarigacha bo'lgan masofalarni (to'rtta kesma) qanday aniqlaysiz?",
+      "what": "Bu hisob-kitoblar gulzorning markazini topishda qanday yordam beradi va agar yo'laklar kesishish nuqtasida teng bo'linmasa, bu shaklni hali ham parallelogramm deb atash mumkinmi?",
+      "prompt": "Favvoradan gulzorning to'rtta uchigacha bo'lgan masofalarni toping va nima uchun kesishish nuqtasi har bir diagonalni teng ikkiga bo'lishini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -15 HP]",
+      "dmg": 15,
+      "hints": ["Parallelogramm diagonallarining kesishish nuqtasi haqidagi asosiy xossani yodingizga oling.", "Har bir diagonal umumiy kesishish nuqtasida necha teng qismga ajraladi?", "12 metr va 18 metr diagonallarning har birini teng ikkiga bo'ling."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "6 m va 9 m (har bir diagonalning yarmi)", "accepted_answers": ["6 va 9", "6 m, 6 m, 9 m, 9 m", "6 metr va 9 metr", "yarmi: 6 va 9"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogram-diagonals-bisect", "12 : 2 = 6", "18 : 2 = 9", "kesishish nuqtasi har bir diagonalning o'rtasi"],
+      "correct_feedback": "Barakalla! Diagonallarning kesishish nuqtasida teng ikkiga bo'linishi markazni topish uchun eng ishonchli usul ekanligini yaxshi asosladingiz: 12 : 2 = 6 m va 18 : 2 = 9 m.",
+      "partial_feedback": "Masofalarni to'g'ri topdingiz, biroq bu xossaning parallelogramm uchun majburiyligini tushuntirishda biroz ikkilandingiz.",
+      "wrong_feedback": "Hali emas. Diagonallar kesishganda ular o'zaro qanday nisbatda bo'linishi haqidagi xossani qayta ko'rib chiqing."
+    },
+    {
+      "id": "bq_2",
+      "scenario": "Me'mor bitta cho'qqidan chiqadigan ikkita balandlikni o'lchashi kerak. Parallelogramm shaklidagi binoning bir burchagidan (B uchidan) qarama-qarshi turgan ikki xil tomonga — AD va DC tomonlariga — perpendikular tushirildi.",
+      "why": "Nima sababdan parallelogrammning bitta uchidan aynan ikkita (na ko'p, na kam) balandlik o'tkazish mumkin?",
+      "how": "Balandlikning ta'rifiga ko'ra, u qarama-qarshi tomonga qanday burchak ostida tushishi kerak va bu masofa nimani anglatadi?",
+      "what": "Agar bu ikki balandlik o'zaro teng bo'lib qolsa, bu parallelogrammning tomonlari haqida nima deya olamiz (bu qanday maxsus holat bo'lishi mumkin)?",
+      "prompt": "Bir uchdan nechta balandlik tushirish mumkinligini va nima uchun aynan shuncha ekanini asoslang.",
+      "tags": "[Bloom: L3 | PISA: L2 | Damage: -20 HP]",
+      "dmg": 20,
+      "hints": ["Parallelogrammning bitta uchiga nechtadan qarama-qarshi tomon (yoki ularni o'z ichiga olgan to'g'ri chiziq) to'g'ri keladi?", "Balandlik tushunchasidagi perpendikular so'zining ma'nosiga (90° burchak) e'tibor bering.", "Bitta nuqtadan bitta to'g'ri chiziqqa faqat bitta perpendikular tushadi."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "ikkita balandlik; bitta uchdan ikkita qo'shni bo'lmagan tomonga perpendikular tushiriladi", "accepted_answers": ["ikkita", "ikkita balandlik", "ikki xil tomonga", "qo'shni bo'lmagan ikkita tomonga perpendikular"], "allow_ai_fallback": true },
+      "expected_concepts": ["parallelogram-height-definition", "bir uchdan ikkita balandlik", "perpendikular (90°)", "ikkita qo'shni bo'lmagan tomon"],
+      "correct_feedback": "Juda yaxshi! Balandliklar soni va ularning geometrik ma'nosini (masofani o'lchash) to'g'ri tushunibsiz: bir uchdan ikkita qo'shni bo'lmagan tomonga ikkita balandlik tushadi.",
+      "partial_feedback": "Balandlik perpendikular ekanini aytdingiz, lekin bitta uchdan nega aynan ikkita balandlik chiqishini (tomonlar soni bilan bog'lab) aniqroq ko'rsating.",
+      "wrong_feedback": "Hali emas. Balandlik diagonal emasligiga va u doim to'g'ri burchak hosil qilishiga e'tibor bering."
+    },
+    {
+      "id": "bq_3",
+      "scenario": "Dehqon o'zining parallelogramm shaklidagi yer maydonini ikkita o'g'liga teng bo'lib bermoqchi. U yerni bitta diagonal chiziq bo'ylab o'rtasidan kesib ajratdi.",
+      "why": "Nima sababdan bitta diagonal parallelogrammni aynan ikkita teng (kongruent) uchburchakka ajratishini geometrik isbotlay olasiz? (Qaysi tomonlar va burchaklar tengligiga ko'ra?)",
+      "how": "Hosil bo'lgan uchburchaklarning mos elementlarini (tomonlarini) parallelogrammning tomonlari bilan qanday bog'laysiz?",
+      "what": "Agar dehqon bitta emas, ikkita diagonalni ham o'tkazsa, hosil bo'lgan to'rtta kichik uchburchakning yuzalari (tengdoshligi) haqida nima deyish mumkin?",
+      "prompt": "Bitta diagonal parallelogrammni qanday shakllarga ajratishini va nima uchun ular teng ekanini asoslang.",
+      "tags": "[Bloom: L4 | PISA: L3 | Damage: -25 HP]",
+      "dmg": 25,
+      "hints": ["Parallelogrammning qarama-qarshi tomonlari va umumiy diagonalni uchburchaklarning uchta tomoni (TTT alomati) sifatida ko'ring.", "Ikki diagonal kesishganda hosil bo'ladigan to'rtta kichik uchburchakning yuzalari haqidagi xossani eslang.", "Teng (kongruent) va tengdosh (yuzasi teng) tushunchalari orasidagi farqni o'ylab ko'ring."],
+      "answer_spec": { "type": "text_fuzzy", "expected": "ikkita o'zaro teng (kongruent) uchburchak; ikki diagonal esa to'rtta tengdosh uchburchak hosil qiladi", "accepted_answers": ["ikkita teng uchburchak", "ikkita kongruent uchburchak", "TTT alomatiga ko'ra teng", "to'rtta tengdosh uchburchak"], "allow_ai_fallback": true },
+      "expected_concepts": ["diagonal-splits-into-two-congruent-triangles", "TTT (tomon-tomon-tomon) alomati", "qarama-qarshi tomonlar teng", "ikki diagonal — to'rtta tengdosh uchburchak"],
+      "correct_feedback": "Mukammal! Diagonalning shaklni ikkita kongruent uchburchakka ajratishini va ikki diagonal yuzalarni teng taqsimlashini juda chuqur tahlil qildingiz.",
+      "partial_feedback": "Uchburchaklarning tengligini aytdingiz, lekin ularning nima uchun teng ekanini (tomonlari o'zaro tengligini, TTT alomatini) to'liqroq bayon qiling.",
+      "wrong_feedback": "Hali emas. Parallelogramm diagonali shunchaki chiziq emas — u shaklni qanday xususiyatli qismlarga bo'lishini darslikdagi xossalar bilan solishtiring."
+    }
+  ],
+  "reflection": {
+    "summary": "Bugun siz parallelogramm va uning asosiy geometrik xossalarini o'rgandingiz. Dars davomida qarama-qarshi tomonlar va burchaklar tengligi, bir tomoniga yopishgan burchaklar yig'indisi 180° ekanligi hamda diagonallarning kesishish nuqtasida teng ikkiga bo'linishi kabi prinsiplarni tahlil qildingiz. Ushbu bilimlar metall karkaslar yasash yoki quyosh panellarini o'rnatish kabi muhandislik loyihalarida aniq hisob-kitoblar uchun xizmat qiladi.",
+    "question": "Metall karkasning burchaklarini hisoblashda yoki diagonallar kesishish nuqtasini aniqlashda asosiy qaroringizni nega shunday qabul qildingiz?",
+    "spaced_rep": "Ertaga parallelogramm diagonallarining kesishish xossasini (teng ikkiga bo'linish, lekin teng emas) va bitta uchdan o'tkaziladigan ikkita balandlik tushunchasini yangi misolda mashq qiling.",
+    "closing": "Har bir mashq miyangizni kuchaytiradi. Ertaga davom etamiz!",
+    "analysis": {
+      "narrative": "Siz parallelogrammning ta'rifi hamda qarama-qarshi tomon va burchaklarning o'zaro tenglik xossalarini amaliy vaziyatlarda aniqlashda yuqori natija ko'rsatdingiz. Diagonallarning kesishish nuqtasidagi xususiyatlari va bitta uchdan o'tkaziladigan balandliklarning geometrik joylashuvini mustahkamlash foydali.",
+      "strong_points": [
+        "Parallelogrammning ta'rifi va bir tomoniga yopishgan burchaklari yig'indisi 180° ekanligini amaliy aniqlash",
+        "Qarama-qarshi tomon va burchaklarning o'zaro tenglik xossalarini qo'llash"
+      ],
+      "weak_points": [
+        "Diagonallarning kesishish nuqtasidagi xususiyatlari (teng ikkiga bo'linish vs o'zaro tenglik)",
+        "Bitta uchdan o'tkaziladigan balandliklarning geometrik joylashuvini farqlash"
+      ],
+      "next_steps": [
+        "Parallelogramm diagonallarining kesishish xossasi haqidagi darslik bandlarini qayta ko'rib chiqing",
+        "Boss Arena bosqichidagi Bog'dagi yo'laklar va Konstruksiya balandligi masalalarini takrorlang"
+      ],
+      "weak_point_keywords": ["diagonal", "kesishish nuqtasi", "balandlik", "perpendikular"],
+      "strong_point_keywords": ["parallelogramm", "burchaklar yig'indisi", "qarama-qarshi tomonlar"],
+      "pass_threshold": 60,
+      "redo_recommendation": "Xuddi shu tushunchalar, lekin xuddi shu savollar emas, balki yangi amaliy topshiriqlar bilan."
+    }
+  }
+}
