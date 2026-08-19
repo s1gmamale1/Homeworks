@@ -124,6 +124,24 @@ Show WHY the correct answer is correct. Route back to the relevant Preview card.
 ---
 
 ## OUTPUT REQUIREMENT
+
+**Stored key: `boss_questions[]`.** `final_challenge` is only the pipeline and
+builder phase name — nothing is ever stored under that name. The builder files
+this array under `boss_questions`, and that is the name the runtime reads. Paste
+the output into the builder's "Yakuniy jang" (👾) editor; return the bare
+array, unwrapped.
+
+Field routing — all five reach the screen:
+- `q` -> the question body.
+- `tags` -> parsed server-side into the Bloom/PISA header. Only the `Bloom:` and
+  `PISA:` segments are read; the `Damage:` segment inside the tag string is
+  inert — `dmg` is what actually sets damage. Keep the two in sync anyway.
+- `ans` -> the server-only accepted-answer list. Stripped before the page is
+  sent, so it never leaks to the student.
+- `hint` -> split on newline, ` | ` or `•` into the 3-step hint ladder.
+- `dmg` -> HP damage, and it also picks the tier badge (<=10 easy, <=20 medium,
+  otherwise hard).
+
 Return valid JSON matching this exact schema:
 ```json
 [

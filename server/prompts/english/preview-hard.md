@@ -125,7 +125,7 @@ End with BOST goal prompt: "Bugun [actual topic name] haqida nimani bilmoqchisiz
 - 55/45 Uzbekistan/global balance. Modern 2020+ contexts only. No cowboy/cricket/baseball clichés.
 - Every panel: bold target form on actual chapter examples. Never invent.
 - Each panel closes with `[Bloom: LX | PISA: LX]` tag.
-- **Visuals:** inline SVG when a visual genuinely teaches the panel's point — timeline bridges for tense contrast, stress-dot patterns for pronunciation traps, IPA charts for sound distinctions, sentence-diagram trees for grammar structure, word-family trees, collocation grids, Buzan mind maps. The visual must depict the specific concept the panel is teaching. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px. Priority SVG > Mermaid > ASCII. Place SVG immediately after the text it illustrates.
+- **Visuals:** inline SVG when a visual genuinely teaches the panel's point — timeline bridges for tense contrast, stress-dot patterns for pronunciation traps, IPA charts for sound distinctions, sentence-diagram trees for grammar structure, word-family trees, collocation grids, Buzan mind maps. The visual must depict the specific concept the panel is teaching. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px. Real `<svg>...</svg>` markup only — the runtime has no Mermaid renderer and collapses ASCII art, so both reach the student as raw text. Place SVG immediately after the text it illustrates.
   - BAD: a generic schoolroom SVG dropped into a Word→Structure panel about past simple.
   - GOOD: a timeline SVG with a single tick on the past axis labeled "yesterday" and an arrow to "She went" beneath it, paired to the past-simple panel.
 

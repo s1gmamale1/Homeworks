@@ -138,6 +138,30 @@ The scenario text tells the student: "Berilgan kuzatuvlardan moddani aniqlang �
 ---
 
 ## OUTPUT REQUIREMENT
+
+**Stored key: `content_json.real_life`** — the legacy one-scenario, six-question
+phase. Paste the output into the builder's "Hayotiy vazifa" (🌍) editor.
+
+**Not `real_life_challenge`.** Despite this prompt's title, `real_life_challenge`
+is a different phase that coexists with this one: a strict 5-step expert
+role-play case (`steps[]` of kind decision / info_request / final_decision /
+concept_select / reasoning) with its own "Hayotiy chaqiruv" (🧭) editor sitting
+directly beside this one in the builder. It has no prompt file and nothing here
+authors it. Output from this prompt pasted into that editor will not validate.
+
+Per-question Bloom/PISA tags go INSIDE the `prompt` string as
+`[Bloom: LX | PISA: LX]` — the renderer extracts them into the question header
+and strips them from the visible text. There is no separate tags field.
+
+`capture` is an optional per-question boolean and it is the ONLY thing that turns
+on the capture points described above. Set `capture: true` on each question whose
+work must be photographed: the renderer then shows that question's upload button,
+blocks its submit until the photo is in, and reuses that question's `fb` as the
+expected-work note. Omit it (or set `false`) everywhere else. Without this key no
+capture button ever appears, whatever the capture rule above says. Put it on
+whichever slots are the actual work steps — the `q3` placement below is only an
+example.
+
 Return valid JSON matching this exact schema:
 ```json
 {
@@ -145,7 +169,7 @@ Return valid JSON matching this exact schema:
   "story": "string",
   "q1": { "prompt": "string", "ans": "string", "fb": "string" },
   "q2": { "prompt": "string", "fields": [{"id": "string", "label": "string", "ans": "string"}], "fb": "string" },
-  "q3": { "prompt": "string", "ans": "string", "fb": "string" },
+  "q3": { "prompt": "string", "ans": "string", "fb": "string", "capture": true },
   "q4": { "prompt": "string", "fields": [{"id": "string", "label": "string", "ans": "string"}], "fb": "string" },
   "q5": { "prompt": "string", "open": true, "fb": "string" },
   "q6": { "prompt": "string", "ans": "string", "fb": "string" },

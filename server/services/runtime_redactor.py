@@ -25,7 +25,7 @@ import hashlib
 import random
 from typing import Any
 
-from .redaction_constants import ANSWER_BEARING_KEYS
+from .redaction_constants import ANSWER_BEARING_KEYS, ED_SERVER_ONLY
 from .tile_match_tokens import build_hydration_tiles
 
 
@@ -108,6 +108,19 @@ def redact_for_runtime(content_json: dict | None, hw_id: str = "") -> dict:
         return {}
     safe = copy.deepcopy(content_json)
     safe = _scrub(safe)
+
+    # Error Detection: the MARK shape's answer key is `faulty_segment_ids` plus
+    # `category` / `fix` / `explanation`. The generic scrub already removes
+    # `faulty_segment_ids` + `explanation` globally, but `category` and `fix`
+    # cannot join the global deny-list — `category` is student-visible display
+    # text on `gb_mystery_box`. So strip the whole ED_SERVER_ONLY set per-game,
+    # which also keeps the legacy `work_blocks` items covered (their `is_broken`
+    # / `correction_answer_spec` are already global).
+    if isinstance(safe, dict) and isinstance(safe.get("gb_error_detection"), list):
+        for item in safe["gb_error_detection"]:
+            if isinstance(item, dict):
+                for key in ED_SERVER_ONLY:
+                    item.pop(key, None)
 
     # Tile-match: replace the leaky pair list with opaque per-side tokens.
     if isinstance(safe, dict) and (safe.get("gb_tile_match") or safe.get("gb_memory_match")):

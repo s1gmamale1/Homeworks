@@ -107,6 +107,20 @@ Each question:
 ---
 
 ## OUTPUT REQUIREMENT
+
+**Stored key: `real_life`** — the legacy one-scenario, six-question phase. Paste the output into the builder's "Hayotiy vazifa" (🌍) editor.
+
+**Not `real_life_challenge`.** Despite this prompt's title, `real_life_challenge`
+is a different phase that coexists with this one: a strict 5-step expert
+role-play case (`steps[]` of kind decision / info_request / final_decision /
+concept_select / reasoning) with its own "Hayotiy chaqiruv" (🧭) editor sitting
+directly beside this one in the builder. It has no prompt file and nothing here
+authors it. Output from this prompt pasted into that editor will not validate.
+
+Per-question Bloom/PISA tags go INSIDE the `prompt` string as
+`[Bloom: LX | PISA: LX]` — the renderer extracts them into the question header
+and strips them from the visible text. There is no separate tags field.
+
 Return valid JSON matching this exact schema:
 ```json
 {

@@ -15,6 +15,12 @@ TM_SERVER_ONLY = frozenset({"explanation"})                       # tile-match
 SF_SERVER_ONLY = frozenset({"answers", "explanations"})           # sentence-fill
 RLC_SERVER_ONLY = frozenset({"is_correct", "consequence", "acceptable_keywords"})  # real-life-challenge
 BOSS_SERVER_ONLY = frozenset({"accepted", "ans", "accepted_answers", "answer_spec"})  # boss
+# Error Detection (MARK shape). NOTE: `category` and `fix` are NOT added to the
+# global set below — `category` is a STUDENT-VISIBLE display field on
+# `gb_mystery_box` items (rendered as a Pill by MysteryBox.tsx), so a global
+# strip would silently break a live game. These are removed per-game instead,
+# by the `gb_error_detection` branch in runtime_redactor.redact_for_runtime.
+ED_SERVER_ONLY = frozenset({"faulty_segment_ids", "category", "fix", "explanation"})  # error-detection
 
 # ---- Global answer-bearing keys stripped at EVERY nesting level ----
 # Union of the per-game sets + the deterministic-grading contract fields +
@@ -107,5 +113,10 @@ ANSWER_BEARING_KEYS = frozenset(
         # "x = 5 →") which is surfaced by the server ONLY after a correct answer,
         # so it must be stripped from hydration like any answer-bearing field.
         "carry_label",            # Dependency-Chain — a step's carried result token
+        # Error Detection (MARK shape). Only the field name that is unambiguous
+        # globally lives here; `category` / `fix` are stripped by the per-game
+        # branch instead (see ED_SERVER_ONLY above for why). `explanation` is
+        # already deny-listed above.
+        "faulty_segment_ids",     # Error Detection — the answer key (segment ids)
     }
 )

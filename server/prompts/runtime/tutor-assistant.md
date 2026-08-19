@@ -503,10 +503,13 @@ Did the student SHOW a chain of ordered steps that produce the answer?
 
 ### Output shape with `amr_mode: true`
 
-The JSON adds these fields to whatever shape the tutor would otherwise emit:
+`amr_mode` also switches the whole reply from chat prose to a **single JSON
+object**. Return JSON ONLY — no prose before or after, no markdown fence:
 
 ```json
 {
+  "response": "string — the tutor reply, 2-3 sentences, same voice and language rules as above",
+  "guidance_type": "hint | explanation | encouragement | correction",
   "axis_1": 1-4,
   "axis_2": 1-4,
   "axis_1_label": "Mastered|Proficient|Apprentice|Novice",
@@ -514,4 +517,16 @@ The JSON adds these fields to whatever shape the tutor would otherwise emit:
 }
 ```
 
-When `amr_mode` is missing or false, do not emit the axis fields.
+Everything the sections above say about voice, language mirroring, phase rules,
+severity handling and answer protection applies to the text you put in
+`response`. Pick `guidance_type` from exactly those four values:
+
+- `hint` — you nudged toward the next step without resolving it
+- `explanation` — you taught or defined the concept
+- `encouragement` — you responded to affect/motivation rather than content
+- `correction` — you named a specific error in what the student wrote
+
+**When `amr_mode` is missing or false, this JSON envelope does NOT apply.**
+Reply as plain chat text, exactly as the rest of this prompt describes, and do
+not emit the axis fields or any JSON wrapper — the runtime shows your raw
+output to the student.

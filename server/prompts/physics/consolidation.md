@@ -44,11 +44,35 @@ Pick ONE technique. ~3 minutes max.
 ---
 
 ## OUTPUT REQUIREMENT
+
+**Stored key: `content_json.consolidation`.** Paste the output into the
+builder's "Mustahkamlash" (🧠) editor.
+
+The renderer reads exactly these keys and ignores every other key:
+- `mnemonic` — required. The mnemonic exercise itself. Inserted as raw HTML,
+  so inline `<strong>`, `<br>`, `<ul>`, `<details>` and inline `<svg>` all
+  work. Markdown is NOT converted — write real tags, not `**bold**`.
+- `bullets[]` — the supporting prose, one string per line item, rendered as a
+  list under the mnemonic. Put the walkthrough steps / branches / stations
+  here rather than cramming them into a single `mnemonic` string.
+- `title` — optional header override. Defaults to the phase name when omitted.
+- `check_prompt` / `check_answer` — optional ungraded self-check. The student
+  sees `check_prompt`; a "show answer" button then reveals `check_answer`. No
+  verdict, no score, no gating. Omit both when the technique has no recall test.
+
+Do NOT emit `explanation` or `lock_code`. Both are dead keys from a retired
+shape: the builder editor discards them on save and the renderer never reads
+them, so anything written there is silently lost. The BUILD/SKIP decision and
+the technique-choice reasoning are notes to the author — report them alongside
+the JSON, never inside it.
+
 Return valid JSON matching this exact schema:
 ```json
 {
+  "title": "string",
   "mnemonic": "string",
-  "lock_code": "string",
-  "explanation": "string"
+  "bullets": ["string", "string"],
+  "check_prompt": "string",
+  "check_answer": "string"
 }
 ```

@@ -161,6 +161,24 @@ If student HP reaches 0 before all questions correct:
 ---
 
 ## OUTPUT REQUIREMENT
+
+**Stored key: `content_json.boss_questions[]`.** `final_challenge` is only the
+pipeline / builder phase name — there is no `final_challenge` key in
+`content_json`. The builder writes this array to `content.boss_questions`, and
+the renderer reads it as the `BOSS_QUESTIONS` JS constant. Paste the output into
+the builder's "Yakuniy jang" (👾) editor; return the bare array, unwrapped.
+
+Field routing — all five reach the screen:
+- `q` -> the question body.
+- `tags` -> parsed server-side into the Bloom/PISA header. Only the `Bloom:` and
+  `PISA:` segments are read; the `Damage:` segment inside the tag string is
+  inert — `dmg` is what actually sets damage. Keep the two in sync anyway.
+- `ans` -> the server-only accepted-answer list. Stripped before the page is
+  sent, so it never leaks to the student.
+- `hint` -> split on newline, ` | ` or `•` into the 3-step hint ladder.
+- `dmg` -> HP damage, and it also picks the tier badge (<=10 easy, <=20 medium,
+  otherwise hard).
+
 Return valid JSON matching this exact schema:
 ```json
 [

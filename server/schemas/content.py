@@ -942,18 +942,151 @@ class JigsawMatchingItem(_Permissive):
     consequence: Optional[Dict[str, Any]] = None
 
 
+# Error Detection stages. `mark` is mandatory; `classify` / `correct` are
+# per-item optional escalations.
+_ED_STAGES: tuple[str, ...] = ("mark", "classify", "correct")
+
+
+class ErrorDetectionSegment(BaseModel):
+    """One tappable unit of an Error Detection artifact — a line of working, a
+    clause, one side of an equation. Whatever unit the mistake lives in.
+
+    The student posts segment IDS, never a pixel rect and never a character
+    offset. That keeps grading a set comparison, keeps hit-targets trivial on a
+    phone, and lets the same artifact render as text or as SVG without ever
+    changing the answer key.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str = ""                                             # unique within the item, e.g. "s2"
+    text: str = ""                                           # ≤ 500 chars
+    svg: Optional[str] = None                                # optional inline visual
+
+
+class ErrorDetectionArtifact(BaseModel):
+    """The complete, confident, WRONG piece of work the student inspects."""
+
+    model_config = ConfigDict(extra="allow")
+
+    kind: Literal[
+        "worked_solution", "sentence", "equation", "proof", "procedure"
+    ] = "worked_solution"
+    segments: List[ErrorDetectionSegment] = Field(default_factory=list)
+
+
 class ErrorDetectionItem(_Permissive):
-    """One error-detection task per spec: a piece of work containing exactly
-    one error. Student finds the broken block, then types the correction.
-    Server grades both the spot and the correction text."""
+    """One error-detection task.
+
+    TWO SHAPES SHARE THIS ONE CONTRACT KEY (`gb_error_detection`):
+
+    * **legacy** (Division-3, Ibo PR #248) — `work_blocks`: the student picks the
+      broken block and types a correction. Rendered today by
+      `frontend/app/src/runtime/games/ErrorDetection.tsx`, graded by
+      `routes/ai._check_answer_error_detection`. Left untouched.
+    * **MARK** (new) — `artifact.segments` + `stages`: the student taps the
+      faulty SEGMENT IDS, then optionally classifies the error and writes the
+      correction. Graded by Jaccard, `|marked ∩ faulty| / |marked ∪ faulty|`,
+      so that marking every segment scores near zero rather than 100%.
+
+    The shapes are discriminated by the presence of `artifact`. The validator
+    below runs ONLY for the MARK shape — every legacy item validates exactly as
+    it did before, which is what keeps the live renderer and its tests green.
+    """
 
     id: Optional[str] = None
+
+    # ---- legacy Division-3 shape (unchanged) --------------------------------
     instructions: Optional[str] = None
     pattern: Optional[str] = None                            # "math" | "grammar" | "science"
     work_blocks: Optional[List[Dict[str, Any]]] = None       # {id, text, is_broken⛔}
     correction_answer_spec: Optional[AnswerSpec] = None      # server-only — AI/deterministic correction
     hint: Optional[str] = None
     why_prompt: Optional[str] = None                         # optional WHY-stage open-ended prompt
+
+    # ---- MARK shape ---------------------------------------------------------
+    artifact: Optional[ErrorDetectionArtifact] = None        # presence selects the MARK shape
+    stages: Optional[List[str]] = None                       # non-empty subset of _ED_STAGES, "mark" always
+    categories: Optional[List[str]] = None                   # closed list, shown to the student
+    faulty_segment_ids: Optional[List[str]] = None           # server-only ⛔ — `[]` is the clean artifact
+    category: Optional[str] = None                           # server-only ⛔ — null when the artifact is clean
+    fix: Optional[str] = None                                # server-only ⛔ — the corrected segment
+    explanation: Optional[str] = None                        # server-only ⛔ — shown only after the attempt
+    tags: Optional[str] = None                               # "[Bloom: LX | PISA: LX]"
+    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+
+    @model_validator(mode="after")
+    def _validate_mark_shape(self, info: ValidationInfo) -> "ErrorDetectionItem":
+        if _is_authoring(info):
+            return self
+        if self.artifact is None:
+            # Legacy `work_blocks` item — not this validator's contract.
+            return self
+
+        segments = self.artifact.segments
+        if not segments:
+            raise ValueError("artifact.segments must be non-empty")
+
+        seen = set()
+        for idx, seg in enumerate(segments):
+            if not seg.id.strip():
+                raise ValueError(f"artifact.segments[{idx}].id must be non-empty")
+            if seg.id in seen:
+                raise ValueError(
+                    f"artifact.segments: segment id {seg.id!r} is used more than once; "
+                    "ids must be unique within an item"
+                )
+            seen.add(seg.id)
+            if not seg.text.strip():
+                raise ValueError(
+                    f"artifact.segments[{idx}].text must be non-empty (id {seg.id!r})"
+                )
+            if len(seg.text) > 500:
+                raise ValueError(
+                    f"artifact.segments[{idx}].text must be ≤ 500 chars "
+                    f"(id {seg.id!r}, got {len(seg.text)})"
+                )
+
+        stages = self.stages or []
+        if not stages:
+            raise ValueError(
+                f"stages must be a non-empty subset of {list(_ED_STAGES)} containing 'mark'"
+            )
+        unsupported = [s for s in stages if s not in _ED_STAGES]
+        if unsupported:
+            raise ValueError(
+                f"stages contains unsupported value(s) {unsupported}; "
+                f"allowed: {list(_ED_STAGES)}"
+            )
+        if "mark" not in stages:
+            raise ValueError(f"stages must contain 'mark' (got {stages})")
+
+        # `faulty_segment_ids: []` is LEGAL and required once per set — it is the
+        # deliberate clean artifact, answered correctly by marking nothing.
+        faulty = self.faulty_segment_ids or []
+        missing = [sid for sid in faulty if sid not in seen]
+        if missing:
+            raise ValueError(
+                f"faulty_segment_ids {missing} do not exist in artifact.segments "
+                f"(segment ids: {sorted(seen)})"
+            )
+
+        if "classify" in stages:
+            if not self.categories:
+                raise ValueError(
+                    "categories must be non-empty when 'classify' is in stages"
+                )
+            if self.category is None:
+                if faulty:
+                    raise ValueError(
+                        "category is required when faulty_segment_ids is non-empty "
+                        "(null category is only legal for the clean artifact)"
+                    )
+            elif self.category not in self.categories:
+                raise ValueError(
+                    f"category {self.category!r} is not in categories {self.categories}"
+                )
+        return self
 
 
 class AssemblyItem(_Permissive):

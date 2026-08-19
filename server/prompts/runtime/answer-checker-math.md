@@ -19,7 +19,7 @@ Return ONLY valid JSON with no markdown fences.
 
 ```json
 {
-  "correct": false,
+  "is_correct": false,
   "score": 0.0,
   "confidence": 0.95,
   "feedback": "string explaining the result",

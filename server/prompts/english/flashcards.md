@@ -95,13 +95,15 @@ English flash cards come in two modes. Both modes are used in every deck — mix
 
 ---
 
-## Optional Multi-Field Cards
+## Extra Card Detail
 
-Beyond the standard fields, a card MAY include:
+A card carries exactly five keys: `term`, `def`, `cluster`, `hint`, `media`. Any
+other key is discarded before the card is rendered — put the detail inside one of
+the five, never in a new field.
 
-- `stress_qarmogi` — phonetic hook for vocab cards (e.g., "fo-TO-gra-fer — stress falls on the TO, like a camera shutter TO-click")
-- `reading_anchor` — when the card maps to a named character or scene in the Reading phase (e.g., "Daniel the photographer — Reading paragraph 1")
-- `tense_scope` — for grammar cards, which CEFR level this pattern is unlocked at (e.g., "A2+: past simple irregular")
+- **Phonetic hook** (vocab cards) — goes in `hint`, e.g. "fo-TO-gra-fer — stress falls on the TO, like a camera shutter TO-click"
+- **Reading anchor** — when the card maps to a named character or scene in the Reading phase, append it to `def`, e.g. "Daniel the photographer — Reading paragraph 1"
+- **Tense scope** (grammar cards) — which CEFR level unlocks the pattern; append to `def`, e.g. "A2+: past simple irregular"
 
 ---
 
@@ -209,6 +211,6 @@ The attached textbook unit is the **only** source. Every term, collocation, gram
 Return valid JSON matching this exact schema:
 ```json
 [
-  { "term": "string", "def": "string", "cluster": "VOCABULARY|GRAMMAR|TRAPS", "hint": "required Buzan-style mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
+  { "term": "string", "def": "string", "cluster": "VOCABULARY|GRAMMAR PATTERNS|TRAPS", "hint": "required Buzan-style mnemonic string", "media": { "type": "svg", "html": "<svg viewBox='0 0 200 150' xmlns='http://www.w3.org/2000/svg'>...</svg>" } }
 ]
 ```

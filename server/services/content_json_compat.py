@@ -107,6 +107,8 @@ _GB_ARRAY_KEYS: tuple[str, ...] = (
     "gb_ttt",
     "gb_sentence_fill",
     "gb_tile_match",
+    # Error Detection (MARK) — see schemas/content.ErrorDetectionItem.
+    "gb_error_detection",
 )
 
 

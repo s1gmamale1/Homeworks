@@ -45,6 +45,8 @@ _GB_KEYS = (
     "gb_ttt",
     "gb_sentence_fill",
     "gb_tile_match",
+    # Error Detection (MARK) — see schemas/content.ErrorDetectionItem.
+    "gb_error_detection",
 )
 
 # The 9 canonical content milestones a fully-authored homework hits.

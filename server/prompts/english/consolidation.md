@@ -139,6 +139,9 @@ A vocab unit on family relations has no spatial structure either — it is hiera
 
 ## OUTPUT REQUIREMENT
 
+**Stored key: `consolidation`.** Paste the output into the
+builder's "Mustahkamlash" (🧠) editor.
+
 Return valid JSON matching this schema. The `panels[]` array carries the
 mnemonic content as a sliding-panel sequence — generic across techniques
 (Radiant Summary branches, Memory Palace stations, Link System steps,
@@ -153,7 +156,7 @@ reveal-on-demand block (lock-code or recall prompt).
     {
       "kind":  "center | branch | station | step | check",
       "title": "string — short panel heading shown above the body",
-      "html":  "string — the panel's prose content; **bold** is converted to <strong> by the adapter",
+      "html":  "string — the panel's prose content as raw HTML (<strong>, <br>, <ul>)",
       "media": {
         "type": "svg",
         "html": "<svg viewBox='0 0 300 200' xmlns='http://www.w3.org/2000/svg'>...</svg>"
@@ -168,13 +171,16 @@ reveal-on-demand block (lock-code or recall prompt).
 ```
 
 **Panel structure rules:**
-- `kind` is informational, not load-bearing — the runtime renders every
-  panel the same way. Use `center` for an overview/anchor panel,
-  `branch` for Radiant Summary leaves, `station` for Memory Palace stops,
-  `step` for Link System chains, `check` for a dedicated lock-code panel.
+- `kind` is informational for every value EXCEPT `check`. The runtime renders
+  all panels the same way, but the `check` block below is mounted only onto a
+  panel whose `kind` is exactly `"check"` — a `check` object with no such panel
+  renders nowhere. Use `center` for an overview/anchor panel, `branch` for
+  Radiant Summary leaves, `station` for Memory Palace stops, `step` for Link
+  System chains, and `check` for the dedicated recall panel.
 - `title` is required on every panel — student sees it as the slide heading.
-- `html` is the panel body. Markdown `**bold**` is supported (the adapter
-  converts to `<strong>`).
+- `html` is the panel body, inserted as raw HTML. There is NO markdown adapter
+  anywhere in the path — `**bold**` renders as literal asterisks. Write
+  `<strong>bold</strong>`.
 - `media` is REQUIRED on every non-`check` panel that illustrates a
   structural concept. Inline SVG only, ≤300×200px, depicts the panel's
   specific mental image (a tree node, a station glyph, a slider, three
@@ -184,13 +190,26 @@ reveal-on-demand block (lock-code or recall prompt).
 
 **Check block rules:**
 - Optional. Omit entirely if the technique doesn't suit a recall test.
+- If you DO include it, `panels[]` must also contain a panel with
+  `"kind": "check"`. That panel is where the block is mounted; without it the
+  prompt and the answer are both silently dropped.
 - NOT graded — the runtime renders a "Show answer" button that reveals
   `check.answer` on click. No correct/wrong verdict, no auto-advance,
   no gating of forward navigation.
 - If included, `prompt` is what the student sees first; `answer` is the
   canonical line the reveal toggle exposes.
 
-**Backward compatibility:** Legacy fixtures may still emit the old
-`{mnemonic, lock_code, explanation}` shape. The runtime renders those as
-a single non-sliding panel (no swipe, just the existing scrollable
-consolidation card). Do NOT emit both shapes at once — pick one.
+**Backward compatibility:** the older shape is `{title, mnemonic, bullets,
+check_prompt, check_answer}` — a single non-sliding scrollable card instead of a
+swipeable sequence. It is the shape the other six subjects emit and the only
+shape the builder's Mustahkamlash editor can enter by hand. (`lock_code` and
+`explanation` are dead keys from a retired variant of it; never emit either —
+they are discarded on save and never read.) Do NOT emit both shapes at once —
+pick one.
+
+**Known gap — read this before choosing `panels[]`.** The runtime's "does this
+phase have content?" gate inspects only `mnemonic` / `recap` / `bullets` /
+`check_prompt`. A consolidation authored purely as `{title, panels[], check}`
+fails that gate and the entire phase is skipped, so nothing renders at all.
+Until the gate is fixed, either use the single-card shape above, or ship a
+non-empty `mnemonic` alongside `panels[]` so the phase survives the gate.

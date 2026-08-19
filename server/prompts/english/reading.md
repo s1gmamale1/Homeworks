@@ -81,7 +81,7 @@ The passage is split into N segments where N equals the checkpoint count for the
 
 **Each segment carries its own checkpoint.** The checkpoint tests something the student has just read in that segment — not something from a future segment, not a question only answerable after the whole passage. Checkpoint 1 should be answerable from segment 1 alone.
 
-**HTML inside segments:** Use `<p>` tags only when a segment naturally contains multiple paragraphs. Use `**word**` markdown for bolded vocabulary on first occurrence (the adapter converts to `<strong>`). No other HTML inside segments.
+**HTML inside segments:** Segment text is inserted as HTML verbatim — there is no markdown adapter, so `**word**` reaches the student as literal asterisks. Use `<p>` tags only when a segment naturally contains multiple paragraphs. Use `<strong>word</strong>` for bolded vocabulary on first occurrence. No other HTML inside segments.
 
 ## Narrative principles (apply to authored-fallback passages only; textbook extractions keep their existing structure)
 
@@ -101,12 +101,17 @@ The passage is split into N segments where N equals the checkpoint count for the
 
 ## Example segment (B1, ~120 words)
 
-> Kamola **arrived** at the Hilton Tashkent lobby at 8:55, five minutes before her first shift as a junior receptionist. The marble floor **reflected** the morning light, and guests **were already** moving in every direction. Her supervisor, Mr. Yusupov, handed her a printed schedule. "You **have worked** here for three days now," he said. "Today you **handle** the 9 a.m. check-ins alone." Kamola took a breath. She **had practised** every phrase the night before. Now it was real.
+`segments[0].text`:
 
-Paired checkpoint testing this segment:
+> Kamola <strong>arrived</strong> at the Hilton Tashkent lobby at 8:55, five minutes before her first shift as a junior receptionist. The marble floor <strong>reflected</strong> the morning light, and guests <strong>were already</strong> moving in every direction. Her supervisor, Mr. Yusupov, handed her a printed schedule. "You <strong>have worked</strong> here for three days now," he said. "Today you <strong>handle</strong> the 9 a.m. check-ins alone." Kamola took a breath. She <strong>had practised</strong> every phrase the night before. Now it was real.
 
-> **Q1.** What is Kamola about to do alone for the first time?
-> [Bloom: L1 | PISA: L1]
+Its paired `segments[0].checkpoint`:
+
+```json
+{ "q": "What is Kamola about to do alone for the first time?",
+  "tags": "[Bloom: L1 | PISA: L1]",
+  "ans": ["handle the 9 a.m. check-ins", "check in guests alone"] }
+```
 
 ---
 
@@ -119,9 +124,13 @@ Count per level table. Cover:
 4. (B1+/B2 only) Language analysis — identify and explain a grammar or vocabulary choice
 5. (B2 only) Evaluation — assess the writer's approach or a character's decision
 
-Format:
-> **Q1.** What is the main challenge [character] faces in this story?
-> [Bloom: L1-L2 | PISA: L1-L2]
+Format — the question text goes in `q` with NO number prefix (the runtime stamps `Q1`, `Q2`, … itself), and the Bloom/PISA string goes in `tags`, never inside `q`:
+
+```json
+{ "q": "What is the main challenge [character] faces in this story?",
+  "tags": "[Bloom: L1-L2 | PISA: L1-L2]",
+  "ans": ["..."] }
+```
 
 Checkpoint 2 (inference) is the ideal spot for an inline sentence-structure SVG: split a single load-bearing sentence from the narrative into subject / verb / object branches so the student can literally see the grammar pattern they must infer.
 
@@ -132,14 +141,14 @@ Checkpoint 2 (inference) is the ideal spot for an inline sentence-structure SVG:
 - **Source: textbook reading section**, extracted not invented. Light trim/cleanup OK; rewrite affected checkpoints. Author from scratch only as a documented fallback.
 - N segments, N checkpoints, paired by index. Segment count per level table. Each segment ends at a meaningful boundary; each checkpoint tests the segment immediately preceding it.
 - Zero segment labels — no "Segment 1:", no "Part 1:" headings inside the text.
-- Vocab items bolded on first occurrence using `**word**` markdown, not glossed inline.
+- Vocab items bolded on first occurrence using `<strong>word</strong>`, not glossed inline.
 - Tenses: level-allowed set only. No exceptions.
 - For authored fallbacks: grammar appears naturally — never as a named demonstration inside the story.
 - 55/45 national-pride balance applies to **authored fallbacks only**. Textbook passages keep their original setting verbatim.
 - Checkpoints tagged `[Bloom: LX | PISA: LX]`. Range: L1-L2 main idea, L2-L3 inference/purpose, L3-L4 language analysis, L4-L5 evaluation.
 - Do NOT print a word count label in the output — just meet it.
 - `media` is required — it must illustrate the passage's main scene or context. It must NOT be decorative, generic, stock-like, or out-of-topic media.
-- **Visuals:** inline SVG only when it aids comprehension of THIS passage's load-bearing sentence — a sentence-diagram tree splitting subject / verb / object at one checkpoint, a timeline of events if the passage spans multiple time points. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px for inline checkpoint SVGs. Priority SVG > Mermaid > ASCII.
+- **Visuals:** inline SVG only when it aids comprehension of THIS passage's load-bearing sentence — a sentence-diagram tree splitting subject / verb / object at one checkpoint, a timeline of events if the passage spans multiple time points. **No decorative, generic, stock-like, or out-of-topic media.** Under 300×200px for inline checkpoint SVGs. Real `<svg>...</svg>` markup only — the runtime has no Mermaid renderer and collapses ASCII art, so both reach the student as raw text.
   - BAD: a generic open-book SVG decorating the top of the reading passage.
   - GOOD: a sentence-tree SVG of the passage's most syntactically complex sentence, branches labeled with the parts of speech the checkpoint question targets.
 

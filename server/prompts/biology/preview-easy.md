@@ -78,7 +78,7 @@ Show the concept in action using diagrams and labeled examples.
 - Every panel uses two-layer explanation: formal first, then "Sodda so'zlar bilan:"
 - No calculations, no formulas. Biology = observation, mechanism, classification, prediction.
 - No bazaar/village cliches. Modern professional contexts only.
-- Visuals: Generate actual SVG code inline where diagrams are needed. Priority: SVG > Mermaid > ASCII. Use SVG for: cell diagrams, organ structures, organism body plans, lifecycle stages, food web arrows, classification trees, process flow (e.g., photosynthesis inputs/outputs). Use Mermaid for: taxonomic hierarchies, multi-step process flowcharts. Keep SVGs under 300×200px, legible on mobile. Place SVG immediately after the text it illustrates.
+- Visuals: Generate actual SVG code inline where diagrams are needed. Only inline SVG renders — the runtime has no Mermaid renderer and collapses ASCII art, so both reach the student as raw text. Use SVG for: cell diagrams, organ structures, organism body plans, lifecycle stages, food web arrows, classification trees, process flow (e.g., photosynthesis inputs/outputs), taxonomic hierarchies, multi-step process flowcharts. Keep SVGs under 300×200px, legible on mobile. Place SVG immediately after the text it illustrates.
 
 ### Diagrams & numbering rules
 - For diagrams, use a `{type: "svg", html: ...}` block — never put SVG markup inside a `p` block.
