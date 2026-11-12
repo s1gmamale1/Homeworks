@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ruflo": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@claude-flow/cli@latest",
+        "mcp",
+        "start"
+      ],
+      "env": {
+        "CLAUDE_FLOW_DIR": "C:\\Users\\DaddysHere\\Documents\\Homeworks\\.claude-flow"
+      }
+    }
+  }
+}
